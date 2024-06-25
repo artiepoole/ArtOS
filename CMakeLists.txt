@@ -5,7 +5,7 @@ set(CMAKE_SYSTEM_PROCESSOR i686)
 
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
-set(TOOLS /home/artypoole/opt/cross-compiler/)
+set(TOOLS ENV($HOME)/opt/cross-compiler/)
 set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-elf-as)
 set(CMAKE_C_COMPILER ${TOOLS}/bin/i686-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLS}/bin/i686-elf-g++)
@@ -30,7 +30,9 @@ set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 
 ## Building the kernel binary
 #add_executable(${KERNEL_BIN} boot.s kernel.cpp mylib)
-add_executable(${KERNEL_BIN} boot.s kernel.cpp)
+add_executable(${KERNEL_BIN} boot.s kernel.cpp
+        src/terminal.cpp
+        test/test_terminal.cpp)
 set_target_properties(${KERNEL_BIN} PROPERTIES LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc")
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
@@ -46,3 +48,4 @@ add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/)
 
+add_subdirectory(test)
