@@ -99,7 +99,7 @@ void terminal_scroll_line()
             terminal_buffer[end_index] = terminal_buffer[start_index];
         }
         // Bottom line is replaced with empty.
-        terminal_buffer[VGA_WIDTH*(VGA_HEIGHT-1)] = ' ';
+        terminal_buffer[VGA_WIDTH*(VGA_HEIGHT-1) + x] = ' ';
     }
 }
 
