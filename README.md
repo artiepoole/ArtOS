@@ -4,7 +4,9 @@ ArtOS is a very basic operating system being developed following [os.dev](https:
 The aim of this project is simply to learn. If it becomes something I want others to be able to use I will add the typical sections to this README.
 
 ## My Goals
-- [x] Boot into hello world 
+- [x] Boot into hello world
+- [x] Terminal Newline Character
+- [x] Terminal Scrolling
 - [ ] Print filesystem structure
 - [ ] Run an executable so that a compiler can be used
 
