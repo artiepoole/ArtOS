@@ -8,6 +8,10 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [ ] Print filesystem structure
 - [ ] Run an executable so that a compiler can be used
 
+## Progress markers
+HelloWorld:
+![Hello World in qemu](https://github.com/stupoole/ArtOS/blob/master/res/img/HelloWorld.png?raw=true)
+
 ## Useful Commands
 ### Build commands
 ```
