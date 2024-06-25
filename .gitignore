@@ -2,4 +2,6 @@
 .idea/
 isodir/*
 out/
+bin/
+*.iso
 

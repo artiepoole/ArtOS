@@ -95,6 +95,7 @@ void terminal_new_line()
 
 void terminal_putchar(const char c)
 {
+    // TODO: Implement UEFI frame buffer alternative to support modern
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
     if (++terminal_column == VGA_WIDTH)
     {
@@ -114,7 +115,6 @@ void terminal_write(const char* data, const size_t size)
         }
         else
             terminal_putchar(c);
-
     }
 }
 
@@ -127,6 +127,10 @@ void kernel_main(void)
 {
     /* Initialize terminal interface */
     terminal_initialize();
+    // Todo: implement user typing from keyboard inputs
+    // Todo: automate the build process
 
     terminal_writestring("Welcome to ArtOS!\n");
+    terminal_writestring(
+        "This is only a test please check that this is working and wrapping and making a new line and so on");
 }
