@@ -33,14 +33,14 @@ enum vga_color
     VGA_COLOR_WHITE = 15,
 };
 
-static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg)
+static uint8_t vga_entry_color(vga_color fg, vga_color bg)
 {
     return fg | bg << 4;
 }
 
 static uint16_t vga_entry(const unsigned char uc, const uint8_t color)
 {
-    return (uint16_t)uc | (uint16_t)color << 8;
+    return static_cast<uint16_t>(uc) | static_cast<uint16_t>(color) << 8;
 }
 
 size_t strlen(const char* str)
@@ -59,7 +59,7 @@ size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
 
-void terminal_initialize(void)
+void terminal_initialize()
 {
     terminal_row = 0;
     terminal_column = 0;
@@ -86,12 +86,33 @@ void terminal_putentryat(const char c, const uint8_t color, const size_t x, cons
     terminal_buffer[index] = vga_entry(c, color);
 }
 
+void terminal_scroll_line()
+{
+    // for each line from the second line onwards, copy next line into this line
+    for (size_t x = 0; x < VGA_WIDTH; x++)
+    {
+        // All lines move up one
+        for (size_t y = 0; y < VGA_HEIGHT-1; y++)
+        {
+            size_t start_index = (y+1) * VGA_WIDTH + x;
+            size_t end_index = (y) * (VGA_WIDTH) + x;
+            terminal_buffer[end_index] = terminal_buffer[start_index];
+        }
+        // Bottom line is replaced with empty.
+        terminal_buffer[VGA_WIDTH*(VGA_HEIGHT-1)] = ' ';
+    }
+}
+
 void terminal_new_line()
 {
     terminal_column = 0;
-    if (++terminal_row == VGA_HEIGHT)
+    if (++terminal_row > VGA_HEIGHT)
+    {
+        terminal_scroll_line();
         terminal_row = 0;
+    }
 }
+
 
 void terminal_putchar(const char c)
 {
@@ -123,6 +144,11 @@ void terminal_writestring(const char* data)
     terminal_write(data, strlen(data));
 }
 
+void terminal_writechar(const char c)
+{
+    terminal_write(& c, 1);
+}
+
 extern "C"
 void kernel_main(void)
 {
@@ -132,6 +158,9 @@ void kernel_main(void)
     // Todo: automate the build process
 
     terminal_writestring("Welcome to ArtOS!\n");
-    terminal_writestring(
-        "This is only a test please check that this is working and wrapping and making a new line and so on");
+
+    for (size_t i = 0; i < VGA_WIDTH*VGA_HEIGHT; i++)
+    {
+        terminal_writechar(static_cast<char>(i%10 + 48));
+    }
 }
