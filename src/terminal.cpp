@@ -1,9 +1,5 @@
-
-
 #include "terminal.h"
-
-/* Hardware text mode color constants. */
-
+#include "string.h"
 
 static uint8_t vga_entry_color(vga_color fg, vga_color bg)
 {
@@ -14,15 +10,6 @@ static uint16_t vga_entry(const unsigned char uc, const uint8_t color)
 {
     return static_cast<uint16_t>(uc) | static_cast<uint16_t>(color) << 8;
 }
-
-size_t strlen(const char* str)
-{
-    size_t len = 0;
-    while (str[len])
-        len++;
-    return len;
-}
-
 
 void terminal_initialize()
 {
@@ -122,27 +109,3 @@ void terminal_draw_colour_ascii(const char* data, const int8_t* colour, size_t w
     }
 }
 
-size_t string_from_int(long val, char* out_str)
-{
-    bool const is_negative = val < 0;
-    int i = 0;
-    int n_digits = 0;
-    if (is_negative)
-    {
-        out_str[i] = '-';
-        i++;
-        n_digits++;
-    }
-    auto tmp = val;
-    while ((tmp /= 10) != 0) ++n_digits;
-
-    while (i <= n_digits)
-    {
-        out_str[n_digits - i] = static_cast<char>(val % 10 + 48);
-        val /= 10;
-        i++;
-    }
-    out_str[i] = '\0';
-
-    return i;
-}
