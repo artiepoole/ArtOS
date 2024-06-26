@@ -9,6 +9,7 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] Terminal Scrolling
 - [ ] Colour Art
 - [x] Serial PORT1 output from kernel
+- [ ] Implement a standard library 
 - [ ] Print filesystem structure
 - [ ] Run an executable so that a compiler can be used
 
