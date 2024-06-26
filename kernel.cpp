@@ -35,14 +35,17 @@ void test_writing_print_numbers()
 extern "C"
 void test_colour()
 {
-    size_t im_width = 20;
-    size_t im_height = 20;
+    size_t im_width = VGA_WIDTH;
+    size_t im_height = VGA_HEIGHT;
     char text_data[im_width * im_height] = {' '};
     uint8_t colour_data[im_width * im_height] = {0};
-    for (size_t i = 1; i <= (im_width * im_height); i++)
+    for (size_t i = 1; i < (im_width * im_height); i++)
     {
         text_data[i] = 'A';
-        colour_data[i] = vga_entry_color(static_cast<vga_color>((i%15)), static_cast<vga_color>(i%8));
+        colour_data[i] = vga_entry_color(static_cast<vga_color>((i+1)%_VGA_COLOUR_COUNT), static_cast<vga_color>(i%(_VGA_COLOUR_COUNT/2)));
+        // colour_data[i] = vga_entry_color(static_cast<vga_color>((i+1)%_VGA_COLOUR_COUNT), VGA_COLOR_BLACK);
+        // colour_data[i] = vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
+
 
     }
     const auto *colour_ptr = colour_data;
