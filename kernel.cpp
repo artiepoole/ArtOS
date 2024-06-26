@@ -43,8 +43,6 @@ void test_colour()
     {
         text_data[i] = 'A';
         colour_data[i] = vga_entry_color(static_cast<vga_color>((i+1)%_VGA_COLOUR_COUNT), static_cast<vga_color>(i%(_VGA_COLOUR_COUNT/2)));
-        // colour_data[i] = vga_entry_color(static_cast<vga_color>((i+1)%_VGA_COLOUR_COUNT), VGA_COLOR_BLACK);
-        // colour_data[i] = vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
 
 
     }
