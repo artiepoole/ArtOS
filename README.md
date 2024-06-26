@@ -8,7 +8,7 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] Terminal Newline Character
 - [x] Terminal Scrolling
 - [ ] Colour Art
-- [ ] Serial PORT1 output from kernel
+- [x] Serial PORT1 output from kernel
 - [ ] Print filesystem structure
 - [ ] Run an executable so that a compiler can be used
 
