@@ -110,10 +110,10 @@ void terminal_writechar(const char c)
     terminal_write(&c, 1);
 }
 
-void terminal_draw_colour_ascii(const char* data, const uint8_t* colour, const size_t width, const size_t height)
+void terminal_draw_colour_ascii(const char* text, const uint8_t* colour, const size_t width, const size_t height)
 {
-    for (size_t pixel = 0; pixel < strlen(data); pixel++)
+    for (size_t pixel = 0; pixel < strlen(text); pixel++)
     {
-        terminal_putentryat(data[pixel], colour[pixel], pixel / width, pixel % height);
+        terminal_putentryat(text[pixel], colour[pixel], pixel % width, pixel / width);
     }
 }

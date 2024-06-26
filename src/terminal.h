@@ -38,7 +38,7 @@ void terminal_initialize();
 
 void terminal_new_line();
 
-void terminal_draw_colour_ascii(const char* data, const uint8_t* colour, size_t width, size_t height);
+void terminal_draw_colour_ascii(const char* text, const uint8_t* colour, size_t width, size_t height);
 
 void terminal_writechar(char c);
 
