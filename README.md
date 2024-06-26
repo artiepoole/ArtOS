@@ -15,6 +15,8 @@ The aim of this project is simply to learn. If it becomes something I want other
 ## Progress markers
 HelloWorld:
 ![Hello World in qemu](https://github.com/stupoole/ArtOS/blob/master/res/img/HelloWorld.png?raw=true)
+Colours:
+![Hello World in qemu](https://github.com/stupoole/ArtOS/blob/master/res/img/colours.png?raw=true)
 
 ## Useful Commands
 ### Build commands
