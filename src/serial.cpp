@@ -43,7 +43,7 @@ void serial_send_char(char a) {
 
 void serial_write(const char* data, const size_t size)
 {
-    for (int i = 0; i<size; i++)
+    for (size_t i = 0; i<size; i++)
     {
         const char c = data[i];
         serial_send_char(c);

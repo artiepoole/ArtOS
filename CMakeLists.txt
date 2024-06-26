@@ -33,7 +33,8 @@ set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 add_executable(${KERNEL_BIN} boot.s kernel.cpp
         src/terminal.cpp
         src/serial.cpp
-        src/string.cpp)
+        src/string.cpp
+)
 set_target_properties(${KERNEL_BIN} PROPERTIES LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc")
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin

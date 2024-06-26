@@ -1,6 +1,13 @@
 #include "terminal.h"
 #include "string.h"
 
+
+inline size_t terminal_row;
+inline size_t terminal_column;
+inline uint8_t terminal_color;
+inline uint16_t* terminal_buffer;
+
+
 static uint8_t vga_entry_color(vga_color fg, vga_color bg)
 {
     return fg | bg << 4;

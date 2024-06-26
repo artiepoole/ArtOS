@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "src/terminal.h"
 #include "src/serial.h"
+#include "src/string.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -26,12 +27,12 @@ void kernel_main(void)
 
     terminal_writestring("Welcome to ArtOS!\n");
 
-    for (long i = 1; i <= VGA_WIDTH * VGA_HEIGHT; i++)
+    for (size_t i = 1; i <= VGA_WIDTH * VGA_HEIGHT; i++)
     {
         char out_str[255];
-        const size_t len = string_from_int(i, out_str);
+        const size_t len = string_from_int(static_cast<long>(i), out_str);
         char trimmed_str[len];
-        for (int j = 0; j <= len; j++)
+        for (size_t j = 0; j <= len; j++)
         {
             trimmed_str[j] = out_str[j];
         }

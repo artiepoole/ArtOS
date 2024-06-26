@@ -29,15 +29,8 @@ enum vga_color
 static constexpr size_t VGA_WIDTH = 80;
 static constexpr size_t VGA_HEIGHT = 25;
 
-inline size_t terminal_row;
-inline size_t terminal_column;
-inline uint8_t terminal_color;
-inline uint16_t* terminal_buffer;
-
 
 void terminal_initialize();
-
-size_t string_from_int(long val, char* out_str);
 
 void terminal_new_line();
 
