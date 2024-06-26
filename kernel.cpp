@@ -15,18 +15,8 @@
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
 
-
-extern "C"
-void kernel_main(void)
+void test_writing_print_numbers()
 {
-    /* Initialize terminal interface */
-    terminal_initialize();
-    serial_initialise();
-    // Todo: implement user typing from keyboard inputs
-    // Todo: automate the build process
-
-    terminal_writestring("Welcome to ArtOS!\n");
-
     for (size_t i = 1; i <= VGA_WIDTH * VGA_HEIGHT; i++)
     {
         char out_str[255];
@@ -39,16 +29,34 @@ void kernel_main(void)
         terminal_writestring(trimmed_str);
         serial_write_string(trimmed_str);
         serial_new_line();
-
-
-
-        // terminal_new_line();
     }
-    // int i=0;
-    // while (true)
-    // {
-    //     terminal_writechar(static_cast<char>(i % 10 + 48));
-    //     terminal_new_line();
-    //     i++;
-    // }
+}
+
+extern "C"
+void test_colour()
+{
+    size_t im_width = 20;
+    size_t im_height = 20;
+    char text_data[im_width * im_height] = {' '};
+    uint8_t colour_data[im_width * im_height] = {0};
+    for (size_t i = 1; i <= (im_width * im_height); i++)
+    {
+        text_data[i] = 'A';
+        colour_data[i] = vga_entry_color(static_cast<vga_color>((i%15)), static_cast<vga_color>(i%8));
+
+    }
+    const auto *colour_ptr = colour_data;
+    terminal_draw_colour_ascii(text_data, colour_ptr, im_width, im_height);
+}
+
+extern "C"
+void kernel_main(void)
+{
+    terminal_initialize();
+    serial_initialise();
+    terminal_writestring("Welcome to ArtOS!\n");
+    test_colour();
+
+    // Todo: implement user typing from keyboard inputs
+    // Todo: automate the build process
 }

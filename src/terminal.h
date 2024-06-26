@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 /* Hardware text mode color constants. */
+
 enum vga_color
 {
     VGA_COLOR_BLACK = 0,
@@ -24,17 +25,20 @@ enum vga_color
     VGA_COLOR_LIGHT_MAGENTA = 13,
     VGA_COLOR_LIGHT_BROWN = 14,
     VGA_COLOR_WHITE = 15,
+    _VGA_COLOUR_COUNT = 16,
 };
 
 static constexpr size_t VGA_WIDTH = 80;
 static constexpr size_t VGA_HEIGHT = 25;
 
+extern "C"
+uint8_t vga_entry_color(vga_color fg, vga_color bg);
 
 void terminal_initialize();
 
 void terminal_new_line();
 
-void terminal_draw_colour_ascii(const char* data, const int8_t* colour, size_t width, size_t height);
+void terminal_draw_colour_ascii(const char* data, const uint8_t* colour, size_t width, size_t height);
 
 void terminal_writechar(char c);
 
