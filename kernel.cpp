@@ -39,7 +39,7 @@ void test_colour()
     size_t im_height = VGA_HEIGHT;
     char text_data[im_width * im_height] = {' '};
     uint8_t colour_data[im_width * im_height] = {0};
-    for (size_t i = 1; i < (im_width * im_height); i++)
+    for (size_t i = 0; i < (im_width * im_height); i++)
     {
         text_data[i] = 'A';
         colour_data[i] = vga_entry_color(static_cast<vga_color>((i+1)%_VGA_COLOUR_COUNT), static_cast<vga_color>(i%(_VGA_COLOUR_COUNT/2)));
