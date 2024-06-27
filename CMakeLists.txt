@@ -30,10 +30,10 @@ set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 
 ## Building the kernel binary
 #add_executable(${KERNEL_BIN} boot.s kernel.cpp mylib)
-add_executable(${KERNEL_BIN} boot.s kernel.cpp
-        src/terminal.cpp
-        src/serial.cpp
-        src/string.cpp
+add_executable(${KERNEL_BIN} src/boot.s src/kernel.cpp
+        include/terminal.cpp
+        include/serial.cpp
+        include/string.cpp
 )
 set_target_properties(${KERNEL_BIN} PROPERTIES LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc")
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
