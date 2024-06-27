@@ -295,14 +295,15 @@ u64 FONT[256] = {
 0xFFFFFFFFFFFFFFFF,//ÿ
 };
 
-u32 COLOR_BASE03 =   0x002b36;
+// Solarised colours.
+u32 COLOR_BASE03 =   0x002b36; // Darkest (near black, bluey grey)
 u32 COLOR_BASE02  =  0x073642;
 u32 COLOR_BASE01 =   0x586e75;
 u32 COLOR_BASE00  =  0x657b83;
 u32 COLOR_BASE0   =  0x839496;
 u32 COLOR_BASE1   =  0x93a1a1;
 u32 COLOR_BASE2   =  0xeee8d5;
-u32 COLOR_BASE3   =  0xfdf6e3;
+u32 COLOR_BASE3   =  0xfdf6e3; // Lightest (cream)
 u32 COLOR_YELLOW  =  0xb58900;
 u32 COLOR_ORANGE  =  0xcb4b16;
 u32 COLOR_RED     =  0xdc322f;
