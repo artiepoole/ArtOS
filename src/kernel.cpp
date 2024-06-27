@@ -102,8 +102,12 @@ extern "C" void kernel_main(u32 stackPointer , const multiboot_header* multiboot
     vga.bufferToScreen();
     serial_initialise();
     serial_write_string("LOADED OS.\n");
-    print_string("test");
+    print_string("Welcome to ArtOS!");
     vga.bufferToScreen();
+    // todo: add integer font scaling
+    // todo: draw a window
+    // todo: define default colours - solarised dark theme.
+
 
 
     // terminal_writestring("Welcome to ArtOS!\n");
