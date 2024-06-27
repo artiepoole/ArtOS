@@ -107,7 +107,10 @@ extern "C" void kernel_main(u32 stackPointer , const multiboot_header* multiboot
     // todo: add integer font scaling
     // todo: draw a window
     // todo: define default colours - solarised dark theme.
-
+    // todo: inherit size of window and colour depth
+    // todo: figure out 24bit type what for colour depth
+    // todo: Create string handling to concatenate strings and print them more easily
+    // todo: rewrite the text handling to work like a terminal within a window
 
 
     // terminal_writestring("Welcome to ArtOS!\n");
