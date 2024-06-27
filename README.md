@@ -16,8 +16,9 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [ ] User IO - keyboard
 - [ ] User IO - mouse?
 - [ ] Implement a standard library
-- [ ] Print filesystem structure
-- [ ] Run an executable so that a compiler can be used
+- [ ] Implement filesystem
+- [ ] Run an executable
+- [ ] Self hosting compiler
 - [ ] Play DOOM for ArtOS!
 
 ## Progress markers
