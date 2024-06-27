@@ -27,6 +27,8 @@ Colours:
 com/stupoole/ArtOS/blob/master/res/img/Colours.png?raw=true)
 ![Welcome to ArtOS! written in the centre of a 1024x768x32 graphics mode screen.](https://github.
 com/stupoole/ArtOS/blob/master/res/img/PixelMode.png?raw=true)
+![Splash image drawn in 1024x768x32 graphics mode screen.](https://github.
+com/stupoole/ArtOS/blob/master/res/img/Splash.png?raw=true)
 
 
 ## Useful Commands
