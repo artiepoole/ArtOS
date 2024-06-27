@@ -10,6 +10,7 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] Colour Art
 - [x] Serial PORT1 output from kernel
 - [x] Pixel mode text support
+- [x] Draw "art" in pixel mode
 - [ ] Detection and selection of video modes
 - [ ] Initialise frame buffer etc using the multiboot data instead of hard coded
 - [ ] User IO - keyboard
