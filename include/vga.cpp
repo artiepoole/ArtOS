@@ -24,6 +24,7 @@ Basic graphics utility methods
 #include "vga.h"
 
 #include "serial.h"
+#include "splash_screen.h"
 
 /*
 
@@ -152,7 +153,16 @@ void VideoGraphicsArray::PutChar(char ch, i32 x, i32 y, u32 color) {
 
 
 void VideoGraphicsArray::PutStr(const char* ch, i32 x, i32 y, u32 color) {
-    for (i32 i; ch[i] != 0; i++, x+=8) {
+    for (i32 i=0; ch[i] != 0; i++, x+=8) {
         PutChar(ch[i], x, y, color);
+    }
+}
+
+void VideoGraphicsArray::drawSplash()
+{
+
+    for (size_t ij =0; ij < width*height; ij++)
+    {
+        buffer[ij] = SPLASH_DATA[ij];
     }
 }

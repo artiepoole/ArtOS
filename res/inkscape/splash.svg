@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1024"
+   height="768"
+   viewBox="0 0 270.93333 203.2"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.1 (9b9bdc1480, 2023-11-25, custom)"
+   sodipodi:docname="splash.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.79642257"
+     inkscape:cx="524.2192"
+     inkscape:cy="399.28552"
+     inkscape:window-width="1848"
+     inkscape:window-height="1136"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#002b36;fill-opacity:1;stroke:none;stroke-width:2.13596;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1"
+       width="270.93332"
+       height="203.2"
+       x="0"
+       y="0" />
+    <rect
+       style="fill:#073642;fill-opacity:1;stroke:none;stroke-width:2.03795;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2"
+       width="258.23334"
+       height="190.5"
+       x="6.3499999"
+       y="6.3499999" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#2aa198;stroke-width:2.33302;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3"
+       width="258.23334"
+       height="190.5"
+       x="6.3499999"
+       y="6.3499999" />
+    <g
+       id="g1">
+      <text
+         xml:space="preserve"
+         style="font-size:50.8px;fill:#2aa198;fill-opacity:1;stroke:none;stroke-width:2.11667;stroke-dasharray:none;stroke-opacity:1"
+         x="63.407021"
+         y="119.2276"
+         id="text3"><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.8px;font-family:'CMU Serif';-inkscape-font-specification:'CMU Serif';fill:#2aa198;fill-opacity:1;stroke:none;stroke-width:2.11667;stroke-opacity:1"
+           x="63.407021"
+           y="119.2276"
+           id="tspan4">ArtOS</tspan></text>
+      <path
+         style="fill:#2aa198;fill-opacity:1;stroke:#2aa198;stroke-width:2.13339;stroke-opacity:1"
+         d="M 65.032667,125.17329 H 205.90067"
+         id="path1" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.3036px;font-family:'CMU Serif';-inkscape-font-specification:'CMU Serif';fill:#2aa198;fill-opacity:1;stroke:#2aa198;stroke-width:2.11976;stroke-dasharray:none;stroke-opacity:1"
+         x="64.744644"
+         y="136.47652"
+         id="text1"
+         transform="scale(1.0013044,0.9986973)"><tspan
+           sodipodi:role="line"
+           id="tspan1"
+           style="font-size:11.3036px;stroke:none;stroke-width:2.11976;stroke-dasharray:none"
+           x="64.744644"
+           y="136.47652"
+           dx="0">Where Compilers Go To Die</tspan></text>
+    </g>
+  </g>
+</svg>

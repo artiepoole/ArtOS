@@ -91,7 +91,9 @@ void printf(char* str, u32 key, i32 x, i32 y, u32 color) {
 
 void print_string(const char* str)
 {
-    vgap->PutStr(str, width/2, height/2, text_colour);
+    size_t len = strlen(str);
+    size_t x_offset = len*8/2;
+    vgap->PutStr(str, width/2 - x_offset, height/2 - 4, text_colour);
 
 }
 
@@ -102,7 +104,8 @@ extern "C" void kernel_main(u32 stackPointer , const multiboot_header* multiboot
     vga.bufferToScreen();
     serial_initialise();
     serial_write_string("LOADED OS.\n");
-    print_string("Welcome to ArtOS!");
+    // print_string("Welcome to ArtOS!");
+    vga.drawSplash();
     vga.bufferToScreen();
     // todo: add integer font scaling
     // todo: draw a window
@@ -111,6 +114,9 @@ extern "C" void kernel_main(u32 stackPointer , const multiboot_header* multiboot
     // todo: figure out 24bit type what for colour depth
     // todo: Create string handling to concatenate strings and print them more easily
     // todo: rewrite the text handling to work like a terminal within a window
+    // todo: restructure code to have the graphics stuff handled in a different file with only printf handled in
+    // kernel.cpp
+    // todo: add data to the data section contianing the splash screen
 
 
     // terminal_writestring("Welcome to ArtOS!\n");

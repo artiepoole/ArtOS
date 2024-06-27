@@ -295,6 +295,23 @@ u64 FONT[256] = {
 0xFFFFFFFFFFFFFFFF,//ÿ
 };
 
+u32 COLOR_BASE03 =   0x002b36;
+u32 COLOR_BASE02  =  0x073642;
+u32 COLOR_BASE01 =   0x586e75;
+u32 COLOR_BASE00  =  0x657b83;
+u32 COLOR_BASE0   =  0x839496;
+u32 COLOR_BASE1   =  0x93a1a1;
+u32 COLOR_BASE2   =  0xeee8d5;
+u32 COLOR_BASE3   =  0xfdf6e3;
+u32 COLOR_YELLOW  =  0xb58900;
+u32 COLOR_ORANGE  =  0xcb4b16;
+u32 COLOR_RED     =  0xdc322f;
+u32 COLOR_MAGENTA =  0xd33682;
+u32 COLOR_VIOLET  =  0x6c71c4;
+u32 COLOR_BLUE    =  0x268bd2;
+u32 COLOR_CYAN    =  0x2aa198;
+u32 COLOR_GREEN   =  0x859900;
+
         public:
 
             VideoGraphicsArray(const multiboot_header * boot_header, u32 * buffer);
@@ -304,6 +321,7 @@ u64 FONT[256] = {
             void PutStr(const char* ch, i32 x, i32 y, u32 colorIndex);
             void FillRectangle(i32 x, i32 y, u32 w, u32 h,  u32 color);
             void bufferToScreen();
+            void drawSplash();
         };
 
 #endif
