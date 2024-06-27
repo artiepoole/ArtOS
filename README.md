@@ -21,15 +21,17 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [ ] Play DOOM for ArtOS!
 
 ## Progress markers
+Splash Screen
+![Splash image drawn in 1024x768x32 graphics mode screen.](https://github.com/stupoole/ArtOS/blob/master/res/img/Splash.png?raw=true)
+Pixel Mode
+![Welcome to ArtOS! written in the centre of a 1024x768x32 graphics mode screen.](https://github.com/stupoole/ArtOS/blob/master/res/img/PixelMode.png?raw=true)
+Colours:
+![A printed with different FG and BG colours across the whole screen](https://github.com/stupoole/ArtOS/blob/master/res/img/Colours.png?raw=true)
 HelloWorld:
 ![Hello World in qemu](https://github.com/stupoole/ArtOS/blob/master/res/img/HelloWorld.png?raw=true)
-Colours:
-![A printed with different FG and BG colours across the whole screen](https://github.
-com/stupoole/ArtOS/blob/master/res/img/Colours.png?raw=true)
-![Welcome to ArtOS! written in the centre of a 1024x768x32 graphics mode screen.](https://github.
-com/stupoole/ArtOS/blob/master/res/img/PixelMode.png?raw=true)
-![Splash image drawn in 1024x768x32 graphics mode screen.](https://github.
-com/stupoole/ArtOS/blob/master/res/img/Splash.png?raw=true)
+
+
+
 
 
 ## Useful Commands
