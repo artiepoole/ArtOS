@@ -37,3 +37,12 @@ size_t string_from_int(long val, char* out_str)
 
     return i;
 }
+
+char digit_as_char(const int val)
+{
+    if (val > 10 or val < 0)
+    {
+        return ' ';
+    }
+    return static_cast<char>(val%10);
+}

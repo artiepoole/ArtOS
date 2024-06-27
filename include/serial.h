@@ -16,8 +16,12 @@ void serial_write_string(const char* data);
 
 void serial_new_line();
 
+void serial_write_int(long val);
+
+
 extern "C"
 int serial_initialise();
+
 
 
 

@@ -2,6 +2,8 @@
    designated as the entry point. */
 ENTRY(_start)
 
+OUTPUT_FORMAT(elf32-i386)
+OUTPUT_ARCH(i386:i386)
 /* Tell where the various sections of the object files will be put in the final
    kernel image. */
 SECTIONS
@@ -17,33 +19,32 @@ SECTIONS
 	   memory which is verified to be available by the firmware, in order to
 	   work around this issue. This does not use that feature, so 2M was
 	   chosen as a safer option than the traditional 1M. */
-	. = 2M;
+	. = 0x0100000;
 
 	/* First put the multiboot header, as it is required to be put very early
 	   in the image or the bootloader won't recognize the file format.
 	   Next we'll put the .text section. */
-	.text BLOCK(4K) : ALIGN(4K)
-	{
-		*(.multiboot)
-		*(.text)
-	}
+    .text :
+    {
+        . = ALIGN(8);
+        KEEP(*(.multiboot))
+        *(.text*)
+        *(.rodata)
+    }
 
-	/* Read-only data. */
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata)
-	}
 
 	/* Read-write data (initialized) */
-	.data BLOCK(4K) : ALIGN(4K)
+	/*.data BLOCK(4K) : ALIGN(4K)*/
+	.data :
 	{
 		*(.data)
 	}
 
 	/* Read-write data (uninitialized) and stack */
-	.bss BLOCK(4K) : ALIGN(4K)
+	/* .bss BLOCK(4K) : ALIGN(4K) 8*/
+	.bss :
 	{
-		*(COMMON)
+		/* *(COMMON)8 */
 		*(.bss)
 	}
 

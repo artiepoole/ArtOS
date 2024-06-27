@@ -55,6 +55,18 @@ void serial_write_string(const char* data)
     serial_write(data, strlen(data));
 }
 
+void serial_write_int(const long val)
+{
+    char out_str[255];
+    const size_t len = string_from_int(val, out_str);
+    char trimmed_str[len];
+     for (size_t j = 0; j <= len; j++)
+     {
+         trimmed_str[j] = out_str[j];
+     }
+     serial_write_string(trimmed_str);
+}
+
 void serial_new_line()
 {
     serial_send_char('\n');

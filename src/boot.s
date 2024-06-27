@@ -1,10 +1,21 @@
 
 /* Declare constants for the multiboot header. */
-.set ALIGN,    1<<0             /* align loaded modules on page boundaries */
-.set MEMINFO,  1<<1             /* provide memory map */
-.set FLAGS,    ALIGN | MEMINFO  /* this is the Multiboot 'flag' field */
-.set MAGIC,    0x1BADB002       /* 'magic number' lets bootloader find the header */
-.set CHECKSUM, -(MAGIC + FLAGS) /* checksum of above, to prove we are multiboot */
+.set MAGIC, 0x1badb002 /* 'magic number' lets bootloader find the header */
+.set FLAGS, 7
+/*.set FLAGS, 3 */
+.set CHECKSUM, -(MAGIC + FLAGS)
+.set MODE_TYPE, 0
+.set WIDTH, 1024  /* requested width */
+.set HEIGHT, 768  /* requested height */
+/* .set WIDTH, 640
+.set HEIGHT, 480 */
+.set DEPTH, 32    /* requested bits per pixel BPP */
+
+.set HEADER_ADDR, 0
+.set LOAD_ADDR, 0
+.set LOAD_END_ADDR, 0
+.set BSS_END_ADDR, 0
+.set ENTRY_ADDR, 0
 
 /*
 Declare a multiboot header that marks the program as a kernel. These are magic
@@ -12,12 +23,38 @@ values that are documented in the multiboot standard. The bootloader will
 search for this signature in the first 8 KiB of the kernel file, aligned at a
 32-bit boundary. The signature is in its own section so the header can be
 forced to be within the first 8 KiB of the kernel file.
+
+from https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#OS-image-format
+
+0	u32	magic	required
+4	u32	flags	required
+8	u32	checksum	required
+12	u32	header_addr	if flags[16] is set
+16	u32	load_addr	if flags[16] is set
+20	u32	load_end_addr	if flags[16] is set
+24	u32	bss_end_addr	if flags[16] is set
+28	u32	entry_addr	if flags[16] is set
+32	u32	mode_type	if flags[2] is set
+36	u32	width	if flags[2] is set
+40	u32	height	if flags[2] is set
+44	u32	depth	if flags[2] is set
 */
 .section .multiboot
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
+    .align 4
+    .long MAGIC
+    .long FLAGS
+    .long CHECKSUM
+    .long HEADER_ADDR
+    .long LOAD_ADDR
+    .long LOAD_END_ADDR
+    .long BSS_END_ADDR
+    .long ENTRY_ADDR
+    .long MODE_TYPE
+    .long WIDTH
+    .long HEIGHT
+    .long DEPTH
+    /* enough space for the returned header */
+    .space 4 * 13
 
 /*
 The multiboot standard does not define the value of the stack pointer register
@@ -34,7 +71,7 @@ undefined behavior.
 .section .bss
 .align 16
 stack_bottom:
-.skip 16384 # 16 KiB
+.skip 200*1024*1024 # 200MiB
 stack_top:
 
 /*
@@ -64,8 +101,12 @@ _start:
 	stack (as it grows downwards on x86 systems). This is necessarily done
 	in assembly as languages such as C cannot function without a stack.
 	*/
-	mov $stack_top, %esp
-
+    mov $stack_top, %esp
+    mov $stack_top, %ecx
+    push %eax
+    push %ebx
+    push %ecx
+    call kernel_main
 	/*
 	This is a good place to initialize crucial processor state before the
 	high-level kernel is entered. It's best to minimize the early
@@ -85,7 +126,6 @@ _start:
 	stack since (pushed 0 bytes so far), so the alignment has thus been
 	preserved and the call is well defined.
 	*/
-	call kernel_main
 
 	/*
 	If the system has nothing more to do, put the computer into an
