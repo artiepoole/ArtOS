@@ -10,25 +10,29 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] Colour Art
 - [x] Serial PORT1 output from kernel
 - [x] Pixel mode text support
+- [x] Draw "art" in pixel mode
 - [ ] Detection and selection of video modes
 - [ ] Initialise frame buffer etc using the multiboot data instead of hard coded
 - [ ] User IO - keyboard
 - [ ] User IO - mouse?
 - [ ] Implement a standard library
-- [ ] Print filesystem structure
-- [ ] Run an executable so that a compiler can be used
+- [ ] Implement filesystem
+- [ ] Run an executable
+- [ ] Self hosting compiler
 - [ ] Play DOOM for ArtOS!
 
 ## Progress markers
+Splash Screen
+![Splash image drawn in 1024x768x32 graphics mode screen.](https://github.com/stupoole/ArtOS/blob/master/res/img/Splash.png?raw=true)
+Pixel Mode
+![Welcome to ArtOS! written in the centre of a 1024x768x32 graphics mode screen.](https://github.com/stupoole/ArtOS/blob/master/res/img/PixelMode.png?raw=true)
+Colours:
+![A printed with different FG and BG colours across the whole screen](https://github.com/stupoole/ArtOS/blob/master/res/img/Colours.png?raw=true)
 HelloWorld:
 ![Hello World in qemu](https://github.com/stupoole/ArtOS/blob/master/res/img/HelloWorld.png?raw=true)
-Colours:
-![A printed with different FG and BG colours across the whole screen](https://github.
-com/stupoole/ArtOS/blob/master/res/img/Colours.png?raw=true)
-![Welcome to ArtOS! written in the centre of a 1024x768x32 graphics mode screen.](https://github.
-com/stupoole/ArtOS/blob/master/res/img/PixelMode.png?raw=true)
-![Splash image drawn in 1024x768x32 graphics mode screen.](https://github.
-com/stupoole/ArtOS/blob/master/res/img/Splash.png?raw=true)
+
+
+
 
 
 ## Tools
