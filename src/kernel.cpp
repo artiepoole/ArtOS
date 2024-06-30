@@ -19,22 +19,7 @@
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
 
-// void test_writing_print_numbers()
-// {
-//     for (size_t i = 1; i <= VGA_WIDTH * VGA_HEIGHT; i++)
-//     {
-//         char out_str[255];
-//         const size_t len = string_from_int(static_cast<long>(i), out_str);
-//         char trimmed_str[len];
-//         for (size_t j = 0; j <= len; j++)
-//         {
-//             trimmed_str[j] = out_str[j];
-//         }
-//         terminal_writestring(trimmed_str);
-//         serial_write_string(trimmed_str);
-//         serial_new_line();
-//     }
-// }
+
 
 // extern "C"
 // void test_colour()
@@ -53,7 +38,7 @@
 //     const auto *colour_ptr = colour_data;
 //     terminal_draw_colour_ascii(text_data, colour_ptr, im_width, im_height);
 // }
-VideoGraphicsArray *vgap;
+VideoGraphicsArray* vgap;
 #define width 1024 // hard coded - not good please change
 #define height 768 // hard coded - not good please change
 u32 buffer[width * height];
@@ -65,75 +50,68 @@ inline u32 text_colour = 0xFFFFFF;
 // inline uint16_t* terminal_buffer;
 
 
-void printfHex(u8 key, i32 x, i32 y, u32 color) {
+void printfHex(u8 key)
+{
     char* foo = "00";
 
     foo[0] = hex[(key >> 4) & 0xF];
     foo[1] = hex[key & 0xF];
-    vgap->PutStr(foo, x, y, color);
+    vgap->writeString(foo);
 }
 
-void printfHex32(u32 key, i32 x, i32 y, u32 color) {
-    printfHex((key >> 24) & 0xFF, x, y, color);
-    printfHex((key >> 16) & 0xFF, x+16, y, color);
-    printfHex((key >> 8) & 0xFF, x+32, y, color);
-    printfHex( key & 0xFF, x+48, y, color);
+void printfHex32(u32 key)
+{
+    printfHex((key >> 24) & 0xFF);
+    printfHex((key >> 16) & 0xFF);
+    printfHex((key >> 8) & 0xFF);
+    printfHex(key & 0xFF);
 }
 
-void printf(char* str, u32 key, i32 x, i32 y, u32 color) {
-    vgap->PutStr(str, x, y, color);
+void printf(char* str, u32 key, i32 x, i32 y, u32 color)
+{
+    vgap->writeString(str);
 
     int l = 0;
     for (; str[l] != 0; l++);
-    printfHex32(key, x + (l*8), y, color);
+    printfHex32(key);
 }
 
-
+void print_int(const int val)
+{
+    vgap->writeInt(val);
+}
 
 void print_string(const char* str)
 {
-    size_t len = strlen(str);
-    size_t x_offset = len*8/2;
-    vgap->PutStr(str, width/2 - x_offset, height/2 - 4, text_colour);
-
+    vgap->writeString(str);
 }
 
-extern "C" void kernel_main(u32 stackPointer , const multiboot_header* multiboot_structure, u32 /*multiboot_magic*/)
+void test_writing_print_numbers()
+{
+    for (size_t i = 0; i < 50; i++)
+    {
+        print_int(i);
+        print_string("\n");
+    }
+}
+
+
+extern "C" void kernel_main(u32 stackPointer, const multiboot_header* multiboot_structure, u32 /*multiboot_magic*/)
 {
     VideoGraphicsArray vga(multiboot_structure, buffer);
-    // vga.bufferToScreen();
+    vgap = &vga;
     serial_initialise();
     serial_write_string("LOADED OS.\n");
-    // print_string("Welcome to ArtOS!");
+
     vga.drawSplash();
     vga.bufferToScreen(false);
 
-    vga.clearWindow();
-    vga.bufferToScreen(false);
-    vga.setScale(4);
-    for (int i=0; i<1024; i++)
-    {
-        vga.PutStr("A", i, 768/2, vga.COLOR_BASE0);
-        vga.bufferToScreen(false);
-        vga.clearWindow();
-    }
 
-
-    // todo: add integer font scaling
-    // todo: draw a window
-    // todo: define default colours - solarised dark theme.
     // todo: inherit size of window and colour depth
-    // todo: figure out 24bit type what for colour depth
     // todo: Create string handling to concatenate strings and print them more easily
-    // todo: rewrite the text handling to work like a terminal within a window
     // todo: restructure code to have the graphics stuff handled in a different file with only printf handled in
     // kernel.cpp
     // todo: add data to the data section contianing the splash screen
-
-
-    // terminal_writestring("Welcome to ArtOS!\n");
-    // test_colour();
-
     // Todo: implement user typing from keyboard inputs
     // Todo: automate the build process
 }

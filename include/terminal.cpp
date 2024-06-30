@@ -1,8 +1,8 @@
-#include "terminal.h"
-#include "types.h"
-#include "serial.h"
-#include "string.h"
-#include "vga.h"
+// #include "terminal.h"
+// #include "types.h"
+// #include "serial.h"
+// #include "string.h"
+// #include "vga.h"
 //
 // inline size_t terminal_row;
 // inline size_t terminal_column;
@@ -116,6 +116,6 @@
 //     {
 //         terminal_putentryat(text[pixel], colour[pixel], pixel % width, pixel / width);
 //     }
-// }
-
-
+// // }
+//
+//

@@ -25,6 +25,7 @@ Basic graphics utility methods
 
 #include "serial.h"
 #include "splash_screen.h"
+#include "string.h"
 
 /*
 
@@ -33,11 +34,20 @@ As the is no memory management the Offscreen buffer is allocated elsewhere and p
 This class could be re-worked as a Canvas with out to many changes
 
 */
-uint8_t char_dim = 8;
-uint8_t font_scale = 1;
-u16 window[4]; // x1, y1, x2, y2
+u32 char_dim = 8;
+u32 font_scale = 1;
+u32 scaled_char_dim = 8;
+u32 window[4]; // x1, y1, x2, y2
+u32 window_width;
+u32 window_height;
 u32 bkgd;
 u32 frgd;
+
+size_t terminal_row;
+size_t terminal_column;
+uint8_t terminal_color;
+size_t buffer_dim[2];
+char terminal_buffer[1024 / 8][768 / 8]; // 12288 characters total
 
 VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32* _buffer)
 {
@@ -57,9 +67,16 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32*
     window[1] = 30;
     window[2] = width - (window[0]);
     window[3] = height - (window[1]);
+    window_width = window[2] - window[0];
+    window_height = window[3] - window[1];
 
     bkgd = COLOR_BASE02;
     frgd = COLOR_BASE0;
+
+    terminal_row = 0;
+    terminal_column = 0;
+    buffer_dim[0] = window_width / (scaled_char_dim);
+    buffer_dim[1] = window_height / (scaled_char_dim);
 }
 
 
@@ -126,31 +143,30 @@ void VideoGraphicsArray::clearBuffer() const
     }
 }
 
+
 void VideoGraphicsArray::PutChar(char ch, i32 x, i32 y, u32 color) const
 {
     u32 px = 0; // position in the charactor - an 8x8 font = 64 bits
     u64 bCh = FONT[ch];
 
     // check if it will be drawn off screen
-    if (x + (char_dim * font_scale) < 0 || x > width || y + (char_dim * font_scale) < 0 || y > height)
+    if (x + (scaled_char_dim) < 0 || x > width || y + (scaled_char_dim) < 0 || y > height)
     {
         serial_write_string("Printing off screen\n");
         return;
     }
 
     // test if the charactor will be clipped (will it be fully in the screen or partially)
-    if (x >= 0 && x + (char_dim * font_scale) < width && y >= 0 && y + (char_dim * font_scale) < height)
+    if (x >= 0 && x + (scaled_char_dim) < width && y >= 0 && y + (scaled_char_dim) < height)
     {
         // fully in the screen - pre calculate some of the values
         // so there is less going on in the loop
-        int i = width * (y - 1) + x + (char_dim * font_scale); // start position for character
-        int incAmount = width - (char_dim * font_scale); // amount of pixels to get to start of next line of char
-        serial_write_int(incAmount);
-        serial_new_line();
-        for (int yy = 0; yy < (char_dim*font_scale); yy++)
+        int i = width * (y - 1) + x + (scaled_char_dim); // start position for character
+        int incAmount = width - (scaled_char_dim); // amount of pixels to get to start of next line of char
+        for (int yy = 0; yy < (scaled_char_dim); yy++)
         {
             i += incAmount; // next character pixel line
-            px = char_dim*(yy/font_scale); // select the correct pixel offset when repeating lines.
+            px = char_dim * (yy / font_scale); // select the correct pixel offset when repeating lines.
 
             for (int xx = 0; xx < (char_dim); xx++)
             {
@@ -165,7 +181,6 @@ void VideoGraphicsArray::PutChar(char ch, i32 x, i32 y, u32 color) const
                 }
                 px++; // step along the character's pixel line
             }
-
         }
     }
     else
@@ -173,14 +188,13 @@ void VideoGraphicsArray::PutChar(char ch, i32 x, i32 y, u32 color) const
         // partially in the screen
         int xpos = 0;
         int i = width * (y - 1);
-        for (int yy = 0; yy < char_dim * font_scale; yy++)
+        for (int yy = 0; yy < scaled_char_dim; yy++)
         {
             i += width;
             xpos = x;
-            px = char_dim*(yy/font_scale);
-            for (int xx = 0; xx < char_dim*font_scale; xx++)
+            px = char_dim * (yy / font_scale);
+            for (int xx = 0; xx < scaled_char_dim; xx++)
             {
-
                 for (int s = 0; s < font_scale; s++)
                 {
                     // test if a pixel is drawn here
@@ -201,7 +215,7 @@ void VideoGraphicsArray::PutChar(char ch, i32 x, i32 y, u32 color) const
 
 void VideoGraphicsArray::PutStr(const char* ch, i32 x, i32 y, u32 color) const
 {
-    for (i32 i = 0; ch[i] != 0; i++, x += char_dim * font_scale)
+    for (i32 i = 0; ch[i] != 0; i++, x += scaled_char_dim)
     {
         PutChar(ch[i], x, y, color);
     }
@@ -224,6 +238,11 @@ void VideoGraphicsArray::setScale(const uint8_t new_scale) const
         serial_write_int(new_scale);
         serial_new_line();
         font_scale = new_scale;
+        scaled_char_dim = font_scale * char_dim;
+        terminal_row = 0;
+        terminal_column = 0;
+        buffer_dim[0] = window_width / (scaled_char_dim);
+        buffer_dim[1] = window_height / (scaled_char_dim);
     }
     else
     {
@@ -243,3 +262,96 @@ void VideoGraphicsArray::clearWindow() const
         buffer[ij] = FRAME_DATA[ij];
     }
 }
+
+void VideoGraphicsArray::RenderTerminal() const
+{
+    auto x = window[0];
+    auto y = window[1];
+
+    for (size_t row = 0; row < buffer_dim[1] - 1; row++)
+    {
+        x = window[0];
+        for (size_t col = 0; col < buffer_dim[0]; col++)
+        {
+            PutChar(terminal_buffer[col][row], col * scaled_char_dim + x, row * scaled_char_dim + y, frgd);
+        }
+    }
+    bufferToScreen(false);
+}
+
+void VideoGraphicsArray::writeString(const char* data) const
+{
+    const size_t len = strlen(data);
+    for (int i = 0; i < len; i++)
+    {
+        char c = data[i];
+        if (c == '\n')
+        {
+            terminal_row++;
+            terminal_column = 0;
+        }
+        else
+        {
+            terminal_buffer[terminal_column++][terminal_row] = c;
+        }
+        if (terminal_column >= buffer_dim[0])
+        {
+            terminal_column = 0;
+            terminal_row++;
+        }
+        if (terminal_row >= buffer_dim[1])
+        {
+            scrollTerminal();
+        }
+    }
+    RenderTerminal();
+}
+
+void VideoGraphicsArray::writeInt(const long val) const
+{
+    char out_str[255];
+    const size_t len = string_from_int(val, out_str);
+    char trimmed_str[len];
+    for (size_t j = 0; j <= len; j++)
+    {
+        trimmed_str[j] = out_str[j];
+    }
+    writeString(trimmed_str);
+    serial_write_int(val);
+    serial_new_line();
+}
+
+
+void VideoGraphicsArray::scrollTerminal() const
+{
+    clearWindow();
+    for (size_t x = 0; x < buffer_dim[0]; x++)
+    {
+        // All lines move up one
+        for (size_t y = 0; y < buffer_dim[1] - 1; y++)
+        {
+            terminal_buffer[x][y] = terminal_buffer[x][y+1];
+        }
+        // Bottom line is replaced with empty.
+        terminal_buffer[x][buffer_dim[1]] = ' ';
+    }
+    terminal_row -= 1;
+
+}
+
+    //
+    // // for each line from the second line onwards, copy next line into this line
+    // for (size_t x = 0; x < VGA_WIDTH; x++)
+    // {
+    //     // All lines move up one
+    //     for (size_t y = 0; y < VGA_HEIGHT - 1; y++)
+    //     {
+    //         size_t start_index = (y + 1) * VGA_WIDTH + x;
+    //         size_t end_index = (y) * (VGA_WIDTH) + x;
+    //         terminal_buffer[end_index] = terminal_buffer[start_index];
+    //     }
+    //     // Bottom line is replaced with empty.
+    //     terminal_buffer[VGA_WIDTH * (VGA_HEIGHT - 1) + x] = vga_entry(' ', terminal_color);
+    // }
+    // terminal_row -= 1;
+// }
