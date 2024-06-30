@@ -17,6 +17,8 @@
 #ifndef __MYOS__DRIVERS__VGA_H
 #define __MYOS__DRIVERS__VGA_H
 
+#include <stdint-gcc.h>
+
 #include "multiboot2.h"
 #include "types.h"
 
@@ -36,6 +38,7 @@ protected:
  * - I used fonted in TempleOS to draw it.
 */
 public:
+// Font Definition
 u64 FONT[256] = {
 0x0000000000000000,
 0x0000000000000000,
@@ -295,7 +298,8 @@ u64 FONT[256] = {
 0xFFFFFFFFFFFFFFFF,//ÿ
 };
 
-// Solarised colours.
+// Solarised colours definitions
+
 u32 COLOR_BASE03 =   0x002b36; // Darkest (near black, bluey grey)
 u32 COLOR_BASE02  =  0x073642;
 u32 COLOR_BASE01 =   0x586e75;
@@ -313,16 +317,20 @@ u32 COLOR_BLUE    =  0x268bd2;
 u32 COLOR_CYAN    =  0x2aa198;
 u32 COLOR_GREEN   =  0x859900;
 
-        public:
+public:
 
-            VideoGraphicsArray(const multiboot_header * boot_header, u32 * buffer);
+    VideoGraphicsArray(const multiboot_header * boot_header, u32 * _buffer);
 
-            void PutPixel(i32 x, i32 y, u32 color);
-            void PutChar(char ch, i32 x, i32 y, u32 color);
-            void PutStr(const char* ch, i32 x, i32 y, u32 colorIndex);
-            void FillRectangle(i32 x, i32 y, u32 w, u32 h,  u32 color);
-            void bufferToScreen();
-            void drawSplash();
-        };
+    void PutPixel(i32 x, i32 y, u32 color) const;
+    void PutChar(char ch, i32 x, i32 y, u32 color) const;
+    void PutStr(const char* ch, i32 x, i32 y, u32 colorIndex) const;
+    void FillRectangle(i32 x, i32 y, u32 w, u32 h,  u32 color) const;
+    void bufferToScreen(bool clear) const;
+    void clearBuffer() const;
+    void drawSplash() const;
+    void setScale(u8 new_scale) const;
+    static u8 getScale();
+    void clearWindow() const;
+};
 
 #endif
