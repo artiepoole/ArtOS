@@ -1,3 +1,4 @@
+#include <float.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -100,13 +101,24 @@ void print_string(const char* str)
 extern "C" void kernel_main(u32 stackPointer , const multiboot_header* multiboot_structure, u32 /*multiboot_magic*/)
 {
     VideoGraphicsArray vga(multiboot_structure, buffer);
-    vgap = &vga;
-    vga.bufferToScreen();
+    // vga.bufferToScreen();
     serial_initialise();
     serial_write_string("LOADED OS.\n");
     // print_string("Welcome to ArtOS!");
     vga.drawSplash();
-    vga.bufferToScreen();
+    vga.bufferToScreen(false);
+
+    vga.clearWindow();
+    vga.bufferToScreen(false);
+    vga.setScale(4);
+    for (int i=0; i<1024; i++)
+    {
+        vga.PutStr("A", i, 768/2, vga.COLOR_BASE0);
+        vga.bufferToScreen(false);
+        vga.clearWindow();
+    }
+
+
     // todo: add integer font scaling
     // todo: draw a window
     // todo: define default colours - solarised dark theme.
