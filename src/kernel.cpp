@@ -150,8 +150,6 @@ extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* mult
 
     idt_init();
     configure_pit(100);
-    vga.writeHex(_etext);
-
 
 
     // todo: inherit size of window and colour depth
