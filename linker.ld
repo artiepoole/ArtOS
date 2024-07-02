@@ -20,7 +20,7 @@ SECTIONS
 	   work around this issue. This does not use that feature, so 2M was
 	   chosen as a safer option than the traditional 1M. */
 	   /* I have since changed this line based on another tutorial and haven't checked this value */
-	. = 0x0100000;
+	. = 0x00100000;
 
 	/* First put the multiboot header, as it is required to be put very early
 	   in the image or the bootloader won't recognize the file format.
