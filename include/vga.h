@@ -58,7 +58,8 @@ VideoGraphicsArray(const multiboot_header * boot_header, u32 * _buffer);
     static u8 getScale();
     void clearWindow() const;
     void writeString(const char* data) const;
-    void writeInt(long val) const;
+    void writeInt(u64 val) const;
+    void writeHex(u64 val) const;
 
 
     // Font Definition

@@ -8,12 +8,17 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "types.h"
+
+static constexpr char hex[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
 extern "C"
-size_t strlen(const char* str);
+int strlen(const char* str);
 
 extern "C"
-size_t string_from_int(long val, char* out_str);
+int string_from_int(u64 val, char* out_str);
 
+extern "C"
+int hex_from_int(u64 val, char* out_str, int n_bytes);
 
 #endif //STRING_H
