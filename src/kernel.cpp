@@ -9,6 +9,7 @@
 #include "../include/multiboot2.h"
 #include "../include/vga.h"
 #include "../include/pit.h"
+#include "../include/idt.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -147,7 +148,9 @@ extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* mult
     // print_frame_buffer_info(stackPointer, multiboot_structure);
 
 
-
+    idt_init();
+    configure_pit(100);
+    vga.writeHex(_etext);
 
 
 

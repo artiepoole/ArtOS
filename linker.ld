@@ -19,6 +19,7 @@ SECTIONS
 	   memory which is verified to be available by the firmware, in order to
 	   work around this issue. This does not use that feature, so 2M was
 	   chosen as a safer option than the traditional 1M. */
+	   /* I have since changed this line based on another tutorial and haven't checked this value */
 	. = 0x0100000;
 
 	/* First put the multiboot header, as it is required to be put very early

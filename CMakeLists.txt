@@ -30,6 +30,7 @@ set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
+        "include/*.s"
 )
 ## Building the kernel binary
 #add_executable(${KERNEL_BIN} boot.s kernel.cpp mylib)
