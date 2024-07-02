@@ -35,7 +35,6 @@ file(GLOB INCLUDE
 #add_executable(${KERNEL_BIN} boot.s kernel.cpp mylib)
 add_executable(${KERNEL_BIN} src/boot.s src/kernel.cpp
         ${INCLUDE}
-        include/splash_screen.h
 )
 set_target_properties(${KERNEL_BIN} PROPERTIES LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc")
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
