@@ -75,6 +75,21 @@ stack_bottom:
 stack_top:
 
 /*
+Creating a function to write to GDT
+
+gdtr DW 0 //For limit storage
+     DD 0 // For base storage
+
+setGdt:
+   mov   ax, [esp + 4]
+   mov   [gdtr], AX
+   mov   EAX, [ESP + 8]
+   mov   [gdtr + 2], EAX
+   lgdt  [gdtr]
+   ret
+*/
+
+/*
 The linker script specifies _start as the entry point to the kernel and the
 bootloader will jump to this position once the kernel has been loaded. It
 doesn't make sense to return from this function as the bootloader is gone.
