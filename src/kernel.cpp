@@ -58,7 +58,6 @@ void printf(char* str, u32 key)
 void print_int(const u64 val)
 {
     vgap->writeInt(val);
-    vgap->writeString("\n");
 }
 
 void print_string(const char* str)
@@ -69,7 +68,6 @@ void print_string(const char* str)
 void print_hex(const u64 val)
 {
     vgap->writeHex(val);
-    print_string("\n");
 }
 
 void print_frame_buffer_info(const u32  stackPointer, const multiboot_header* multiboot_structure)
@@ -125,6 +123,11 @@ void test_writing_print_numbers()
     }
 }
 
+// void div_zero()
+// {
+//     1/0;
+// }
+
 extern int setGdt(u32 limit, u32 base);
 extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32
 /*multiboot_magic*/)
@@ -147,9 +150,15 @@ extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* mult
     vga.setScale(2);
     // print_frame_buffer_info(stackPointer, multiboot_structure);
 
+    idt_install();
 
-    idt_init();
-    configure_pit(100);
+    configure_pit(10000); // 10
+
+    // vga.clearWindow();
+    // test_writing_print_numbers();
+
+
+
 
 
     // todo: inherit size of window and colour depth

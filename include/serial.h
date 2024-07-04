@@ -19,7 +19,7 @@ void serial_new_line();
 
 void serial_write_int(long val);
 
-void serial_write_hex(long val);
+void serial_write_hex(long long val, u32 n_bytes);
 
 extern "C"
 int serial_initialise();

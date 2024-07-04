@@ -56,12 +56,13 @@ char digit_as_char(const int val)
     return static_cast<char>(val % 10);
 }
 
-int hex_from_int(u64 val, char* out_str, int n_bytes)
+int hex_from_int(u64 val, char* out_str, u32 n_bytes)
 {
     // int n_bytes = log2(val)/4;
-    for (int i = 0; i < 2 * n_bytes; i++)
+    for (u32 i = 0; i < 2 * n_bytes; i++)
     {
         out_str[i] = hex[(val >> 4*i) & 0xF];
     }
-    return n_bytes*2;
+    out_str[2 * n_bytes] = '\0';
+    return n_bytes*2+1;
 }

@@ -1,53 +1,81 @@
 .extern exception_handler
-
-
+.extern irq_handler
 
 .macro isr_err_stub_ i
     isr_stub_\i:
+    push \i
     call exception_handler
-    iret
+    iretl
 .endm
 
 .macro isr_no_err_stub_ i
     isr_stub_\i:
+    push $0
+    push \i
     call exception_handler
-    iret
+    iretl
+.endm
+
+.macro irq_stub i
+    isr_stub_\i:
+    push $0
+    push \i
+    call irq_handler
+    iretl
 .endm
 
 
 
-isr_no_err_stub_ 0
-isr_no_err_stub_ 1
-isr_no_err_stub_ 2
-isr_no_err_stub_ 3
-isr_no_err_stub_ 4
-isr_no_err_stub_ 5
-isr_no_err_stub_ 6
-isr_no_err_stub_ 7
-isr_err_stub_    8
-isr_no_err_stub_ 9
-isr_err_stub_    10
-isr_err_stub_    11
-isr_err_stub_    12
-isr_err_stub_    13
-isr_err_stub_    14
-isr_no_err_stub_ 15
-isr_no_err_stub_ 16
-isr_err_stub_    17
-isr_no_err_stub_ 18
-isr_no_err_stub_ 19
-isr_no_err_stub_ 20
-isr_no_err_stub_ 21
-isr_no_err_stub_ 22
-isr_no_err_stub_ 23
-isr_no_err_stub_ 24
-isr_no_err_stub_ 25
-isr_no_err_stub_ 26
-isr_no_err_stub_ 27
-isr_no_err_stub_ 28
-isr_no_err_stub_ 29
-isr_err_stub_    30
-isr_no_err_stub_ 31
+isr_no_err_stub_ 0 // div by zero
+isr_no_err_stub_ 1 // debug exception
+isr_no_err_stub_ 2 // non-maskable interrupt exception
+isr_no_err_stub_ 3 // breakpoint exception
+isr_no_err_stub_ 4 // into detected overflow exception
+isr_no_err_stub_ 5 // out of bounds exception
+isr_no_err_stub_ 6 // invalid opcode exception
+isr_no_err_stub_ 7 // no coprocessor exception
+isr_err_stub_    8 // double fault exception
+isr_no_err_stub_ 9 // coprocessor segment overrun exception
+isr_err_stub_    10 // bad TSS exception
+isr_err_stub_    11 // segment not present exception
+isr_err_stub_    12 // stack fault exception
+isr_err_stub_    13 // general protection fault exception
+isr_err_stub_    14 // page fault exception
+isr_no_err_stub_ 15 // unknown interrupt exception
+isr_no_err_stub_ 16 // coprocessor fault exception
+isr_err_stub_    17 // alignment check exception
+isr_no_err_stub_ 18 // machine check exception
+isr_no_err_stub_ 19 // reserved exceptions
+isr_no_err_stub_ 20 // reserved exceptions
+isr_no_err_stub_ 21 // reserved exceptions
+isr_no_err_stub_ 22 // reserved exceptions
+isr_no_err_stub_ 23 // reserved exceptions
+isr_no_err_stub_ 24 // reserved exceptions
+isr_no_err_stub_ 25 // reserved exceptions
+isr_no_err_stub_ 26 // reserved exceptions
+isr_no_err_stub_ 27 // reserved exceptions
+isr_no_err_stub_ 28 // reserved exceptions
+isr_no_err_stub_ 29 // reserved exceptions
+isr_err_stub_    30 // reserved exceptions
+isr_no_err_stub_ 31 // reserved exceptions
+
+irq_stub 32 // IRQ0
+irq_stub 33 // IRQ1
+irq_stub 34 // IRQ2
+irq_stub 35 // IRQ3
+irq_stub 36 // IRQ4
+irq_stub 37 // IRQ5
+irq_stub 38 // IRQ6
+irq_stub 39 // IRQ7
+irq_stub 40 // IRQ8
+irq_stub 41 // IRQ9
+irq_stub 42 // IRQ10
+irq_stub 43 // IRQ11
+irq_stub 44 // IRQ12
+irq_stub 45 // IRQ13
+irq_stub 46 // IRQ14
+irq_stub 47 // IRQ15
+
 
 
 .section	.data
@@ -85,4 +113,19 @@ isr_stub_table:
     .long isr_stub_29
     .long isr_stub_30
     .long isr_stub_31
-
+    .long isr_stub_32
+    .long isr_stub_33
+    .long isr_stub_34
+    .long isr_stub_35
+    .long isr_stub_36
+    .long isr_stub_37
+    .long isr_stub_38
+    .long isr_stub_39
+    .long isr_stub_40
+    .long isr_stub_41
+    .long isr_stub_42
+    .long isr_stub_43
+    .long isr_stub_44
+    .long isr_stub_45
+    .long isr_stub_46
+    .long isr_stub_47

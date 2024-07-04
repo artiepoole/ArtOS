@@ -8,6 +8,6 @@
 #include "types.h"
 #include "ports.h"
 
-extern "C" void configure_pit(int hz);
+extern "C" void configure_pit(u32 hz);
 
 #endif //PIT_H

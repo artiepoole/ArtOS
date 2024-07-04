@@ -19,6 +19,6 @@ extern "C"
 int string_from_int(u64 val, char* out_str);
 
 extern "C"
-int hex_from_int(u64 val, char* out_str, int n_bytes);
+int hex_from_int(u64 val, char* out_str, u32 n_bytes);
 
 #endif //STRING_H
