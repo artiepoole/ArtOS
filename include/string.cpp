@@ -59,9 +59,18 @@ char digit_as_char(const int val)
 int hex_from_int(u64 val, char* out_str, u32 n_bytes)
 {
     // int n_bytes = log2(val)/4;
-    for (u32 i = 0; i < 2 * n_bytes; i++)
+    // serial_write_string("Val: ");
+    // serial_write_int(val);
+    // serial_new_line();
+
+    for (i32 i = 2 * n_bytes-1; i >=0; i--)
     {
-        out_str[i] = hex[(val >> 4*i) & 0xF];
+        out_str[2 * n_bytes-i-1] = hex[(val >> 4*i) & 0xF];
+        // serial_write_string("val shifted by: ");
+        // serial_write_int(4*i);
+        // serial_write_string(" = ");
+        // serial_write_int((val >> 4*i) & 0xF);
+        // serial_new_line();
     }
     out_str[2 * n_bytes] = '\0';
     return n_bytes*2+1;
