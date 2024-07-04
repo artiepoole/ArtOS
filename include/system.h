@@ -12,12 +12,14 @@
 
 struct registers
 {
-    // unsigned int gs, fs, es, ds; /* pushed the segs last */
-    // unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; /* pushed by 'pusha' */
-    unsigned int int_no, err_code; /* our 'push byte #' and ecodes do this */
-    unsigned int eip, cs, eflags, useresp, ss; /* pushed by the processor automatically */
+    u32 gs, fs, es, ds; /* pushed the segs last */
+    u32 edi, esi, ebp, esp, ebx, edx, ecx, eax; /* pushed by 'pusha' */
+    u32 int_no, err_code; /* our 'push byte #' and ecodes do this */
+    u32 eip, cs, eflags, useresp, ss; /* pushed by the processor automatically */
 };
 
 
+#define KERNEL_CS = 0x0010;
+#define KERNEL_DS = 0x0018;
 
 #endif //SYSTEM_H

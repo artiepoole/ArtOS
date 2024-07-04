@@ -3,27 +3,90 @@
 
 .macro isr_err_stub_ i
     isr_stub_\i:
+    // errorcode already pushed and is non-zero
     push \i
-    call exception_handler
-    iretl
+    pushal
+    push %ds
+    push %es
+    push %fs
+    push %gs
+    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov  %ax, %ds
+    mov  %ax, %es
+    mov  %ax, %fs
+    mov  %ax, %gs
+    mov  %esp, %eax
+    push %eax // Push us the stack
+    mov $exception_handler, %eax
+    call *%eax // A special call, preserves the 'eip' register
+    //call exception_handler
+    pop %eax
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
+    popal
+    add 8, %esp     // Cleans up the pushed error code and pushed ISR number
+    iret
 .endm
 
 .macro isr_no_err_stub_ i
     isr_stub_\i:
-    push $0
+    push 0 // no error
     push \i
-    call exception_handler
-    iretl
+    pushal
+    push %ds
+    push %es
+    push %fs
+    push %gs
+    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov  %ax, %ds
+    mov  %ax, %es
+    mov  %ax, %fs
+    mov  %ax, %gs
+    mov  %esp, %eax
+    push %eax // Push us the stack
+    mov $exception_handler, %eax
+    call *%eax // A special call, preserves the 'eip' register
+    //call exception_handler
+    pop %eax
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
+    popal
+    add 8, %esp     // Cleans up the pushed error code and pushed ISR number
+    iret
 .endm
 
 .macro irq_stub i
     isr_stub_\i:
-    push $0
+    push 0 // no error
     push \i
-    call irq_handler
-    iretl
+    pushal
+    push %ds
+    push %es
+    push %fs
+    push %gs
+    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov  %ax, %ds
+    mov  %ax, %es
+    mov  %ax, %fs
+    mov  %ax, %gs
+    mov  %esp, %eax
+    push %eax // Push us the stack
+    mov $exception_handler, %eax
+    call *%eax // A special call, preserves the 'eip' register
+    //call exception_handler
+    pop %eax
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
+    popal
+    add 8, %esp     // Cleans up the pushed error code and pushed ISR number
+    iret
 .endm
-
 
 
 isr_no_err_stub_ 0 // div by zero

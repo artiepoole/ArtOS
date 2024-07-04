@@ -27,6 +27,7 @@ SECTIONS
 	   Next we'll put the .text section. */
     .text :
     {
+        TEXT_CS = ABSOLUTE(.);
         . = ALIGN(8);
         KEEP(*(.multiboot))
         *(.text*)
@@ -36,10 +37,13 @@ SECTIONS
 
 	/* Read-write data (initialized) */
 	/*.data BLOCK(4K) : ALIGN(4K)*/
+
 	.data :
 	{
+	    DATA_CS = ABSOLUTE(.);
 		*(.data)
 	}
+
 
 	/* Read-write data (uninitialized) and stack */
 	/* .bss BLOCK(4K) : ALIGN(4K) 8*/

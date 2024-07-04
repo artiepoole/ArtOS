@@ -30,10 +30,10 @@ void sleep(u32 ms)
     while (ticks > 0);
 }
 
-void pit_irq(void) /* called from Assembly */
-{
-
-}
+// void pit_irq(void) /* called from Assembly */
+// {
+//
+// }
 
 void timer_handler(struct registers *r)
 {

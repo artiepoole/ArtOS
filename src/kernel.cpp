@@ -70,7 +70,7 @@ void print_hex(const u64 val)
     vgap->writeHex(val);
 }
 
-void print_frame_buffer_info(const u32  stackPointer, const multiboot_header* multiboot_structure)
+void print_frame_buffer_info(const u32 stackPointer, const multiboot_header* multiboot_structure)
 {
     printf("multiboot_structure    : 0x", (int)multiboot_structure);
     printf("stackPointer           : 0x", stackPointer);
@@ -114,51 +114,164 @@ void print_frame_buffer_info(const u32  stackPointer, const multiboot_header* mu
     printf("u8 color_info[5]       : 0x", (int)multiboot_structure->color_info);
 }
 
+
+
+struct gdt_info
+{
+    u16 limit;
+    u32 base;
+}__attribute__((packed));
+
+struct gdt_entry
+{
+    u16 limit_low;
+    u16 base_low;
+    u8 base_middle;
+    u8 access;
+    u8 granularity;
+    u8 base_high;
+} __attribute__((packed));
+
+
+void get_GDT()
+{
+    gdt_info gdt{};
+    asm("sgdt %0" : "=m"(gdt));
+    serial_write_string("GDT limit: ");
+    serial_write_hex(gdt.limit, 2);
+    serial_write_string(" GDT base: ");
+    serial_write_hex(gdt.base, 4);
+    serial_new_line();
+
+    for (size_t i =0; i<  8; i++)
+    {
+        serial_write_string("GDT entry:");
+        serial_write_int(i);
+        serial_write_string(" data: ");
+        uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base +(8*i));
+        serial_write_hex(gdt_ptr, 8);
+        serial_new_line();
+    }
+
+
+}
+
+void get_cs()
+{
+
+    u16 i;
+    asm("mov %%cs,%0" : "=r"(i));
+    serial_write_string("CS: ");
+    serial_write_hex(i, 2);
+    serial_new_line();
+}
+
+u16 get_ds()
+{
+    u16 i;
+    asm("mov %%ds,%0" : "=r"(i));
+    serial_write_string("DS: ");
+    serial_write_hex(i, 2);
+    serial_new_line();
+}
+
+// void get_es()
+// {
+//
+//     u16 i;
+//     asm("mov %%es,%0" : "=r"(i));
+//     serial_write_string("ES: ");
+//     serial_write_hex(i, 2);
+//     serial_new_line();
+// }
+
+void get_fs()
+{
+    u16 i;
+    asm("mov %%fs,%0" : "=r"(i));
+    serial_write_string("FS: ");
+    serial_write_hex(i, 2);
+    serial_new_line();
+}
+
+void get_gs()
+{
+
+    u16 i;
+    asm("mov %%gs,%0" : "=r"(i));
+    serial_write_string("GS: ");
+    serial_write_int(i);
+    serial_new_line();
+}
+
+void get_ss()
+{
+
+    u16 i;
+    asm("mov %%ss,%0" : "=r"(i));
+    serial_write_string("SS: ");
+    serial_write_int(i);
+    serial_new_line();
+}
+
+void div_zero()
+{
+     asm("div %0" :: "r"(0));
+    serial_write_string("ignored?\n");
+}
+
 void test_writing_print_numbers()
 {
     for (size_t i = 0; i < 50; i++)
     {
-        print_int(i);
-        print_string("\n");
+        get_cs();
     }
 }
 
-// void div_zero()
-// {
-//     1/0;
-// }
-
+extern u32 DATA_CS;
+extern u32 TEXT_CS;
 extern int setGdt(u32 limit, u32 base);
-extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32
-/*multiboot_magic*/)
-{
 
+extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32
+                            /*multiboot_magic*/)
+{
     VideoGraphicsArray vga(multiboot_structure, buffer);
     vgap = &vga;
     serial_initialise();
     serial_write_string("LOADED OS.\n");
 
 
-
-
     //
     vga.drawSplash();
     vga.bufferToScreen(false);
-    //
-    // configure_pit(100);
+    // //
+    // // configure_pit(100);
     vga.clearWindow();
     vga.setScale(2);
-    // print_frame_buffer_info(stackPointer, multiboot_structure);
+    // get_GDT();
+    // serial_write_string("DATA_CS: ");
+    // serial_write_hex(DATA_CS, 4);
+    // serial_write_string(" , TEXT_CS: ");
+    // serial_write_hex(TEXT_CS, 4);
+    // serial_new_line();
 
-    idt_install();
+    // get_cs();
+    // get_ds();
+    // get_es();
+    // get_fs();
+    // get_gs();
+    // get_ss();
 
     configure_pit(10000); // 10
+    idt_install();
+    //
+    // serial_write_string("Pit Done");
+    //
+    vga.clearWindow();
+    test_writing_print_numbers();
 
-    // vga.clearWindow();
-    // test_writing_print_numbers();
-
-
-
+    serial_write_string("diving by zero.");
+    div_zero();
 
 
     // todo: inherit size of window and colour depth

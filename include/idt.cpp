@@ -40,18 +40,70 @@ void irq_0()
     serial_write_string("irq_0");
 }
 
-void exception_handler(const registers* r)
+
+void register_to_serial(const registers* r)
 {
 
-    // serial_write_string("int_no, err_code: ");
-    //
-    // serial_write_hex(r->int_no, 4);
-    // serial_write_string(", ");
-    // serial_write_hex(r->err_code, 4);
-    // serial_new_line();
+    serial_write_string("int_no, err_code: ");
+    serial_new_line();
+    serial_write_hex(r->int_no, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->err_code, 4);
+    serial_new_line();
 
+    serial_write_string("gs, fs, es, ds: ");
+    serial_new_line();
+    serial_write_hex(r->gs, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->fs, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->es, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->ds, 4);
+    serial_new_line();
+
+    serial_write_string("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    serial_new_line();
+    serial_write_hex(r->edi, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->esi, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->ebp, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->esp, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->ebx, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->edx, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->ecx, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->eax, 4);
+    serial_new_line();
+
+    serial_write_string("eip, cs, eflags, useresp, ss;");
+    serial_new_line();
+    serial_write_hex(r->eip, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->cs, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->eflags, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->useresp, 4);
+    serial_write_string(", ");
+    serial_write_hex(r->ss, 4);
+    serial_new_line();
+
+
+}
+
+void exception_handler(const registers* r)
+{
+    register_to_serial(r);
 
     serial_write_string("Exception: ");
+    serial_write_hex(r->int_no, 4);
+    serial_new_line();
 
     if (r->int_no < 32)
     {
@@ -81,8 +133,8 @@ void exception_handler(const registers* r)
 
 void irq_handler(const registers* r)
 {
-    const auto int_no = r->int_no;
     serial_write_string("IRQ: ");
+    const auto int_no = r->int_no;
     serial_write_int(int_no);
     serial_new_line();
 
