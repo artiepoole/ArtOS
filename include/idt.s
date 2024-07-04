@@ -4,8 +4,8 @@
 .macro isr_err_stub_ i
     isr_stub_\i:
     // errorcode already pushed and is non-zero
-    push \i
-    pushal
+    push $\i
+    pusha
     push %ds
     push %es
     push %fs
@@ -25,16 +25,21 @@
     pop %fs
     pop %es
     pop %ds
-    popal
-    add 8, %esp     // Cleans up the pushed error code and pushed ISR number
-    iret
+    popa
+    add $8, %esp     // Cleans up the pushed error code and pushed ISR number
+    iretl
+.endm
+
+.macro dummy_isr_ i
+    isr_stub_\i:
+    iretl
 .endm
 
 .macro isr_no_err_stub_ i
     isr_stub_\i:
-    push 0 // no error
-    push \i
-    pushal
+    push $0x00000000 // no error
+    push $\i
+    pusha
     push %ds
     push %es
     push %fs
@@ -54,16 +59,16 @@
     pop %fs
     pop %es
     pop %ds
-    popal
-    add 8, %esp     // Cleans up the pushed error code and pushed ISR number
-    iret
+    popa
+    add $8, %esp     // Cleans up the pushed error code and pushed ISR number
+    iretl
 .endm
 
 .macro irq_stub i
     isr_stub_\i:
-    push 0 // no error
-    push \i
-    pushal
+    push $0 // no error
+    push $\i
+    pusha
     push %ds
     push %es
     push %fs
@@ -75,7 +80,7 @@
     mov  %ax, %gs
     mov  %esp, %eax
     push %eax // Push us the stack
-    mov $exception_handler, %eax
+    mov $irq_handler, %eax
     call *%eax // A special call, preserves the 'eip' register
     //call exception_handler
     pop %eax
@@ -83,9 +88,9 @@
     pop %fs
     pop %es
     pop %ds
-    popal
-    add 8, %esp     // Cleans up the pushed error code and pushed ISR number
-    iret
+    popa
+    add $8, %esp     // Cleans up the pushed error code and pushed ISR number
+    iretl
 .endm
 
 
@@ -110,7 +115,7 @@ isr_err_stub_    17 // alignment check exception
 isr_no_err_stub_ 18 // machine check exception
 isr_no_err_stub_ 19 // reserved exceptions
 isr_no_err_stub_ 20 // reserved exceptions
-isr_no_err_stub_ 21 // reserved exceptions
+isr_err_stub_ 21 // reserved exceptions
 isr_no_err_stub_ 22 // reserved exceptions
 isr_no_err_stub_ 23 // reserved exceptions
 isr_no_err_stub_ 24 // reserved exceptions

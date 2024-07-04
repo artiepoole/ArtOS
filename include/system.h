@@ -6,6 +6,8 @@
 #define SYSTEM_H
 
 #include "types.h"
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 
@@ -16,10 +18,9 @@ struct registers
     u32 edi, esi, ebp, esp, ebx, edx, ecx, eax; /* pushed by 'pusha' */
     u32 int_no, err_code; /* our 'push byte #' and ecodes do this */
     u32 eip, cs, eflags, useresp, ss; /* pushed by the processor automatically */
-};
+}__attribute__((packed));
 
 
-#define KERNEL_CS = 0x0010;
-#define KERNEL_DS = 0x0018;
+
 
 #endif //SYSTEM_H

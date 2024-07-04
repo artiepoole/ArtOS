@@ -4,46 +4,24 @@
 
 #include "idt.h"
 
-#include "serial.h"
 
-
-void irq_remap()
-{
-    /* Normally, IRQs 0 to 7 are mapped to entries 8 to 15. This
-    *  is a problem in protected mode, because IDT entry 8 is a
-    *  Double Fault! Without remapping, every time IRQ0 fires,
-    *  you get a Double Fault Exception, which is NOT actually
-    *  what's happening. We send commands to the Programmable
-    *  Interrupt Controller (PICs - also called the 8259's) in
-    *  order to make IRQ0 to 15 be remapped to IDT entries 32 to
-    *  47 */
-    outb(0x20, 0x11);
-    outb(0xA0, 0x11);
-    outb(0x21, 0x20);
-    outb(0xA1, 0x28);
-    outb(0x21, 0x04);
-    outb(0xA1, 0x02);
-    outb(0x21, 0x01);
-    outb(0xA1, 0x01);
-    outb(0x21, 0x0);
-    outb(0xA1, 0x0);
-}
+u16 KERNEL_CS = 0x0010;
+u16 KERNEL_DS = 0x0018;
 
 // __attribute__((noreturn))
-void handle_div_by_zero()
+void handle_div_by_zero(const registers* r)
 {
     serial_write_string("Div by zero not handled. oops.\n");
 }
 
-void irq_0()
-{
-    serial_write_string("irq_0");
-}
+// void irq_0()
+// {
+//     timer_handler();
+// }
 
 
 void register_to_serial(const registers* r)
 {
-
     serial_write_string("int_no, err_code: ");
     serial_new_line();
     serial_write_hex(r->int_no, 4);
@@ -75,10 +53,10 @@ void register_to_serial(const registers* r)
     serial_write_hex(r->ebx, 4);
     serial_write_string(", ");
     serial_write_hex(r->edx, 4);
-    serial_write_string(", ");
-    serial_write_hex(r->ecx, 4);
-    serial_write_string(", ");
-    serial_write_hex(r->eax, 4);
+    // serial_write_string(", ");
+    // serial_write_hex(r->ecx, 4);
+    // serial_write_string(", ");
+    // serial_write_hex(r->eax, 4);
     serial_new_line();
 
     serial_write_string("eip, cs, eflags, useresp, ss;");
@@ -93,8 +71,6 @@ void register_to_serial(const registers* r)
     serial_write_string(", ");
     serial_write_hex(r->ss, 4);
     serial_new_line();
-
-
 }
 
 void exception_handler(const registers* r)
@@ -102,8 +78,8 @@ void exception_handler(const registers* r)
     register_to_serial(r);
 
     serial_write_string("Exception: ");
-    serial_write_hex(r->int_no, 4);
-    serial_new_line();
+    // serial_write_hex(r->int_no, 4);
+    // serial_new_line();
 
     if (r->int_no < 32)
     {
@@ -115,12 +91,10 @@ void exception_handler(const registers* r)
         switch (r->int_no)
         {
         case 0:
-            handle_div_by_zero();
-            break;
+            // handle_div_by_zero(r);
+            return;
         default:
-            serial_write_string("Unhandled exception. System Halted! ISR number: ");
-            serial_write_int(r->int_no);
-            serial_new_line();
+            serial_write_string("Unhandled exception. System Halted!");
             for (;;);
         }
     }
@@ -133,21 +107,24 @@ void exception_handler(const registers* r)
 
 void irq_handler(const registers* r)
 {
-    serial_write_string("IRQ: ");
+    // register_to_serial(r);
+    // serial_write_string("IRQ: ");
     const auto int_no = r->int_no;
-    serial_write_int(int_no);
-    serial_new_line();
+    // serial_write_int(int_no);
+    // serial_new_line();
 
-    if (int_no>32)
+    if (int_no >= 32)
     {
-        switch (int_no-32)
+        switch (int_no - 32)
         {
         case 0:
-            irq_0();
+            timer_handler();
+            break;
         default:
             serial_write_string("Unhandled IRQ: ");
             serial_write_int(int_no);
             serial_new_line();
+            break;
         }
     }
 
@@ -165,17 +142,16 @@ void irq_handler(const registers* r)
 }
 
 
-
-void idt_set_descriptor(const u8 vector, void* isr, const u8 flags)
+void idt_set_descriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 {
-    idt_entry_t* descriptor = &idt_entries[vector];
+    idt_entry_t* descriptor = &idt_entries[idt_index];
 
-    descriptor->isr_low = reinterpret_cast<u32>(isr) & 0xFFFF;
-    descriptor->kernel_cs = 0x10;
+    descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
+    descriptor->kernel_cs = KERNEL_CS;
     // this value can be whatever offset your kernel code selector is in your GDT.
     // My entry point is 0x001005e0 so the offset is 0x0010(XXXX) (because of GRUB)
     descriptor->attributes = flags;
-    descriptor->isr_high = reinterpret_cast<u32>(isr) >> 16;
+    descriptor->isr_high = reinterpret_cast<u32>(isr_stub) >> 16;
     descriptor->reserved = 0;
 }
 
@@ -183,16 +159,18 @@ void idt_set_descriptor(const u8 vector, void* isr, const u8 flags)
 void idt_install()
 {
     /* also installs irq */
-    serial_write_string("Remapping irq\n");
-    irq_remap();
+    // serial_write_string("Remapping irq\n");
+    // pic_irq_remap();
+    // pic_disable();
 
-    idt_pointer.limit = (sizeof (idt_entry_t) * 48) - 1;
-    idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]);
+    idt_pointer.limit = (sizeof(idt_entry_t) * 48) - 1;
+    idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
 
-    for (u8 vector = 0; vector < 48; vector++)
+
+    for (u8 idt_index = 0; idt_index < 48; idt_index++)
     {
-        idt_set_descriptor(vector, isr_stub_table[vector], 0x8E);
-        idt_vectors[vector] = true;
+        idt_set_descriptor(idt_index, isr_stub_table[idt_index], 0x8E);
+        idt_vectors[idt_index] = true;
     }
 
     serial_write_string("Setting IDT base and limit. ");
@@ -206,7 +184,3 @@ void idt_install()
     __asm__ volatile ("sti"); // set the interrupt flag
     serial_write_string("Interrupts enabled\n");
 }
-
-
-
-

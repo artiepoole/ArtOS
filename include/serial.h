@@ -17,9 +17,9 @@ void serial_write_string(const char* data);
 
 void serial_new_line();
 
-void serial_write_int(long val);
+void serial_write_int(u64 val);
 
-void serial_write_hex(long long val, u32 n_bytes);
+void serial_write_hex(const u64 val, u32 n_bytes);
 
 extern "C"
 int serial_initialise();

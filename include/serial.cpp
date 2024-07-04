@@ -39,7 +39,7 @@ void serial_write_string(const char* data)
     serial_write(data, strlen(data));
 }
 
-void serial_write_int(const long val)
+void serial_write_int(const u64 val)
 {
     char out_str[255];
     const int len = string_from_int(val, out_str);
@@ -51,7 +51,7 @@ void serial_write_int(const long val)
     serial_write_string(trimmed_str);
 }
 
-void serial_write_hex(const long long val, const u32 n_bytes)
+void serial_write_hex(const u64 val, const u32 n_bytes)
 {
     char out_str[255];
     const u32 len = hex_from_int(val, out_str, n_bytes);

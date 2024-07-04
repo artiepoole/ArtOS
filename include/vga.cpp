@@ -317,8 +317,8 @@ void VideoGraphicsArray::writeInt(const u64 val) const
         trimmed_str[j] = out_str[j];
     }
     writeString(trimmed_str);
-    serial_write_int(val);
-    serial_new_line();
+    // serial_write_int(val);
+    // serial_new_line();
 }
 
 
