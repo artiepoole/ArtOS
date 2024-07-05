@@ -116,10 +116,16 @@ void sleep(u32 ms)
         serial_write_string("Tried to sleep when timer is not initiated.");
         return;
     }
-    ticks = ms * 1000 / rate;
-    // serial_write_string("Ticks: ");
-    // serial_write_int(ticks);
-    // serial_new_line();
+
+    ticks = ms * rate / 1000;  // rate is in hz, time is in ms
+
+    serial_write_string("Sleeping for ");
+    serial_write_int(ms);
+    serial_write_string("ms. Ticks: ");
+    serial_write_int(ticks);
+    serial_write_string(" Rate: ");
+    serial_write_int(rate);
+    serial_new_line();
     while (ticks > 0);
     // serial_write_string("Exited while loop. ");
     // serial_write_string("Remaining ticks: ");
