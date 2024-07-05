@@ -91,7 +91,7 @@ void pic_enable_all()
 }
 
 
-u32 ticks = 0;
+volatile u32 ticks = 0;
 u32 rate =0;
 
 
@@ -109,7 +109,6 @@ void configure_pit(u32 hz)
     outb(0x40, divisor >> 8); /* Set high byte of divisor */
 }
 
-
 void sleep(u32 ms)
 {
     if (rate==0)
@@ -118,20 +117,15 @@ void sleep(u32 ms)
         return;
     }
     ticks = ms * 1000 / rate;
-    serial_write_string("Ticks: ");
-    serial_write_int(ticks);
-    serial_new_line();
+    // serial_write_string("Ticks: ");
+    // serial_write_int(ticks);
+    // serial_new_line();
     while (ticks > 0);
-    serial_write_string("Exited while loop. ");
-    serial_write_string("Remaining ticks: ");
-    serial_write_int(ticks);
-    serial_new_line();
+    // serial_write_string("Exited while loop. ");
+    // serial_write_string("Remaining ticks: ");
+    // serial_write_int(ticks);
+    // serial_new_line();
 }
-
-// void pit_irq(void) /* called from Assembly */
-// {
-//
-// }
 
 void timer_handler()
 {
