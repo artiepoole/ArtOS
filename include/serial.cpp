@@ -1,8 +1,10 @@
 #include "serial.h"
 
+static Serial *instance{ nullptr };
 
 Serial::Serial()
 {
+    instance = this;
     outb(PORT + 1, 0x00); // Disable all interrupts
     outb(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
     outb(PORT + 0, 0x03); // Set divisor to 3 (lo byte) 38400 baud
@@ -23,6 +25,15 @@ Serial::Serial()
     // If serial is not faulty set it in normal operation mode
     // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
     outb(PORT + 4, 0x0F);
+}
+
+
+Serial::~Serial(){
+    instance = nullptr;
+}
+
+Serial &Serial::get(){
+    return *instance;
 }
 
 void Serial::write_string(const char* data)

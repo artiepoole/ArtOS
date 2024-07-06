@@ -57,6 +57,7 @@ PIC::PIC()
 
 void PIC::disable()
 {
+    auto &log = Serial::get();
     log.write_string("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
@@ -66,6 +67,7 @@ void PIC::disable()
 
 void PIC::enable()
 {
+    auto &log = Serial::get();
     log.write_string("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
@@ -73,6 +75,7 @@ void PIC::enable()
 
 void PIC::enable_irq0()
 {
+    auto &log = Serial::get();
     log.write_string("PIC enabled\n");
     u8 old_mask1 = inb(PIC1_DATA);
     u8 old_mask2 = inb(PIC2_DATA);
@@ -99,7 +102,7 @@ u32 rate =0;
 // extern "C"
 void configure_pit(u32 hz)
 {
-
+    auto &log = Serial::get();
     u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = hz;
     log.write_string("Configured PIT. Divisor: ");
@@ -112,6 +115,7 @@ void configure_pit(u32 hz)
 
 void sleep(u32 ms)
 {
+    auto &log = Serial::get();
     if (rate==0)
     {
         log.write_string("Tried to sleep when timer is not initiated.");

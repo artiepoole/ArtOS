@@ -17,13 +17,13 @@ class Serial
 {
 public:
     Serial();
+    ~Serial();
+    static Serial & get();
     bool connected;
 
     void new_line();
 
     void write_string(const char* data);
-
-
 
     template<typename int_like>
     void write_int(const int_like val)

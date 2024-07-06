@@ -122,6 +122,7 @@ struct gdt_entry
 
 void get_GDT()
 {
+    auto &log = Serial::get();
     gdt_info gdt{};
     asm("sgdt %0" : "=m"(gdt));
     log.write_string("GDT limit: ");
@@ -145,7 +146,7 @@ void get_GDT()
 
 u16 get_cs()
 {
-
+    auto &log = Serial::get();
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
     log.write_string("CS: ");
@@ -156,6 +157,7 @@ u16 get_cs()
 
 u16 get_ds()
 {
+    auto &log = Serial::get();
     u16 i;
     asm("mov %%ds,%0" : "=r"(i));
     log.write_string("DS: ");
@@ -187,7 +189,7 @@ void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_struc
     PIC pic;
     vga.drawSplash();
     vga.bufferToScreen(false);
-
+    Serial log;
     log.write_string("LOADED OS.\n");
     configure_pit(10000); // 10
     IDT idt;

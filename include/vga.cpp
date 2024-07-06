@@ -143,6 +143,7 @@ void VideoGraphicsArray::clearBuffer() const
 
 void VideoGraphicsArray::PutChar(char ch, i32 x, i32 y, u32 color) const
 {
+    auto &log = Serial::get();
     u32 px = 0; // position in the charactor - an 8x8 font = 64 bits
     u64 bCh = FONT[ch];
 
@@ -228,6 +229,7 @@ void VideoGraphicsArray::drawSplash() const
 
 void VideoGraphicsArray::setScale(const uint8_t new_scale) const
 {
+    auto &log = Serial::get();
     // Checks if a character can be drawn in the region. Should be "window width" or something.
     if (new_scale * char_dim < width && new_scale * char_dim < height)
     {

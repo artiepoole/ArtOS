@@ -22,7 +22,6 @@ file(GLOB INCLUDE
 add_executable(${KERNEL_BIN} src/boot.s src/kernel.cpp
         ${INCLUDE}
         include/splash_screen.cpp
-        include/system.cpp
 )
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc -Wl,-demangle")
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD

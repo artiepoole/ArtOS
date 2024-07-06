@@ -5,8 +5,10 @@
 #ifndef PIC_H
 #define PIC_H
 #include "types.h"
+#include "serial.h"
 #include "ports.h"
-#include "system.h"
+
+
 
 class PIC
 {

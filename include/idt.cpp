@@ -10,6 +10,7 @@ u16 KERNEL_CS = 0x0010;
 u16 KERNEL_DS = 0x0018;
 void register_to_serial(const registers* r)
 {
+    auto &log = Serial::get();
     log.write_string("int_no, err_code: ");
     log.new_line();
     log.write_hex(r->int_no);
@@ -64,6 +65,7 @@ void register_to_serial(const registers* r)
 // __attribute__((noreturn))
 void handle_div_by_zero(const registers* r)
 {
+    auto &log = Serial::get();
     log.write_string("Div by zero not handled. oops.\n");
     register_to_serial(r);
 }
@@ -78,6 +80,7 @@ void handle_div_by_zero(const registers* r)
 extern "C"
 void exception_handler(const registers* r)
 {
+    auto &log = Serial::get();
     register_to_serial(r);
 
     log.write_string("Exception: ");
@@ -111,6 +114,7 @@ void exception_handler(const registers* r)
 extern "C"
 void irq_handler(const registers* r)
 {
+    auto &log = Serial::get();
     // register_to_serial(r);
     // log.write_string("IRQ: ");
     const auto int_no = r->int_no;
@@ -168,6 +172,7 @@ void IDT::set_descriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 
 IDT::IDT()
 {
+    auto &log = Serial::get();
     /* also installs irq */
     // log.write_string("Remapping irq\n");
     // pic_irq_remap();

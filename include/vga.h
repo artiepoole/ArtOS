@@ -23,7 +23,8 @@
 #include "types.h"
 #include "splash_screen.h"
 #include "string.h"
-#include "system.h"
+#include "serial.h"
+
 
 
 class VideoGraphicsArray
