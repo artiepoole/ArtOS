@@ -32,6 +32,7 @@ file(GLOB INCLUDE
         "include/*.cpp"
         "include/*.s"
 )
+
 ## Building the kernel binary
 #add_executable(${KERNEL_BIN} boot.s kernel.cpp mylib)
 add_executable(${KERNEL_BIN} src/boot.s src/kernel.cpp
@@ -41,6 +42,7 @@ set_target_properties(${KERNEL_BIN} PROPERTIES LINK_FLAGS "-T ${CMAKE_SOURCE_DIR
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
+target_include_directories(${KERNEL_BIN} PUBLIC include)
 
 ### Generating the ISO file
 add_custom_target(${KERNEL_ISO}
