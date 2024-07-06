@@ -95,7 +95,7 @@ volatile u32 ticks = 0;
 u32 rate =0;
 
 
-extern "C"
+// extern "C"
 void configure_pit(u32 hz)
 {
 

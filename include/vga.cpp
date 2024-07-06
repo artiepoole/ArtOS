@@ -23,9 +23,6 @@ Basic graphics utility methods
 
 #include "vga.h"
 
-#include "serial.h"
-#include "splash_screen.h"
-#include "string.h"
 
 /*
 
@@ -307,19 +304,6 @@ void VideoGraphicsArray::writeString(const char* data) const
     RenderTerminal();
 }
 
-void VideoGraphicsArray::writeInt(const u64 val) const
-{
-    char out_str[255];
-    const size_t len = string_from_int(val, out_str);
-    char trimmed_str[len];
-    for (size_t j = 0; j <= len; j++)
-    {
-        trimmed_str[j] = out_str[j];
-    }
-    writeString(trimmed_str);
-    // serial_write_int(val);
-    // serial_new_line();
-}
 
 
 void VideoGraphicsArray::scrollTerminal() const
@@ -339,19 +323,7 @@ void VideoGraphicsArray::scrollTerminal() const
 
 }
 
-void VideoGraphicsArray::writeHex(u64 val) const
-{
-    char out_str[255];
-    const size_t len = hex_from_int(val, out_str, 16);
-    char trimmed_str[len];
-    for (size_t j = 0; j <= len; j++)
-    {
-        trimmed_str[j] = out_str[j];
-    }
-    writeString(trimmed_str);
-    serial_write_string(trimmed_str);
-    serial_new_line();
-}
+
 
     //
     // // for each line from the second line onwards, copy next line into this line

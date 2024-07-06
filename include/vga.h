@@ -21,6 +21,10 @@
 
 #include "multiboot2.h"
 #include "types.h"
+#include "serial.h"
+#include "splash_screen.h"
+#include "string.h"
+
 
 class VideoGraphicsArray
 {
@@ -58,8 +62,36 @@ VideoGraphicsArray(const multiboot_header * boot_header, u32 * _buffer);
     static u8 getScale();
     void clearWindow() const;
     void writeString(const char* data) const;
-    void writeInt(u64 val) const;
-    void writeHex(u64 val) const;
+
+    template<typename int_like>
+    void writeInt(int_like val)
+    {
+        char out_str[255]; // long enough for any int type possible
+        const size_t len = string_from_int(val, out_str);
+        char trimmed_str[len];
+        for (size_t j = 0; j <= len; j++)
+        {
+            trimmed_str[j] = out_str[j];
+        }
+        writeString(trimmed_str);
+        // serial_write_int(val);
+        // serial_new_line();
+    }
+
+    template<typename int_like1>
+    void writeHex(int_like1 val)
+    {
+
+        // u16 n_bytes = log2(val);
+        char out_str[255];
+        const size_t len = hex_from_int(val, out_str, sizeof(val));
+        char trimmed_str[len];
+        for (size_t j = 0; j < len; j++)
+        {
+            trimmed_str[j] = out_str[j];
+        }
+        writeString(trimmed_str);
+    }
 
 
     // Font Definition

@@ -94,6 +94,7 @@ The linker script specifies _start as the entry point to the kernel and the
 bootloader will jump to this position once the kernel has been loaded. It
 doesn't make sense to return from this function as the bootloader is gone.
 */
+
 .section .text
 .global _start
 .type _start, @function
@@ -116,12 +117,7 @@ _start:
 	stack (as it grows downwards on x86 systems). This is necessarily done
 	in assembly as languages such as C cannot function without a stack.
 	*/
-    mov $stack_top, %esp
-    mov $stack_top, %ecx
-    push %eax
-    push %ebx
-    push %ecx
-    call kernel_main
+
 	/*
 	This is a good place to initialize crucial processor state before the
 	high-level kernel is entered. It's best to minimize the early
@@ -141,7 +137,12 @@ _start:
 	stack since (pushed 0 bytes so far), so the alignment has thus been
 	preserved and the call is well defined.
 	*/
-
+    mov $stack_top, %esp
+    mov $stack_top, %ecx
+    push %eax
+    push %ebx
+    push %ecx
+    call kernel_main
 	/*
 	If the system has nothing more to do, put the computer into an
 	infinite loop. To do that:
