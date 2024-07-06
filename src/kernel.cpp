@@ -2,14 +2,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "../include/terminal.h"
-#include "../include/serial.h"
-#include "../include/string.h"
-#include "../include/types.h"
-#include "../include/multiboot2.h"
-#include "../include/vga.h"
-#include "../include/idt.h"
-#include "../include/pic.h"
+// #include "terminal.h"
+#include "serial.h"
+#include "string.h"
+#include "types.h"
+#include "multiboot2.h"
+#include "vga.h"
+#include "idt.h"
+#include "pic.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -45,7 +45,8 @@ void printfHex32(u32 key)
 }
 
 // Is supposed to take a different set of arguments....
-void printf(char* str, u32 key)
+template<typename int_like>
+void printf(const char* str, int_like key)
 {
     vgap->writeString(str);
 
@@ -55,7 +56,8 @@ void printf(char* str, u32 key)
     vgap->writeString("\n");
 }
 
-void print_int(const u64 val)
+template<typename int_like>
+void print_int(int_like val)
 {
     vgap->writeInt(val);
 }
@@ -64,8 +66,8 @@ void print_string(const char* str)
 {
     vgap->writeString(str);
 }
-
-void print_hex(const u64 val)
+template<typename int_like>
+void print_hex(const int_like val)
 {
     vgap->writeHex(val);
 }
@@ -156,7 +158,7 @@ void get_GDT()
 
 }
 
-void get_cs()
+u16 get_cs()
 {
 
     u16 i;
@@ -164,6 +166,7 @@ void get_cs()
     serial_write_string("CS: ");
     serial_write_hex(i, 2);
     serial_new_line();
+    return i;
 }
 
 u16 get_ds()
@@ -173,6 +176,7 @@ u16 get_ds()
     serial_write_string("DS: ");
     serial_write_hex(i, 2);
     serial_new_line();
+    return i;
 }
 
 void test_writing_print_numbers()
@@ -189,8 +193,8 @@ extern u32 DATA_CS;
 extern u32 TEXT_CS;
 extern int setGdt(u32 limit, u32 base);
 
-extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32
-                            /*multiboot_magic*/)
+extern "C"
+void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
     VideoGraphicsArray vga(multiboot_structure, buffer);
     vgap = &vga;
@@ -208,8 +212,9 @@ extern "C" void kernel_main(const u32 stackPointer, const multiboot_header* mult
     vga.setScale(2);
     vga.clearWindow();
     vga.bufferToScreen(false);
-    print_string("Loading Done.");
-
+    print_string("Loading Done.\n");
+    print_hex(-33);
+    print_hex(0x0011);
     for(;;) asm("hlt");
 
 

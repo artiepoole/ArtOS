@@ -6,9 +6,10 @@
 
 #include "serial.h"
 
-
-int log2(u64 val)
+template<typename int_like>
+int log2(int_like val)
 {
+    if (val<0) return 0;
     int i = 0;
     while (val /= 2>0) i++;
     return i;
@@ -22,7 +23,8 @@ int strlen(const char* str)
     return len;
 }
 
-int string_from_int(u64 val, char* out_str)
+template<typename int_like>
+int string_from_int(int_like val, char* out_str)
 {
     bool const is_negative = val < 0;
     int i = 0;
@@ -47,7 +49,8 @@ int string_from_int(u64 val, char* out_str)
     return i;
 }
 
-char digit_as_char(const int val)
+template<typename int_like>
+char digit_as_char(const int_like val)
 {
     if (val > 10 or val < 0)
     {
@@ -56,22 +59,28 @@ char digit_as_char(const int val)
     return static_cast<char>(val % 10);
 }
 
-int hex_from_int(u64 val, char* out_str, u32 n_bytes)
+template<typename int_like>
+int hex_from_int(int_like val, char* out_str, int_like n_bytes)
 {
-    // int n_bytes = log2(val)/4;
-    // serial_write_string("Val: ");
-    // serial_write_int(val);
-    // serial_new_line();
+    const bool neg =  val < 0;
+    int start;
+    int len;
+    if (neg)
+    {
+        out_str[0] = '-';
+        start = 2 * n_bytes;
+        len = n_bytes*2+2;
+    }    else
+    {
 
-    for (i32 i = 2 * n_bytes-1; i >=0; i--)
+        start = 2 * n_bytes-1;
+        len = n_bytes*2+1;
+    }
+    for (int i = start; i >=0; --i)
     {
         out_str[2 * n_bytes-i-1] = hex[(val >> 4*i) & 0xF];
-        // serial_write_string("val shifted by: ");
-        // serial_write_int(4*i);
-        // serial_write_string(" = ");
-        // serial_write_int((val >> 4*i) & 0xF);
-        // serial_new_line();
     }
+
     out_str[2 * n_bytes] = '\0';
-    return n_bytes*2+1;
+    return len;
 }

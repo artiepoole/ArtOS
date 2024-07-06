@@ -15,7 +15,8 @@ void pic_enable_irq0();
 void pic_enable_all();
 void timer_handler();
 void sleep(u32 ms);
-extern "C" void configure_pit(u32 hz);
+// extern "C"
+void configure_pit(u32 hz);
 
 
 #endif //PIC_H

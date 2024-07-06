@@ -306,10 +306,10 @@ void VideoGraphicsArray::writeString(const char* data) const
     }
     RenderTerminal();
 }
-
-void VideoGraphicsArray::writeInt(const u64 val) const
+template<typename int_like>
+void VideoGraphicsArray::writeInt(const int_like val) const
 {
-    char out_str[255];
+    char out_str[255]; // long enough for any int type possible
     const size_t len = string_from_int(val, out_str);
     char trimmed_str[len];
     for (size_t j = 0; j <= len; j++)
@@ -339,8 +339,11 @@ void VideoGraphicsArray::scrollTerminal() const
 
 }
 
-void VideoGraphicsArray::writeHex(u64 val) const
+template<typename int_like>
+void VideoGraphicsArray::writeHex(int_like val) const
 {
+
+
     char out_str[255];
     const size_t len = hex_from_int(val, out_str, 16);
     char trimmed_str[len];

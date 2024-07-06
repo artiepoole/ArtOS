@@ -31,7 +31,7 @@
 static constexpr size_t SCREEN_WIDTH_TEXT = 1024/8;
 static constexpr size_t SCREEN_HEIGHT_TEXT = 768/8;
 
-// extern "C"
+//
 // uint8_t vga_entry_color(vga_color fg, vga_color bg);
 
 // void terminal_initialize();

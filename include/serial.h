@@ -17,11 +17,13 @@ void serial_write_string(const char* data);
 
 void serial_new_line();
 
-void serial_write_int(u64 val);
+template<typename int_like>
+void serial_write_int(int_like val);
 
-void serial_write_hex(const u64 val, u32 n_bytes);
+template<typename int_like>
+void serial_write_hex(int_like val, u32 n_bytes);
 
-extern "C"
+// extern "C"
 int serial_initialise();
 
 

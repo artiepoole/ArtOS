@@ -35,6 +35,7 @@ __attribute__((aligned(0x10)))
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
 void idt_set_descriptor(u8 idt_table_index, void* isr_stub, u8 flags);
+
 extern "C"
 void exception_handler(const registers* r);
 void idt_install(void);

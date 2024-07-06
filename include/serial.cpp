@@ -39,7 +39,8 @@ void serial_write_string(const char* data)
     serial_write(data, strlen(data));
 }
 
-void serial_write_int(const u64 val)
+template<typename int_like>
+void serial_write_int(const int_like val)
 {
     char out_str[255];
     const int len = string_from_int(val, out_str);
@@ -51,7 +52,8 @@ void serial_write_int(const u64 val)
     serial_write_string(trimmed_str);
 }
 
-void serial_write_hex(const u64 val, const u32 n_bytes)
+template<typename int_like>
+void serial_write_hex(const int_like val, const u32 n_bytes)
 {
     char out_str[255];
     const u32 len = hex_from_int(val, out_str, n_bytes);
@@ -68,7 +70,7 @@ void serial_new_line()
     serial_send_char('\n');
 }
 
-extern "C"
+// extern "C"
 int serial_initialise()
 {
     outb(PORT + 1, 0x00); // Disable all interrupts

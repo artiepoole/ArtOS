@@ -74,7 +74,7 @@ void handle_div_by_zero(const registers* r)
 
 
 
-
+extern "C"
 void exception_handler(const registers* r)
 {
     register_to_serial(r);
@@ -106,7 +106,7 @@ void exception_handler(const registers* r)
         for (;;);
     }
 }
-
+extern "C"
 void irq_handler(const registers* r)
 {
     // register_to_serial(r);
