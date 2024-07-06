@@ -1,30 +1,18 @@
 cmake_minimum_required(VERSION 3.28)
-set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR i686)
 
 
-set(CMAKE_C_COMPILER_WORKS 1)
-set(CMAKE_CXX_COMPILER_WORKS 1)
-set(TOOLS $ENV{HOME}/opt/cross-compiler/)
-set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-elf-as)
-set(CMAKE_C_COMPILER ${TOOLS}/bin/i686-elf-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLS}/bin/i686-elf-g++)
-#set(CMAKE_CXX_LINK_EXECUTABLE ${TOOLS}/bin/i686-elf-gcc)
-
-set(CMAKE_VERBOSE_MAKEFILE 1)
 
 ENABLE_LANGUAGE(ASM)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti")
+set(CMAKE_CXX_FLAGS "-ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti") ###
 set(CMAKE_C_FLAGS "-ffreestanding -O2 -Wall -Wextra")
 
 project(ArtOS)
 
 set(KERNEL_BIN "ArtOS.bin")
 set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
-
 ### A simple lib to test C compilation and linking
 #add_library(mylib mylib.c)
 file(GLOB INCLUDE
@@ -32,9 +20,12 @@ file(GLOB INCLUDE
         "include/*.cpp"
         "include/*.s"
 )
-
 ## Building the kernel binary
 #add_executable(${KERNEL_BIN} boot.s kernel.cpp mylib)
+
+
+
+
 add_executable(${KERNEL_BIN} src/boot.s src/kernel.cpp
         ${INCLUDE}
 )
