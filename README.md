@@ -14,6 +14,7 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] Interrupt Service Routines (ISR) are targeted on interrupt using a partially filled Interrupt Descriptor Table
 - [x] Interrupt Requests (IRQ) can be handled
 - [x] IRQ0 targets a timer decrementor to allow for scheduling and waiting.
+- [x] Kernel sleep (block until n ticks)
 - [ ] Proper handling of a scheduler to allow for sleeping of a task.
 - [ ] User IO - keyboard
 - [ ] User IO - mouse?
