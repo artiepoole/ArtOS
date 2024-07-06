@@ -6,13 +6,19 @@
 #define PIC_H
 #include "types.h"
 #include "ports.h"
-#include "serial.h"
+#include "system.h"
 
+class PIC
+{
+public:
+    PIC();
+    void disable();
+    void irq_remap();
+    void enable();
+    void enable_irq0();
+    void enable_all();
+};
 
-void pic_disable();
-void pic_irq_remap();
-void pic_enable_irq0();
-void pic_enable_all();
 void timer_handler();
 void sleep(u32 ms);
 // extern "C"

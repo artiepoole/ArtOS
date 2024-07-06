@@ -149,7 +149,7 @@ void VideoGraphicsArray::PutChar(char ch, i32 x, i32 y, u32 color) const
     // check if it will be drawn off screen
     if (x + (scaled_char_dim) < 0 || x > width || y + (scaled_char_dim) < 0 || y > height)
     {
-        serial_write_string("Printing off screen\n");
+        log.write_string("Printing off screen\n");
         return;
     }
 
@@ -231,9 +231,9 @@ void VideoGraphicsArray::setScale(const uint8_t new_scale) const
     // Checks if a character can be drawn in the region. Should be "window width" or something.
     if (new_scale * char_dim < width && new_scale * char_dim < height)
     {
-        serial_write_string("New font scale: ");
-        serial_write_int(new_scale);
-        serial_new_line();
+       log.write_string("New font scale: ");
+       log.write_int(new_scale);
+        log.new_line();
         font_scale = new_scale;
         scaled_char_dim = font_scale * char_dim;
         terminal_row = 0;
@@ -243,7 +243,7 @@ void VideoGraphicsArray::setScale(const uint8_t new_scale) const
     }
     else
     {
-        serial_write_string("Font scale not applied\n");
+       log.write_string("Font scale not applied\n");
     }
 }
 

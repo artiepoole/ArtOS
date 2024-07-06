@@ -21,9 +21,9 @@
 
 #include "multiboot2.h"
 #include "types.h"
-#include "serial.h"
 #include "splash_screen.h"
 #include "string.h"
+#include "system.h"
 
 
 class VideoGraphicsArray
@@ -74,8 +74,8 @@ VideoGraphicsArray(const multiboot_header * boot_header, u32 * _buffer);
             trimmed_str[j] = out_str[j];
         }
         writeString(trimmed_str);
-        // serial_write_int(val);
-        // serial_new_line();
+        //log.write_int(val);
+        // log.new_line();
     }
 
     template<typename int_like1>

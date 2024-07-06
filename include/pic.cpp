@@ -28,7 +28,7 @@
 u8 mask1;
 u8 mask2;
 
-void pic_irq_remap()
+PIC::PIC()
 {
     /* Normally, IRQs 0 to 7 are mapped to entries 8 to 15. This
     *  is a problem in protected mode, because IDT entry 8 is a
@@ -55,24 +55,25 @@ void pic_irq_remap()
     outb(PIC2_DATA, 0xFF); // Output mask - disable pic
 }
 
-void pic_disable()
+void PIC::disable()
 {
-    serial_write_string("Disabled PIC");
+    log.write_string("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
     outb(PIC1_DATA, 0xff);
     outb(PIC2_DATA, 0xff);
 }
 
-void pic_enable()
+void PIC::enable()
 {
-    serial_write_string("Renabled PIC");
+    log.write_string("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
 }
 
-void pic_enable_irq0()
+void PIC::enable_irq0()
 {
+    log.write_string("PIC enabled\n");
     u8 old_mask1 = inb(PIC1_DATA);
     u8 old_mask2 = inb(PIC2_DATA);
     mask1 = old_mask1 & 0xFE;
@@ -82,7 +83,7 @@ void pic_enable_irq0()
     outb(PIC2_DATA, mask2);
 }
 
-void pic_enable_all()
+void PIC::enable_all()
 {
     mask1 = inb(PIC1_DATA);
     mask2 = inb(PIC2_DATA);
@@ -101,9 +102,9 @@ void configure_pit(u32 hz)
 
     u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = hz;
-    serial_write_string("Configured PIT. Divisor: ");
-    serial_write_int(divisor);
-    serial_new_line();
+    log.write_string("Configured PIT. Divisor: ");
+    log.write_int(divisor);
+    log.new_line();
     outb(0x43, 0x36); /* Set our command byte 0x36 */
     outb(0x40, divisor & 0xFF); /* Set low byte of divisor */
     outb(0x40, divisor >> 8); /* Set high byte of divisor */
@@ -113,24 +114,24 @@ void sleep(u32 ms)
 {
     if (rate==0)
     {
-        serial_write_string("Tried to sleep when timer is not initiated.");
+        log.write_string("Tried to sleep when timer is not initiated.");
         return;
     }
 
     ticks = ms * rate / 1000;  // rate is in hz, time is in ms
 
-    serial_write_string("Sleeping for ");
-    serial_write_int(ms);
-    serial_write_string("ms. Ticks: ");
-    serial_write_int(ticks);
-    serial_write_string(" Rate: ");
-    serial_write_int(rate);
-    serial_new_line();
+    log.write_string("Sleeping for ");
+    log.write_int(ms);
+    log.write_string("ms. Ticks: ");
+    log.write_int(ticks);
+    log.write_string(" Rate: ");
+    log.write_int(rate);
+    log.new_line();
     while (ticks > 0);
-    // serial_write_string("Exited while loop. ");
-    // serial_write_string("Remaining ticks: ");
-    // serial_write_int(ticks);
-    // serial_new_line();
+    //log.write_string("Exited while loop. ");
+    //log.write_string("Remaining ticks: ");
+    //log.write_int(ticks);
+    // log.new_line();
 }
 
 void timer_handler()
@@ -144,6 +145,6 @@ void timer_handler()
     *  display a message on the screen */
     // if (ticks % rate == 0)
     // {
-    //     serial_write_string("One second has passed\n");
+    //    log.write_string("One second has passed\n");
     // }
 }

@@ -1,53 +1,7 @@
 #include "serial.h"
 
 
-int serial_received()
-{
-    return inb(PORT + 5) & 1;
-}
-
-char serial_read()
-{
-    while (serial_received() == 0);
-
-    return inb(PORT);
-}
-
-int serial_transmit_empty()
-{
-    return inb(PORT + 5) & 0x20;
-}
-
-void serial_send_char(char a)
-{
-    while (serial_transmit_empty() == 0);
-
-    outb(PORT, a);
-}
-
-void serial_write(const char* data, const size_t size)
-{
-    for (size_t i = 0; i < size; i++)
-    {
-        const char c = data[i];
-        serial_send_char(c);
-    }
-}
-
-void serial_write_string(const char* data)
-{
-    serial_write(data, strlen(data));
-}
-
-
-
-void serial_new_line()
-{
-    serial_send_char('\n');
-}
-
-// extern "C"
-int serial_initialise()
+Serial::Serial()
 {
     outb(PORT + 1, 0x00); // Disable all interrupts
     outb(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
@@ -62,11 +16,55 @@ int serial_initialise()
     // Check if serial is faulty (i.e: not same byte as sent)
     if (inb(PORT + 0) != 0xAE)
     {
-        return 1;
+        connected = false;
+        return;
     }
 
     // If serial is not faulty set it in normal operation mode
     // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
     outb(PORT + 4, 0x0F);
-    return 0;
+}
+
+void Serial::write_string(const char* data)
+{
+    write(data, strlen(data));
+}
+
+void Serial::new_line()
+{
+    send_char('\n');
+}
+
+
+int Serial::received()
+{
+    return inb(PORT + 5) & 1;
+}
+
+int Serial::transmit_empty()
+{
+    return inb(PORT + 5) & 0x20;
+}
+
+char Serial::read()
+{
+    while (received() == 0);
+
+    return inb(PORT);
+}
+
+void Serial::send_char(char a)
+{
+    while (transmit_empty() == 0);
+
+    outb(PORT, a);
+}
+
+void Serial::write(const char* data, const size_t size)
+{
+    for (size_t i = 0; i < size; i++)
+    {
+        const char c = data[i];
+        send_char(c);
+    }
 }

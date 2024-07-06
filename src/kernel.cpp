@@ -3,13 +3,13 @@
 #include <stddef.h>
 #include <stdint.h>
 // #include "terminal.h"
-#include "serial.h"
 #include "string.h"
 #include "types.h"
 #include "multiboot2.h"
 #include "vga.h"
 #include "idt.h"
 #include "pic.h"
+#include "system.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -124,20 +124,20 @@ void get_GDT()
 {
     gdt_info gdt{};
     asm("sgdt %0" : "=m"(gdt));
-    serial_write_string("GDT limit: ");
-    serial_write_hex(gdt.limit);
-    serial_write_string(" GDT base: ");
-    serial_write_hex(gdt.base);
-    serial_new_line();
+    log.write_string("GDT limit: ");
+    log.write_hex(gdt.limit);
+    log.write_string(" GDT base: ");
+    log.write_hex(gdt.base);
+    log.new_line();
 
     for (size_t i =0; i<  8; i++)
     {
-        serial_write_string("GDT entry:");
-        serial_write_int(i);
-        serial_write_string(" data: ");
+        log.write_string("GDT entry:");
+        log.write_int(i);
+        log.write_string(" data: ");
         uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base +(8*i));
-        serial_write_hex(gdt_ptr);
-        serial_new_line();
+        log.write_hex(gdt_ptr);
+        log.new_line();
     }
 
 
@@ -148,9 +148,9 @@ u16 get_cs()
 
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
-    serial_write_string("CS: ");
-    serial_write_hex(i);
-    serial_new_line();
+    log.write_string("CS: ");
+    log.write_hex(i);
+    log.new_line();
     return i;
 }
 
@@ -158,9 +158,9 @@ u16 get_ds()
 {
     u16 i;
     asm("mov %%ds,%0" : "=r"(i));
-    serial_write_string("DS: ");
-    serial_write_hex(i);
-    serial_new_line();
+    log.write_string("DS: ");
+    log.write_hex(i);
+    log.new_line();
     return i;
 }
 
@@ -184,16 +184,16 @@ void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_struc
 {
     VideoGraphicsArray vga(multiboot_structure, buffer);
     vgap = &vga;
+    PIC pic;
     vga.drawSplash();
     vga.bufferToScreen(false);
-    serial_initialise();
-    serial_write_string("LOADED OS.\n");
-    pic_irq_remap();
+
+    log.write_string("LOADED OS.\n");
     configure_pit(10000); // 10
-    idt_install();
-    serial_write_string("IDT installed\n");
-    pic_enable_irq0();
-    serial_write_string("PIC enabled\n");
+    IDT idt;
+
+    pic.enable_irq0();
+
 
     sleep(1000);
     vga.setScale(2);

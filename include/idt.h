@@ -7,7 +7,6 @@
 #include "system.h"
 #include "pic.h"
 
-
 typedef struct
 {
     u16 isr_low; // The lower 16 bits of the ISR's address
@@ -23,27 +22,25 @@ typedef struct
     u32 base;
 } __attribute__((packed)) idt_ptr_t;
 
-
-static bool idt_vectors[48];
-
 extern void* isr_stub_table[];
-
-
+static bool idt_vectors[48];
 static idt_ptr_t idt_pointer;
-
-__attribute__((aligned(0x10)))
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
-void idt_set_descriptor(u8 idt_table_index, void* isr_stub, u8 flags);
+class IDT
+{
+public:
+    IDT();
+private:
+    static void set_descriptor(u8 idt_index, void* isr_stub, u8 flags);
+
+};
 
 extern "C"
 void exception_handler(const registers* r);
-void idt_install(void);
 
 extern "C"
 void irq_handler(const registers* r);
-void irq_install(void);
-
 
 
 inline char exception_messages[][40] =
