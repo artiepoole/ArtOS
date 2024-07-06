@@ -22,7 +22,7 @@ Basic graphics utility methods
 */
 
 #include "vga.h"
-
+static VideoGraphicsArray *instance{ nullptr };
 
 /*
 
@@ -48,6 +48,7 @@ char terminal_buffer[1024 / 8][768 / 8]; // 12288 characters total
 
 VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32* _buffer)
 {
+    instance = this;
     width = boot_header->framebuffer_width;
     height = boot_header->framebuffer_height;
     screen = reinterpret_cast<u32*>(boot_header->framebuffer_addr);
@@ -76,6 +77,13 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32*
     buffer_dim[1] = window_height / (scaled_char_dim);
 }
 
+VideoGraphicsArray::~VideoGraphicsArray(){
+    instance = nullptr;
+}
+
+VideoGraphicsArray &VideoGraphicsArray::get(){
+    return *instance;
+}
 
 void VideoGraphicsArray::PutPixel(i32 x, i32 y, u32 color) const
 {
@@ -262,7 +270,7 @@ void VideoGraphicsArray::clearWindow() const
     }
 }
 
-void VideoGraphicsArray::RenderTerminal() const
+void VideoGraphicsArray::render_terminal() const
 {
     auto x = window[0];
     auto y = window[1];
@@ -278,7 +286,7 @@ void VideoGraphicsArray::RenderTerminal() const
     bufferToScreen(false);
 }
 
-void VideoGraphicsArray::writeString(const char* data) const
+void VideoGraphicsArray::write_string(const char* data) const
 {
     const int len = strlen(data);
     for (int i = 0; i < len; i++)
@@ -300,15 +308,39 @@ void VideoGraphicsArray::writeString(const char* data) const
         }
         if (terminal_row >= buffer_dim[1])
         {
-            scrollTerminal();
+            scroll_terminal();
         }
     }
-    RenderTerminal();
+    render_terminal();
+}
+
+void VideoGraphicsArray::write_char(char c) const
+{
+    if (c == '\n')
+    {
+        terminal_row++;
+        terminal_column = 0;
+    }
+    else
+    {
+        terminal_buffer[terminal_column++][terminal_row] = c;
+    }
+    if (terminal_column >= buffer_dim[0])
+    {
+        terminal_column = 0;
+        terminal_row++;
+    }
+    if (terminal_row >= buffer_dim[1])
+    {
+        scroll_terminal();
+    }
+
+    render_terminal();
 }
 
 
 
-void VideoGraphicsArray::scrollTerminal() const
+void VideoGraphicsArray::scroll_terminal() const
 {
     clearWindow();
     for (size_t x = 0; x < buffer_dim[0]; x++)

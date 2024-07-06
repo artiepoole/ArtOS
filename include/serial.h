@@ -22,7 +22,7 @@ public:
     bool connected;
 
     void new_line();
-
+    void write_char(unsigned char c);
     void write_string(const char* data);
 
     template<typename int_like>
@@ -52,10 +52,10 @@ public:
     }
 private:
     static char read();
-    void send_char(char a);
+    void send_char(unsigned char a);
     static int received();
     static int transmit_empty();
-    void write(const char* data, size_t size);
+    void write(const  char* data, size_t size);
 };
 
 

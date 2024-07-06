@@ -17,7 +17,7 @@ public:
     void disable();
     void irq_remap();
     void enable();
-    void enable_irq0();
+    void enable_irq(u8 i);
     void enable_all();
 };
 

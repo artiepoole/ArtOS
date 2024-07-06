@@ -36,6 +36,11 @@ Serial &Serial::get(){
     return *instance;
 }
 
+void Serial::write_char(const unsigned char c)
+{
+    send_char(c);
+}
+
 void Serial::write_string(const char* data)
 {
     write(data, strlen(data));
@@ -64,7 +69,7 @@ char Serial::read()
     return inb(PORT);
 }
 
-void Serial::send_char(char a)
+void Serial::send_char(unsigned char a)
 {
     while (transmit_empty() == 0);
 

@@ -33,12 +33,12 @@ u32 buffer[width * height];
 template<typename int_like>
 void printf(const char* str, int_like key)
 {
-    vgap->writeString(str);
+    vgap->write_string(str);
 
     int l = 0;
     for (; str[l] != 0; l++);
     vgap->writeHex(key);
-    vgap->writeString("\n");
+    vgap->write_string("\n");
 }
 
 template<typename int_like>
@@ -49,7 +49,7 @@ void print_int(int_like val)
 
 void print_string(const char* str)
 {
-    vgap->writeString(str);
+    vgap->write_string(str);
 }
 template<typename int_like>
 void print_hex(const int_like val)
@@ -194,7 +194,8 @@ void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_struc
     configure_pit(10000); // 10
     IDT idt;
 
-    pic.enable_irq0();
+    pic.enable_irq(0);
+    pic.enable_irq(1);
 
 
     sleep(1000);

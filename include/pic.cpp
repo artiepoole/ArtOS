@@ -4,14 +4,6 @@
 
 #include "pic.h"
 
-#define PIC1		0x20		/* IO base address for master PIC */
-#define PIC2		0xA0		/* IO base address for slave PIC */
-#define PIC1_COMMAND	PIC1
-#define PIC1_DATA	(PIC1+1)
-#define PIC2_COMMAND	PIC2
-#define PIC2_DATA	(PIC2+1)
-#define PIC_EOI		0x20
-
 
 #define ICW1_ICW4	0x01		/* Indicates that ICW4 will be present */
 #define ICW1_SINGLE	0x02		/* Single (cascade) mode */
@@ -73,14 +65,30 @@ void PIC::enable()
     outb(PIC2_DATA, mask2);
 }
 
-void PIC::enable_irq0()
+void PIC::enable_irq(u8 i)
 {
     auto &log = Serial::get();
-    log.write_string("PIC enabled\n");
-    u8 old_mask1 = inb(PIC1_DATA);
-    u8 old_mask2 = inb(PIC2_DATA);
-    mask1 = old_mask1 & 0xFE;
-    mask2 = old_mask2 & 0xFE;
+    log.write_string("Enabling IRQ");
+    log.write_int(i);
+    log.new_line();
+
+
+    if (i < 8)
+    {
+        u8 old_mask1 = inb(PIC1_DATA);
+        u8 byte = 0x1 << i;
+        mask1 = old_mask1 & byte;
+        log.write_hex(byte);
+        log.new_line();
+    }
+    else
+    {
+        u8 old_mask2 = inb(PIC2_DATA);
+        u8 byte = 0x1 << i-8;
+        mask2 = old_mask2 & byte;
+        log.write_hex(byte);
+        log.new_line();
+    }
 
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);

@@ -128,6 +128,9 @@ void irq_handler(const registers* r)
         case 0:
             timer_handler();
             break;
+        case 1:
+            keyboard_handler();
+            break;
         case 4:
             log.write_string("First instance");
             log.write_string("Unhandled IRQ: ");

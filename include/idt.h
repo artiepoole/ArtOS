@@ -6,6 +6,7 @@
 #define IDT_H
 #include "system.h"
 #include "pic.h"
+#include "keyboard.h"
 
 typedef struct
 {
