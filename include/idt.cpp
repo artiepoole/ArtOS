@@ -7,19 +7,6 @@
 
 u16 KERNEL_CS = 0x0010;
 u16 KERNEL_DS = 0x0018;
-
-// __attribute__((noreturn))
-void handle_div_by_zero(const registers* r)
-{
-    serial_write_string("Div by zero not handled. oops.\n");
-}
-
-// void irq_0()
-// {
-//     timer_handler();
-// }
-
-
 void register_to_serial(const registers* r)
 {
     serial_write_string("int_no, err_code: ");
@@ -72,6 +59,21 @@ void register_to_serial(const registers* r)
     serial_write_hex(r->ss, 4);
     serial_new_line();
 }
+
+// __attribute__((noreturn))
+void handle_div_by_zero(const registers* r)
+{
+    serial_write_string("Div by zero not handled. oops.\n");
+    register_to_serial(r);
+}
+
+// void irq_0()
+// {
+//     timer_handler();
+// }
+
+
+
 
 void exception_handler(const registers* r)
 {
