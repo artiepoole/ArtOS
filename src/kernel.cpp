@@ -25,7 +25,8 @@
 VideoGraphicsArray* vgap;
 #define width 1024 // hard coded - not good please change
 #define height 768 // hard coded - not good please change
-u32 buffer[width * height];
+u32 frame_buffer[width * height];
+
 
 
 
@@ -57,12 +58,12 @@ void print_hex(const int_like val)
     vgap->writeHex(val);
 }
 
-void print_frame_buffer_info(const u32 stackPointer, const multiboot_header* multiboot_structure)
+void print_multiboot_header_info(const u32 stackPointer, const multiboot_header* multiboot_structure)
 {
     printf("multiboot_structure    : 0x", (int)multiboot_structure);
     printf("stackPointer           : 0x", stackPointer);
-    printf("screen buffer          : 0x", (int)buffer);
-    printf("screen buffer[1024*768]: 0x", (int)&buffer[1024 * 768]);
+    printf("screen buffer          : 0x", (int)frame_buffer);
+    printf("screen buffer[1024*768]: 0x", (int)&frame_buffer[1024 * 768]);
     printf("FONT                   : 0x", (int)vgap->FONT);
     printf("buffer size            : 0x", 1024 * 768 * 4);
     printf("vga                    : 0x", (int)vgap);
@@ -184,7 +185,7 @@ extern int setGdt(u32 limit, u32 base);
 extern "C"
 void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
-    VideoGraphicsArray vga(multiboot_structure, buffer);
+    VideoGraphicsArray vga(multiboot_structure, frame_buffer);
     vgap = &vga;
     PIC pic;
     vga.drawSplash();
@@ -203,6 +204,7 @@ void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_struc
     vga.clearWindow();
     vga.bufferToScreen(false);
     print_string("Loading Done.\n");
+    print_string(">");
 
     for(;;) asm("hlt");
 

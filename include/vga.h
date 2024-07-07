@@ -17,8 +17,6 @@
 #ifndef __MYOS__DRIVERS__VGA_H
 #define __MYOS__DRIVERS__VGA_H
 
-#include <stdint-gcc.h>
-
 #include "multiboot2.h"
 #include "types.h"
 #include "splash_screen.h"
