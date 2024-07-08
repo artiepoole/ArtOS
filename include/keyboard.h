@@ -9,9 +9,14 @@
 #include "ports.h"
 #include "serial.h"
 #include "vga.h"
+extern char* keyboard_buffer;
+extern size_t keyboard_buffer_size;
 
 
 void keyboard_handler();
+
+class Input{
+}
 
 
 
