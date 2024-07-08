@@ -1,5 +1,5 @@
 # ArtOS
-ArtOS is a very basic operating system being developed following [osdev](https://wiki.osdev.org/Bare_Bones) tutorials. 
+ArtOS is a very basic operating system being developed with help from [osdev](https://wiki.osdev.org/Bare_Bones) tutorials. 
 
 The aim of this project is simply to learn. If it becomes something I want others to be able to use I will add the typical sections to this README.
 
