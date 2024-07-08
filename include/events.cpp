@@ -58,7 +58,7 @@ void keyboard_handler()
     auto& queue = EventQueue::getInstance();
 
     /* Read from the keyboard's data buffer */
-    u8 scancode = inb(KEYB_DATA);
+    const u8 scancode = inb(KEYB_DATA);
 
 
     if (scancode & 0x80) // key down event
@@ -82,9 +82,9 @@ EventQueue::EventQueue()
     _write_index = 0;
     _read_index = 0;
 
-    for (size_t i = 0; i < max_len; i++)
+    for (auto & i : event_queue)
     {
-        event_queue[i] = event_t{NULL_EVENT, event_data_t{0, 0}};
+        i = event_t{NULL_EVENT, event_data_t{0, 0}};
     }
 }
 

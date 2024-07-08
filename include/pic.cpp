@@ -65,7 +65,7 @@ void PIC::enable()
     outb(PIC2_DATA, mask2);
 }
 
-void PIC::enableIRQ(u8 i)
+void PIC::enableIRQ(const u8 i)
 {
     auto &log = Serial::get();
     log.writeString("Enabling IRQ");
@@ -75,8 +75,8 @@ void PIC::enableIRQ(u8 i)
 
     if (i < 8)
     {
-        u8 old_mask1 = inb(PIC1_DATA);
-        u8 byte = 0x1 << i;
+        const u8 old_mask1 = inb(PIC1_DATA);
+        const u8 byte = 0x1 << i;
         mask1 = old_mask1 & byte;
         log.writeHex(byte);
         log.newLine();
@@ -108,10 +108,10 @@ u32 rate =0;
 
 
 // extern "C"
-void configurePit(u32 hz)
+void configurePit(const u32 hz)
 {
     auto &log = Serial::get();
-    u32 divisor = 1193180 / hz; /* Calculate our divisor */
+    const u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = hz;
     log.writeString("Configured PIT. Divisor: ");
     log.writeInt(divisor);
@@ -121,7 +121,7 @@ void configurePit(u32 hz)
     outb(0x40, divisor >> 8); /* Set high byte of divisor */
 }
 
-void sleep(u32 ms)
+void sleep(const u32 ms)
 {
     auto &log = Serial::get();
     if (rate==0)

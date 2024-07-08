@@ -31,9 +31,9 @@ inline void outb(u16 port, u8 val)
 }
 
 // extern "C"
-inline u8 inb(u16 port)
+inline char inb(u16 port)
 {
-    u8 ret;
+    char ret;
     __asm__ volatile ( "inb %w1, %b0"
                    : "=a"(ret)
                    : "Nd"(port)

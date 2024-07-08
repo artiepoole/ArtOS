@@ -52,10 +52,10 @@ public:
     }
 private:
     static char read();
-    void _sendChar(unsigned char a);
+    static void _sendChar(unsigned char a);
     static int _received();
     static int _transmitEmpty();
-    void _write(const  char* data, size_t size);
+    static void _write(const  char* data, size_t size);
 };
 
 

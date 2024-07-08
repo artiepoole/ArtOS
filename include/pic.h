@@ -14,10 +14,10 @@ class PIC
 {
 public:
     PIC();
-    void disable();
-    void enable();
-    void enableIRQ(u8 i);
-    void enableAll();
+    static void disable();
+    static void enable();
+    static void enableIRQ(u8 i);
+    static void enableAll();
 };
 
 void timerHandler();

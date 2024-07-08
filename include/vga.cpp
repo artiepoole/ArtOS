@@ -34,9 +34,9 @@ This class could be re-worked as a Canvas with out to many changes */
 u32 char_dim = 8;
 u32 font_scale = 1;
 u32 scaled_char_dim = 8;
-int window[4]; // x1, y1, x2, y2
-int window_width;
-int window_height;
+u32 window[4]; // x1, y1, x2, y2
+u32 window_width;
+u32 window_height;
 u32 bkgd;
 u32 frgd;
 
@@ -154,7 +154,7 @@ void VideoGraphicsArray::clearBuffer() const
 void VideoGraphicsArray::putChar(const char ch, const u32 x, const u32 y, const u32 color) const
 {
     auto& log = Serial::get();
-    u32 px = 0; // position in the charactor - an 8x8 font = 64 bits
+    u32 px; // position in the charactor - an 8x8 font = 64 bits
     const u64 bCh = FONT[static_cast<size_t>(ch)];
 
     // check if it will be drawn off screen
@@ -194,12 +194,11 @@ void VideoGraphicsArray::putChar(const char ch, const u32 x, const u32 y, const 
     else
     {
         // partially in the screen
-        size_t xpos = 0;
         size_t i = width * (y - 1);
         for (size_t yy = 0; yy < scaled_char_dim; yy++)
         {
             i += width;
-            xpos = x;
+            size_t xpos = x;
             px = char_dim * (yy / font_scale);
             for (size_t xx = 0; xx < scaled_char_dim; xx++)
             {
@@ -221,7 +220,7 @@ void VideoGraphicsArray::putChar(const char ch, const u32 x, const u32 y, const 
 }
 
 
-void VideoGraphicsArray::putStr(const char* ch, u32 x, u32 y, u32 color) const
+void VideoGraphicsArray::putStr(const char* ch,  u32 x, const u32 y, const u32 color) const
 {
     for (u32 i = 0; ch[i] != 0; i++, x += scaled_char_dim)
     {
@@ -274,12 +273,11 @@ void VideoGraphicsArray::clearWindow() const
 
 void VideoGraphicsArray::_renderTerminal() const
 {
-    auto x = window[0];
-    auto y = window[1];
+    const auto y = window[1];
 
     for (size_t row = 0; row < buffer_dim[1] - 1; row++)
     {
-        x = window[0];
+        u32 x = window[0];
         for (size_t col = 0; col < buffer_dim[0]; col++)
         {
             putChar(terminal_buffer[col][row], col * scaled_char_dim + x, row * scaled_char_dim + y, frgd);

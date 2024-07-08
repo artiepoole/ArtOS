@@ -67,13 +67,13 @@ protected:
      * - I used fonted in TempleOS to draw it.
     */
 public:
-    VideoGraphicsArray(const multiboot_header* boot_header, u32* _buffer);
+    VideoGraphicsArray(const multiboot_header* boot_header, u32* buffer);
     ~VideoGraphicsArray();
     static VideoGraphicsArray& get();
 
     void putPixel(u32 x, u32 y, u32 color) const;
     void putChar(char ch, u32 x, u32 y, u32 color) const;
-    void putStr(const char* ch, u32 x, u32 y, u32 colorIndex) const;
+    void putStr(const char* ch, u32 x, u32 y, u32 color) const;
     void fillRectangle(u32 x, u32 y, u32 w, u32 h, u32 color) const;
     void bufferToScreen(bool clear) const;
     void clearBuffer() const;

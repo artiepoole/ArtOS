@@ -60,7 +60,8 @@ inline char exception_messages[][40] =
     "reserved exceptions",
     "reserved exceptions",
     "reserved exceptions",
-    "reserved exceptions"
+    "reserved exceptions",
+    "reserved exceptions",
 };
 
 void register_to_serial(const registers* r)
@@ -151,11 +152,6 @@ void exception_handler(const registers* r)
             log.writeString("Unhandled exception. System Halted!");
             for (;;);
         }
-    }
-    else
-    {
-        log.writeString("Unknown exception. System Halted!\n");
-        for (;;);
     }
 }
 
