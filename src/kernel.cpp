@@ -34,12 +34,12 @@ u32 frame_buffer[width * height];
 template<typename int_like>
 void printf(const char* str, int_like key)
 {
-    vgap->write_string(str);
+    vgap->writeString(str);
 
     int l = 0;
     for (; str[l] != 0; l++);
     vgap->writeHex(key);
-    vgap->write_string("\n");
+    vgap->writeString("\n");
 }
 
 template<typename int_like>
@@ -50,8 +50,14 @@ void print_int(int_like val)
 
 void print_string(const char* str)
 {
-    vgap->write_string(str);
+    vgap->writeString(str);
 }
+
+void print_char(const char c)
+{
+    vgap->writeChar(c);
+}
+
 template<typename int_like>
 void print_hex(const int_like val)
 {
@@ -126,20 +132,20 @@ void get_GDT()
     auto &log = Serial::get();
     gdt_info gdt{};
     asm("sgdt %0" : "=m"(gdt));
-    log.write_string("GDT limit: ");
-    log.write_hex(gdt.limit);
-    log.write_string(" GDT base: ");
-    log.write_hex(gdt.base);
-    log.new_line();
+    log.writeString("GDT limit: ");
+    log.writeHex(gdt.limit);
+    log.writeString(" GDT base: ");
+    log.writeHex(gdt.base);
+    log.newLine();
 
     for (size_t i =0; i<  8; i++)
     {
-        log.write_string("GDT entry:");
-        log.write_int(i);
-        log.write_string(" data: ");
+        log.writeString("GDT entry:");
+        log.writeInt(i);
+        log.writeString(" data: ");
         uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base +(8*i));
-        log.write_hex(gdt_ptr);
-        log.new_line();
+        log.writeHex(gdt_ptr);
+        log.newLine();
     }
 
 
@@ -150,9 +156,9 @@ u16 get_cs()
     auto &log = Serial::get();
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
-    log.write_string("CS: ");
-    log.write_hex(i);
-    log.new_line();
+    log.writeString("CS: ");
+    log.writeHex(i);
+    log.newLine();
     return i;
 }
 
@@ -161,9 +167,9 @@ u16 get_ds()
     auto &log = Serial::get();
     u16 i;
     asm("mov %%ds,%0" : "=r"(i));
-    log.write_string("DS: ");
-    log.write_hex(i);
-    log.new_line();
+    log.writeString("DS: ");
+    log.writeHex(i);
+    log.newLine();
     return i;
 }
 
@@ -185,18 +191,21 @@ extern int setGdt(u32 limit, u32 base);
 extern "C"
 void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
+    EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
     vgap = &vga;
     PIC pic;
     vga.drawSplash();
     vga.bufferToScreen(false);
     Serial log;
-    log.write_string("LOADED OS.\n");
-    configure_pit(10000); // 10
+    log.writeString("LOADED OS.\n");
+    configurePit(10000); // 10
     IDT idt;
 
-    pic.enable_irq(0);
-    pic.enable_irq(1);
+
+
+    pic.enableIRQ(0);
+    pic.enableIRQ(1);
 
 
     sleep(1000);
@@ -206,7 +215,63 @@ void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_struc
     print_string("Loading Done.\n");
     print_string(">");
 
-    for(;;) asm("hlt");
+    while (true)
+    {
+        if (events.pendingEvents())
+        {
+            auto[type, data] = events.getEvent();
+            // log.writeString("Found event\n");
+            // log.writeString("type: ");
+            // log.writeInt(static_cast<int>(type));
+            // log.writeString(" lower: ");
+            // log.writeHex(data.lower_data);
+            // log.writeString(" upper: ");
+            // log.writeHex(data.upper_data);
+            // log.newLine();
+            switch (type)
+            {
+            case NULL_EVENT:
+                {
+                    log.writeString("NULL EVENT\n");
+                    break;
+                }
+            case KEY_UP:
+                {
+                    // todo: Add a line byffer and parsing to inputs on enter.
+                    // todo: Add an key handler which deals with modifier keys
+                    // todo: handle backspace
+                    // todo: write an actual terminal class.
+
+                    // log.writeString("Key up event in main loop.\n");
+                    char c = data.lower_data;
+                    if(key_map[c] !=0)
+                    {
+                        print_char(key_map[c]);
+                    }
+                    break;
+                }
+            case KEY_DOWN:
+                {
+                    log.writeString("Key down event in main loop.\n");
+                    break;
+                }
+            default:
+                {
+                    log.writeString("Unhandled event.\n");
+                    log.writeString("Type: ");
+                    log.writeInt(static_cast<int>(type));
+                    log.writeString(" lower: ");
+                    log.writeHex(data.lower_data);
+                    log.writeString(" upper: ");
+                    log.writeHex(data.upper_data);
+                    log.newLine();
+                    break;
+                }
+            }
+        }
+    }
+    log.writeString("ERROR: Left main loop.");
+    asm("hlt");
 
 
     // todo: inherit size of window and colour depth
