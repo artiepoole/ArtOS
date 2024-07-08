@@ -2,7 +2,7 @@
 // Created by artypoole on 06/07/24.
 //
 
-#include "events.h"
+#include "EventQueue.h"
 
 static EventQueue* instance{nullptr};
 

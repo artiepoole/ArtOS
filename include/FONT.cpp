@@ -2,7 +2,7 @@
 // Created by artypoole on 08/07/24.
 //
 
-#include "font.h"
+#include "FONT.h"
 u64 FONT[256] = {
         0x0000000000000000,
         0x0000000000000000,

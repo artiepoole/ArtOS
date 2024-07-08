@@ -5,8 +5,8 @@
 #ifndef IDT_H
 #define IDT_H
 #include "system.h"
-#include "pic.h"
-#include "events.h"
+#include "PIC.h"
+#include "EventQueue.h"
 
 
 

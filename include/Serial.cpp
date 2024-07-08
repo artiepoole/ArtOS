@@ -1,4 +1,4 @@
-#include "serial.h"
+#include "Serial.h"
 
 static Serial *instance{ nullptr };
 

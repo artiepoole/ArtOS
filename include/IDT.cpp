@@ -2,7 +2,7 @@
 // Created by artypoole on 02/07/24.
 //
 
-#include "idt.h"
+#include "IDT.h"
 
 struct idt_entry_t
 {

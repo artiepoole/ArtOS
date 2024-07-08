@@ -2,13 +2,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-// #include "terminal.h"
+// #include "Terminal.h"
 #include "string.h"
 #include "types.h"
-#include "multiboot2.h"
-#include "vga.h"
-#include "idt.h"
-#include "pic.h"
+#include "multiboot_header.h"
+#include "VideoGraphicsArray.h"
+#include "IDT.h"
+#include "PIC.h"
 #include "system.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
@@ -193,8 +193,8 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
 {
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
-    // auto window = vga->getwindow
-    // Terminal term(window);
+    // auto _window = vga->getwindow
+    // Terminal term(_window);
 
     vgap = &vga;
     PIC pic;
@@ -277,7 +277,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     asm("hlt");
 
 
-    // todo: inherit size of window and colour depth
+    // todo: inherit size of _window and colour depth
     // todo: Create string handling to concatenate strings and print them more easily
     // todo: restructure code to have the graphics stuff handled in a different file with only printf handled in
     // kernel.cpp

@@ -7,8 +7,8 @@
 
 
 #include "ports.h"
-#include "serial.h"
-#include "vga.h"
+#include "Serial.h"
+#include "VideoGraphicsArray.h"
 
 extern char key_map[128];
 

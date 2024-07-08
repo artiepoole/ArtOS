@@ -2,7 +2,7 @@
 // Created by artypoole on 04/07/24.
 //
 
-#include "pic.h"
+#include "PIC.h"
 
 
 #define ICW1_ICW4	0x01		/* Indicates that ICW4 will be present */
