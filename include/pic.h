@@ -15,16 +15,15 @@ class PIC
 public:
     PIC();
     void disable();
-    void irq_remap();
     void enable();
-    void enable_irq(u8 i);
-    void enable_all();
+    void enableIRQ(u8 i);
+    void enableAll();
 };
 
-void timer_handler();
+void timerHandler();
 void sleep(u32 ms);
 // extern "C"
-void configure_pit(u32 hz);
+void configurePit(u32 hz);
 
 
 #endif //PIC_H

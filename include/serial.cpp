@@ -36,51 +36,51 @@ Serial &Serial::get(){
     return *instance;
 }
 
-void Serial::write_char(const unsigned char c)
+void Serial::writeChar(const unsigned char c)
 {
-    send_char(c);
+    _sendChar(c);
 }
 
-void Serial::write_string(const char* data)
+void Serial::writeString(const char* data)
 {
-    write(data, strlen(data));
+    _write(data, strlen(data));
 }
 
-void Serial::new_line()
+void Serial::newLine()
 {
-    send_char('\n');
+    _sendChar('\n');
 }
 
 
-int Serial::received()
+int Serial::_received()
 {
     return inb(PORT + 5) & 1;
 }
 
-int Serial::transmit_empty()
+int Serial::_transmitEmpty()
 {
     return inb(PORT + 5) & 0x20;
 }
 
 char Serial::read()
 {
-    while (received() == 0);
+    while (_received() == 0);
 
     return inb(PORT);
 }
 
-void Serial::send_char(unsigned char a)
+void Serial::_sendChar(unsigned char a)
 {
-    while (transmit_empty() == 0);
+    while (_transmitEmpty() == 0);
 
     outb(PORT, a);
 }
 
-void Serial::write(const char* data, const size_t size)
+void Serial::_write(const char* data, const size_t size)
 {
     for (size_t i = 0; i < size; i++)
     {
         const char c = data[i];
-        send_char(c);
+        _sendChar(c);
     }
 }

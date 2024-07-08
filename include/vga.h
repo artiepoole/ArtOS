@@ -34,11 +34,11 @@ public:
     u32 height;
 
 protected:
-    u32* buffer;
-    u32* screen;
+    u32* _buffer;
+    u32* _screen;
 
-    void scroll_terminal() const;
-    void render_terminal() const;
+    void _scrollTerminal() const;
+    void _renderTerminal() const;
 
 
     /*
@@ -50,18 +50,18 @@ public:
     ~VideoGraphicsArray();
     static VideoGraphicsArray & get();
 
-    void PutPixel(i32 x, i32 y, u32 color) const;
-    void PutChar(char ch, i32 x, i32 y, u32 color) const;
-    void PutStr(const char* ch, i32 x, i32 y, u32 colorIndex) const;
-    void FillRectangle(i32 x, i32 y, u32 w, u32 h, u32 color) const;
+    void putPixel(i32 x, i32 y, u32 color) const;
+    void putChar(char ch, i32 x, i32 y, u32 color) const;
+    void putStr(const char* ch, i32 x, i32 y, u32 colorIndex) const;
+    void fillRectangle(i32 x, i32 y, u32 w, u32 h, u32 color) const;
     void bufferToScreen(bool clear) const;
     void clearBuffer() const;
     void drawSplash() const;
     void setScale(u8 new_scale) const;
     static u8 getScale();
     void clearWindow() const;
-    void write_string(const char* data) const;
-    void write_char(char data) const;
+    void writeString(const char* data) const;
+    void writeChar(char c) const;
 
     template <typename int_like>
     void writeInt(int_like val)
@@ -73,7 +73,7 @@ public:
         {
             trimmed_str[j] = out_str[j];
         }
-        write_string(trimmed_str);
+        writeString(trimmed_str);
         //log.write_int(val);
         // log.new_line();
     }
@@ -89,7 +89,7 @@ public:
         {
             trimmed_str[j] = out_str[j];
         }
-        write_string(trimmed_str);
+        writeString(trimmed_str);
     }
 
 

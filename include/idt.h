@@ -6,22 +6,22 @@
 #define IDT_H
 #include "system.h"
 #include "pic.h"
-#include "keyboard.h"
+#include "events.h"
 
-typedef struct
+struct idt_entry_t
 {
     u16 isr_low; // The lower 16 bits of the ISR's address
     u16 kernel_cs; // The GDT segment selector that the CPU will load into CS before calling the ISR
     u8 reserved; // Set to zero
     u8 attributes; // Type and attributes; see the IDT page
     u16 isr_high; // The higher 16 bits of the ISR's address
-} __attribute__((packed)) idt_entry_t;
+} __attribute__((packed));
 
-typedef struct
+struct idt_ptr_t
 {
     u16 limit;
     u32 base;
-} __attribute__((packed)) idt_ptr_t;
+} __attribute__((packed));
 
 extern void* isr_stub_table[];
 static bool idt_vectors[48];
@@ -33,7 +33,7 @@ class IDT
 public:
     IDT();
 private:
-    static void set_descriptor(u8 idt_index, void* isr_stub, u8 flags);
+    static void _setDescriptor(u8 idt_index, void* isr_stub, u8 flags);
 
 };
 

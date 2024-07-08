@@ -50,7 +50,7 @@ PIC::PIC()
 void PIC::disable()
 {
     auto &log = Serial::get();
-    log.write_string("Disabled PIC");
+    log.writeString("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
     outb(PIC1_DATA, 0xff);
@@ -60,17 +60,17 @@ void PIC::disable()
 void PIC::enable()
 {
     auto &log = Serial::get();
-    log.write_string("Renabled PIC");
+    log.writeString("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
 }
 
-void PIC::enable_irq(u8 i)
+void PIC::enableIRQ(u8 i)
 {
     auto &log = Serial::get();
-    log.write_string("Enabling IRQ");
-    log.write_int(i);
-    log.new_line();
+    log.writeString("Enabling IRQ");
+    log.writeInt(i);
+    log.newLine();
 
 
     if (i < 8)
@@ -78,23 +78,23 @@ void PIC::enable_irq(u8 i)
         u8 old_mask1 = inb(PIC1_DATA);
         u8 byte = 0x1 << i;
         mask1 = old_mask1 & byte;
-        log.write_hex(byte);
-        log.new_line();
+        log.writeHex(byte);
+        log.newLine();
     }
     else
     {
         u8 old_mask2 = inb(PIC2_DATA);
         u8 byte = 0x1 << i-8;
         mask2 = old_mask2 & byte;
-        log.write_hex(byte);
-        log.new_line();
+        log.writeHex(byte);
+        log.newLine();
     }
 
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
 }
 
-void PIC::enable_all()
+void PIC::enableAll()
 {
     mask1 = inb(PIC1_DATA);
     mask2 = inb(PIC2_DATA);
@@ -108,14 +108,14 @@ u32 rate =0;
 
 
 // extern "C"
-void configure_pit(u32 hz)
+void configurePit(u32 hz)
 {
     auto &log = Serial::get();
     u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = hz;
-    log.write_string("Configured PIT. Divisor: ");
-    log.write_int(divisor);
-    log.new_line();
+    log.writeString("Configured PIT. Divisor: ");
+    log.writeInt(divisor);
+    log.newLine();
     outb(0x43, 0x36); /* Set our command byte 0x36 */
     outb(0x40, divisor & 0xFF); /* Set low byte of divisor */
     outb(0x40, divisor >> 8); /* Set high byte of divisor */
@@ -126,27 +126,27 @@ void sleep(u32 ms)
     auto &log = Serial::get();
     if (rate==0)
     {
-        log.write_string("Tried to sleep when timer is not initiated.");
+        log.writeString("Tried to sleep when timer is not initiated.");
         return;
     }
 
     ticks = ms * rate / 1000;  // rate is in hz, time is in ms
 
-    log.write_string("Sleeping for ");
-    log.write_int(ms);
-    log.write_string("ms. Ticks: ");
-    log.write_int(ticks);
-    log.write_string(" Rate: ");
-    log.write_int(rate);
-    log.new_line();
+    log.writeString("Sleeping for ");
+    log.writeInt(ms);
+    log.writeString("ms. Ticks: ");
+    log.writeInt(ticks);
+    log.writeString(" Rate: ");
+    log.writeInt(rate);
+    log.newLine();
     while (ticks > 0);
-    //log.write_string("Exited while loop. ");
-    //log.write_string("Remaining ticks: ");
+    //log.writeString("Exited while loop. ");
+    //log.writeString("Remaining ticks: ");
     //log.write_int(ticks);
     // log.new_line();
 }
 
-void timer_handler()
+void timerHandler()
 {
     /* Increment our 'tick count' */
     if (ticks==0) return;
@@ -157,6 +157,6 @@ void timer_handler()
     *  display a message on the screen */
     // if (ticks % rate == 0)
     // {
-    //    log.write_string("One second has passed\n");
+    //    log.writeString("One second has passed\n");
     // }
 }

@@ -21,12 +21,12 @@ public:
     static Serial & get();
     bool connected;
 
-    void new_line();
-    void write_char(unsigned char c);
-    void write_string(const char* data);
+    void newLine();
+    void writeChar(unsigned char c);
+    void writeString(const char* data);
 
     template<typename int_like>
-    void write_int(const int_like val)
+    void writeInt(const int_like val)
     {
         char out_str[255];
         const int len = string_from_int(val, out_str);
@@ -35,11 +35,11 @@ public:
         {
             trimmed_str[j] = out_str[j];
         }
-       write_string(trimmed_str);
+       writeString(trimmed_str);
     }
 
     template<typename int_like1>
-    void write_hex(const int_like1 val)
+    void writeHex(const int_like1 val)
     {
         char out_str[255];
         const u32 len = hex_from_int(val, out_str, sizeof(val));
@@ -48,14 +48,14 @@ public:
         {
             trimmed_str[j] = out_str[j];
         }
-       write_string(trimmed_str);
+       writeString(trimmed_str);
     }
 private:
     static char read();
-    void send_char(unsigned char a);
-    static int received();
-    static int transmit_empty();
-    void write(const  char* data, size_t size);
+    void _sendChar(unsigned char a);
+    static int _received();
+    static int _transmitEmpty();
+    void _write(const  char* data, size_t size);
 };
 
 
