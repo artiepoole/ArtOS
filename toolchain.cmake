@@ -4,6 +4,7 @@ set(CMAKE_SYSTEM_PROCESSOR i686)
 
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
+
 set(TOOLS $ENV{HOME}/opt/cross-compiler/)
 set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-elf-as)
 set(CMAKE_C_COMPILER ${TOOLS}/bin/i686-elf-gcc)

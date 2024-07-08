@@ -9,7 +9,94 @@ namespace artosstd {
 
 // Demonstrate some basic assertions.
 TEST(StringTest, StrLen) {
-    int len = artosstd::strlen("test");
+    const size_t len = artosstd::strlen("test");
 
     EXPECT_EQ(len, 4);
+}
+
+TEST(StringTest, string_from_int_pos){
+    char outstr[32];
+    const int len = artosstd::string_from_int(1234, outstr);
+    char trimmed[len];
+    for (size_t i=0; i<len; i++)
+    {
+        trimmed[i] = outstr[i];
+    }
+
+    EXPECT_EQ(len, 5);
+    constexpr char expected[5] = "1234";
+    EXPECT_STREQ(trimmed, expected);
+}
+
+TEST(StringTest, string_from_int_neg){
+    char outstr[32];
+    const int len = artosstd::string_from_int(-1234, outstr);
+    char trimmed[len];
+    for (size_t i=0; i<len; i++)
+    {
+        trimmed[i] = outstr[i];
+    }
+
+    EXPECT_EQ(len, 6);
+    constexpr char expected[6] = "-1234";
+    ASSERT_STREQ(trimmed, expected);
+}
+
+TEST(StringTest, string_from_int_zero){
+    char outstr[32];
+    const int len = artosstd::string_from_int(0, outstr);
+    char trimmed[len];
+    for (size_t i=0; i<len; i++)
+    {
+        trimmed[i] = outstr[i];
+    }
+
+    EXPECT_EQ(len, 2);
+    constexpr char expected[6] = "0";
+    ASSERT_STREQ(trimmed, expected);
+}
+
+TEST(StringTest, string_from_hex_pos){
+    char outstr[32];
+    unsigned char in = 0xAE;
+    const int len = artosstd::hex_from_int(in, outstr, 1);
+    char trimmed[len];
+    for (size_t i=0; i<len; i++)
+    {
+        trimmed[i] = outstr[i];
+    }
+
+    EXPECT_EQ(len, 3);
+    constexpr char expected[3] = "AE";
+    EXPECT_STREQ(trimmed, expected);
+}
+
+TEST(StringTest, string_from_hex_neg){
+    char outstr[32];
+    signed char in = -33;
+    const int len = artosstd::hex_from_int(in, outstr, 1);
+    char trimmed[len];
+    for (size_t i=0; i<len; i++)
+    {
+        trimmed[i] = outstr[i];
+    }
+
+    EXPECT_EQ(len, 4);
+    constexpr char expected[4] = "-21";
+    ASSERT_STREQ(trimmed, expected);
+}
+
+TEST(StringTest, string_from_hex_zero){
+    char outstr[32];
+    unsigned char in = 0x00;
+    const int len = artosstd::hex_from_int(in, outstr, 1);
+    char trimmed[len];
+    for (size_t i=0; i<len; i++)
+    {
+        trimmed[i] = outstr[i];
+    }
+
+    EXPECT_EQ(len, 3);
+    constexpr char expected[3] = "00";
+    ASSERT_STREQ(trimmed, expected);
 }

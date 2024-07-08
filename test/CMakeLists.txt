@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.22)
-project(artos_test)
+
+set(TOOLS /usr)
+set(CMAKE_C_COMPILER ${TOOLS}/bin/gcc)
+set(CMAKE_CXX_COMPILER ${TOOLS}/bin/g++)
+set(CMAKE_VERBOSE_MAKEFILE 1)
+#
+#set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra") ###
+#set(CMAKE_C_FLAGS "-O2 -Wall -Wextra")
+
+project(ArtOS_Test)
 
 # GoogleTest requires at least C++14
 set(CMAKE_CXX_STANDARD 14)

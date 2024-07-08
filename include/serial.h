@@ -31,7 +31,7 @@ public:
         char out_str[255];
         const int len = string_from_int(val, out_str);
         char trimmed_str[len];
-        for (size_t j = 0; j <= len; j++)
+        for (size_t j = 0; j < len; j++)
         {
             trimmed_str[j] = out_str[j];
         }
