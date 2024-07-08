@@ -134,7 +134,7 @@ TEST(StringTest, digit_as_char)
 }
 
 
-TEST(StringTest, log2)
+TEST(StringTest, log2_pos)
 {
     auto out = artosstd::log2(0);
     ASSERT_EQ(out, 0);
@@ -149,4 +149,10 @@ TEST(StringTest, log2)
     out = artosstd::log2(145);
     ASSERT_EQ(out, 7);
 
+}
+
+TEST(StringTest, log2_neg)
+{
+    auto out = artosstd::log2(-5);
+    ASSERT_EQ(out, 2);
 }

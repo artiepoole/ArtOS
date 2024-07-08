@@ -14,5 +14,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: test
-      run: ./cmake_test.sh
+      run: ./test/cmake_test.sh
 
