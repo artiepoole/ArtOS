@@ -21,6 +21,8 @@ file(GLOB INCLUDE
 ## Building the kernel binary
 add_executable(${KERNEL_BIN} src/boot.s src/kernel.cpp
         ${INCLUDE}
+        include/font.cpp
+        include/font.h
 
 )
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc -Wl,-demangle")

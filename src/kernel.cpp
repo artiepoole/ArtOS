@@ -70,7 +70,7 @@ void print_multiboot_header_info(const u32 stackPointer, const multiboot_header*
     printf("stackPointer           : 0x", stackPointer);
     printf("screen buffer          : 0x", (int)frame_buffer);
     printf("screen buffer[1024*768]: 0x", (int)&frame_buffer[1024 * 768]);
-    printf("FONT                   : 0x", (int)vgap->FONT);
+    // printf("FONT                   : 0x", *FONT);
     printf("buffer size            : 0x", 1024 * 768 * 4);
     printf("vga                    : 0x", (int)vgap);
 
@@ -189,10 +189,13 @@ extern int setGdt(u32 limit, u32 base);
 
 
 extern "C"
-void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
+void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
+    // auto window = vga->getwindow
+    // Terminal term(window);
+
     vgap = &vga;
     PIC pic;
     vga.drawSplash();
@@ -243,7 +246,7 @@ void kernel_main(const u32 stackPointer, const multiboot_header* multiboot_struc
                     // todo: write an actual terminal class.
 
                     // log.writeString("Key up event in main loop.\n");
-                    char c = data.lower_data;
+                    size_t c = data.lower_data;
                     if(key_map[c] !=0)
                     {
                         print_char(key_map[c]);

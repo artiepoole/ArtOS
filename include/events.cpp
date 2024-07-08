@@ -54,7 +54,7 @@ char key_map[128] =
 /* Handles the keyboard interrupt */
 void keyboard_handler()
 {
-    auto& log = Serial::get();
+    [[maybe_unused]] auto& log = Serial::get();
     auto& queue = EventQueue::getInstance();
 
     /* Read from the keyboard's data buffer */
@@ -101,7 +101,7 @@ EventQueue& EventQueue::getInstance()
 
 void EventQueue::addEvent(const event_t& event)
 {
-    auto& log = Serial::get();
+    [[maybe_unused]] auto & log = Serial::get();
 
 
     // log.writeString("Adding event.\n");

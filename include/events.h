@@ -15,9 +15,12 @@ extern char key_map[128];
 enum EVENT_TYPE
 {
     NULL_EVENT = 0,
-    KEY_DOWN = 1,
-    KEY_UP = 2,
-    MOUSE = 3,
+    TICK = 1,
+    DRAW_CALL = 2,
+    KEY_DOWN = 3,
+    KEY_UP = 4,
+    MOUSE = 5,
+
 };
 
 struct event_data_t

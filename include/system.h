@@ -6,11 +6,6 @@
 #define SYSTEM_H
 
 #include "types.h"
-#include "serial.h"
-
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 
 
 struct registers

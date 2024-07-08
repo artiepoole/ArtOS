@@ -83,8 +83,8 @@ void PIC::enableIRQ(u8 i)
     }
     else
     {
-        u8 old_mask2 = inb(PIC2_DATA);
-        u8 byte = 0x1 << i-8;
+        const u8 old_mask2 = inb(PIC2_DATA);
+        const u8 byte = 0x1 << (i-8);
         mask2 = old_mask2 & byte;
         log.writeHex(byte);
         log.newLine();

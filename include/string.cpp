@@ -4,9 +4,6 @@
 
 #include "string.h"
 
-#include "serial.h"
-
-
 
 size_t strlen(const char* str)
 {

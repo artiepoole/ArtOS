@@ -28,12 +28,12 @@ static VideoGraphicsArray* instance{nullptr};
 
 As the is no memory management the Offscreen buffer is allocated elsewhere and passed in.
 
-This class could be re-worked as a Canvas with out to many changes
+This class could be re-worked as a Canvas with out to many changes */
 
-*/
-int char_dim = 8;
-int font_scale = 1;
-int scaled_char_dim = 8;
+
+u32 char_dim = 8;
+u32 font_scale = 1;
+u32 scaled_char_dim = 8;
 int window[4]; // x1, y1, x2, y2
 int window_width;
 int window_height;
@@ -87,27 +87,27 @@ VideoGraphicsArray& VideoGraphicsArray::get()
     return *instance;
 }
 
-void VideoGraphicsArray::putPixel(i32 x, i32 y, u32 color) const
+void VideoGraphicsArray::putPixel(u32 x, u32 y, u32 color) const
 {
-    if (x < 0 || width <= x || y < 0 || height <= y)
+    if (width <= x || height <= y)
         return;
 
     _buffer[width * y + x] = color;
 }
 
-void VideoGraphicsArray::fillRectangle(i32 x, i32 y, u32 w, u32 h, u32 color) const
+void VideoGraphicsArray::fillRectangle(const u32 x, const u32 y, const u32 w, const u32 h, const u32 color) const
 {
     u32 i = width * (y - 1);
 
     // test if the Rectangle will be clipped (will it be fully in the screen or partially)
-    if (x >= 0 && x + w < width && y >= 0 && y + h < height)
+    if ( x + w < width &&  y + h < height)
     {
         // fully drawn
         i += x + w;
-        for (i32 yy = h; yy > 0; yy--)
+        for (u32 yy = h; yy > 0; yy--)
         {
             i += width - w;
-            for (i32 xx = w; xx > 0; xx--)
+            for (u32 xx = w; xx > 0; xx--)
             {
                 _buffer[i++] = color;
             }
@@ -116,12 +116,12 @@ void VideoGraphicsArray::fillRectangle(i32 x, i32 y, u32 w, u32 h, u32 color) co
     else
     {
         // clipped
-        for (i32 yy = y; yy < y + h; yy++)
+        for (u32 yy = y; yy < y + h; yy++)
         {
             i += width;
-            for (i32 xx = x; xx < x + w; xx++)
+            for (u32 xx = x; xx < x + w; xx++)
             {
-                if (xx >= 0 && xx < width && yy >= 0 && yy < height)
+                if (xx < width  && yy < height)
                     _buffer[i + xx] = color;
             }
         }
@@ -131,10 +131,10 @@ void VideoGraphicsArray::fillRectangle(i32 x, i32 y, u32 w, u32 h, u32 color) co
 /**
  * Copy the screen buffer to the screen
  */
-void VideoGraphicsArray::bufferToScreen(bool clear) const
+void VideoGraphicsArray::bufferToScreen(const bool clear) const
 {
     // do the multiply once and test against 0
-    for (int i = 0; i < width * height; i++)
+    for (size_t i = 0; i < width * height; i++)
     {
         _screen[i] = _buffer[i];
     }
@@ -144,46 +144,46 @@ void VideoGraphicsArray::bufferToScreen(bool clear) const
 
 void VideoGraphicsArray::clearBuffer() const
 {
-    for (int i = 0; i < width * height; i++)
+    for (size_t i = 0; i < width * height; i++)
     {
         _buffer[i] = 0;
     }
 }
 
 
-void VideoGraphicsArray::putChar(char ch, i32 x, i32 y, u32 color) const
+void VideoGraphicsArray::putChar(const char ch, const u32 x, const u32 y, const u32 color) const
 {
     auto& log = Serial::get();
     u32 px = 0; // position in the charactor - an 8x8 font = 64 bits
-    u64 bCh = FONT[ch];
+    const u64 bCh = FONT[static_cast<size_t>(ch)];
 
     // check if it will be drawn off screen
-    if (x + (scaled_char_dim) < 0 || x > width || y + (scaled_char_dim) < 0 || y > height)
+    if (x > width ||  y > height)
     {
         log.writeString("Printing off screen\n");
         return;
     }
 
     // test if the charactor will be clipped (will it be fully in the screen or partially)
-    if (x >= 0 && x + (scaled_char_dim) < width && y >= 0 && y + (scaled_char_dim) < height)
+    if ( x + (scaled_char_dim) < width &&  y + (scaled_char_dim) < height)
     {
         // fully in the screen - pre calculate some of the values
         // so there is less going on in the loop
-        int i = width * (y - 1) + x + (scaled_char_dim); // start position for character
-        int incAmount = width - (scaled_char_dim); // amount of pixels to get to start of next line of char
-        for (int yy = 0; yy < (scaled_char_dim); yy++)
+        size_t i = width * (y - 1) + x + (scaled_char_dim); // start position for character
+        size_t incAmount = width - (scaled_char_dim); // amount of pixels to get to start of next line of char
+        for (size_t yy = 0; yy < (scaled_char_dim); yy++)
         {
             i += incAmount; // next character pixel line
             px = char_dim * (yy / font_scale); // select the correct pixel offset when repeating lines.
 
-            for (int xx = 0; xx < (char_dim); xx++)
+            for (size_t xx = 0; xx < (char_dim); xx++)
             {
-                for (int s = 0; s < font_scale; s++)
+                for (size_t s = 0; s < font_scale; s++)
                 {
                     // test if a pixel is drawn here
                     if ((bCh >> (px)) & 1) // if the scale is >1, this should not change of shift each time
                     {
-                        _buffer[i] = color;
+                        _buffer[i] = color; //  vga.putpixel(x,y);
                     }
                     i++; // step along screen pixels
                 }
@@ -194,16 +194,16 @@ void VideoGraphicsArray::putChar(char ch, i32 x, i32 y, u32 color) const
     else
     {
         // partially in the screen
-        int xpos = 0;
-        int i = width * (y - 1);
-        for (int yy = 0; yy < scaled_char_dim; yy++)
+        size_t xpos = 0;
+        size_t i = width * (y - 1);
+        for (size_t yy = 0; yy < scaled_char_dim; yy++)
         {
             i += width;
             xpos = x;
             px = char_dim * (yy / font_scale);
-            for (int xx = 0; xx < scaled_char_dim; xx++)
+            for (size_t xx = 0; xx < scaled_char_dim; xx++)
             {
-                for (int s = 0; s < font_scale; s++)
+                for (size_t s = 0; s < font_scale; s++)
                 {
                     // test if a pixel is drawn here
                     if ((bCh >> (px)) & 1) // if the scale is >1, this should not change of shift each time
@@ -221,9 +221,9 @@ void VideoGraphicsArray::putChar(char ch, i32 x, i32 y, u32 color) const
 }
 
 
-void VideoGraphicsArray::putStr(const char* ch, i32 x, i32 y, u32 color) const
+void VideoGraphicsArray::putStr(const char* ch, u32 x, u32 y, u32 color) const
 {
-    for (i32 i = 0; ch[i] != 0; i++, x += scaled_char_dim)
+    for (u32 i = 0; ch[i] != 0; i++, x += scaled_char_dim)
     {
         putChar(ch[i], x, y, color);
     }
@@ -290,8 +290,8 @@ void VideoGraphicsArray::_renderTerminal() const
 
 void VideoGraphicsArray::writeString(const char* data) const
 {
-    const int len = strlen(data);
-    for (int i = 0; i < len; i++)
+    const size_t len = strlen(data);
+    for (size_t i = 0; i < len; i++)
     {
         char c = data[i];
         if (c == '\n')

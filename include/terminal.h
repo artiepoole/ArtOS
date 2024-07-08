@@ -5,46 +5,47 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Hardware text mode color constants. */
-//
-// enum vga_color
-// {
-//     VGA_COLOR_BLACK = 0,
-//     VGA_COLOR_BLUE = 1,
-//     VGA_COLOR_GREEN = 2,
-//     VGA_COLOR_CYAN = 3,
-//     VGA_COLOR_RED = 4,
-//     VGA_COLOR_MAGENTA = 5,
-//     VGA_COLOR_BROWN = 6,
-//     VGA_COLOR_LIGHT_GREY = 7,
-//     VGA_COLOR_DARK_GREY = 8,
-//     VGA_COLOR_LIGHT_BLUE = 9,
-//     VGA_COLOR_LIGHT_GREEN = 10,
-//     VGA_COLOR_LIGHT_CYAN = 11,
-//     VGA_COLOR_LIGHT_RED = 12,
-//     VGA_COLOR_LIGHT_MAGENTA = 13,
-//     VGA_COLOR_LIGHT_BROWN = 14,
-//     VGA_COLOR_WHITE = 15,
-//     _VGA_COLOUR_COUNT = 16,
-// };
+class Terminal
+{
+public:
+    Terminal();
+    ~Terminal();
+    static Terminal & get();
 
-static constexpr size_t SCREEN_WIDTH_TEXT = 1024/8;
-static constexpr size_t SCREEN_HEIGHT_TEXT = 768/8;
+    void writeString(const char* data) const;
+    void writeChar(char c) const;
 
-//
-// uint8_t vga_entry_color(vga_color fg, vga_color bg);
+    template <typename int_like>
+    void writeInt(int_like val)
+    {
+        char out_str[255]; // long enough for any int type possible
+        const size_t len = string_from_int(val, out_str);
+        char trimmed_str[len];
+        for (size_t j = 0; j <= len; j++)
+        {
+            trimmed_str[j] = out_str[j];
+        }
+        writeString(trimmed_str);
+    }
 
-// void terminal_initialize();
-//
-// void terminal_new_line();
-//
-// void terminal_draw_colour_ascii(const char* text, const uint8_t* colour, size_t width, size_t height);
-//
-// void terminal_writechar(char c);
-//
-// void terminal_writestring(const char* data);
+    template <typename int_like1>
+    void writeHex(int_like1 val)
+    {
+        char out_str[255];
+        const size_t len = hex_from_int(val, out_str, sizeof(val));
+        char trimmed_str[len];
+        for (size_t j = 0; j < len; j++)
+        {
+            trimmed_str[j] = out_str[j];
+        }
+        writeString(trimmed_str);
+    }
 
-// void print_string(const char* str);
+
+private:
+    void _scrollTerminal() const;
+    void _renderTerminal() const;
+};
 
 
 
