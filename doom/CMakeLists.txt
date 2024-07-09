@@ -7,6 +7,12 @@ file(GLOB SRC
         "doomgeneric/*.c"
 )
 
-add_library(doom STATIC doomgeneric_artos.c ${SRC}
+file(GLOB PDCLIB_H
+        "../pdclib/include/*.h"
+        "../pdclib/platform/example/include/pdclib/*.H"
 )
-target_include_directories(doom PRIVATE doomgeneric/)
+
+add_subdirectory(../pdclib ../pdclib/cmake-build-release/libpdclib.a)
+add_library(doom STATIC doomgeneric_artos.c ${SRC} ${PDCLIB_H})
+target_include_directories(doom PRIVATE doomgeneric ../pdclib/include ../pdclib/platform/example/include/pdclib/)
+target_link_libraries(pdclib)
