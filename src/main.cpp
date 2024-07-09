@@ -305,7 +305,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     vga.draw();
     terminal.writeString("Loading Done.\n");
 
-
+    // Event handler loop.
     while (true)
     {
         if (events.pendingEvents())
@@ -388,7 +388,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     // todo: inherit size of _window and colour depth
     // todo: Create string handling to concatenate strings and print them more easily
     // todo: restructure code to have the graphics stuff handled in a different file with only printf handled in
-    // kernel.cpp
+    // main.cpp
     // todo: add data to the data section contianing the splash screen
     // Todo: implement user typing from keyboard inputs
     // Todo: automate the build process

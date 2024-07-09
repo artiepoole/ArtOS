@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 
-
 ENABLE_LANGUAGE(ASM)
-
 
 
 project(ArtOS)
@@ -18,8 +16,11 @@ file(GLOB INCLUDE
         "include/*.s"
 )
 
+
+add_subdirectory(pdclib)
+
 ## Building the kernel binary
-add_executable(${KERNEL_BIN} src/boot.s src/kernel.cpp
+add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE}
 )
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc -Wl,-demangle")
@@ -27,6 +28,8 @@ add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
 target_include_directories(${KERNEL_BIN} PUBLIC include src)
+target_link_libraries(pdclib)
+
 
 
 ### Generating the ISO file
@@ -38,5 +41,6 @@ add_dependencies(ArtOS.iso ArtOS.bin)
 add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/)
+
 
 
