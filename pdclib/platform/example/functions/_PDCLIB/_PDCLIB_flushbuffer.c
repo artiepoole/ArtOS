@@ -25,7 +25,7 @@ extern "C" {
 
 typedef long ssize_t;
 ssize_t write(int fd, const void* buf, size_t count);
-ssize_t write(int fd, const void* buf, size_t count)
+ssize_t write(const int fd, const void* buf, const size_t count)
 {
     if (fd == stdout->handle)
     {
@@ -38,6 +38,7 @@ ssize_t write(int fd, const void* buf, size_t count)
         write_error(buf, count);
         return 0;
     }
+    // unhandled/unknown file descriptor
     return -1;
 }
 
