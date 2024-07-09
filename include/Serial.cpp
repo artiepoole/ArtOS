@@ -62,7 +62,7 @@ int Serial::_transmitEmpty()
     return inb(PORT + 5) & 0x20;
 }
 
-char Serial::read()
+char Serial::_read()
 {
     while (_received() == 0);
 

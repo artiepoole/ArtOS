@@ -58,12 +58,11 @@ void keyboard_handler()
     auto& queue = EventQueue::getInstance();
 
     /* Read from the keyboard's data buffer */
-    const u8 scancode = inb(KEYB_DATA);
 
 
-    if (scancode & 0x80) // key down event
+    if (const u32 scancode = inb(KEYB_DATA); scancode & 0x80) // key down event
     {
-        const auto ku = event_t{KEY_DOWN, event_data_t{scancode, 0}};
+        const auto ku = event_t{KEY_DOWN, event_data_t{scancode-0x80, 0}};
         queue.addEvent(ku);
         /* You can use this one to see if the user released the
         *  shift, alt, or control keys... */
@@ -82,7 +81,7 @@ EventQueue::EventQueue()
     _write_index = 0;
     _read_index = 0;
 
-    for (auto & i : event_queue)
+    for (auto & i : _event_queue)
     {
         i = event_t{NULL_EVENT, event_data_t{0, 0}};
     }
@@ -113,7 +112,7 @@ void EventQueue::addEvent(const event_t& event)
     // log.writeHex(event.data.upper_data);
     // log.newLine();
 
-    event_queue[_write_index] = event;
+    _event_queue[_write_index] = event;
     _write_index = (_write_index+1)%max_len;
     _unread_counter++;
 
@@ -136,7 +135,7 @@ event_t EventQueue::getEvent()
         return event_t{NULL_EVENT, event_data_t{0, 0}};
     }
 
-    const auto event_out = event_queue[_read_index];
+    const auto event_out = _event_queue[_read_index];
     _unread_counter--;
     _read_index = (_read_index+1)%max_len;
     return event_out;
