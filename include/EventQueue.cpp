@@ -62,14 +62,14 @@ void keyboard_handler()
 
     if (const u32 scancode = inb(KEYB_DATA); scancode & 0x80) // key down event
     {
-        const auto ku = event_t{KEY_DOWN, event_data_t{scancode-0x80, 0}};
+        const auto ku = event_t{KEY_UP, event_data_t{scancode-0x80, 0}};
         queue.addEvent(ku);
         /* You can use this one to see if the user released the
         *  shift, alt, or control keys... */
     }
     else // key release event
     {
-        const auto kd = event_t{KEY_UP, event_data_t{scancode, 0}};
+        const auto kd = event_t{KEY_DOWN, event_data_t{scancode, 0}};
         queue.addEvent(kd);
     }
 }

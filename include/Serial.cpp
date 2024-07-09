@@ -46,6 +46,11 @@ void Serial::writeString(const char* data)
     _write(data, strlen(data));
 }
 
+void Serial::writeBuffer(const char* data, size_t len)
+{
+    _write(data, len);
+}
+
 void Serial::newLine()
 {
     _sendChar('\n');

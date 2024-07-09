@@ -159,23 +159,8 @@ void Terminal::writeString(const char* data)
 
     const size_t len = strlen(data);
     // put data into the text buffer
-    for (size_t i = 0; i < len; i++)
-    {
-        if (const char c = data[i]; c == '\n')
-        {
-            newLine();
-            terminal_buffer[0][terminal_row] = '>';
-        }
-        else
-        {
-            terminal_buffer[terminal_column++][terminal_row] = c;
+    writeBuffer(data, len);
 
-            if (terminal_column >= buffer_width) newLine();
-        }
-        if (terminal_row > buffer_height)_scroll();
-        // write the text buffer to screen
-        _render();
-    }
 }
 
 void Terminal::writeChar(const char c)
@@ -212,6 +197,28 @@ void Terminal::_scroll()
         terminal_buffer[x][buffer_height - 1] = ' ';
     }
     terminal_row -= 1;
+}
+
+
+void Terminal::writeBuffer(const char* data, size_t len)
+{
+    for (size_t i = 0; i < len; i++)
+    {
+        if (const char c = data[i]; c == '\n')
+        {
+            newLine();
+            terminal_buffer[0][terminal_row] = '>';
+        }
+        else
+        {
+            terminal_buffer[terminal_column++][terminal_row] = c;
+
+            if (terminal_column >= buffer_width) newLine();
+        }
+        if (terminal_row > buffer_height)_scroll();
+        // write the text buffer to screen
+        _render();
+    }
 }
 
 void Terminal::backspace() const

@@ -37,6 +37,7 @@ public:
      void newLine();
      void writeChar(unsigned char c);
      void writeString(const char* data);
+    void writeBuffer(const char* data, size_t len);
 
     template<typename int_like>
     void writeInt(const int_like val)

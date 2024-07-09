@@ -26,9 +26,10 @@ public:
 
     void writeString(const char* data);
     void writeChar(char c);
+    void writeBuffer(const char* data, size_t len);
     void newLine();
     void setScale(u32 new_scale);
-    static u32 getScale();
+    u32 getScale();
 
     template <typename int_like>
     void writeInt(int_like val)
@@ -65,7 +66,6 @@ private:
     void _scroll();
     void _render() const;
     void _putChar(char ch, u32 x, u32 y) const;
-    void _putStr(const char* ch, u32 x, u32 y) const;
 };
 
 
