@@ -16,15 +16,15 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] IRQ0 targets a timer decrementor to allow for scheduling and waiting.
 - [x] Kernel sleep (block until n ticks)
 - [ ] Proper handling of a scheduler to allow for sleeping of a task.
-- [ ] User IO - keyboard
+- [x] User IO - keyboard
 - [ ] User IO - mouse?
 - [ ] Detection and selection of video modes
 - [ ] Initialise frame buffer etc using the multiboot data instead of hard coded
-- [ ] Implement a standard library
+- [ ] Implement a standard library - WIP BRANCH: stdlib
 - [ ] Implement filesystem
 - [ ] Run an executable
 - [ ] Self hosting compiler
-- [ ] Play DOOM for ArtOS!
+- [ ] Play DOOM for ArtOS! - WIP BRANCH: doom (requires several stdlib features)
 
 ## Progress markers
 Splash Screen
