@@ -14,12 +14,12 @@
 
 /* Declared implicitly by dlmalloc. This declaration avoids the warning. */
 #include <stdint.h>
-void * sbrk( intptr_t );
+
+void * sbrk( intptr_t increment );
 
 #ifndef REGTEST
-
-#include "pdclib/_PDCLIB_config.h"
-#include "pdclib/_PDCLIB_defguard.h"
+#include "../../pdclib/platform/example/include/pdclib/_PDCLIB_config.h"
+#include "../../pdclib/platform/example/include/pdclib/_PDCLIB_defguard.h"
 
 /* Have all functions herein use the dl* prefix */
 #define USE_DL_PREFIX 1
@@ -1563,9 +1563,9 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #ifndef LACKS_UNISTD_H
 #include <unistd.h>     /* for sbrk, sysconf */
 #else /* LACKS_UNISTD_H */
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__)
-extern void*     sbrk(ptrdiff_t);
-#endif /* FreeBSD etc */
+// #if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__)
+// extern void* sbrk(intptr_t increment);
+// #endif /* FreeBSD etc */
 #endif /* LACKS_UNISTD_H */
 
 /* Declarations for locking */

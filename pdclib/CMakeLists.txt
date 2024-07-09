@@ -160,7 +160,7 @@ set( PDCLIB_SOURCES
 #        platform/example/functions/time/time.c
 #        platform/example/functions/time/timespec_get.c
 
-#        functions/_dlmalloc/malloc.c
+        functions/_dlmalloc/malloc.c
 
 #        functions/_dtoa/dtoa.c
 
