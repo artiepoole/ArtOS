@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <kernel/kernel.h>
 
 
 #include "Serial.h"
@@ -298,11 +299,19 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     pic.enableIRQ(0);
     pic.enableIRQ(1);
 
+    // u32 step = load_bar_region[2]/100;
+    size_t n_steps = 50;
+    for (size_t i =0; i <= n_steps; i++)
+    {
+       vga.fillRectangle(load_bar_region[0], load_bar_region[1], load_bar_region[2]* i/n_steps , load_bar_region[3], COLOR_BASE0);
+        vga.draw();
+        sleep(50);
 
-    sleep(1000);
+    }
+    // sleep(1000);
     terminal.setScale(2);
     vga.draw();
-    terminal.writeString("Loading Done.\n");
+    terminal.writeString(" Loading Done.\n");
 
     // Event handler loop.
     while (true)
