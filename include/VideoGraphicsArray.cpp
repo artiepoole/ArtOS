@@ -147,15 +147,6 @@ void VideoGraphicsArray::drawSplash() const
 }
 
 
-void VideoGraphicsArray::clearWindow() const
-{
-    for (size_t ij = 0; ij < width * height; ij++)
-    {
-        _buffer[ij] = FRAME_DATA[ij];
-    }
-}
-
-
 
 
 window_t * VideoGraphicsArray::getScreen()

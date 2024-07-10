@@ -301,7 +301,6 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
 
     sleep(1000);
     terminal.setScale(2);
-    vga.clearWindow();
     vga.draw();
     terminal.writeString("Loading Done.\n");
 

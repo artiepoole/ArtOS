@@ -35,9 +35,9 @@ public:
     void writeChar(char c, u32 color);
     void writeBuffer(const char* data, size_t len, u32 color);
     void writeBuffer(const char* data, size_t len);
-    void newLine();
-    void setScale(u32 new_scale);
-    u32 getScale();
+    static void newLine();
+    static void setScale(u32 new_scale);
+    static u32 getScale();
     void clear();
 
     template <typename int_like>
@@ -69,12 +69,12 @@ public:
         writeString(trimmed_str);
     }
 
-    void backspace() const;
+    static void backspace();
 
 private:
-    void _scroll();
-    void _render() const;
-    void _putChar(terminal_char_t ch, u32 origin_x, u32 origin_y) const;
+    static void _scroll();
+    static void _render();
+    static void _putChar(terminal_char_t ch, u32 origin_x, u32 origin_y);
 };
 
 

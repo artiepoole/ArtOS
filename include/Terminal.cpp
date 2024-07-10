@@ -1,10 +1,9 @@
 #include "Terminal.h"
 
 
-
 static Terminal* instance{nullptr};
 
-window_t screen_region = {0,0,1024,768,1024,768};
+window_t screen_region = {0, 0, 1024, 768, 1024, 768};
 u32 char_dim = 8;
 u32 font_scale = 1;
 u32 scaled_char_dim = 8;
@@ -16,10 +15,10 @@ u32 accent;
 u32 error;
 u32 buffer_width;
 u32 buffer_height;
-terminal_char_t terminal_buffer[1024*768/64]; // 12288 characters total
-terminal_char_t rendered_buffer[1024*768/64]; // 12288 characters total
+terminal_char_t terminal_buffer[1024 / 8 * 768 / 8]; // 12288 characters total
+terminal_char_t rendered_buffer[1024 / 8 * 768 / 8]; // 12288 characters total
 
-u32 term_screen_buffer[1024*768];
+u32 term_screen_buffer[1024 * 768];
 
 Terminal::Terminal()
 {
@@ -28,7 +27,7 @@ Terminal::Terminal()
     frgd = COLOR_BASE0;
     accent = COLOR_CYAN;
     error = COLOR_RED;
-    for (size_t i =0; i<screen_region.w * screen_region.h; i++ )
+    for (size_t i = 0; i < screen_region.w * screen_region.h; i++)
     {
         term_screen_buffer[i] = bkgd;
     }
@@ -50,10 +49,14 @@ Terminal& Terminal::get()
     return *instance;
 }
 
-
-void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 origin_y) const
+size_t min(size_t a, size_t b)
 {
+    if (a < b) return a;
+    return b;
+}
 
+void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 origin_y)
+{
     u32 px; // position in the charactor - an 8x8 font = 64 bits
     const u64 bCh = FONT[static_cast<size_t>(ch.letter)];
 
@@ -61,7 +64,7 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
     if (origin_x + (scaled_char_dim) < screen_region.x2 && origin_y + (scaled_char_dim) < screen_region.y2)
     {
         // fully in the screen_region
-        size_t i = origin_x + screen_region.w*origin_y;  // linear index
+        size_t i = origin_x + screen_region.w * origin_y; // linear index
         const size_t line_step_amount = screen_region.w - scaled_char_dim; // amount to step to start next lin of character
         for (size_t y = 0; y < (scaled_char_dim); y++)
         {
@@ -81,26 +84,30 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
             i += line_step_amount;
         }
     }
-    // else
-    // {
-    //     // patially in the screen_region
-    //     for (size_t y = 0; y < _window.y2; y++)
-    //     {
-    //         for (size_t x = 0; x < _window.x2; x++)
-    //         {
-    //             px = 8 * (y / font_scale) + (x / font_scale);
-    //
-    //             if ((bCh >> (px)) & 1)
-    //             {
-    //                 term_screen_buffer[i++] = ch.color;
-    //             }
-    //             else
-    //             {
-    //                 term_screen_buffer(i++, bkgd);
-    //             }
-    //         }
-    //     }
-    // }
+    else
+    {
+        // patially in the screen_region
+        size_t i = origin_x + screen_region.w * origin_y; // linear index
+        const size_t line_step_amount = screen_region.w - min(screen_region.x2 - origin_x, scaled_char_dim);
+
+        for (size_t y = 0; y < min(screen_region.y2 - origin_y, scaled_char_dim); y++)
+        {
+            for (size_t x = 0; x < min(screen_region.x2 - origin_x, scaled_char_dim); x++)
+            {
+                px = 8 * (y / font_scale) + (x / font_scale);
+
+                if ((bCh >> (px)) & 1)
+                {
+                    term_screen_buffer[i++] = ch.color;
+                }
+                else
+                {
+                    term_screen_buffer[i++] = bkgd;
+                }
+            }
+            i += line_step_amount;
+        }
+    }
 }
 
 
@@ -131,9 +138,8 @@ u32 Terminal::getScale()
     return font_scale;
 }
 
-void Terminal::_render() const
+void Terminal::_render()
 {
-
     size_t i = 0;
     for (size_t row = 0; row < buffer_height; row++)
     {
@@ -182,11 +188,11 @@ void Terminal::writeChar(const char c, const u32 color)
     if (c == '\n')
     {
         newLine();
-        terminal_buffer[terminal_row*buffer_width] = terminal_char_t{'>', accent};;
+        terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent};;
     }
     else
     {
-        terminal_buffer[terminal_row*buffer_width + terminal_column++] = terminal_char_t{c, color};
+        terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, color};
     }
     if (terminal_column >= buffer_width)
     {
@@ -200,12 +206,11 @@ void Terminal::writeChar(const char c)
     if (c == '\n')
     {
         newLine();
-        terminal_buffer[terminal_row*buffer_width] = terminal_char_t{'>', accent};;
+        terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent};;
     }
     else
     {
-
-        terminal_buffer[terminal_row*buffer_width + terminal_column++] = terminal_char_t{c, frgd};
+        terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, frgd};
     }
     if (terminal_column >= buffer_width)
     {
@@ -217,17 +222,17 @@ void Terminal::writeChar(const char c)
 
 void Terminal::_scroll()
 {
-    auto& vga = VideoGraphicsArray::get();
-    vga.clearWindow();
+    // auto& vga = VideoGraphicsArray::get();
+    // vga.clearWindow();
     for (size_t x = 0; x < buffer_width; x++)
     {
         // All lines move up one
         for (size_t y = 0; y < buffer_height - 1; y++)
         {
-            terminal_buffer[y*buffer_width + x] = terminal_buffer[(y+1)*buffer_width + x];
+            terminal_buffer[y * buffer_width + x] = terminal_buffer[(y + 1) * buffer_width + x];
         }
         // Bottom line is replaced with empty.
-        terminal_buffer[(buffer_height - 1)*buffer_width +x] = terminal_char_t{' ', bkgd};
+        terminal_buffer[(buffer_height - 1) * buffer_width + x] = terminal_char_t{' ', bkgd};
     }
     terminal_row -= 1;
 }
@@ -240,11 +245,11 @@ void Terminal::writeBuffer(const char* data, const size_t len, const u32 color)
         if (const char c = data[i]; c == '\n')
         {
             newLine();
-            terminal_buffer[terminal_row*buffer_width] = terminal_char_t{'>', accent};
+            terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent};
         }
         else
         {
-            terminal_buffer[terminal_row*buffer_width + terminal_column++] = terminal_char_t{c, color};;
+            terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, color};;
 
             if (terminal_column >= buffer_width) newLine();
         }
@@ -261,11 +266,11 @@ void Terminal::writeBuffer(const char* data, const size_t len)
         if (const char c = data[i]; c == '\n')
         {
             newLine();
-            terminal_buffer[terminal_row*buffer_width] = terminal_char_t{'>', accent};
+            terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent};
         }
         else
         {
-            terminal_buffer[terminal_row*buffer_width + terminal_column++] = terminal_char_t{c, frgd};;
+            terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, frgd};;
 
             if (terminal_column >= buffer_width) newLine();
         }
@@ -275,11 +280,11 @@ void Terminal::writeBuffer(const char* data, const size_t len)
     }
 }
 
-void Terminal::backspace() const
+void Terminal::backspace()
 {
     if (terminal_column > 1)
     {
-        terminal_buffer[terminal_row*buffer_width + (terminal_column-1)] = terminal_char_t{'>', bkgd};;
+        terminal_buffer[terminal_row * buffer_width + (terminal_column - 1)] = terminal_char_t{'>', bkgd};;
         --terminal_column;
     }
     _render();

@@ -8,5 +8,4 @@
 
 #include "types.h"
 extern u32 SPLASH_DATA[1024*768];
-extern u32 FRAME_DATA[1024*768];
 #endif //SPLASH_SCREEN_H
