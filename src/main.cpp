@@ -285,7 +285,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
 
     // vgap = &vga;
-    Terminal terminal(vga.getScreen(), vga.getWindow());
+    Terminal terminal{};
 
     PIC pic;
     vga.drawSplash();

@@ -156,14 +156,20 @@ void VideoGraphicsArray::clearWindow() const
 }
 
 
-window_t VideoGraphicsArray::getWindow() const
+
+
+window_t * VideoGraphicsArray::getScreen()
 {
-    return _window;
+    return &_screen_region;
 }
 
-window_t VideoGraphicsArray::getScreen() const
+
+void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
 {
-    return _screen_region;
+    for(size_t i=0; i<width*height; i++)
+    {
+        _screen[i] = buffer_to_draw[i];
+    }
 }
 
 //

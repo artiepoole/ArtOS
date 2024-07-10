@@ -85,8 +85,8 @@ public:
     void clearWindow() const;
     void clearBuffer() const;
     void drawSplash() const;
-    window_t getWindow() const;
-    window_t getScreen() const;
+    void draw_region(const u32* buffer_to_draw) const;
+    [[nodiscard]] window_t * getScreen();
 
 
     // Font Definition

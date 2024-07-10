@@ -7,16 +7,21 @@
 #include "types.h"
 #include "VideoGraphicsArray.h"
 
+struct terminal_char_t
+{
+    char letter;
+    u32 color;
+};
 
 class Terminal
 {
 private:
-    window_t _screen;
-    window_t _window;
+    // window_t _screen{};
 
 public:
     // Single isntance. Cannot be used if not initialised.
-    Terminal(window_t screen, window_t window);
+    // explicit Terminal(const window_t* screen);
+    Terminal();
     ~Terminal();
     static Terminal& get();
 
@@ -25,11 +30,15 @@ public:
     Terminal& operator=(Terminal const& other) = delete;
 
     void writeString(const char* data);
+    void writeString(const char* data, u32 color);
     void writeChar(char c);
+    void writeChar(char c, u32 color);
+    void writeBuffer(const char* data, size_t len, u32 color);
     void writeBuffer(const char* data, size_t len);
     void newLine();
     void setScale(u32 new_scale);
     u32 getScale();
+    void clear();
 
     template <typename int_like>
     void writeInt(int_like val)
@@ -65,7 +74,7 @@ public:
 private:
     void _scroll();
     void _render() const;
-    void _putChar(char ch, u32 x, u32 y) const;
+    void _putChar(terminal_char_t ch, u32 origin_x, u32 origin_y) const;
 };
 
 
