@@ -27,6 +27,8 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [ ] Play DOOM for ArtOS! - WIP BRANCH: doom (requires several stdlib features)
 
 ## Progress markers
+Loading Screen and Keyboard
+![Loading Screen and Keyboard demo.]([https://github.com/stupoole/ArtOS/blob/master/res/img/Splash.png?raw=true](https://github.com/stupoole/ArtOS/blob/main/res/img/keyboard_support.gif?raw=true))
 Splash Screen
 ![Splash image drawn in 1024x768x32 graphics mode screen.](https://github.com/stupoole/ArtOS/blob/master/res/img/Splash.png?raw=true)
 Pixel Mode
