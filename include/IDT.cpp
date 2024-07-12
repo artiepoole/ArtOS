@@ -30,38 +30,38 @@ u16 KERNEL_DS = 0x0018;
 
 inline char exception_messages[][40] =
 {
-    "div by zero",
-    "debug exception",
-    "non-maskable interrupt exception",
-    "breakpoint exception",
-    "into detected overflow exception",
-    "out of bounds exception",
-    "invalid opcode exception",
-    "double fault exception",
-    "coprocessor segment overrun exception",
-    "bad TSS exception",
-    "segment not present exception",
-    "stack fault exception",
-    "general protection fault exception",
-    "page fault exception",
-    "unknown interrupt exception",
-    "coprocessor fault exception",
-    "alignment check exception",
-    "machine check exception",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
+    "div by zero", // 0
+    "debug exception", // 1
+    "non-maskable interrupt exception", // 2
+    "breakpoint exception", // 3
+    "into detected overflow exception", // 4
+    "out of bounds exception", // 5
+    "invalid opcode exception", // 6
+    "double fault exception", // 7
+    "coprocessor segment overrun exception", // 8
+    "bad TSS exception", // 9
+    "segment not present exception", // 10
+    "stack fault exception", // 11
+    "general protection fault exception", // 12
+    "page fault exception", // 13
+    "unknown interrupt exception", // 14
+    "coprocessor fault exception", // 15
+    "alignment check exception", // 16
+    "machine check exception", // 17
+    "reserved exceptions", // 18
+    "reserved exceptions", // 19
+    "reserved exceptions", // 20
+    "reserved exceptions", // 21
+    "reserved exceptions", // 22
+    "reserved exceptions", // 23
+    "reserved exceptions", // 24
+    "reserved exceptions", // 25
+    "reserved exceptions", // 26
+    "reserved exceptions", // 27
+    "reserved exceptions", // 28
+    "reserved exceptions", // 29
+    "reserved exceptions", // 30
+    "reserved exceptions", // 31
 };
 
 void register_to_serial(const registers* r)
@@ -158,6 +158,24 @@ void exception_handler(const registers* r)
 extern "C"
 void irq_handler(const registers* r)
 {
+    /*
+        0 	Programmable Interrupt Timer Interrupt
+        1 	Keyboard Interrupt
+        2 	Cascade (used internally by the two PICs. never raised)
+        3 	COM2 (if enabled)
+        4 	COM1 (if enabled)
+        5 	LPT2 (if enabled)
+        6 	Floppy Disk
+        7 	LPT1 / Unreliable "spurious" interrupt (usually)
+        8 	CMOS real-time clock (if enabled)
+        9 	Free for peripherals / legacy SCSI / NIC
+        10 	Free for peripherals / SCSI / NIC
+        11 	Free for peripherals / SCSI / NIC
+        12 	PS2 Mouse
+        13 	FPU / Coprocessor / Inter-processor
+        14 	Primary ATA Hard Disk
+        15 	Secondary ATA Hard Disk
+    */
     auto &log = Serial::get();
     // register_to_serial(r);
     // log.writeString("IRQ: ");
