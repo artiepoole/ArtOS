@@ -275,6 +275,11 @@ u16 get_ds()
 extern u32 DATA_CS;
 extern u32 TEXT_CS;
 extern int setGdt(u32 limit, u32 base);
+/**
+ *
+ */
+extern char kernel_end;
+void* kernel_brk = &kernel_end;
 
 
 extern "C"
@@ -282,6 +287,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
 {
     auto log = Serial();
     log.writeString("LOADED OS.\n");
+    log.newLine();
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
 
