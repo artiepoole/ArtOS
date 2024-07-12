@@ -6,4 +6,4 @@ bin/
 *.iso
 
 /serial.log
-/from_woody
+/res/doomwad/*
