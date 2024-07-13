@@ -466,12 +466,17 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                             }
                         default:
                             {
-                                if ((modifiers & 0b0001) or (modifiers & 0b1000)) // shift is down or capslock is on
-                                {
-                                    if (key >= 97 && key <= 122) // alphanumeric
+                                bool is_alpha = (key >= 97 && key <= 122);
+                                if (modifiers & 0b1000) // caps lock enabled
+                                    if (is_alpha) // alphanumeric keys get shifted to caps
                                     {
-                                        terminal.write(char(key_map[cin] - 32));
+                                        terminal.write(shift_map[cin]);
+                                        break;
                                     }
+                                if ((modifiers & 0b0001)) // shift is down or capslock is on
+                                {
+                                    terminal.write(shift_map[cin]);
+                                    break;
                                 }
                                 else
                                 {
