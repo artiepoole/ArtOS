@@ -4,7 +4,7 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <string.h>
+#include "../../../include/string.h"
 
 #ifndef REGTEST
 
