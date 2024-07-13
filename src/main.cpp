@@ -281,7 +281,7 @@ extern int setGdt(u32 limit, u32 base);
 extern char kernel_end;
 void* kernel_brk = &kernel_end;
 
-u8 modifiers = 0; // ctrl, alt, shift  -> ! ^ *
+u8 modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
 
 extern "C"
@@ -459,13 +459,18 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                                 // move right
                                 break;
                             }
+                        case 'C': // capital C meaning caps lock
+                            {
+                                modifiers ^= 0b1000;
+                                break;
+                            }
                         default:
                             {
-                                if (modifiers & 0b1) // shift is down
+                                if ((modifiers & 0b0001) or (modifiers & 0b1000)) // shift is down or capslock is on
                                 {
                                     if (key >= 97 && key <= 122) // alphanumeric
                                     {
-                                        terminal.write(char(key_map[cin] -32));
+                                        terminal.write(char(key_map[cin] - 32));
                                     }
                                 }
                                 else

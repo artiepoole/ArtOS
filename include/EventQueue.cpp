@@ -26,7 +26,7 @@ char key_map[128] =
     '*',
     '!', /* Alt */
     ' ', /* Space bar */
-    0, /* Caps lock */
+    'C', /* Caps lock */
     0, /* 59 - F1 key ... > */
     0, 0, 0, 0, 0, 0, 0, 0,
     0, /* < ... F10 */
