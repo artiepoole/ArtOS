@@ -122,11 +122,11 @@ template <typename int_like>
 void printf(const char* str, int_like key)
 {
     auto& terminal = Terminal::get();
-    terminal.writeString(str);
+    terminal.write(str);
 
     int l = 0;
     for (; str[l] != 0; l++);
-    terminal.writeHex(key);
+    terminal.write(key, true);
     terminal.newLine();
 }
 
@@ -134,26 +134,26 @@ template <typename int_like>
 void print_int(int_like val)
 {
     auto& terminal = Terminal::get();
-    terminal.writeInt(val);
+    terminal.write(val);
 }
 
 void print_string(const char* str)
 {
     auto& terminal = Terminal::get();
-    terminal.writeString(str);
+    terminal.write(str);
 }
 
 void print_char(const char c)
 {
     auto& terminal = Terminal::get();
-    terminal.writeChar(c);
+    terminal.write(c);
 }
 
 template <typename int_like>
 void print_hex(const int_like val)
 {
     auto& terminal = Terminal::get();
-    terminal.writeHex(val);
+    terminal.write(val, true);
 }
 
 void print_multiboot_header_info(const u32 stackPointer, const multiboot_header* multiboot_structure)
@@ -317,7 +317,16 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     // sleep(1000);
     terminal.setScale(2);
     vga.draw();
-    terminal.writeString(" Loading Done.\n");
+    terminal.write(" Loading Done.\n");
+    int i = -32;
+    size_t x = 133;
+    terminal.write(i);
+    terminal.newLine();
+    print_colour(x, 4, COLOR_RED);
+
+
+    print("i: ",i, " x: ", x);
+
 
     // Event handler loop.
     while (true)
@@ -368,12 +377,12 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                             }
                         case 9: // tab
                             {
-                                terminal.writeString("    ");
+                                terminal.write("    ");
                                 break;
                             }
                         default:
                             {
-                                terminal.writeChar(key_map[c]);
+                                terminal.write(key_map[c]);
                                 break;
                             }
                         }

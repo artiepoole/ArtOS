@@ -15,18 +15,17 @@
 
 class Serial
 {
-
 private:
-     char _read();
-     void _sendChar(unsigned char a);
-     int _received();
-     int _transmitEmpty();
-     void _write(const  char* data, size_t size);
+    char _read();
+    void _sendChar(unsigned char a);
+    int _received();
+    int _transmitEmpty();
+    void _write(const char* data, size_t size);
 
 public:
     Serial();
     ~Serial();
-    static Serial & get();
+    static Serial& get();
 
     // remove copy functionality
     Serial(Serial const& other) = delete;
@@ -34,39 +33,27 @@ public:
 
     bool connected;
 
-     void newLine();
-     void writeChar(unsigned char c);
-     void writeString(const char* data);
+    void newLine();
+    void writeChar(unsigned char c);
+    void writeString(const char* data);
     void writeBuffer(const char* data, size_t len);
 
-    template<typename int_like>
+    template <typename int_like>
     void writeInt(const int_like val)
     {
         char out_str[255];
-        const size_t len = string_from_int(val, out_str);
-        char trimmed_str[len];
-        for (size_t j = 0; j < len; j++)
-        {
-            trimmed_str[j] = out_str[j];
-        }
-       writeString(trimmed_str);
+        string_from_int(val, out_str);
+        writeString(out_str);
     }
 
-    template<typename int_like1>
+    template <typename int_like1>
     void writeHex(const int_like1 val)
     {
         char out_str[255];
-        const u32 len = hex_from_int(val, out_str, sizeof(val));
-        char trimmed_str[len];
-        for (size_t j = 0; j < len; j++)
-        {
-            trimmed_str[j] = out_str[j];
-        }
-       writeString(trimmed_str);
+        hex_from_int(val, out_str, sizeof(val));
+        writeString(out_str);
     }
-
 };
-
 
 
 #endif //SERIAL_H

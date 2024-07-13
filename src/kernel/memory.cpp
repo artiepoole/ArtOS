@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 extern char kernel_end;
-void* kernel_brk = &kernel_end;
+extern void* kernel_brk;
 
 extern "C"
 void * sbrk( intptr_t increment ) {

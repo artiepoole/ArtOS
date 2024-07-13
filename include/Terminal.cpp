@@ -169,21 +169,15 @@ void Terminal::newLine()
     }
 }
 
-void Terminal::writeString(const char* data)
+
+void Terminal::write(const char* data, const u32 color)
 {
     const size_t len = strlen(data);
     // put data into the text buffer
-    writeBuffer(data, len, frgd);
+    write(data, len, color);
 }
 
-void Terminal::writeString(const char* data, const u32 color)
-{
-    const size_t len = strlen(data);
-    // put data into the text buffer
-    writeBuffer(data, len, color);
-}
-
-void Terminal::writeChar(const char c, const u32 color)
+void Terminal::write(const char c, const u32 color)
 {
     if (c == '\n')
     {
@@ -193,24 +187,6 @@ void Terminal::writeChar(const char c, const u32 color)
     else
     {
         terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, color};
-    }
-    if (terminal_column >= buffer_width)
-    {
-        newLine();
-    }
-    _render();
-}
-
-void Terminal::writeChar(const char c)
-{
-    if (c == '\n')
-    {
-        newLine();
-        terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent};;
-    }
-    else
-    {
-        terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, frgd};
     }
     if (terminal_column >= buffer_width)
     {
@@ -238,7 +214,7 @@ void Terminal::_scroll()
 }
 
 
-void Terminal::writeBuffer(const char* data, const size_t len, const u32 color)
+void Terminal::write(const char* data, const size_t len, const u32 color)
 {
     for (size_t i = 0; i < len; i++)
     {
@@ -259,26 +235,6 @@ void Terminal::writeBuffer(const char* data, const size_t len, const u32 color)
     }
 }
 
-void Terminal::writeBuffer(const char* data, const size_t len)
-{
-    for (size_t i = 0; i < len; i++)
-    {
-        if (const char c = data[i]; c == '\n')
-        {
-            newLine();
-            terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent};
-        }
-        else
-        {
-            terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, frgd};;
-
-            if (terminal_column >= buffer_width) newLine();
-        }
-        if (terminal_row > buffer_height)_scroll();
-        // write the text buffer to screen_region
-        _render();
-    }
-}
 
 void Terminal::backspace()
 {

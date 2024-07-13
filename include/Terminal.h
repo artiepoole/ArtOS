@@ -29,47 +29,34 @@ public:
     Terminal(Terminal const& other) = delete;
     Terminal& operator=(Terminal const& other) = delete;
 
-    void writeString(const char* data);
-    void writeString(const char* data, u32 color);
-    void writeChar(char c);
-    void writeChar(char c, u32 color);
-    void writeBuffer(const char* data, size_t len, u32 color);
-    void writeBuffer(const char* data, size_t len);
-    static void newLine();
-    static void setScale(u32 new_scale);
-    static u32 getScale();
+    void newLine();
+    void setScale(u32 new_scale);
+    u32 getScale();
     void clear();
 
+
+    void write(const char* data, u32 color = COLOR_BASE0); // buffer without known length also with colour
+    void write(char c, u32 color = COLOR_BASE0); // single char
+    void write(const char* data, size_t len, u32 color = COLOR_BASE0); // buffer of fixed len
+
     template <typename int_like>
-    void writeInt(int_like val)
+        requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
+    void write(int_like val, size_t hex_len = 0, u32 color = COLOR_BASE0)
     {
         char out_str[255]; // long enough for any int type possible
-        const size_t len = string_from_int(val, out_str);
-        char trimmed_str[len];
-        for (size_t j = 0; j <= len; j++)
+        if (hex_len > 0)
         {
-            trimmed_str[j] = out_str[j];
+            hex_from_int(val, out_str, hex_len);
         }
-        writeString(trimmed_str);
-        //log.write_int(val);
-        // log.new_line();
+        else
+        {
+            string_from_int(val, out_str);
+        }
+        write(out_str, color);
     }
 
-    template <typename int_like1>
-    void writeHex(int_like1 val)
-    {
-        // u16 n_bytes = log2(val);
-        char out_str[255];
-        const size_t len = hex_from_int(val, out_str, sizeof(val));
-        char trimmed_str[len];
-        for (size_t j = 0; j < len; j++)
-        {
-            trimmed_str[j] = out_str[j];
-        }
-        writeString(trimmed_str);
-    }
 
-    static void backspace();
+    void backspace();
 
 private:
     static void _scroll();
