@@ -28,5 +28,62 @@ typedef int i32;
 typedef long long int i64;
 
 
+// Helper functions for templating
+
+template <typename, typename>
+constexpr bool is_same_v = false;
+template <typename T>
+constexpr bool is_same_v<T, T> = true;
+
+template<typename T, typename... Ts>
+constexpr bool is_any_of_v = (is_same_v<T, Ts> || ...);
+
+template <typename T>
+struct remove_const_volatile {
+    using type = T;
+};
+
+template <typename T>
+struct remove_const_volatile<volatile T> {
+    using type = T;
+};
+
+template <typename T>
+struct remove_const_volatile<const T> {
+    using type = T;
+};
+
+template <typename T>
+struct remove_const_volatile<const volatile T>{
+using type = T;
+};
+
+template<typename T>
+using remove_cv_t = typename remove_const_volatile<T>::type;
+
+template<typename Ty>
+constexpr bool is_int_like_v = is_any_of_v<
+    remove_cv_t<Ty>,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long
+>;
+
+template <class T>
+concept int_like = is_int_like_v<T>;
+
+
+
 
 #endif
