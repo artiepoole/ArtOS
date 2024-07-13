@@ -1,10 +1,11 @@
 #include <stdint.h>
 
-extern char kernel_end;
-extern void* kernel_brk;
+extern unsigned char kernel_end;
+unsigned char * kernel_brk = &kernel_end;
 
 extern "C"
-void * sbrk( intptr_t increment ) {
+void* sbrk(const long increment)
+{
     void* last_brk = kernel_brk;
     kernel_brk = kernel_brk + increment;
     return last_brk;
