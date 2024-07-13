@@ -307,29 +307,23 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     pic.enableIRQ(0);
     pic.enableIRQ(1);
 
-    // u32 step = load_bar_region[2]/100;
-    // size_t n_steps = 50;
-    // for (size_t i =0; i <= n_steps; i++)
-    // {
-    //    vga.fillRectangle(load_bar_region[0], load_bar_region[1], load_bar_region[2]* i/n_steps , load_bar_region[3], COLOR_BASE0);
-    //     vga.draw();
-    //     sleep(50);
-    //
-    // }
-    // sleep(1000);
+
+     // // Loading bar code
+     // size_t n_steps = 50;
+     // for (size_t i =0; i <= n_steps; i++)
+     // {
+     //    vga.fillRectangle(load_bar_region[0], load_bar_region[1], load_bar_region[2]* i/n_steps , load_bar_region[3], COLOR_BASE0);
+     //     vga.draw();
+     //     sleep(50);
+     //
+     // }
+     // sleep(1000);
+
+
     terminal.setScale(2);
     vga.draw();
-    // terminal.write(" Loading Done.\n");
-    int i = -32;
-    size_t x = 133;
-    terminal.write(i);
-    terminal.newLine();
-    log.logHex(x, "x");
-    print_hex(x, 4, COLOR_RED);
+    terminal.write(" Loading Done.\n");
 
-
-    print("i: ", i, " x: ", x);
-    terminal.userLine();
 
 
     // Event handler loop.
@@ -338,14 +332,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
         if (events.pendingEvents())
         {
             auto [type, data] = events.getEvent();
-            // log.write("Found event\n");
-            // log.write("type: ");
-            // log.write(static_cast<int>(type));
-            // log.write(" lower: ");
-            // log.write(data.lower_data, true);
-            // log.write(" upper: ");
-            // log.write(data.upper_data, true);
-            // log.newLine();
+            // log.log("Found event. Type: ", static_cast<int>(type), " lower: ", data.lower_data, " upper: ",data.upper_data);
             switch (type)
             {
             case NULL_EVENT:

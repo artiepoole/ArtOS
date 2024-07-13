@@ -49,7 +49,7 @@ PIC::PIC()
 
 void PIC::disable()
 {
-    auto &log = Serial::get();
+    auto& log = Serial::get();
     log.write("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
@@ -59,7 +59,7 @@ void PIC::disable()
 
 void PIC::enable()
 {
-    auto &log = Serial::get();
+    auto& log = Serial::get();
     log.write("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
@@ -67,10 +67,8 @@ void PIC::enable()
 
 void PIC::enableIRQ(const u8 i)
 {
-    auto &log = Serial::get();
-    log.write("Enabling IRQ");
-    log.write(i);
-    log.newLine();
+    auto& log = Serial::get();
+    log.log("Enabling IRQ", i);
 
 
     if (i < 8)
@@ -84,7 +82,7 @@ void PIC::enableIRQ(const u8 i)
     else
     {
         const u8 old_mask2 = inb(PIC2_DATA);
-        const u8 byte = 0x1 << (i-8);
+        const u8 byte = 0x1 << (i - 8);
         mask2 = old_mask2 & byte;
         log.write(byte, true);
         log.newLine();
@@ -104,13 +102,13 @@ void PIC::enableAll()
 
 
 volatile u32 ticks = 0;
-u32 rate =0;
+u32 rate = 0;
 
 
 // extern "C"
 void configurePit(const u32 hz)
 {
-    auto &log = Serial::get();
+    auto& log = Serial::get();
     const u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = hz;
     log.write("Configured PIT. Divisor: ");
@@ -123,14 +121,14 @@ void configurePit(const u32 hz)
 
 void sleep(const u32 ms)
 {
-    auto &log = Serial::get();
-    if (rate==0)
+    auto& log = Serial::get();
+    if (rate == 0)
     {
         log.write("Tried to sleep when timer is not initiated.");
         return;
     }
 
-    ticks = ms * rate / 1000;  // rate is in hz, time is in ms
+    ticks = ms * rate / 1000; // rate is in hz, time is in ms
 
     log.write("Sleeping for ");
     log.write(ms);
@@ -149,9 +147,9 @@ void sleep(const u32 ms)
 void timerHandler()
 {
     /* Increment our 'tick count' */
-    if (ticks==0) return;
+    if (ticks == 0) return;
 
-    ticks--;
+    ticks = ticks - 1;
 
     /* Every 18 clocks (approximately 1 second), we will
     *  display a message on the screen */
