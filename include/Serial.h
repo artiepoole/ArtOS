@@ -34,25 +34,56 @@ public:
     bool connected;
 
     void newLine();
-    void writeChar(unsigned char c);
-    void writeString(const char* data);
-    void writeBuffer(const char* data, size_t len);
+    void write(unsigned char c);
+    void write(const char* data);
+    void write(const char* data, size_t len);
 
     template <typename int_like>
-    void writeInt(const int_like val)
+        requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
+    void write(const int_like val, const bool hex = false)
     {
         char out_str[255];
-        string_from_int(val, out_str);
-        writeString(out_str);
+        if (hex)
+        {
+            hex_from_int(val, out_str, sizeof(val));
+        }
+        else
+        {
+            string_from_int(val, out_str);
+        }
+        write(out_str);
     }
 
-    template <typename int_like1>
-    void writeHex(const int_like1 val)
+    template <typename type_t>
+    void log(type_t const& arg1)
     {
-        char out_str[255];
-        hex_from_int(val, out_str, sizeof(val));
-        writeString(out_str);
+        write(arg1);
+        newLine();
     }
+
+    template <typename... args_t>
+    void log(args_t&&... args)
+    {
+        (write(args), ...);
+        newLine();
+    }
+
+
+    template <typename int_like>
+    requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
+    void logHex(int_like val, const char* val_name="")
+    {
+        if (strlen(val_name)>0)
+        {
+            write(val_name);
+            write(": ");
+        }
+        write(val, true);
+        newLine();
+    };
+
+
+
 };
 
 

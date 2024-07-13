@@ -117,8 +117,8 @@ void Terminal::setScale(const u32 new_scale)
     // Checks if a character can be drawn in the region. Should be "_window width" or something.
     if (new_scale * char_dim < screen_region.w && new_scale * char_dim < screen_region.h)
     {
-        log.writeString("New font scale: ");
-        log.writeInt(new_scale);
+        log.write("New font scale: ");
+        log.write(new_scale);
         log.newLine();
         font_scale = new_scale;
         scaled_char_dim = font_scale * char_dim;
@@ -129,7 +129,7 @@ void Terminal::setScale(const u32 new_scale)
     }
     else
     {
-        log.writeString("Font scale not applied\n");
+        log.write("Font scale not applied\n");
     }
 }
 

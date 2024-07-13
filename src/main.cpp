@@ -38,11 +38,11 @@ u32 frame_buffer[width * height];
 // void printf(const char* str, int_like key)
 // {
 //     auto terminal = Terminal::get();
-//     terminal.writeString(str);
+//     terminal.write(str);
 //
 //     int l = 0;
 //     for (; str[l] != 0; l++);
-//     terminal.writeHex(key);
+//     terminal.write(key);
 //     terminal.newLine();
 // }
 //
@@ -50,26 +50,26 @@ u32 frame_buffer[width * height];
 // void print_int(int_like val)
 // {
 //     auto terminal = Terminal::get();
-//     terminal.writeInt(val);
+//     terminal.write(val);
 // }
 //
 // void print_string(const char* str)
 // {
 //     auto terminal = Terminal::get();
-//     terminal.writeString(str);
+//     terminal.write(str);
 // }
 //
 // void print_char(const char c)
 // {
 //     auto terminal = Terminal::get();
-//     terminal.writeChar(c);
+//     terminal.write(c);
 // }
 //
 // template<typename int_like>
 // void print_hex(const int_like val)
 // {
 //     auto terminal = Terminal::get();
-//     terminal.writeHex(val);
+//     terminal.write(val, true);
 // }
 //
 // void print_multiboot_header_info(const u32 stackPointer, const multiboot_header* multiboot_structure)
@@ -223,19 +223,19 @@ void get_GDT()
     auto& log = Serial::get();
     gdt_info gdt{};
     asm("sgdt %0" : "=m"(gdt));
-    log.writeString("GDT limit: ");
-    log.writeHex(gdt.limit);
-    log.writeString(" GDT base: ");
-    log.writeHex(gdt.base);
+    log.write("GDT limit: ");
+    log.write(gdt.limit, true);
+    log.write(" GDT base: ");
+    log.write(gdt.base, true);
     log.newLine();
 
     for (size_t i = 0; i < 8; i++)
     {
-        log.writeString("GDT entry:");
-        log.writeInt(i);
-        log.writeString(" data: ");
+        log.write("GDT entry:");
+        log.write(i);
+        log.write(" data: ");
         uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base + (8 * i));
-        log.writeHex(gdt_ptr);
+        log.write(gdt_ptr, true);
         log.newLine();
     }
 }
@@ -245,8 +245,8 @@ u16 get_cs()
     auto& log = Serial::get();
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
-    log.writeString("CS: ");
-    log.writeHex(i);
+    log.write("CS: ");
+    log.write(i,true);
     log.newLine();
     return i;
 }
@@ -256,8 +256,8 @@ u16 get_ds()
     auto& log = Serial::get();
     u16 i;
     asm("mov %%ds,%0" : "=r"(i));
-    log.writeString("DS: ");
-    log.writeHex(i);
+    log.write("DS: ");
+    log.write(i, true);
     log.newLine();
     return i;
 }
@@ -288,7 +288,7 @@ extern "C"
 void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
     auto log = Serial();
-    log.writeString("LOADED OS.\n");
+    log.write("LOADED OS.\n");
     log.newLine();
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
@@ -299,7 +299,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     PIC pic;
     vga.drawSplash();
     vga.draw();
-    log.writeString("LOADED OS.\n");
+    log.write("LOADED OS.\n");
     configurePit(10000); // 10
     IDT idt;
 
@@ -324,6 +324,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     size_t x = 133;
     terminal.write(i);
     terminal.newLine();
+    log.logHex(x, "x");
     print_hex(x, 4, COLOR_RED);
 
 
@@ -337,19 +338,19 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
         if (events.pendingEvents())
         {
             auto [type, data] = events.getEvent();
-            // log.writeString("Found event\n");
-            // log.writeString("type: ");
-            // log.writeInt(static_cast<int>(type));
-            // log.writeString(" lower: ");
-            // log.writeHex(data.lower_data);
-            // log.writeString(" upper: ");
-            // log.writeHex(data.upper_data);
+            // log.write("Found event\n");
+            // log.write("type: ");
+            // log.write(static_cast<int>(type));
+            // log.write(" lower: ");
+            // log.write(data.lower_data, true);
+            // log.write(" upper: ");
+            // log.write(data.upper_data, true);
             // log.newLine();
             switch (type)
             {
             case NULL_EVENT:
                 {
-                    log.writeString("NULL EVENT\n");
+                    log.write("NULL EVENT\n");
                     break;
                 }
             case KEY_UP:
@@ -389,15 +390,15 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                     // todo: handle backspace
                     // todo: write an actual terminal class.
 
-                    // log.writeString("Key up event in main loop.\n");
+                    // log.write("Key up event in main loop.\n");
                     break;
                 }
             case KEY_DOWN:
                 {
-                    // log.writeString("Key down event in main loop: ");
+                    // log.write("Key down event in main loop: ");
                     size_t cin = data.lower_data;
                     char key = key_map[cin];
-                    // log.writeInt(key);
+                    // log.write(key);
                     // log.newLine();
                     if (key_map[cin] != 0)
                     {
@@ -491,20 +492,20 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                 }
             default:
                 {
-                    log.writeString("Unhandled event.\n");
-                    log.writeString("Type: ");
-                    log.writeInt(static_cast<int>(type));
-                    log.writeString(" lower: ");
-                    log.writeHex(data.lower_data);
-                    log.writeString(" upper: ");
-                    log.writeHex(data.upper_data);
+                    log.write("Unhandled event.\n");
+                    log.write("Type: ");
+                    log.write(static_cast<int>(type));
+                    log.write(" lower: ");
+                    log.write(data.lower_data, true);
+                    log.write(" upper: ");
+                    log.write(data.upper_data, true);
                     log.newLine();
                     break;
                 }
             }
         }
     }
-    log.writeString("ERROR: Left main loop.");
+    log.write("ERROR: Left main loop.");
     asm("hlt");
 
 

@@ -67,61 +67,61 @@ inline char exception_messages[][40] =
 void register_to_serial(const registers* r)
 {
     auto &log = Serial::get();
-    log.writeString("int_no, err_code: ");
+    log.write("int_no, err_code: ");
     log.newLine();
-    log.writeHex(r->int_no);
-    log.writeString(", ");
-    log.writeHex(r->err_code);
-    log.newLine();
-
-    log.writeString("gs, fs, es, ds: ");
-    log.newLine();
-    log.writeHex(r->gs);
-    log.writeString(", ");
-    log.writeHex(r->fs);
-    log.writeString(", ");
-    log.writeHex(r->es);
-    log.writeString(", ");
-    log.writeHex(r->ds);
+    log.write(r->int_no, true);
+    log.write(", ");
+    log.write(r->err_code, true);
     log.newLine();
 
-    log.writeString("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    log.write("gs, fs, es, ds: ");
     log.newLine();
-    log.writeHex(r->edi);
-    log.writeString(", ");
-    log.writeHex(r->esi);
-    log.writeString(", ");
-    log.writeHex(r->ebp);
-    log.writeString(", ");
-    log.writeHex(r->esp);
-    log.writeString(", ");
-    log.writeHex(r->ebx);
-    log.writeString(", ");
-    log.writeHex(r->edx);
-    // log.writeString(", ");
-    // log.write_hex(r->ecx, 4);
-    // log.writeString(", ");
-    // log.write_hex(r->eax, 4);
+    log.write(r->gs, true);
+    log.write(", ");
+    log.write(r->fs, true);
+    log.write(", ");
+    log.write(r->es, true);
+    log.write(", ");
+    log.write(r->ds, true);
     log.newLine();
 
-    log.writeString("eip, cs, eflags, useresp, ss;");
+    log.write("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
     log.newLine();
-    log.writeHex(r->eip);
-    log.writeString(", ");
-    log.writeHex(r->cs);
-    log.writeString(", ");
-    log.writeHex(r->eflags);
-    log.writeString(", ");
-    log.writeHex(r->useresp);
-    log.writeString(", ");
-    log.writeHex(r->ss);
+    log.write(r->edi, true);
+    log.write(", ");
+    log.write(r->esi, true);
+    log.write(", ");
+    log.write(r->ebp, true);
+    log.write(", ");
+    log.write(r->esp, true);
+    log.write(", ");
+    log.write(r->ebx, true);
+    log.write(", ");
+    log.write(r->edx, true);
+    // log.write(", ");
+    // log.write_hex(r->ecx, true);
+    // log.write(", ");
+    // log.write(r->eax, true);
+    log.newLine();
+
+    log.write("eip, cs, eflags, useresp, ss;");
+    log.newLine();
+    log.write(r->eip, true);
+    log.write(", ");
+    log.write(r->cs, true);
+    log.write(", ");
+    log.write(r->eflags, true);
+    log.write(", ");
+    log.write(r->useresp, true);
+    log.write(", ");
+    log.write(r->ss, true);
     log.newLine();
 }
 
 void handle_div_by_zero(const registers* r)
 {
     auto &log = Serial::get();
-    log.writeString("Div by zero not handled. oops.\n");
+    log.write("Div by zero not handled. oops.\n");
     register_to_serial(r);
 }
 
@@ -132,7 +132,7 @@ void exception_handler(const registers* r)
     auto &log = Serial::get();
     register_to_serial(r);
 
-    log.writeString("Exception: ");
+    log.write("Exception: ");
     // log.write_hex(r->int_no, 4);
     // log.new_line();
 
@@ -141,7 +141,7 @@ void exception_handler(const registers* r)
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
-        log.writeString(exception_messages[r->int_no]);
+        log.write(exception_messages[r->int_no]);
         log.newLine();
         switch (r->int_no)
         {
@@ -149,7 +149,7 @@ void exception_handler(const registers* r)
             // handle_div_by_zero(r);
             return;
         default:
-            log.writeString("Unhandled exception. System Halted!");
+            log.write("Unhandled exception. System Halted!");
             for (;;);
         }
     }
@@ -178,7 +178,7 @@ void irq_handler(const registers* r)
     */
     auto &log = Serial::get();
     // register_to_serial(r);
-    // log.writeString("IRQ: ");
+    // log.write("IRQ: ");
     const auto int_no = r->int_no;
     // log.write_int(int_no);
     // log.new_line();
@@ -194,14 +194,14 @@ void irq_handler(const registers* r)
             keyboard_handler();
             break;
         case 4:
-            log.writeString("First instance");
-            log.writeString("Unhandled IRQ: ");
-            log.writeInt(int_no);
+            log.write("First instance");
+            log.write("Unhandled IRQ: ");
+            log.write(int_no);
             log.newLine();
             break;
         default:
-            log.writeString("Unhandled IRQ: ");
-            log.writeInt(int_no);
+            log.write("Unhandled IRQ: ");
+            log.write(int_no);
             log.newLine();
             break;
         }
@@ -239,10 +239,10 @@ IDT::IDT()
 {
     auto &log = Serial::get();
     /* also installs irq */
-    // log.writeString("Remapping irq\n");
+    // log.write("Remapping irq\n");
     // pic_irq_remap();
     // pic_disable();
-    log.writeString("IDT installed\n");
+    log.write("IDT installed\n");
     idt_pointer.limit = (sizeof(idt_entry_t) * 48) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
 
@@ -253,14 +253,14 @@ IDT::IDT()
         idt_vectors[idt_index] = true;
     }
 
-    log.writeString("Setting IDT base and limit. ");
-    log.writeString("Base: ");
-    log.writeHex(idt_pointer.base);
-    log.writeString(" Limit: ");
-    log.writeHex(idt_pointer.limit);
+    log.write("Setting IDT base and limit. ");
+    log.write("Base: ");
+    log.write(idt_pointer.base, true);
+    log.write(" Limit: ");
+    log.write(idt_pointer.limit, true);
     log.newLine();
     __asm__ volatile ("lidt %0" : : "m"(idt_pointer)); // load the new IDT
-    log.writeString("LDT has been set\n");
+    log.write("LDT has been set\n");
     __asm__ volatile ("sti"); // set the interrupt flag
-    log.writeString("Interrupts enabled\n");
+    log.write("Interrupts enabled\n");
 }

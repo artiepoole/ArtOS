@@ -142,13 +142,13 @@ void EventQueue::addEvent(const event_t& event)
     [[maybe_unused]] auto & log = Serial::get();
 
 
-    // log.writeString("Adding event.\n");
-    // log.writeString("type: ");
-    // log.writeInt(static_cast<int>(event.type));
-    // log.writeString(" lower: ");
-    // log.writeHex(event.data.lower_data);
-    // log.writeString(" upper: ");
-    // log.writeHex(event.data.upper_data);
+    // log.write("Adding event.\n");
+    // log.write("type: ");
+    // log.write(static_cast<int>(event.type));
+    // log.write(" lower: ");
+    // log.write(event.data.lower_data true);
+    // log.write(" upper: ");
+    // log.write(event.data.upper_data, true);
     // log.newLine();
 
     _event_queue[_write_index] = event;
@@ -170,7 +170,7 @@ event_t EventQueue::getEvent()
     if (_unread_counter == 0)
     {
         auto& log = Serial::get();
-        log.writeString("Tried to get read event ahead of event queue. Returning NONE event");
+        log.write("Tried to get read event ahead of event queue. Returning NONE event");
         return event_t{NULL_EVENT, event_data_t{0, 0}};
     }
 

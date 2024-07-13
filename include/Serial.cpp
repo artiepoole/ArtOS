@@ -36,17 +36,17 @@ Serial &Serial::get(){
     return *instance;
 }
 
-void Serial::writeChar(const unsigned char c)
+void Serial::write(const unsigned char c)
 {
     _sendChar(c);
 }
 
-void Serial::writeString(const char* data)
+void Serial::write(const char* data)
 {
     _write(data, strlen(data));
 }
 
-void Serial::writeBuffer(const char* data, size_t len)
+void Serial::write(const char* data, const size_t len)
 {
     _write(data, len);
 }

@@ -12,7 +12,7 @@ void write_standard(const char* buffer, const size_t len)
     term.write(buffer, len);
 
     auto& log = Serial::get();
-    log.writeBuffer(buffer, len);
+    log.write(buffer, len);
 }
 
 void write_error(char* buffer, const size_t len)
@@ -22,7 +22,7 @@ void write_error(char* buffer, const size_t len)
     term.write(buffer, len, COLOR_RED);
 
     auto& log = Serial::get();
-    log.writeBuffer(buffer, len);
+    log.write(buffer, len);
 }
 
 // void draw_screen_region(u32* frame_buffer)

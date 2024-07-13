@@ -50,7 +50,7 @@ PIC::PIC()
 void PIC::disable()
 {
     auto &log = Serial::get();
-    log.writeString("Disabled PIC");
+    log.write("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
     outb(PIC1_DATA, 0xff);
@@ -60,7 +60,7 @@ void PIC::disable()
 void PIC::enable()
 {
     auto &log = Serial::get();
-    log.writeString("Renabled PIC");
+    log.write("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
 }
@@ -68,8 +68,8 @@ void PIC::enable()
 void PIC::enableIRQ(const u8 i)
 {
     auto &log = Serial::get();
-    log.writeString("Enabling IRQ");
-    log.writeInt(i);
+    log.write("Enabling IRQ");
+    log.write(i);
     log.newLine();
 
 
@@ -78,7 +78,7 @@ void PIC::enableIRQ(const u8 i)
         const u8 old_mask1 = inb(PIC1_DATA);
         const u8 byte = 0x1 << i;
         mask1 = old_mask1 & byte;
-        log.writeHex(byte);
+        log.write(byte, true);
         log.newLine();
     }
     else
@@ -86,7 +86,7 @@ void PIC::enableIRQ(const u8 i)
         const u8 old_mask2 = inb(PIC2_DATA);
         const u8 byte = 0x1 << (i-8);
         mask2 = old_mask2 & byte;
-        log.writeHex(byte);
+        log.write(byte, true);
         log.newLine();
     }
 
@@ -113,8 +113,8 @@ void configurePit(const u32 hz)
     auto &log = Serial::get();
     const u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = hz;
-    log.writeString("Configured PIT. Divisor: ");
-    log.writeInt(divisor);
+    log.write("Configured PIT. Divisor: ");
+    log.write(divisor);
     log.newLine();
     outb(0x43, 0x36); /* Set our command byte 0x36 */
     outb(0x40, divisor & 0xFF); /* Set low byte of divisor */
@@ -126,22 +126,22 @@ void sleep(const u32 ms)
     auto &log = Serial::get();
     if (rate==0)
     {
-        log.writeString("Tried to sleep when timer is not initiated.");
+        log.write("Tried to sleep when timer is not initiated.");
         return;
     }
 
     ticks = ms * rate / 1000;  // rate is in hz, time is in ms
 
-    log.writeString("Sleeping for ");
-    log.writeInt(ms);
-    log.writeString("ms. Ticks: ");
-    log.writeInt(ticks);
-    log.writeString(" Rate: ");
-    log.writeInt(rate);
+    log.write("Sleeping for ");
+    log.write(ms);
+    log.write("ms. Ticks: ");
+    log.write(ticks);
+    log.write(" Rate: ");
+    log.write(rate);
     log.newLine();
     while (ticks > 0);
-    //log.writeString("Exited while loop. ");
-    //log.writeString("Remaining ticks: ");
+    //log.write("Exited while loop. ");
+    //log.write("Remaining ticks: ");
     //log.write_int(ticks);
     // log.new_line();
 }
@@ -157,6 +157,6 @@ void timerHandler()
     *  display a message on the screen */
     // if (ticks % rate == 0)
     // {
-    //    log.writeString("One second has passed\n");
+    //    log.write("One second has passed\n");
     // }
 }
