@@ -2,17 +2,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <kernel/kernel.h>
 
 
 #include "Serial.h"
-#include "string.h"
 #include "types.h"
 #include "multiboot_header.h"
 #include "VideoGraphicsArray.h"
 #include "IDT.h"
 #include "PIC.h"
-#include "system.h"
 #include "Terminal.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
@@ -317,7 +314,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
      //     sleep(50);
      //
      // }
-     // sleep(1000);
+     // sleep(500);
 
 
     terminal.setScale(2);

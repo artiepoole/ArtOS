@@ -79,7 +79,7 @@ void PIC::enableIRQ(const u8 i)
         log.write(byte, true);
         log.newLine();
     }
-    else
+    else if (i<16)
     {
         const u8 old_mask2 = inb(PIC2_DATA);
         const u8 byte = 0x1 << (i - 8);
@@ -87,6 +87,7 @@ void PIC::enableIRQ(const u8 i)
         log.write(byte, true);
         log.newLine();
     }
+    else return;
 
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
@@ -101,60 +102,3 @@ void PIC::enableAll()
 }
 
 
-volatile u32 ticks = 0;
-u32 rate = 0;
-
-
-// extern "C"
-void configurePit(const u32 hz)
-{
-    auto& log = Serial::get();
-    const u32 divisor = 1193180 / hz; /* Calculate our divisor */
-    rate = hz;
-    log.write("Configured PIT. Divisor: ");
-    log.write(divisor);
-    log.newLine();
-    outb(0x43, 0x36); /* Set our command byte 0x36 */
-    outb(0x40, divisor & 0xFF); /* Set low byte of divisor */
-    outb(0x40, divisor >> 8); /* Set high byte of divisor */
-}
-
-void sleep(const u32 ms)
-{
-    auto& log = Serial::get();
-    if (rate == 0)
-    {
-        log.write("Tried to sleep when timer is not initiated.");
-        return;
-    }
-
-    ticks = ms * rate / 1000; // rate is in hz, time is in ms
-
-    log.write("Sleeping for ");
-    log.write(ms);
-    log.write("ms. Ticks: ");
-    log.write(ticks);
-    log.write(" Rate: ");
-    log.write(rate);
-    log.newLine();
-    while (ticks > 0);
-    //log.write("Exited while loop. ");
-    //log.write("Remaining ticks: ");
-    //log.write_int(ticks);
-    // log.new_line();
-}
-
-void timerHandler()
-{
-    /* Increment our 'tick count' */
-    if (ticks == 0) return;
-
-    ticks = ticks - 1;
-
-    /* Every 18 clocks (approximately 1 second), we will
-    *  display a message on the screen */
-    // if (ticks % rate == 0)
-    // {
-    //    log.write("One second has passed\n");
-    // }
-}

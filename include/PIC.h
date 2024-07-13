@@ -20,10 +20,6 @@ public:
     static void enableAll();
 };
 
-void timerHandler();
-void sleep(u32 ms);
-// extern "C"
-void configurePit(u32 hz);
 
 
 #endif //PIC_H
