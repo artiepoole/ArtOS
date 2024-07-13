@@ -281,6 +281,8 @@ extern int setGdt(u32 limit, u32 base);
 extern char kernel_end;
 void* kernel_brk = &kernel_end;
 
+u8 modifiers = 0; // ctrl, alt, shift  -> ! ^ *
+
 
 extern "C"
 void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
@@ -306,18 +308,18 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     pic.enableIRQ(1);
 
     // u32 step = load_bar_region[2]/100;
-    size_t n_steps = 50;
-    for (size_t i =0; i <= n_steps; i++)
-    {
-       vga.fillRectangle(load_bar_region[0], load_bar_region[1], load_bar_region[2]* i/n_steps , load_bar_region[3], COLOR_BASE0);
-        vga.draw();
-        sleep(50);
-
-    }
+    // size_t n_steps = 50;
+    // for (size_t i =0; i <= n_steps; i++)
+    // {
+    //    vga.fillRectangle(load_bar_region[0], load_bar_region[1], load_bar_region[2]* i/n_steps , load_bar_region[3], COLOR_BASE0);
+    //     vga.draw();
+    //     sleep(50);
+    //
+    // }
     // sleep(1000);
     terminal.setScale(2);
     vga.draw();
-    terminal.write(" Loading Done.\n");
+    // terminal.write(" Loading Done.\n");
     int i = -32;
     size_t x = 133;
     terminal.write(i);
@@ -325,7 +327,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     print_hex(x, 4, COLOR_RED);
 
 
-    print("i: ",i, " x: ", x);
+    print("i: ", i, " x: ", x);
     terminal.userLine();
 
 
@@ -352,38 +354,125 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                 }
             case KEY_UP:
                 {
+                    size_t cin = data.lower_data;
+                    char key = key_map[cin];
+
+                    if (key_map[cin] != 0)
+                    {
+                        switch (key)
+                        {
+                        case '*': // shift bit 0
+                            {
+                                modifiers &= 0b1110; // not 0100
+                                break;
+                            }
+
+                        case '^': // ctrl bit 1
+                            {
+                                modifiers &= 0b1101; // not 0010
+                                break;
+                            }
+                        case '!': // alt bit 2
+                            {
+                                modifiers &= 0b1011; // not 0001
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+                        }
+                    }
+
                     // todo: Add a line byffer and parsing to inputs on enter.
                     // todo: Add an key handler which deals with modifier keys
                     // todo: handle backspace
                     // todo: write an actual terminal class.
 
-                    log.writeString("Key up event in main loop.\n");
+                    // log.writeString("Key up event in main loop.\n");
                     break;
                 }
             case KEY_DOWN:
                 {
-                    log.writeString("Key down event in main loop: ");
-                    size_t c = data.lower_data;
-                    char key = key_map[c];
-                    log.writeInt(key);
-                    log.newLine();
-                    if (key_map[c] != 0)
+                    // log.writeString("Key down event in main loop: ");
+                    size_t cin = data.lower_data;
+                    char key = key_map[cin];
+                    // log.writeInt(key);
+                    // log.newLine();
+                    if (key_map[cin] != 0)
                     {
                         switch (key)
                         {
-                        case 8: // backspace
+                        case '\b': // backspace
                             {
                                 terminal.backspace();
                                 break;
                             }
-                        case 9: // tab
+                        case '\t': // tab
                             {
                                 terminal.write("    ");
                                 break;
                             }
+                        case '^': // ctrl bit 1
+                            {
+                                modifiers |= 0b0010;
+                                break;
+                            }
+                        case '*': // shift bit 0
+                            {
+                                modifiers |= 0b0001;
+                                // print("Shift pressed", modifiers);
+                                break;
+                            }
+                        case '!': // alt bit 2
+                            {
+                                modifiers |= 0b0100;
+                                break;
+                            }
+                        case 'H': // Home
+                            {
+                                // todo: handle home
+                                break;
+                            }
+                        case 'E': // end
+                            {
+                                // go to end of line
+                                break;
+                            }
+                        case 'U': // up
+                            {
+                                // probably won't handle up
+                                break;
+                            }
+                        case 'D': // down
+                            {
+                                // probably won't handle this
+                                break;
+                            }
+                        case '<': // left
+                            {
+                                // move left
+                                break;
+                            }
+                        case '>': // right
+                            {
+                                // move right
+                                break;
+                            }
                         default:
                             {
-                                terminal.write(key_map[c]);
+                                if (modifiers & 0b1) // shift is down
+                                {
+                                    if (key >= 97 && key <= 122) // alphanumeric
+                                    {
+                                        terminal.write(char(key_map[cin] -32));
+                                    }
+                                }
+                                else
+                                {
+                                    terminal.write(key);
+                                }
+
                                 break;
                             }
                         }

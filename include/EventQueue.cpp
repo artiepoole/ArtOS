@@ -18,13 +18,13 @@ char key_map[128] =
     '\t', /* Tab */
     'q', 'w', 'e', 'r', /* 19 */
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', /* Enter key */
-    0, /* 29   - Control */
+    '^', /* 29   - Control */
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', /* 39 */
-    '\'', '`', 0, /* Left shift */
+    '\'', '`', '*', /* Left shift */
     '\\', 'z', 'x', 'c', 'v', 'b', 'n', /* 49 */
-    'm', ',', '.', '/', 0, /* Right shift */
+    'm', ',', '.', '/', '+', /* Right shift */
     '*',
-    0, /* Alt */
+    '!', /* Alt */
     ' ', /* Space bar */
     0, /* Caps lock */
     0, /* 59 - F1 key ... > */
@@ -32,16 +32,16 @@ char key_map[128] =
     0, /* < ... F10 */
     0, /* 69 - Num lock*/
     0, /* Scroll Lock */
-    0, /* Home key */
-    0, /* Up Arrow */
+    'H', /* Home key */
+    'U', /* Up Arrow */
     0, /* Page Up */
     '-',
-    0, /* Left Arrow */
+    '<', /* Left Arrow */
     0,
-    0, /* Right Arrow */
+    '>', /* Right Arrow */
     '+',
-    0, /* 79 - End key*/
-    0, /* Down Arrow */
+    'E', /* 79 - End key*/
+    'D', /* Down Arrow */
     0, /* Page Down */
     0, /* Insert Key */
     0, /* Delete Key */
