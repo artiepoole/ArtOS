@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "multiboot_header.h"
 #include "types.h"
 #include "splash_screen.h"
-#include "string.h"
+#include "mystring.h"
 #include "Serial.h"
 #include "FONT.h"
 

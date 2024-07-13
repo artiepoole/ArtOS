@@ -180,7 +180,7 @@ void Terminal::userLine() // for use after an application prints.
 
 void Terminal::write(const char* data, const u32 color)
 {
-    const size_t len = strlen(data);
+    const size_t len = mystrlen(data);
     // put data into the text buffer
     write(data, len, color);
 }

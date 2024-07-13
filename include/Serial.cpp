@@ -43,7 +43,7 @@ void Serial::write(const unsigned char c)
 
 void Serial::write(const char* data)
 {
-    _write(data, strlen(data));
+    _write(data, mystrlen(data));
 }
 
 void Serial::write(const char* data, const size_t len)

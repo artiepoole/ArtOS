@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "string.h"
+#include "mystring.h"
 #include "ports.h"
 
 #define PORT 0x3f8          // COM1
@@ -73,7 +73,7 @@ public:
     requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
     void logHex(int_like val, const char* val_name="")
     {
-        if (strlen(val_name)>0)
+        if (mystrlen(val_name)>0)
         {
             write(val_name);
             write(": ");
