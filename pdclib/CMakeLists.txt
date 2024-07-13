@@ -116,7 +116,7 @@ set( PDCLIB_SOURCES
 #        functions/string/memcmp.c
 #        functions/string/memcpy.c
 #        functions/string/memmove.c
-#        functions/string/memset.c
+        functions/string/memset.c
 #        functions/string/strcat.c
 #        functions/string/strchr.c
 #        functions/string/strcmp.c
@@ -230,7 +230,7 @@ set( PDCLIB_SOURCES
 #        platform/example/functions/_PDCLIB/_PDCLIB_close.c
 #        platform/example/functions/_PDCLIB/_PDCLIB_Exit.c
 #        platform/example/functions/_PDCLIB/_PDCLIB_fillbuffer.c
-        platform/example/functions/_PDCLIB/_PDCLIB_flushbuffer.c
+        platform/example/functions/_PDCLIB/_PDCLIB_flushbuffer.cpp
 #        platform/example/functions/_PDCLIB/_PDCLIB_open.c
 #        platform/example/functions/_PDCLIB/_PDCLIB_realpath.c
 #        platform/example/functions/_PDCLIB/_PDCLIB_rename.c
@@ -238,6 +238,12 @@ set( PDCLIB_SOURCES
 #        platform/example/functions/_PDCLIB/_PDCLIB_seek.c
 #        platform/example/functions/_PDCLIB/_PDCLIB_stdinit.c
 )
+
+
+file(GLOB DIRS
+        LIST_DIRECTORIES true
+        include/*
+        platform/*)
 
 set( PDCLIB_HEADERS
         include/assert.h
@@ -264,7 +270,8 @@ set( PDCLIB_HEADERS
 
 file(GLOB KERNEL
         "../include/*.h"
-        "../src/kernel/kernel.h"
+        "../src/kernel/*.h"
+        "../src/kernel/*.cpp"
 )
 
 set( PDCLIB_PRIVATE_HEADERS
@@ -278,7 +285,44 @@ set( PDCLIB_PRIVATE_HEADERS
 add_library( pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
 
 #target_include_directories( pdclib  BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include include platform/example/include ../src ../src/kernel ../include)
-target_include_directories( pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include include platform/example/include )
+target_include_directories( pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include)
+target_include_directories(pdclib PUBLIC
+        include
+        include/pdclib
+
+        platform/example/include
+
+        platform/example/functions
+
+        platform/example/include
+
+        platform/example/include/pdclib
+
+        platform/example/functions/_PDCLIB/
+        platform/example/functions/signal
+        platform/example/functions/stdio
+        platform/example/functions/stdlib
+        platform/example/functions/threads
+        platform/example/functions/time
+
+        functions/_dlmalloc/
+        functions/_dtoa
+        functions/_PDCLIB
+        functions/_tzcode
+        functions/ctype
+        functions/inttypes
+        functions/locale
+        functions/stdio
+        functions/stdlib
+        functions/string
+        functions/time
+
+        ../src
+        ../src/kernel
+        ../include
+
+)
+
 
 set_property( TARGET pdclib PROPERTY POSITION_INDEPENDENT_CODE 1 )
 

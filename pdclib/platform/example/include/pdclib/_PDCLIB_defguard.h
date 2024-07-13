@@ -24,6 +24,6 @@
 #define _SYS__TIMESPEC_H_
 #define _STRUCT_TIMESPEC
 
-#include <time.h>
+#include "time.h"
 
 #endif

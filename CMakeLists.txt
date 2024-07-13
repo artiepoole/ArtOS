@@ -17,8 +17,9 @@ file(GLOB INCLUDE
 )
 
 file(GLOB KERNEL
-    "src/kernel/*.cpp"
-    "src/kernel/*.h")
+        "src/kernel/*.cpp"
+        "src/kernel/*.h"
+)
 
 
 add_subdirectory(pdclib)
@@ -31,9 +32,43 @@ set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
-target_include_directories(${KERNEL_BIN} PUBLIC include src)
-target_link_libraries(pdclib)
+target_include_directories(${KERNEL_BIN} PUBLIC include src src/kernel pdclib/
+        pdclib/include
+        pdclib/include/pdclib
 
+        pdclib/platform/example/include
+
+        pdclib/platform/example/functions
+
+        pdclib/platform/example/include
+
+        pdclib/platform/example/include/pdclib
+
+        pdclib/platform/example/functions/_PDCLIB/
+        pdclib/platform/example/functions/signal
+        pdclib/platform/example/functions/stdio
+        pdclib/platform/example/functions/stdlib
+        pdclib/platform/example/functions/threads
+        pdclib/platform/example/functions/time
+
+        pdclib/functions/_dlmalloc/
+        pdclib/functions/_dtoa
+        pdclib/functions/_PDCLIB
+        pdclib/functions/_tzcode
+        pdclib/functions/ctype
+        pdclib/functions/inttypes
+        pdclib/functions/locale
+        pdclib/functions/stdio
+        pdclib/functions/stdlib
+        pdclib/functions/string
+        pdclib/functions/time
+
+        ../src
+        ../src/kernel
+        ../include
+
+)
+target_link_libraries(pdclib)
 
 
 ### Generating the ISO file

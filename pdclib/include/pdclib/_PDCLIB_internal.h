@@ -15,8 +15,8 @@ extern "C" {
 /* You should not have to edit anything in this file; if you DO have to, it   */
 /* would be considered a bug / missing feature: notify the author(s).         */
 /* -------------------------------------------------------------------------- */
+#include "_PDCLIB_config.h"
 
-#include "pdclib/_PDCLIB_config.h"
 
 /* -------------------------------------------------------------------------- */
 /* Standard Version                                                           */

@@ -17,15 +17,15 @@
 
 #include <errno.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
 
 #include "../../src/kernel/kernel.h"
 
 typedef long ssize_t;
-ssize_t write(int fd, const void* buf, size_t count);
-ssize_t write(const int fd, const void* buf, const size_t count)
+ssize_t write(int fd, const char* buf, size_t count);
+ssize_t write(const int fd, const char* buf, const size_t count)
 {
     if (fd == stdout->handle)
     {
@@ -42,9 +42,9 @@ ssize_t write(const int fd, const void* buf, const size_t count)
     return -1;
 }
 
-#ifdef __cplusplus
-}
-#endif
+// #ifdef __cplusplus
+// }
+// #endif
 
 /* The number of attempts of output buffer flushing before giving up.         */
 #define _PDCLIB_IO_RETRIES 1
