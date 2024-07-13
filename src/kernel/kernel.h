@@ -31,10 +31,10 @@ void print(args_t&&... args)
 }
 
 template <typename... args_t>
-void print_colour(u32 colour, args_t&&... args)
+void print_colour(u32 color, args_t&&... args)
 {
     auto& term = Terminal::get();
-    (term.write(args, colour), ...);
+    (term.write(args, color), ...);
     term.newLine();
 }
 

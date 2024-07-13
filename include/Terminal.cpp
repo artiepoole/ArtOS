@@ -169,6 +169,14 @@ void Terminal::newLine()
     }
 }
 
+void Terminal::userLine() // for use after an application prints.
+{
+    newLine();
+    terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent}; // Add an arrow to the start of the line
+    _render();
+}
+
+
 
 void Terminal::write(const char* data, const u32 color)
 {

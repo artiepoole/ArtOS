@@ -322,10 +322,11 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     size_t x = 133;
     terminal.write(i);
     terminal.newLine();
-    print_colour(x, 4, COLOR_RED);
+    print_hex(x, 4, COLOR_RED);
 
 
     print("i: ",i, " x: ", x);
+    terminal.userLine();
 
 
     // Event handler loop.

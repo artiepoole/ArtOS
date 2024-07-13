@@ -30,6 +30,7 @@ public:
     Terminal& operator=(Terminal const& other) = delete;
 
     void newLine();
+    void userLine();
     void setScale(u32 new_scale);
     u32 getScale();
     void clear();
