@@ -36,7 +36,7 @@ struct event_t
 };
 
 
-void keyboard_handler();
+void keyboardHandler();
 
 class EventQueue
 {

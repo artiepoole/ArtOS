@@ -35,7 +35,7 @@ This class could be re-worked as a Canvas with out to many changes */
 VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32* buffer)
 {
     [[maybe_unused]] auto& log = Serial::get();
-    log.write("Initialising VGA. \n");
+    log.log("Initialising VGA.");
     instance = this;
     width = boot_header->framebuffer_width;
     height = boot_header->framebuffer_height;
@@ -57,7 +57,7 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32*
     _window.h = _window.y2 - _window.y1;
     _screen_region = window_t{0, 0, width, height, width, height};
 
-    log.write("VGA init done.\n");
+    log.log("VGA initialised.");
 }
 
 VideoGraphicsArray::~VideoGraphicsArray()

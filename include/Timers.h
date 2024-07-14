@@ -13,9 +13,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// rtc to be used for system clock time ticking and pit to be used for scheduling.
+
 struct RTC_t // using u16 for ease of printing.
 {
-    u8 second, minute, hour, day, month;
+    u8 second, minute, hour, day, month, weekday;
     u16 year; //  4 digit year
     u8 regB;
 };
@@ -27,5 +29,7 @@ void configurePit(u32 hz);
 void sleep(u32 ms);
 
 void timerHandler();
+
+void RTCHandler();
 
 #endif //TIME_H

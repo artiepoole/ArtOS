@@ -17,6 +17,7 @@ struct cpu_registers_t
 }__attribute__((packed));
 
 
-
+void disable_interrupts();
+void enable_interrupts();
 
 #endif //SYSTEM_H

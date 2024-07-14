@@ -91,9 +91,10 @@ char shift_map[128] =
 };
 
 /* Handles the keyboard interrupt */
-void keyboard_handler()
+void keyboardHandler()
 {
     [[maybe_unused]] auto& log = Serial::get();
+
     auto& queue = EventQueue::getInstance();
 
     /* Read from the keyboard's data buffer */
@@ -115,6 +116,8 @@ void keyboard_handler()
 
 EventQueue::EventQueue()
 {
+    auto& log = Serial::get();
+    log.log("Initialising EventQueue");
     instance = this;
     _unread_counter = 0;
     _write_index = 0;
@@ -124,6 +127,7 @@ EventQueue::EventQueue()
     {
         i = event_t{NULL_EVENT, event_data_t{0, 0}};
     }
+    log.log("EventQueue initialised");
 }
 
 EventQueue::~EventQueue()

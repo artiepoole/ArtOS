@@ -4,6 +4,7 @@
 
 #include "IDT.h"
 
+// todo: move some of this stuff to an "interrupts.cpp" or similar.
 struct idt_entry_t
 {
     u16 isr_low; // The lower 16 bits of the ISR's address
@@ -178,10 +179,9 @@ void irq_handler(const cpu_registers_t* r)
     */
     auto &log = Serial::get();
     // register_to_serial(r);
-    // log.write("IRQ: ");
+
     const auto int_no = r->int_no;
-    // log.write_int(int_no);
-    // log.new_line();
+    // log.log("IRQ: ",int_no);
 
     if (int_no >= 32)
     {
@@ -191,13 +191,12 @@ void irq_handler(const cpu_registers_t* r)
             timerHandler();
             break;
         case 1:
-            keyboard_handler();
+            keyboardHandler();
             break;
         case 4:
-            log.write("First instance");
-            log.write("Unhandled IRQ: ");
-            log.write(int_no);
-            log.newLine();
+            break;
+        case 8:
+            RTCHandler();
             break;
         default:
             log.write("Unhandled IRQ: ");
@@ -212,12 +211,12 @@ void irq_handler(const cpu_registers_t* r)
     *  the slave controller */
     if (int_no >= 40)
     {
-        outb(0xA0, 0x20);
+        outb(PIC2_COMMAND, PIC_EOI);
     }
 
     /* In either case, we need to send an EOI to the master
     *  interrupt controller too */
-    outb(0x20, 0x20);
+    outb(PIC1_COMMAND, PIC_EOI);
 }
 
 
@@ -238,11 +237,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 IDT::IDT()
 {
     auto &log = Serial::get();
-    /* also installs irq */
-    // log.write("Remapping irq\n");
-    // pic_irq_remap();
-    // pic_disable();
-    log.write("IDT installed\n");
+    log.log("Initialising IDT");
     idt_pointer.limit = (sizeof(idt_entry_t) * 48) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
 
@@ -253,14 +248,14 @@ IDT::IDT()
         idt_vectors[idt_index] = true;
     }
 
-    log.write("Setting IDT base and limit. ");
+    log.write("\tSetting IDT base and limit. ");
     log.write("Base: ");
     log.write(idt_pointer.base, true);
     log.write(" Limit: ");
     log.write(idt_pointer.limit, true);
     log.newLine();
     __asm__ volatile ("lidt %0" : : "m"(idt_pointer)); // load the new IDT
-    log.write("LDT has been set\n");
-    __asm__ volatile ("sti"); // set the interrupt flag
-    log.write("Interrupts enabled\n");
+    log.write("\tIDT has been set\n");
+    enable_interrupts();
+    log.log("IDT initialised");
 }

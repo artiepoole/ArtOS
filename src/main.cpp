@@ -13,7 +13,7 @@
 #include "Terminal.h"
 // #include "stdlib.h"
 // #include "malloc.c"
-#include "CMOS.h"
+#include "RTC.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -200,49 +200,41 @@ extern "C"
 void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
     auto log = Serial();
-
-    log.log("LOADED OS.");
-    read_RTC();
+    log.log("Loading singletons...");
+    RTC rtc;
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
-
-    // vgap = &vga;
-    Terminal terminal{};
-
+    Terminal terminal;
     PIC pic;
+    IDT idt;
+    configurePit(10000);
+    log.log("Singletons loaded.");
+    // rtc.setDivider(6);
+
+
+
     vga.drawSplash();
     vga.draw();
-    log.write("LOADED OS.\n");
-    configurePit(10000); // 10
-    IDT idt;
-
-    pic.enableIRQ(0);
-    pic.enableIRQ(1);
 
 
 
-
-     // // Loading bar code
-     // size_t n_steps = 50;
-     // for (size_t i =0; i <= n_steps; i++)
-     // {
-     //    vga.fillRectangle(load_bar_region[0], load_bar_region[1], load_bar_region[2]* i/n_steps , load_bar_region[3], COLOR_BASE0);
-     //     vga.draw();
-     //     sleep(50);
-     //
-     // }
-     // sleep(500);
-
+    pic.enableIRQ(0); // PIT interrupts
+    pic.enableIRQ(1); // Keyboard interrupts
+    pic.enableIRQ(2); // Enable secondary PIC to raise interrupts
+    pic.enableIRQ(8); // RTC interrupts
 
     terminal.setScale(2);
     vga.draw();
     terminal.write(" Loading Done.\n");
+    log.log("LOADED OS.");
 
 
 
     // Event handler loop.
+    log.log("Entering event loop.");
     while (true)
     {
+
         if (events.pendingEvents())
         {
             auto [type, data] = events.getEvent();
