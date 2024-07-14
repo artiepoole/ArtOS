@@ -68,7 +68,7 @@ void PIC::enable()
 void PIC::enableIRQ(const u8 i)
 {
     auto& log = Serial::get();
-    log.log("Enabling IRQ", i);
+    log.log("Enabling IRQ", static_cast<u16>(i));
 
 
     if (i < 8)
@@ -76,6 +76,7 @@ void PIC::enableIRQ(const u8 i)
         const u8 old_mask1 = inb(PIC1_DATA);
         const u8 byte = 0x1 << i;
         mask1 = old_mask1 & byte;
+        log.write("mask1: ");
         log.write(byte, true);
         log.newLine();
     }
@@ -84,6 +85,7 @@ void PIC::enableIRQ(const u8 i)
         const u8 old_mask2 = inb(PIC2_DATA);
         const u8 byte = 0x1 << (i - 8);
         mask2 = old_mask2 & byte;
+        log.write("mask2: ");
         log.write(byte, true);
         log.newLine();
     }
