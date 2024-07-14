@@ -14,11 +14,11 @@ file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
         "include/*.s"
+)
+
+file(GLOB KERNEL
         "src/sys/*.h"
         "src/sys/*.cpp"
-        "../pdclib/include/time.h"
-        "pdclib/platform/ArtOS/functions/time/time.cpp"
-
 )
 
 
@@ -27,49 +27,16 @@ add_subdirectory(pdclib)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
-
 )
+
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc -Wl,-demangle")
+
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
-target_include_directories(${KERNEL_BIN} PUBLIC include src src/sys pdclib/
-        pdclib/include
-        pdclib/include/pdclib
 
-        pdclib/platform/ArtOS/include
 
-        pdclib/platform/ArtOS/functions
-
-        pdclib/platform/ArtOS/include
-
-        pdclib/platform/ArtOS/include/pdclib
-
-        pdclib/platform/ArtOS/functions/_PDCLIB/
-        pdclib/platform/ArtOS/functions/signal
-        pdclib/platform/ArtOS/functions/stdio
-        pdclib/platform/ArtOS/functions/stdlib
-        pdclib/platform/ArtOS/functions/threads
-        pdclib/platform/ArtOS/functions/time
-
-        pdclib/functions/_dlmalloc/
-        pdclib/functions/_dtoa
-        pdclib/functions/_PDCLIB
-        pdclib/functions/_tzcode
-        pdclib/functions/ctype
-        pdclib/functions/inttypes
-        pdclib/functions/locale
-        pdclib/functions/stdio
-        pdclib/functions/stdlib
-        pdclib/functions/string
-        pdclib/functions/time
-
-        ../src
-        ../src/kernel
-        ../include
-
-)
-target_link_libraries(pdclib)
+target_link_libraries(${KERNEL_BIN} pdclib)
 
 
 ### Generating the ISO file
