@@ -64,7 +64,7 @@ inline char exception_messages[][40] =
     "reserved exceptions", // 31
 };
 
-void register_to_serial(const registers* r)
+void register_to_serial(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
     log.write("int_no, err_code: ");
@@ -118,7 +118,7 @@ void register_to_serial(const registers* r)
     log.newLine();
 }
 
-void handle_div_by_zero(const registers* r)
+void handle_div_by_zero(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
     log.write("Div by zero not handled. oops.\n");
@@ -127,7 +127,7 @@ void handle_div_by_zero(const registers* r)
 
 
 extern "C"
-void exception_handler(const registers* r)
+void exception_handler(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
     register_to_serial(r);
@@ -156,7 +156,7 @@ void exception_handler(const registers* r)
 }
 
 extern "C"
-void irq_handler(const registers* r)
+void irq_handler(const cpu_registers_t* r)
 {
     /*
         0 	Programmable Interrupt Timer Interrupt
@@ -227,7 +227,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 
     descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
     descriptor->kernel_cs = KERNEL_CS;
-    // this value can be whatever offset your kernel code selector is in your GDT.
+    // this value can be whatever offset your sys code selector is in your GDT.
     // My entry point is 0x001005e0 so the offset is 0x0010(XXXX) (because of GRUB)
     descriptor->attributes = flags;
     descriptor->isr_high = reinterpret_cast<u32>(isr_stub) >> 16;

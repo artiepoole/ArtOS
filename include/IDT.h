@@ -21,10 +21,10 @@ private:
 };
 
 extern "C"
-void exception_handler(const registers* r);
+void exception_handler(const cpu_registers_t* r);
 
 extern "C"
-void irq_handler(const registers* r);
+void irq_handler(const cpu_registers_t* r);
 
 
 
