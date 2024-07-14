@@ -2,12 +2,13 @@
 // Created by artypoole on 13/07/24.
 //
 
-#include "Time.h"
+#include "Timers.h"
 
-#include <CMOS.h>
+#include "CMOS.h"
 
 volatile u32 timer_ticks = 0;
-volatile u64 timer_count = 0;
+volatile u32 clock_counter = 0;
+u32 seconds_since_start = 0;
 u32 rate = 0;
 
 
@@ -16,10 +17,8 @@ void configurePit(const u32 hz)
 {
     auto& log = Serial::get();
     const u32 divisor = 1193180 / hz; /* Calculate our divisor */
-    rate = hz;
-    log.write("Configured PIT. Divisor: ");
-    log.write(divisor);
-    log.newLine();
+    rate = 1193180 / divisor; // calculating back to get the real rate after integer maths
+    log.log("Configured PIT. Divisor: ", divisor, " rate: ", rate);
     outb(0x43, 0x36); /* Set our command byte 0x36 */
     outb(0x40, divisor & 0xFF); /* Set low byte of divisor */
     outb(0x40, divisor >> 8); /* Set high byte of divisor */
@@ -50,10 +49,32 @@ void sleep(const u32 ms)
     // log.new_line();
 }
 
+void RTC_increment()
+{
+    current_time.second++;
+    if (current_time.second >= 60)
+    {
+        current_time.second = 0;
+        current_time.minute++;
+    }
+    if (current_time.minute >= 60)
+    {
+        current_time.minute = 0;
+        read_RTC(); // happens around once an hour.
+    }
+}
+
 void timerHandler()
 {
-    timer_count = timer_count + 1; // always add one to the time counter
+    clock_counter = clock_counter + 1; // always add one to the time counter
+    if (clock_counter % rate == 0)
+    {
+        // approx one second has elapsed
+        clock_counter = 0;
+        seconds_since_start++;
 
+        RTC_increment();
+    }
     // Check if sleep is still active.
     if (timer_ticks == 0) return;
 
