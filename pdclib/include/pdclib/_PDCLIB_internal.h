@@ -56,7 +56,7 @@ extern "C" {
 
 /* noreturn enabled for C11 onward only */
 #if defined( __cplusplus ) && __cplusplus >= 201103L
-#define _PDCLIB_Noreturn [[noreturn]]
+#define _PDCLIB_Noreturn
 #else
 #if defined( __STDC_VERSION__ ) >= 201112L
 #define _PDCLIB_Noreturn _Noreturn

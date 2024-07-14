@@ -55,6 +55,7 @@ void sleep(const u32 ms)
 
 void timerHandler()
 {
+    clock_counter++;
     // Check if sleep is still active.
     if (timer_ticks == 0) return;
 

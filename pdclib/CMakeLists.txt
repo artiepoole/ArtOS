@@ -157,7 +157,7 @@ set( PDCLIB_SOURCES
         functions/time/mktime.c
         functions/time/strftime.c
 #        platform/ArtOS/functions/time/clock.c
-#        platform/ArtOS/functions/time/time.c
+        platform/ArtOS/functions/time/time.cpp
 #        platform/ArtOS/functions/time/timespec_get.c
 
         functions/_dlmalloc/malloc.c
@@ -228,7 +228,7 @@ set( PDCLIB_SOURCES
 
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_changemode.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_close.c
-        platform/ArtOS/functions/_PDCLIB/_PDCLIB_Exit.c
+        platform/ArtOS/functions/_PDCLIB/_PDCLIB_Exit.cpp
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_fillbuffer.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_flushbuffer.cpp
 #        platform/ArtOS/functions/_PDCLIB/_PDCLIB_open.c

@@ -11,25 +11,23 @@
 #include "pdclib/_PDCLIB_defguard.h"
 
 #include "time.h"
+#include "kernel.h"
 
 /* See comments in _PDCLIB_config.h on the semantics of time_t. */
 
 time_t time( time_t * timer )
 {
-    struct timeval tv;
+    time_t t = get_epoch_time();
 
-    if ( gettimeofday( &tv, NULL ) == 0 )
+    if ( timer != NULL )
     {
-        if ( timer != NULL )
-        {
-            *timer = tv.tv_sec;
-        }
-
-        return tv.tv_sec;
+        *timer = t;
     }
 
-    return -1;
+    return t;
 }
+
+struct tm * gmtime( const time_t * timer );
 
 #endif
 

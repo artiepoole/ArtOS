@@ -6,7 +6,7 @@
 
 #include "../include/VideoGraphicsArray.h"
 
-void write_standard(const char* buffer, const size_t len)
+void write_standard(const char* buffer, unsigned long len)
 {
     auto& term = Terminal::get();
     term.write(buffer, len);
@@ -15,7 +15,7 @@ void write_standard(const char* buffer, const size_t len)
     log.write(buffer, len);
 }
 
-void write_error(char* buffer, const size_t len)
+void write_error(const char* buffer, unsigned long len)
 {
     // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
     auto& term = Terminal::get();
@@ -23,6 +23,25 @@ void write_error(char* buffer, const size_t len)
 
     auto& log = Serial::get();
     log.write(buffer, len);
+}
+
+tm get_time()
+{
+    auto& rtc = RTC::get();
+    return rtc.getTime();
+}
+
+
+time_t get_epoch_time()
+{
+    auto& rtc = RTC::get();
+    return rtc.epochTime();
+}
+extern "C"
+void _exit(int status)
+{
+    auto & log = Serial::get();
+    log.log("Exit status: ",status);
 }
 
 // void draw_screen_region(u32* frame_buffer)

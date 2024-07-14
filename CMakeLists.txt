@@ -14,11 +14,11 @@ file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
         "include/*.s"
-)
-
-file(GLOB KERNEL
-        "src/sys/*.cpp"
         "src/sys/*.h"
+        "src/sys/*.cpp"
+        "../pdclib/include/time.h"
+        "pdclib/platform/ArtOS/functions/time/time.cpp"
+
 )
 
 

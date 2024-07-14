@@ -359,7 +359,7 @@ struct _PDCLIB_imaxdiv_t
 #else
 #define _PDCLIB_clock_t long
 #endif
-#define _PDCLIB_CLOCKS_PER_SEC 1000000
+#define _PDCLIB_CLOCKS_PER_SEC 10000
 
 /* For time_t, no such divider exists. Most implementations use a count of    */
 /* seconds since a specified epoch. While PDCLib really should support other  */

@@ -8,6 +8,8 @@
 u16 CURRENT_YEAR = 2000;
 RTC* instance = nullptr;
 
+u8 days_in_months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
 RTC::RTC()
 {
     auto& log = Serial::get();
@@ -31,9 +33,15 @@ RTC& RTC::get()
     return *instance;
 }
 
-RTC_t RTC::getTime()
+tm RTC::getTime()
 {
     return current_time;
+}
+
+time_t RTC::epochTime()
+{
+    u32 days = (current_time.tm_year -70) * 365 + current_time.tm_yday;
+    return ((days * 24 + current_time.tm_hour) * 60 + current_time.tm_min) * 60 + current_time.tm_sec;
 }
 
 
@@ -51,7 +59,7 @@ u8 RTC::checkUpdating()
 }
 
 
-RTC_t RTC::read()
+tm RTC::read()
 {
     while (checkUpdating()); // Make sure an update isn't in progress
 
@@ -72,19 +80,19 @@ RTC_t RTC::read()
     if (!(registerB & 0x04))
     {
         // second = (second & 0x0F) + ((second / 16) * 10);
-        second = ( (second & 0xF0) >> 1) + ( (second & 0xF0) >> 3) + (second & 0xf);
+        second = ((second & 0xF0) >> 1) + ((second & 0xF0) >> 3) + (second & 0xf);
         // minute = (minute & 0x0F) + ((minute / 16) * 10);
-        minute = ( (minute & 0xF0) >> 1) + ( (minute & 0xF0) >> 3) + (minute & 0xf);
-        hour = ( (hour & 0xF0) >> 1) + ( (hour & 0xF0) >> 3) + (hour & 0xf);
+        minute = ((minute & 0xF0) >> 1) + ((minute & 0xF0) >> 3) + (minute & 0xf);
+        hour = ((hour & 0xF0) >> 1) + ((hour & 0xF0) >> 3) + (hour & 0xf);
         // day = (day & 0x0F) + ((day / 16) * 10);
-        day = ( (hour & 0xF0) >> 1) + ( (day & 0xF0) >> 3) + (day & 0xf);
+        day = ((hour & 0xF0) >> 1) + ((day & 0xF0) >> 3) + (day & 0xf);
         // month = (month & 0x0F) + ((month / 16) * 10);
-        month = ( (month & 0xF0) >> 1) + ( (month & 0xF0) >> 3) + (month & 0xf);
+        month = ((month & 0xF0) >> 1) + ((month & 0xF0) >> 3) + (month & 0xf);
         // year = (year & 0x0F) + ((year / 16) * 10);
-        year = ( (year & 0xF0) >> 1) + ( (year & 0xF0) >> 3) + (year & 0xf);
+        year = ((year & 0xF0) >> 1) + ((year & 0xF0) >> 3) + (year & 0xf);
         if (century != 0)
         {
-            century = ( (century & 0xF0) >> 1) + ( (century & 0xF0) >> 3) + (century & 0xf);
+            century = ((century & 0xF0) >> 1) + ((century & 0xF0) >> 3) + (century & 0xf);
         }
     }
 
@@ -104,29 +112,46 @@ RTC_t RTC::read()
         year += (CURRENT_YEAR / 100) * 100;
         if (year < CURRENT_YEAR) year += 100;
     }
+    int yearday = 0;
+    for (size_t i = 0; i < month; i++)
+    {
+        yearday += days_in_months[yearday];
+    }
+    if ((month >= 2) and (year % 4 == 0)) // leap year and after feb
+    {
+        yearday += 1;
+    }
+    tm time = {
 
-    RTC_t time = {
-        second, minute, hour, day, month, weekday, year, registerB
+        second,
+        minute,
+        hour,
+        day,
+        month,
+        year - 1900,
+        weekday,
+        yearday,
+        0
     };
+
+
     current_time = time;
     return time;
 }
 
 void RTC::increment()
 {
-    current_time.second++;
-    if (current_time.second >= 60)
+    current_time.tm_sec++;
+    if (current_time.tm_sec >= 60)
     {
-        current_time.second = 0;
-        current_time.minute++;
+        current_time.tm_sec = 0;
+        current_time.tm_min++;
     }
-    if (current_time.minute >= 60)
+    if (current_time.tm_min >= 60)
     {
-        current_time.minute = 0;
         read(); // happens around once an hour.
     }
 }
-
 
 
 void RTC::enableInterrupts()
@@ -171,12 +196,12 @@ u32 RTC::setDivider(u8 divider)
 
 void RTC::toString(char* out_str) const
 {
-    u8 second = current_time.second;
-    u8 minute = current_time.minute;
-    u8 hour = current_time.hour;
-    u8 day = current_time.day;
-    u8 month = current_time.month;
-    u16 year = current_time.year;
+    u8 second = current_time.tm_sec;
+    u8 minute = current_time.tm_min;
+    u8 hour = current_time.tm_hour;
+    u8 day = current_time.tm_mday;
+    u8 month = current_time.tm_mon;
+    u16 year = current_time.tm_year;
 
     out_str[4] = '-';
     out_str[7] = '-';
@@ -205,4 +230,5 @@ void RTC::toString(char* out_str) const
         second /= 10;
     }
 }
+
 

@@ -13,7 +13,10 @@
 #include "Terminal.h"
 // #include "stdlib.h"
 // #include "malloc.c"
+#include <kernel.h>
+
 #include "RTC.h"
+#include "time.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -160,7 +163,7 @@ u16 get_cs()
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
     log.write("CS: ");
-    log.write(i,true);
+    log.write(i, true);
     log.newLine();
     return i;
 }
@@ -211,11 +214,11 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     log.log("Singletons loaded.");
     // rtc.setDivider(6);
 
-
+    long t = time(nullptr);
+    tm time = get_time();
 
     vga.drawSplash();
     vga.draw();
-
 
 
     pic.enableIRQ(0); // PIT interrupts
@@ -228,13 +231,12 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     terminal.write(" Loading Done.\n");
     log.log("LOADED OS.");
 
-
+    log.log("Current time in epoch time: ", rtc.epochTime());
 
     // Event handler loop.
     log.log("Entering event loop.");
     while (true)
     {
-
         if (events.pendingEvents())
         {
             auto [type, data] = events.getEvent();

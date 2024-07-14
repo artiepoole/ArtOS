@@ -8,7 +8,8 @@
    kernels.
 */
 
-#include <stdlib.h>
+#include "stdlib.h"
+#include "kernel.h"
 
 #ifndef REGTEST
 

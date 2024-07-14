@@ -8,11 +8,13 @@
 #include <stddef.h>
 #include "types.h"
 #include "Terminal.h"
+#include "RTC.h"
 
 
-void write_standard(const char* buffer, size_t len);
+void write_standard(const char* buffer, unsigned long len);
 
-void write_error(const char* buffer, size_t len);
+void write_error(const char* buffer, unsigned long len);
+
 
 template <typename type_t>
 void print(type_t const& arg1)
@@ -46,8 +48,11 @@ void print_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
     term.write(val, hex_len, color);
     term.newLine();
 };
+extern "C"
+void _exit(int status);
 
-
+tm get_time();
+time_t get_epoch_time();
 
 // void draw_screen_region(unsigned long * frame_buffer);
 
