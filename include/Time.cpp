@@ -4,10 +4,11 @@
 
 #include "Time.h"
 
+#include <CMOS.h>
+
 volatile u32 timer_ticks = 0;
 volatile u64 timer_count = 0;
 u32 rate = 0;
-
 
 
 // extern "C"
@@ -57,6 +58,43 @@ void timerHandler()
     if (timer_ticks == 0) return;
 
     timer_ticks = timer_ticks - 1;
+}
 
+void get_RTC_string(char* out_str)
+{
+    // char a = "YYYY-MM-DD HH:MM:SS\0";
+    // YYYY-MM-DD HH:MM:SS - total len of
+    u8 second = current_time.second;
+    u8 minute = current_time.minute;
+    u8 hour = current_time.hour;
+    u8 day = current_time.day;
+    u8 month = current_time.month;
+    u16 year = current_time.year;
 
+    out_str[4] = '-';
+    out_str[7] = '-';
+    out_str[10] = ' ';
+    out_str[13] = ':';
+    out_str[16] = ':';
+    out_str[19] = '\0';
+
+    for (size_t i = 0; i < 4; i++)
+    {
+        out_str[3 - i] = dec[year % 10];
+        year /= 10;
+    }
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        out_str[6 - i] = dec[month % 10];
+        out_str[9 - i] = dec[day % 10];
+        out_str[12 - i] = dec[hour % 10];
+        out_str[15 - i] = dec[minute % 10];
+        out_str[18 - i] = dec[second % 10];
+        month /= 10;
+        day /= 10;
+        hour /= 10;
+        minute /= 10;
+        second /= 10;
+    }
 }

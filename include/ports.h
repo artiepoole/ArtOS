@@ -15,8 +15,12 @@
 #define PIC2_DATA	(PIC2+1)
 #define PIC_EOI		0x20
 
-#define KEYB_DATA		0x60		/* IO base address for keyboard data buffer */
-#define KEYB_CONTROL	0x64		/* IO base address for keyboard control buffer */
+#define KEYB_DATA		0x60 // Read only		/* IO base address for keyboard data buffer */
+#define KEYB_CONTROL	0x64 // Write only		/* IO base address for keyboard control buffer */
+
+// CMOS ports
+#define CMOS_SELECT 0x70 // Write only
+#define CMOS_DATA 0x71 // RW
 
 
 

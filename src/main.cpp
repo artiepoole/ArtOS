@@ -11,6 +11,9 @@
 #include "IDT.h"
 #include "PIC.h"
 #include "Terminal.h"
+// #include "stdlib.h"
+// #include "malloc.c"
+#include "CMOS.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -197,8 +200,9 @@ extern "C"
 void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
     auto log = Serial();
-    log.write("LOADED OS.\n");
-    log.newLine();
+
+    log.log("LOADED OS.");
+    read_RTC();
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
 
@@ -212,9 +216,10 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     configurePit(10000); // 10
     IDT idt;
 
-
     pic.enableIRQ(0);
     pic.enableIRQ(1);
+
+
 
 
      // // Loading bar code
