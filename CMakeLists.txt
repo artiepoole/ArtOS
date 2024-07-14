@@ -17,39 +17,41 @@ file(GLOB INCLUDE
 )
 
 file(GLOB KERNEL
-        "src/kernel/*.cpp"
-        "src/kernel/*.h"
+        "src/sys/*.cpp"
+        "src/sys/*.h"
 )
 
 
 add_subdirectory(pdclib)
 
-## Building the kernel binary
+## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
+        include/CMOS.cpp
+        include/CMOS.h
 )
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc -Wl,-demangle")
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
-target_include_directories(${KERNEL_BIN} PUBLIC include src src/kernel pdclib/
+target_include_directories(${KERNEL_BIN} PUBLIC include src src/sys pdclib/
         pdclib/include
         pdclib/include/pdclib
 
-        pdclib/platform/example/include
+        pdclib/platform/ArtOS/include
 
-        pdclib/platform/example/functions
+        pdclib/platform/ArtOS/functions
 
-        pdclib/platform/example/include
+        pdclib/platform/ArtOS/include
 
-        pdclib/platform/example/include/pdclib
+        pdclib/platform/ArtOS/include/pdclib
 
-        pdclib/platform/example/functions/_PDCLIB/
-        pdclib/platform/example/functions/signal
-        pdclib/platform/example/functions/stdio
-        pdclib/platform/example/functions/stdlib
-        pdclib/platform/example/functions/threads
-        pdclib/platform/example/functions/time
+        pdclib/platform/ArtOS/functions/_PDCLIB/
+        pdclib/platform/ArtOS/functions/signal
+        pdclib/platform/ArtOS/functions/stdio
+        pdclib/platform/ArtOS/functions/stdlib
+        pdclib/platform/ArtOS/functions/threads
+        pdclib/platform/ArtOS/functions/time
 
         pdclib/functions/_dlmalloc/
         pdclib/functions/_dtoa

@@ -22,7 +22,7 @@
 #ifndef REGTEST
 #include "_PDCLIB_config.h"
 #include "_PDCLIB_internal.h"
-#include "../../pdclib/platform/example/include/pdclib/_PDCLIB_defguard.h"
+#include "_PDCLIB_defguard.h"
 
 /* Have all functions herein use the dl* prefix */
 #define USE_DL_PREFIX 1
@@ -90,7 +90,7 @@ int main( void )
   own malloc.h that does include all settings by cutting at the point
   indicated below. Note that you may already by default be using a C
   library containing a malloc that is based on some version of this
-  malloc (for example in linux). You might still want to use the one
+  malloc (for ArtOS in linux). You might still want to use the one
   in this file to customize settings or to avoid overheads associated
   with library versions.
 
@@ -128,7 +128,7 @@ int main( void )
 
   Security: static-safe; optionally more or less
        The "security" of malloc refers to the ability of malicious
-       code to accentuate the effects of errors (for example, freeing
+       code to accentuate the effects of errors (for ArtOS, freeing
        space that is not currently malloc'ed or overwriting past the
        ends of chunks) in code that calls malloc.  This malloc
        guarantees not to modify any memory locations below the base of
@@ -256,14 +256,14 @@ int main( void )
   So if you would like to use this allocator for only some allocations,
   and your system malloc for others, you can compile with
   ONLY_MSPACES and then do something like...
-    static mspace mymspace = create_mspace(0,0); // for example
+    static mspace mymspace = create_mspace(0,0); // for ArtOS
     #define mymalloc(bytes)  mspace_malloc(mymspace, bytes)
 
   (Note: If you only need one instance of an mspace, you can instead
   use "USE_DL_PREFIX" to relabel the global malloc.)
 
   You can similarly create thread-local allocators by storing
-  mspaces as thread-locals. For example:
+  mspaces as thread-locals. For ArtOS:
     static __thread mspace tlms = 0;
     void*  tlmalloc(size_t bytes) {
       if (tlms == 0) tlms = create_mspace(0, 0);
@@ -985,7 +985,7 @@ extern "C" {
   available if n is greater than p's current allocated size, or n is
   less than or equal to p's size). This may be used instead of plain
   realloc if an alternative allocation strategy is needed upon failure
-  to expand space; for example, reallocation of a buffer that must be
+  to expand space; for ArtOS, reallocation of a buffer that must be
   memory-aligned or cleared. You can use realloc_in_place to trigger
   these alternatives only when needed.
 
@@ -1115,7 +1115,7 @@ DLMALLOC_EXPORT size_t dlmalloc_set_footprint_limit(size_t bytes);
   are held during the entire traversal. It is a bad idea to invoke
   other malloc functions from within the handler.
 
-  For example, to count the number of in-use chunks with size greater
+  For ArtOS, to count the number of in-use chunks with size greater
   than 1000, you could write:
   static int count = 0;
   void count_chunks(void* start, void* end, size_t used, void* arg) {
@@ -1188,7 +1188,7 @@ DLMALLOC_EXPORT struct mallinfo dlmallinfo(void);
   kinds of pools.  It may also be useful when constructing large data
   structures that initially have a fixed number of fixed-sized nodes,
   but the number is not known at compile time, and some of the nodes
-  may later need to be freed. For example:
+  may later need to be freed. For ArtOS:
 
   struct Node { int item; struct Node* next; };
 
@@ -1239,7 +1239,7 @@ DLMALLOC_EXPORT void** dlindependent_calloc(size_t, size_t, void**);
 
   independent_comalloc can be used to speed up allocation in cases
   where several structs or objects must always be allocated at the
-  same time.  For example:
+  same time.  For ArtOS:
 
   struct Head { ... }
   struct Foot { ... }
@@ -1337,7 +1337,7 @@ DLMALLOC_EXPORT void dlmalloc_stats(void);
   You can use this many bytes without worrying about
   overwriting other allocated objects. This is not a particularly great
   programming practice. malloc_usable_size can be more useful in
-  debugging and assertions, for example:
+  debugging and assertions, for ArtOS:
 
   p = malloc(n);
   assert(malloc_usable_size(p) >= 256);
@@ -6355,7 +6355,7 @@ int mspace_mallopt(int param_number, int value) {
       args. You can suppress all such calls from even occurring by defining
       MORECORE_CANNOT_TRIM,
 
-  As an example alternative MORECORE, here is a custom allocator
+  As an ArtOS alternative MORECORE, here is a custom allocator
   kindly contributed for pre-OSX macOS.  It uses virtually but not
   necessarily physically contiguous non-paged memory (locked in,
   present and won't get swapped out).  You can use it by uncommenting
