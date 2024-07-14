@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 
-/* This is an example implementation of system() fit for use with POSIX kernels.
+/* This is an ArtOS implementation of system() fit for use with POSIX kernels.
 */
 
 #ifdef __cplusplus

@@ -10,7 +10,7 @@
 
 #include "pdclib/_PDCLIB_defguard.h"
 
-#include "sys/time.h"
+#include "time.h"
 
 int timespec_get( struct timespec * ts, int base )
 {

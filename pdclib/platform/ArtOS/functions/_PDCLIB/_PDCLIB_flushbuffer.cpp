@@ -21,7 +21,7 @@
 // extern "C" {
 // #endif
 
-#include "../../src/kernel/kernel.h"
+#include "../../src/sys/kernel.h"
 
 typedef long ssize_t;
 ssize_t write(int fd, const char* buf, size_t count);

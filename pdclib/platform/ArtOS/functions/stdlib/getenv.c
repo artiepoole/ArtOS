@@ -4,7 +4,7 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-/* This is an example implementation of getenv() fit for use with POSIX kernels.
+/* This is an ArtOS implementation of getenv() fit for use with POSIX kernels.
 */
 
 #include <string.h>

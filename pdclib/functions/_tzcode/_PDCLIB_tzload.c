@@ -490,7 +490,7 @@ static int tzloadbody( char const * name, struct state * sp, bool doextend, unio
                sp->charcnt equals 40 (for LMT AST AWT APT AHST
                AHDT YST AKDT AKST) and ts->charcnt equals 10
                (for AKST AKDT).  Reusing means sp->charcnt can
-               stay 40 in this example.  */
+               stay 40 in this ArtOS.  */
             int gotabbr = 0;
             int charcnt = sp->charcnt;
 

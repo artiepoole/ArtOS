@@ -10,7 +10,7 @@
 
 #include "pdclib/_PDCLIB_defguard.h"
 
-#include "sys/time.h"
+#include "time.h"
 
 /* See comments in _PDCLIB_config.h on the semantics of time_t. */
 
