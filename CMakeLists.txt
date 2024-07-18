@@ -29,7 +29,7 @@ add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
 )
 
-set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc -Wl,-demangle")
+set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
