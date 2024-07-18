@@ -4,11 +4,11 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <time.h>
+#include "time.h"
 
 #ifndef REGTEST
 
-#include "times.h"
+#include "Timers.h"
 
 clock_t clock( void )
 {

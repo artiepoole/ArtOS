@@ -5,10 +5,9 @@
 #ifndef CMOS_H
 #define CMOS_H
 
-#include "ports.h"
-#include "Timers.h"
-#include "Serial.h"
-#include "system.h"
+#include "../ports.h"
+#include "../Serial.h"
+#include "../system.h"
 #include "time.h"
 
 // struct tm // using u16 for ease of printing.
@@ -53,6 +52,8 @@ void read_RTC();
 void RTC_interrupts_enable();
 
 u32 RTC_set_divider(u8 divider);
+
+void rtc_handler();
 
 
 #endif //CMOS_H

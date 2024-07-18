@@ -78,7 +78,7 @@ set( PDCLIB_SOURCES
         functions/stdio/vsnprintf.c
         functions/stdio/vsprintf.c
         functions/stdio/vsscanf.c
-#        platform/ArtOS/functions/stdio/tmpfile.c
+#        platform/ArtOS/functions/stdio/tmpfile.cpp
 
         functions/stdlib/abort.c
         functions/stdlib/abort_handler_s.c
@@ -156,13 +156,13 @@ set( PDCLIB_SOURCES
         functions/time/localtime_s.c
         functions/time/mktime.c
         functions/time/strftime.c
-#        platform/ArtOS/functions/time/clock.c
+#        platform/ArtOS/functions/time/clock.cpp
         platform/ArtOS/functions/time/time.cpp
 #        platform/ArtOS/functions/time/timespec_get.c
 
         functions/_dlmalloc/malloc.c
 
-#        functions/_dtoa/dtoa.c
+        functions/_dtoa/dtoa.c
 
         functions/_tzcode/_PDCLIB_gmtcheck.c
         functions/_tzcode/_PDCLIB_gmtsub.c
@@ -270,6 +270,7 @@ set( PDCLIB_HEADERS
 
 file(GLOB KERNEL
         "../include/*.h"
+        "../include/timers/*.h"
         "../src/sys/*.h"
         "../src/sys/*.cpp"
 )

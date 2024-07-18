@@ -360,9 +360,9 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #include "float.h"
 #endif /* Bad_float_h */
 
-#ifndef __MATH_H__
-#include "math.h"
-#endif
+//#ifndef __MATH_H__
+//#include "math.h"
+//#endif
 
 #ifdef __cplusplus
 extern "C" {

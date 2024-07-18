@@ -1,19 +1,15 @@
 //
-// Created by artypoole on 13/07/24.
+// Created by artypoole on 18/07/24.
 //
 
-#include "Timers.h"
+#include "PIT.h"
 
-#include "RTC.h"
+u32 rate = 0;
 
 volatile u32 timer_ticks = 0;
+
 volatile u32 clock_counter = 0;
-u32 seconds_since_start = 0;
-u32 rate = 0;
-u32 RTC_ticks = 0;
 
-
-// extern "C"
 void configurePit(const u32 hz)
 {
     auto& log = Serial::get();
@@ -26,6 +22,7 @@ void configurePit(const u32 hz)
     outb(0x40, divisor >> 8); /* Set high byte of divisor */
     log.log("PIT initialised");
 }
+
 
 void sleep(const u32 ms)
 {
@@ -52,27 +49,11 @@ void sleep(const u32 ms)
     // log.new_line();
 }
 
-
-void timerHandler()
+void pit_handler()
 {
     clock_counter++;
     // Check if sleep is still active.
     if (timer_ticks == 0) return;
 
     timer_ticks = timer_ticks - 1;
-}
-
-
-void RTCHandler()
-{
-    // Must read register c in order to let CMOS interrupt again
-    outb(CMOS_SELECT, CMOS_STATUS_C); // select register C
-    inb(CMOS_DATA); // throw away contents
-    RTC_ticks++;
-    if (RTC_ticks % (1024) == 0)
-    {
-        auto & rtc = RTC::get();
-        rtc.increment();
-        seconds_since_start++;
-    }
 }

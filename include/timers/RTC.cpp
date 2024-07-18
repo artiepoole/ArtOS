@@ -9,6 +9,10 @@ u16 CURRENT_YEAR = 2000;
 RTC* instance = nullptr;
 
 u8 days_in_months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+u32 RTC_ticks = 0;
+
+u32 seconds_since_start = 0;
+
 
 RTC::RTC()
 {
@@ -232,3 +236,17 @@ void RTC::toString(char* out_str) const
 }
 
 
+
+void rtc_handler()
+{
+    // Must read register c in order to let CMOS interrupt again
+    outb(CMOS_SELECT, CMOS_STATUS_C); // select register C
+    inb(CMOS_DATA); // throw away contents
+    RTC_ticks++;
+    if (RTC_ticks % (1024) == 0)
+    {
+        auto & rtc = RTC::get();
+        rtc.increment();
+        seconds_since_start++;
+    }
+}

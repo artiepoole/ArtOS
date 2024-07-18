@@ -4,6 +4,8 @@
 
 #include "IDT.h"
 
+#include "PIT.h"
+
 // todo: move some of this stuff to an "interrupts.cpp" or similar.
 struct idt_entry_t
 {
@@ -188,7 +190,7 @@ void irq_handler(const cpu_registers_t* r)
         switch (int_no - 32)
         {
         case 0:
-            timerHandler();
+            pit_handler();
             break;
         case 1:
             keyboardHandler();
@@ -196,7 +198,7 @@ void irq_handler(const cpu_registers_t* r)
         case 4:
             break;
         case 8:
-            RTCHandler();
+            rtc_handler();
             break;
         default:
             log.write("Unhandled IRQ: ");
