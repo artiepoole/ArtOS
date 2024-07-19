@@ -35,7 +35,7 @@ This class could be re-worked as a Canvas with out to many changes */
 VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32* buffer)
 {
     [[maybe_unused]] auto& log = Serial::get();
-    log.writeString("Initialising VGA. \n");
+    log.log("Initialising VGA.");
     instance = this;
     width = boot_header->framebuffer_width;
     height = boot_header->framebuffer_height;
@@ -57,13 +57,13 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32*
     _window.h = _window.y2 - _window.y1;
     _screen_region = window_t{0, 0, width, height, width, height};
 
-    log.writeString("VGA init done.\n");
+    log.log("VGA initialised.");
 }
 
 VideoGraphicsArray::~VideoGraphicsArray()
 {
     auto & log = Serial::get();
-    log.writeString("VGA - Deconstructor called.");
+    log.write("VGA - Deconstructor called.");
     instance = nullptr;
 }
 
@@ -147,23 +147,20 @@ void VideoGraphicsArray::drawSplash() const
 }
 
 
-void VideoGraphicsArray::clearWindow() const
+
+
+window_t * VideoGraphicsArray::getScreen()
 {
-    for (size_t ij = 0; ij < width * height; ij++)
+    return &_screen_region;
+}
+
+
+void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
+{
+    for(size_t i=0; i<width*height; i++)
     {
-        _buffer[ij] = FRAME_DATA[ij];
+        _screen[i] = buffer_to_draw[i];
     }
-}
-
-
-window_t VideoGraphicsArray::getWindow() const
-{
-    return _window;
-}
-
-window_t VideoGraphicsArray::getScreen() const
-{
-    return _screen_region;
 }
 
 //

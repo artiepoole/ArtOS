@@ -11,7 +11,7 @@
 #include "VideoGraphicsArray.h"
 
 extern char key_map[128];
-
+extern char shift_map[128];
 enum EVENT_TYPE
 {
     NULL_EVENT = 0,
@@ -36,7 +36,7 @@ struct event_t
 };
 
 
-void keyboard_handler();
+void keyboardHandler();
 
 class EventQueue
 {

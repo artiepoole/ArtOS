@@ -14,16 +14,13 @@ class PIC
 {
 public:
     PIC();
-    static void disable();
-    static void enable();
-    static void enableIRQ(u8 i);
-    static void enableAll();
+    void disable();
+    void enable();
+    void enableIRQ(u8 irq_id);
+    void disableIRQ(u8 irq_id);
+    void enableAll();
 };
 
-void timerHandler();
-void sleep(u32 ms);
-// extern "C"
-void configurePit(u32 hz);
 
 
 #endif //PIC_H

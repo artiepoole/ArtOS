@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "multiboot_header.h"
 #include "types.h"
 #include "splash_screen.h"
-#include "string.h"
+#include "mystring.h"
 #include "Serial.h"
 #include "FONT.h"
 
@@ -85,8 +85,8 @@ public:
     void clearWindow() const;
     void clearBuffer() const;
     void drawSplash() const;
-    window_t getWindow() const;
-    window_t getScreen() const;
+    void draw_region(const u32* buffer_to_draw) const;
+    [[nodiscard]] window_t * getScreen();
 
 
     // Font Definition

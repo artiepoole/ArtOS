@@ -8,25 +8,25 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "string.h"
+#include "mystring.h"
 #include "ports.h"
+#include "RTC.h"
 
 #define PORT 0x3f8          // COM1
 
 class Serial
 {
-
 private:
-     char _read();
-     void _sendChar(unsigned char a);
-     int _received();
-     int _transmitEmpty();
-     void _write(const  char* data, size_t size);
+    char _read();
+    void _sendChar(unsigned char a);
+    int _received();
+    int _transmitEmpty();
+    void _write(const char* data, size_t size);
 
 public:
     Serial();
     ~Serial();
-    static Serial & get();
+    static Serial& get();
 
     // remove copy functionality
     Serial(Serial const& other) = delete;
@@ -34,39 +34,62 @@ public:
 
     bool connected;
 
-     void newLine();
-     void writeChar(unsigned char c);
-     void writeString(const char* data);
-    void writeBuffer(const char* data, size_t len);
+    void newLine();
+    void write(unsigned char c);
+    void write(const char* data);
+    void write(const char* data, size_t len);
 
-    template<typename int_like>
-    void writeInt(const int_like val)
+    void time_stamp();
+
+    template <typename int_like>
+        requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
+    void write(const int_like val, const bool hex = false)
     {
         char out_str[255];
-        const size_t len = string_from_int(val, out_str);
-        char trimmed_str[len];
-        for (size_t j = 0; j < len; j++)
+        if (hex)
         {
-            trimmed_str[j] = out_str[j];
+            hex_from_int(val, out_str, sizeof(val));
         }
-       writeString(trimmed_str);
+        else
+        {
+            string_from_int(val, out_str);
+        }
+        write(out_str);
     }
 
-    template<typename int_like1>
-    void writeHex(const int_like1 val)
+    template <typename type_t>
+    void log(type_t const& arg1)
     {
-        char out_str[255];
-        const u32 len = hex_from_int(val, out_str, sizeof(val));
-        char trimmed_str[len];
-        for (size_t j = 0; j < len; j++)
-        {
-            trimmed_str[j] = out_str[j];
-        }
-       writeString(trimmed_str);
+        time_stamp();
+        write(arg1);
+        newLine();
     }
+
+    template <typename... args_t>
+    void log(args_t&&... args)
+    {
+        time_stamp();
+        (write(args), ...);
+        newLine();
+    }
+
+
+    template <typename int_like>
+    requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
+    void logHex(int_like val, const char* val_name="")
+    {
+        if (mystrlen(val_name)>0)
+        {
+            write(val_name);
+            write(": ");
+        }
+        write(val, true);
+        newLine();
+    };
+
+
 
 };
-
 
 
 #endif //SERIAL_H

@@ -17,8 +17,8 @@
 #define ICW4_BUF_MASTER	0x0C		/* Buffered mode/master */
 #define ICW4_SFNM	0x10		/* Special fully nested (not) */
 
-u8 mask1;
-u8 mask2;
+u8 mask1 = 0xFF;
+u8 mask2 = 0xFF;
 
 PIC::PIC()
 {
@@ -30,8 +30,8 @@ PIC::PIC()
     *  Interrupt Controller (PICs - also called the 8259's) in
     *  order to make IRQ0 to 15 be remapped to IDT entries 32 to
     *  47 */
-    mask1 = inb(PIC1_DATA); // save masks
-    mask2 = inb(PIC2_DATA);
+    // mask1 = inb(PIC1_DATA); // save masks
+    // mask2 = inb(PIC2_DATA);
 
     outb(PIC1, 0x11); // initialisation sequence
     outb(PIC2, 0x11);
@@ -49,8 +49,8 @@ PIC::PIC()
 
 void PIC::disable()
 {
-    auto &log = Serial::get();
-    log.writeString("Disabled PIC");
+    auto& log = Serial::get();
+    log.write("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
     outb(PIC1_DATA, 0xff);
@@ -59,104 +59,93 @@ void PIC::disable()
 
 void PIC::enable()
 {
-    auto &log = Serial::get();
-    log.writeString("Renabled PIC");
+    auto& log = Serial::get();
+    log.write("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
 }
 
-void PIC::enableIRQ(const u8 i)
+
+void IRQ_set_mask(uint8_t IRQline)
 {
-    auto &log = Serial::get();
-    log.writeString("Enabling IRQ");
-    log.writeInt(i);
-    log.newLine();
+    uint16_t port;
+    uint8_t value;
 
-
-    if (i < 8)
+    if (IRQline < 8)
     {
-        const u8 old_mask1 = inb(PIC1_DATA);
-        const u8 byte = 0x1 << i;
-        mask1 = old_mask1 & byte;
-        log.writeHex(byte);
-        log.newLine();
+        port = PIC1_DATA;
     }
     else
     {
-        const u8 old_mask2 = inb(PIC2_DATA);
-        const u8 byte = 0x1 << (i-8);
-        mask2 = old_mask2 & byte;
-        log.writeHex(byte);
-        log.newLine();
+        port = PIC2_DATA;
+        IRQline -= 8;
     }
+    value = inb(port) | (1 << IRQline);
+    outb(port, value);
+}
 
-    outb(PIC1_DATA, mask1);
-    outb(PIC2_DATA, mask2);
+void IRQ_clear_mask(uint8_t IRQline)
+{
+    uint16_t port;
+    uint8_t value;
+
+    if (IRQline < 8)
+    {
+        port = PIC1_DATA;
+    }
+    else
+    {
+        port = PIC2_DATA;
+        IRQline -= 8;
+    }
+    value = inb(port) & ~(1 << IRQline);
+    outb(port, value);
+}
+
+
+void PIC::enableIRQ(u8 irq_id)
+{
+    auto& log = Serial::get();
+    log.log("PIC: Enabling IRQ", static_cast<u16>(irq_id));
+
+    if (irq_id < 8)
+    {
+        mask1 = mask1 & ~(1 << irq_id);
+
+        outb(PIC1_DATA, mask1);
+    }
+    else
+    {
+        mask2 = mask2 & ~(1 << (irq_id - 8));
+        outb(PIC2_DATA, mask2);
+    }
+    log.log("\tmask1: ", static_cast<u16>(mask1), " mask2: ", static_cast<u16>(mask2));
+    log.log("PIC: IRQ", static_cast<u16>(irq_id), " enabled");
+}
+
+
+void PIC::disableIRQ(const u8 irq_id)
+{
+    auto& log = Serial::get();
+    log.log("Disabling IRQ", static_cast<u16>(irq_id));
+
+    if (irq_id < 8)
+    {
+        mask1 = mask1 | (1 << irq_id);
+        outb(PIC1_DATA, mask1);
+    }
+    else
+    {
+        mask2 = mask2 | (1 << (irq_id-8));
+        outb(PIC2_DATA, mask2);
+    }
+    log.log("mask1: ", static_cast<u16>(mask1), " mask2: ", static_cast<u16>(mask2));
 }
 
 void PIC::enableAll()
 {
-    mask1 = inb(PIC1_DATA);
-    mask2 = inb(PIC2_DATA);
+    mask1 = 0x00;
+    mask2 = 0x00;
     outb(PIC1_DATA, 0x00);
     outb(PIC2_DATA, 0x00);
-}
-
-
-volatile u32 ticks = 0;
-u32 rate =0;
-
-
-// extern "C"
-void configurePit(const u32 hz)
-{
-    auto &log = Serial::get();
-    const u32 divisor = 1193180 / hz; /* Calculate our divisor */
-    rate = hz;
-    log.writeString("Configured PIT. Divisor: ");
-    log.writeInt(divisor);
-    log.newLine();
-    outb(0x43, 0x36); /* Set our command byte 0x36 */
-    outb(0x40, divisor & 0xFF); /* Set low byte of divisor */
-    outb(0x40, divisor >> 8); /* Set high byte of divisor */
-}
-
-void sleep(const u32 ms)
-{
-    auto &log = Serial::get();
-    if (rate==0)
-    {
-        log.writeString("Tried to sleep when timer is not initiated.");
-        return;
-    }
-
-    ticks = ms * rate / 1000;  // rate is in hz, time is in ms
-
-    log.writeString("Sleeping for ");
-    log.writeInt(ms);
-    log.writeString("ms. Ticks: ");
-    log.writeInt(ticks);
-    log.writeString(" Rate: ");
-    log.writeInt(rate);
-    log.newLine();
-    while (ticks > 0);
-    //log.writeString("Exited while loop. ");
-    //log.writeString("Remaining ticks: ");
-    //log.write_int(ticks);
-    // log.new_line();
-}
-
-void timerHandler()
-{
-    /* Increment our 'tick count' */
-    if (ticks==0) return;
-
-    ticks--;
-
-    /* Every 18 clocks (approximately 1 second), we will
-    *  display a message on the screen */
-    // if (ticks % rate == 0)
-    // {
-    //    log.writeString("One second has passed\n");
-    // }
 }

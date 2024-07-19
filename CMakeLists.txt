@@ -14,22 +14,43 @@ file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
         "include/*.s"
+        "include/timers/*.h"
+        "include/timers/*.cpp"
+        "include/communication/*.h"
+        "include/communication/*.cpp"
+)
+
+file(GLOB KERNEL
+        "src/sys/*.h"
+        "src/sys/*.cpp"
 )
 
 
 add_subdirectory(pdclib)
 
-## Building the kernel binary
+## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
-        ${INCLUDE}
+        ${INCLUDE} ${KERNEL}
+        include/communication/SMBIOS.cpp
+        include/communication/SMBIOS.h
 )
-set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -lgcc -Wl,-demangle")
+target_include_directories(
+        ${KERNEL_BIN} PUBLIC
+        include
+        include/timers
+        include/communication/
+        src
+        src/sys
+        )
+
+set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
+
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
-target_include_directories(${KERNEL_BIN} PUBLIC include src)
-target_link_libraries(pdclib)
 
+
+target_link_libraries(${KERNEL_BIN} pdclib)
 
 
 ### Generating the ISO file

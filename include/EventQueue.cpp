@@ -18,12 +18,51 @@ char key_map[128] =
     '\t', /* Tab */
     'q', 'w', 'e', 'r', /* 19 */
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', /* Enter key */
-    0, /* 29   - Control */
+    '^', /* 29   - Control */
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', /* 39 */
-    '\'', '`', 0, /* Left shift */
+    '\'', '`', '*', /* Left shift */
     '\\', 'z', 'x', 'c', 'v', 'b', 'n', /* 49 */
-    'm', ',', '.', '/', 0, /* Right shift */
+    'm', ',', '.', '/', '+', /* Right shift */
     '*',
+    '!', /* Alt */
+    ' ', /* Space bar */
+    'C', /* Caps lock */
+    0, /* 59 - F1 key ... > */
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, /* < ... F10 */
+    0, /* 69 - Num lock*/
+    0, /* Scroll Lock */
+    'H', /* Home key */
+    'U', /* Up Arrow */
+    0, /* Page Up */
+    '-',
+    '<', /* Left Arrow */
+    0,
+    '>', /* Right Arrow */
+    '+',
+    'E', /* 79 - End key*/
+    'D', /* Down Arrow */
+    0, /* Page Down */
+    0, /* Insert Key */
+    0, /* Delete Key */
+    0, 0, 0,
+    0, /* F11 Key */
+    0, /* F12 Key */
+    0, /* All other keys are undefined */
+};
+char shift_map[128] =
+{
+    0, 27, '!', '"', '#', '$', '%', '^', '&', '*', /* 9 */
+    '(', ')', '_', '+', '\b', /* Backspace */
+    0, /* Tab */
+    'Q', 'W', 'E', 'R', /* 19 */
+    'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', 0, /* ENTER KEY */
+    0, /* 29   - CONTROL */
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', /* 39 */
+    '@', '~', 0, /* LEFT SHIFT */
+    '|', 'Z', 'X', 'C', 'V', 'B', 'N', /* 49 */
+    'M', '<', '>', '?', 0, /* Right shift */
+    0,
     0, /* Alt */
     ' ', /* Space bar */
     0, /* Caps lock */
@@ -35,11 +74,11 @@ char key_map[128] =
     0, /* Home key */
     0, /* Up Arrow */
     0, /* Page Up */
-    '-',
+    0,
     0, /* Left Arrow */
     0,
     0, /* Right Arrow */
-    '+',
+    0,
     0, /* 79 - End key*/
     0, /* Down Arrow */
     0, /* Page Down */
@@ -52,9 +91,10 @@ char key_map[128] =
 };
 
 /* Handles the keyboard interrupt */
-void keyboard_handler()
+void keyboardHandler()
 {
     [[maybe_unused]] auto& log = Serial::get();
+
     auto& queue = EventQueue::getInstance();
 
     /* Read from the keyboard's data buffer */
@@ -76,6 +116,8 @@ void keyboard_handler()
 
 EventQueue::EventQueue()
 {
+    auto& log = Serial::get();
+    log.log("Initialising EventQueue");
     instance = this;
     _unread_counter = 0;
     _write_index = 0;
@@ -85,6 +127,7 @@ EventQueue::EventQueue()
     {
         i = event_t{NULL_EVENT, event_data_t{0, 0}};
     }
+    log.log("EventQueue initialised");
 }
 
 EventQueue::~EventQueue()
@@ -103,13 +146,13 @@ void EventQueue::addEvent(const event_t& event)
     [[maybe_unused]] auto & log = Serial::get();
 
 
-    // log.writeString("Adding event.\n");
-    // log.writeString("type: ");
-    // log.writeInt(static_cast<int>(event.type));
-    // log.writeString(" lower: ");
-    // log.writeHex(event.data.lower_data);
-    // log.writeString(" upper: ");
-    // log.writeHex(event.data.upper_data);
+    // log.write("Adding event.\n");
+    // log.write("type: ");
+    // log.write(static_cast<int>(event.type));
+    // log.write(" lower: ");
+    // log.write(event.data.lower_data true);
+    // log.write(" upper: ");
+    // log.write(event.data.upper_data, true);
     // log.newLine();
 
     _event_queue[_write_index] = event;
@@ -131,7 +174,7 @@ event_t EventQueue::getEvent()
     if (_unread_counter == 0)
     {
         auto& log = Serial::get();
-        log.writeString("Tried to get read event ahead of event queue. Returning NONE event");
+        log.write("Tried to get read event ahead of event queue. Returning NONE event");
         return event_t{NULL_EVENT, event_data_t{0, 0}};
     }
 

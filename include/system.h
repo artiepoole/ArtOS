@@ -8,7 +8,7 @@
 #include "types.h"
 
 
-struct registers
+struct cpu_registers_t
 {
     u32 gs, fs, es, ds; /* pushed the segs last */
     u32 edi, esi, ebp, esp, ebx, edx, ecx, eax; /* pushed by 'pusha' */
@@ -17,6 +17,7 @@ struct registers
 }__attribute__((packed));
 
 
-
+void disable_interrupts();
+void enable_interrupts();
 
 #endif //SYSTEM_H

@@ -4,6 +4,9 @@
 
 #include "IDT.h"
 
+#include "PIT.h"
+
+// todo: move some of this stuff to an "interrupts.cpp" or similar.
 struct idt_entry_t
 {
     u16 isr_low; // The lower 16 bits of the ISR's address
@@ -30,109 +33,109 @@ u16 KERNEL_DS = 0x0018;
 
 inline char exception_messages[][40] =
 {
-    "div by zero",
-    "debug exception",
-    "non-maskable interrupt exception",
-    "breakpoint exception",
-    "into detected overflow exception",
-    "out of bounds exception",
-    "invalid opcode exception",
-    "double fault exception",
-    "coprocessor segment overrun exception",
-    "bad TSS exception",
-    "segment not present exception",
-    "stack fault exception",
-    "general protection fault exception",
-    "page fault exception",
-    "unknown interrupt exception",
-    "coprocessor fault exception",
-    "alignment check exception",
-    "machine check exception",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
-    "reserved exceptions",
+    "div by zero", // 0
+    "debug exception", // 1
+    "non-maskable interrupt exception", // 2
+    "breakpoint exception", // 3
+    "into detected overflow exception", // 4
+    "out of bounds exception", // 5
+    "invalid opcode exception", // 6
+    "double fault exception", // 7
+    "coprocessor segment overrun exception", // 8
+    "bad TSS exception", // 9
+    "segment not present exception", // 10
+    "stack fault exception", // 11
+    "general protection fault exception", // 12
+    "page fault exception", // 13
+    "unknown interrupt exception", // 14
+    "coprocessor fault exception", // 15
+    "alignment check exception", // 16
+    "machine check exception", // 17
+    "reserved exceptions", // 18
+    "reserved exceptions", // 19
+    "reserved exceptions", // 20
+    "reserved exceptions", // 21
+    "reserved exceptions", // 22
+    "reserved exceptions", // 23
+    "reserved exceptions", // 24
+    "reserved exceptions", // 25
+    "reserved exceptions", // 26
+    "reserved exceptions", // 27
+    "reserved exceptions", // 28
+    "reserved exceptions", // 29
+    "reserved exceptions", // 30
+    "reserved exceptions", // 31
 };
 
-void register_to_serial(const registers* r)
+void register_to_serial(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
-    log.writeString("int_no, err_code: ");
+    log.write("int_no, err_code: ");
     log.newLine();
-    log.writeHex(r->int_no);
-    log.writeString(", ");
-    log.writeHex(r->err_code);
-    log.newLine();
-
-    log.writeString("gs, fs, es, ds: ");
-    log.newLine();
-    log.writeHex(r->gs);
-    log.writeString(", ");
-    log.writeHex(r->fs);
-    log.writeString(", ");
-    log.writeHex(r->es);
-    log.writeString(", ");
-    log.writeHex(r->ds);
+    log.write(r->int_no, true);
+    log.write(", ");
+    log.write(r->err_code, true);
     log.newLine();
 
-    log.writeString("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    log.write("gs, fs, es, ds: ");
     log.newLine();
-    log.writeHex(r->edi);
-    log.writeString(", ");
-    log.writeHex(r->esi);
-    log.writeString(", ");
-    log.writeHex(r->ebp);
-    log.writeString(", ");
-    log.writeHex(r->esp);
-    log.writeString(", ");
-    log.writeHex(r->ebx);
-    log.writeString(", ");
-    log.writeHex(r->edx);
-    // log.writeString(", ");
-    // log.write_hex(r->ecx, 4);
-    // log.writeString(", ");
-    // log.write_hex(r->eax, 4);
+    log.write(r->gs, true);
+    log.write(", ");
+    log.write(r->fs, true);
+    log.write(", ");
+    log.write(r->es, true);
+    log.write(", ");
+    log.write(r->ds, true);
     log.newLine();
 
-    log.writeString("eip, cs, eflags, useresp, ss;");
+    log.write("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
     log.newLine();
-    log.writeHex(r->eip);
-    log.writeString(", ");
-    log.writeHex(r->cs);
-    log.writeString(", ");
-    log.writeHex(r->eflags);
-    log.writeString(", ");
-    log.writeHex(r->useresp);
-    log.writeString(", ");
-    log.writeHex(r->ss);
+    log.write(r->edi, true);
+    log.write(", ");
+    log.write(r->esi, true);
+    log.write(", ");
+    log.write(r->ebp, true);
+    log.write(", ");
+    log.write(r->esp, true);
+    log.write(", ");
+    log.write(r->ebx, true);
+    log.write(", ");
+    log.write(r->edx, true);
+    // log.write(", ");
+    // log.write_hex(r->ecx, true);
+    // log.write(", ");
+    // log.write(r->eax, true);
+    log.newLine();
+
+    log.write("eip, cs, eflags, useresp, ss;");
+    log.newLine();
+    log.write(r->eip, true);
+    log.write(", ");
+    log.write(r->cs, true);
+    log.write(", ");
+    log.write(r->eflags, true);
+    log.write(", ");
+    log.write(r->useresp, true);
+    log.write(", ");
+    log.write(r->ss, true);
     log.newLine();
 }
 
-void handle_div_by_zero(const registers* r)
+void handle_div_by_zero(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
-    log.writeString("Div by zero not handled. oops.\n");
+    log.write("Div by zero not handled. oops.\n");
     register_to_serial(r);
 }
 
 
 extern "C"
-void exception_handler(const registers* r)
+void exception_handler(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
     register_to_serial(r);
 
-    log.writeString("Exception: ");
+    log.write("Exception: ");
     // log.write_hex(r->int_no, 4);
     // log.new_line();
 
@@ -141,7 +144,7 @@ void exception_handler(const registers* r)
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
-        log.writeString(exception_messages[r->int_no]);
+        log.write(exception_messages[r->int_no]);
         log.newLine();
         switch (r->int_no)
         {
@@ -149,41 +152,57 @@ void exception_handler(const registers* r)
             // handle_div_by_zero(r);
             return;
         default:
-            log.writeString("Unhandled exception. System Halted!");
+            log.write("Unhandled exception. System Halted!");
             for (;;);
         }
     }
 }
 
 extern "C"
-void irq_handler(const registers* r)
+void irq_handler(const cpu_registers_t* r)
 {
+    /*
+        0 	Programmable Interrupt Timer Interrupt
+        1 	Keyboard Interrupt
+        2 	Cascade (used internally by the two PICs. never raised)
+        3 	COM2 (if enabled)
+        4 	COM1 (if enabled)
+        5 	LPT2 (if enabled)
+        6 	Floppy Disk
+        7 	LPT1 / Unreliable "spurious" interrupt (usually)
+        8 	CMOS real-time clock (if enabled)
+        9 	Free for peripherals / legacy SCSI / NIC
+        10 	Free for peripherals / SCSI / NIC
+        11 	Free for peripherals / SCSI / NIC
+        12 	PS2 Mouse
+        13 	FPU / Coprocessor / Inter-processor
+        14 	Primary ATA Hard Disk
+        15 	Secondary ATA Hard Disk
+    */
     auto &log = Serial::get();
     // register_to_serial(r);
-    // log.writeString("IRQ: ");
+
     const auto int_no = r->int_no;
-    // log.write_int(int_no);
-    // log.new_line();
+    // log.log("IRQ: ",int_no);
 
     if (int_no >= 32)
     {
         switch (int_no - 32)
         {
         case 0:
-            timerHandler();
+            pit_handler();
             break;
         case 1:
-            keyboard_handler();
+            keyboardHandler();
             break;
         case 4:
-            log.writeString("First instance");
-            log.writeString("Unhandled IRQ: ");
-            log.writeInt(int_no);
-            log.newLine();
+            break;
+        case 8:
+            rtc_handler();
             break;
         default:
-            log.writeString("Unhandled IRQ: ");
-            log.writeInt(int_no);
+            log.write("Unhandled IRQ: ");
+            log.write(int_no);
             log.newLine();
             break;
         }
@@ -194,12 +213,12 @@ void irq_handler(const registers* r)
     *  the slave controller */
     if (int_no >= 40)
     {
-        outb(0xA0, 0x20);
+        outb(PIC2_COMMAND, PIC_EOI);
     }
 
     /* In either case, we need to send an EOI to the master
     *  interrupt controller too */
-    outb(0x20, 0x20);
+    outb(PIC1_COMMAND, PIC_EOI);
 }
 
 
@@ -209,7 +228,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 
     descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
     descriptor->kernel_cs = KERNEL_CS;
-    // this value can be whatever offset your kernel code selector is in your GDT.
+    // this value can be whatever offset your sys code selector is in your GDT.
     // My entry point is 0x001005e0 so the offset is 0x0010(XXXX) (because of GRUB)
     descriptor->attributes = flags;
     descriptor->isr_high = reinterpret_cast<u32>(isr_stub) >> 16;
@@ -220,11 +239,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 IDT::IDT()
 {
     auto &log = Serial::get();
-    /* also installs irq */
-    // log.writeString("Remapping irq\n");
-    // pic_irq_remap();
-    // pic_disable();
-    log.writeString("IDT installed\n");
+    log.log("Initialising IDT");
     idt_pointer.limit = (sizeof(idt_entry_t) * 48) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
 
@@ -234,15 +249,15 @@ IDT::IDT()
         _setDescriptor(idt_index, isr_stub_table[idt_index], 0x8E);
         idt_vectors[idt_index] = true;
     }
-
-    log.writeString("Setting IDT base and limit. ");
-    log.writeString("Base: ");
-    log.writeHex(idt_pointer.base);
-    log.writeString(" Limit: ");
-    log.writeHex(idt_pointer.limit);
+    log.time_stamp();
+    log.write("\tSetting IDT base and limit. ");
+    log.write("Base: ");
+    log.write(idt_pointer.base, true);
+    log.write(" Limit: ");
+    log.write(idt_pointer.limit, true);
     log.newLine();
     __asm__ volatile ("lidt %0" : : "m"(idt_pointer)); // load the new IDT
-    log.writeString("LDT has been set\n");
-    __asm__ volatile ("sti"); // set the interrupt flag
-    log.writeString("Interrupts enabled\n");
+    log.log("IDT has been set");
+    enable_interrupts();
+    log.log("IDT initialised");
 }

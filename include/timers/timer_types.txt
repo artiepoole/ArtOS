@@ -1,0 +1,7 @@
+
+Real Time Clock (RTC),
+Programmable Interval Timer (PIT), - basic, old, slow and serial commanded
+High Performance Event Timer (HPET),
+ACPI Power Management Timer (ACPI PM),
+Advanced Programmable Interrupt Controller (APIC) timer - modern PIC
+Time Stamp Counter (TSC) - CPU

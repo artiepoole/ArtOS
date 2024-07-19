@@ -15,8 +15,8 @@ extern "C" {
 /* You should not have to edit anything in this file; if you DO have to, it   */
 /* would be considered a bug / missing feature: notify the author(s).         */
 /* -------------------------------------------------------------------------- */
-#include "../platform/example/include/pdclib/_PDCLIB_config.h"
-// #include "pdclib/_PDCLIB_config.h"
+#include "_PDCLIB_config.h"
+
 
 /* -------------------------------------------------------------------------- */
 /* Standard Version                                                           */
@@ -56,7 +56,7 @@ extern "C" {
 
 /* noreturn enabled for C11 onward only */
 #if defined( __cplusplus ) && __cplusplus >= 201103L
-#define _PDCLIB_Noreturn [[noreturn]]
+#define _PDCLIB_Noreturn
 #else
 #if defined( __STDC_VERSION__ ) >= 201112L
 #define _PDCLIB_Noreturn _Noreturn
