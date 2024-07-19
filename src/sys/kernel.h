@@ -51,7 +51,7 @@ void print_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
 extern "C"
 void _exit(int status);
 
-tm get_time();
+tm *get_time();
 time_t get_epoch_time();
 
 u32 get_clock_rate();

@@ -13,7 +13,7 @@
 char * asctime( const struct tm * timeptr )
 {
     static char rc[26];
-    sprintf( rc, "%s %s%3d %.2d:%.2d:%.2d %d\n",
+    sprintf( rc, "%s %s%3d %.2d:%.2d:%.2d %d\t",
              _PDCLIB_lc_time_C.day_name_abbr[ timeptr->tm_wday ],
              _PDCLIB_lc_time_C.month_name_abbr[ timeptr->tm_mon ],
              timeptr->tm_mday,

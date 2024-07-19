@@ -89,3 +89,9 @@ void Serial::_write(const char* data, const size_t size)
         _sendChar(c);
     }
 }
+
+void Serial::time_stamp()
+{
+    auto&rtc= RTC::get();
+    write(asctime(rtc.getTime()));
+}

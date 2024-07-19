@@ -249,7 +249,7 @@ IDT::IDT()
         _setDescriptor(idt_index, isr_stub_table[idt_index], 0x8E);
         idt_vectors[idt_index] = true;
     }
-
+    log.time_stamp();
     log.write("\tSetting IDT base and limit. ");
     log.write("Base: ");
     log.write(idt_pointer.base, true);
@@ -257,7 +257,7 @@ IDT::IDT()
     log.write(idt_pointer.limit, true);
     log.newLine();
     __asm__ volatile ("lidt %0" : : "m"(idt_pointer)); // load the new IDT
-    log.write("\tIDT has been set\n");
+    log.log("IDT has been set");
     enable_interrupts();
     log.log("IDT initialised");
 }

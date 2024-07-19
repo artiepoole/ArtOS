@@ -22,7 +22,6 @@ class RTC
 public:
 
 	u32 hz;
-
     RTC();
     ~RTC();
     static RTC& get();
@@ -38,7 +37,7 @@ public:
 
 	u32 setDivider(u8 divider);
 
-	tm getTime();
+	tm *getTime();
 
 	void toString(char* out_str) const;
 	time_t epochTime();

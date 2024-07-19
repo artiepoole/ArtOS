@@ -17,12 +17,9 @@ u32 seconds_since_start = 0;
 RTC::RTC()
 {
     auto& log = Serial::get();
-    log.log("Initialising RTC");
+    log.write("Mon Jan 01 00:00:00 1970\tInitialising RTC\n");
     instance = this;
     read(); // also updates current time
-    char outstr[20];
-    toString(outstr);
-    log.log("\tRTC read. New time: ", outstr);
     setDivider(15); // also sets frequency
     log.log("RTC initialised");
 }
@@ -37,9 +34,9 @@ RTC& RTC::get()
     return *instance;
 }
 
-tm RTC::getTime()
+tm* RTC::getTime()
 {
-    return current_time;
+    return &current_time;
 }
 
 time_t RTC::epochTime()
@@ -187,7 +184,7 @@ u32 RTC::setDivider(u8 divider)
     auto& log = Serial::get();
 
     hz = 32768 >> (divider - 1);
-    log.log("\tSetting RTC divider. Divisor: ", static_cast<u16>(divider), " frequency: ", hz);
+    log.log("Setting RTC divider. Divisor: ", static_cast<u16>(divider), " frequency: ", hz);
     divider &= 0x0F; // rate must be above 2 and not over 15
     disable_interrupts();
     outb(CMOS_SELECT, CMOS_STATUS_A);

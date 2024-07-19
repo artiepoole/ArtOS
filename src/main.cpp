@@ -19,7 +19,6 @@
 #include "PIT.h"
 #include "TSC.h"
 #include "SMBIOS.h"
-#include "time.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -206,14 +205,14 @@ extern "C"
 void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
     auto log = Serial();
-    log.log("Loading singletons...");
+    log.write("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     RTC rtc;
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
     Terminal terminal;
     PIC pic;
     IDT idt;
-    configurePit(10000);
+    configurePit(2000);
     log.log("Singletons loaded.");
 
     // long t = time(nullptr);
@@ -236,14 +235,6 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     vga.draw();
     terminal.write(" Loading Done.\n");
     log.log("LOADED OS.");
-    log.log("tsc: ", TSC_get_ticks());
-    sleep(1000);
-    log.log("tsc: ", TSC_get_ticks());
-
-
-
-
-
 
 
 

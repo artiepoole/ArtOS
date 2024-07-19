@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include "mystring.h"
 #include "ports.h"
+#include "RTC.h"
 
 #define PORT 0x3f8          // COM1
 
@@ -38,6 +39,8 @@ public:
     void write(const char* data);
     void write(const char* data, size_t len);
 
+    void time_stamp();
+
     template <typename int_like>
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
     void write(const int_like val, const bool hex = false)
@@ -57,6 +60,7 @@ public:
     template <typename type_t>
     void log(type_t const& arg1)
     {
+        time_stamp();
         write(arg1);
         newLine();
     }
@@ -64,6 +68,7 @@ public:
     template <typename... args_t>
     void log(args_t&&... args)
     {
+        time_stamp();
         (write(args), ...);
         newLine();
     }
