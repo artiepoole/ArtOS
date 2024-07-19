@@ -3,7 +3,8 @@
 //
 
 #include "SMBIOS.h"
-
+#include "string.h"
+#include "Serial.h"
 
 #define LENGTH = 5;
 #define MAJOR_VERSION = 6;

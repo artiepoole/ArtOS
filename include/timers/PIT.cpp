@@ -3,6 +3,8 @@
 //
 
 #include "PIT.h"
+#include "Serial.h"
+#include "ports.h"
 
 u32 rate = 0;
 

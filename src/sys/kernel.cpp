@@ -7,6 +7,7 @@
 #include "VideoGraphicsArray.h"
 #include "TSC.h"
 #include "SMBIOS.h"
+#include "Serial.h"
 
 void write_standard(const char* buffer, unsigned long len)
 {

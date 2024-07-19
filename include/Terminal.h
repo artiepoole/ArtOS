@@ -1,11 +1,8 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include "types.h"
-#include "VideoGraphicsArray.h"
+#include "colours.h"
 
 struct terminal_char_t
 {

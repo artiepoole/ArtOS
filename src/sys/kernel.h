@@ -5,7 +5,6 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-#include <stddef.h>
 #include "types.h"
 #include "Terminal.h"
 #include "RTC.h"

@@ -4,13 +4,9 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
-#include <float.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+
 #include "mystring.h"
-#include "ports.h"
-#include "RTC.h"
+#include "types.h" // TODO: Use stdlib "string.h" instead.
 
 #define PORT 0x3f8          // COM1
 

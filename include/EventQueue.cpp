@@ -3,6 +3,9 @@
 //
 
 #include "EventQueue.h"
+#include "ports.h"
+#include "Serial.h"
+
 
 static EventQueue* instance{nullptr};
 

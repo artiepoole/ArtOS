@@ -18,6 +18,8 @@ file(GLOB INCLUDE
         "include/timers/*.cpp"
         "include/communication/*.h"
         "include/communication/*.cpp"
+        "include/constants/*.h"
+        "include/constants/*.cpp"
 )
 
 file(GLOB KERNEL
@@ -31,14 +33,13 @@ add_subdirectory(pdclib)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
-        include/communication/SMBIOS.cpp
-        include/communication/SMBIOS.h
 )
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
         include
         include/timers
         include/communication/
+        include/constants
         src
         src/sys
         )

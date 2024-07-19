@@ -1,4 +1,6 @@
 #include "Serial.h"
+#include "ports.h"
+#include "RTC.h"
 
 static Serial *instance{ nullptr };
 

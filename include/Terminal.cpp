@@ -1,5 +1,7 @@
 #include "Terminal.h"
-
+#include "VideoGraphicsArray.h"
+#include "FONT.h"
+#include "Serial.h"
 
 static Terminal* instance{nullptr};
 

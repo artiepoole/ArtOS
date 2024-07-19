@@ -5,8 +5,7 @@
 #ifndef CMOS_H
 #define CMOS_H
 
-#include "ports.h"
-#include "Serial.h"
+
 #include "system.h"
 #include "time.h"
 

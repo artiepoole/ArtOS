@@ -19,6 +19,7 @@
 #include "PIT.h"
 #include "TSC.h"
 #include "SMBIOS.h"
+#include "EventQueue.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)

@@ -3,7 +3,8 @@
 //
 
 #include "PIC.h"
-
+#include "Serial.h"
+#include "ports.h"
 
 #define ICW1_ICW4	0x01		/* Indicates that ICW4 will be present */
 #define ICW1_SINGLE	0x02		/* Single (cascade) mode */
@@ -66,10 +67,10 @@ void PIC::enable()
 }
 
 
-void IRQ_set_mask(uint8_t IRQline)
+void IRQ_set_mask(u8 IRQline)
 {
-    uint16_t port;
-    uint8_t value;
+    u16 port;
+    u8 value;
 
     if (IRQline < 8)
     {
@@ -84,10 +85,10 @@ void IRQ_set_mask(uint8_t IRQline)
     outb(port, value);
 }
 
-void IRQ_clear_mask(uint8_t IRQline)
+void IRQ_clear_mask(u8 IRQline)
 {
-    uint16_t port;
-    uint8_t value;
+    u16 port;
+    u8 value;
 
     if (IRQline < 8)
     {

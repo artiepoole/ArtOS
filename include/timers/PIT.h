@@ -6,12 +6,11 @@
 #define PIT_H
 
 #include "types.h"
-#include "Serial.h"
 
 void configurePit(u32 hz);
 
 
-void sleep(const u32 ms);
+void sleep(u32 ms);
 
 
 void pit_handler();

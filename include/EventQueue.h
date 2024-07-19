@@ -5,10 +5,8 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
+#include "types.h"
 
-#include "ports.h"
-#include "Serial.h"
-#include "VideoGraphicsArray.h"
 
 extern char key_map[128];
 extern char shift_map[128];

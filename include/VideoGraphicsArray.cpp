@@ -22,6 +22,8 @@ Basic graphics utility methods
 */
 
 #include "VideoGraphicsArray.h"
+#include "splash_screen.h"
+#include "Serial.h"
 
 static VideoGraphicsArray* instance{nullptr};
 
@@ -163,19 +165,3 @@ void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
     }
 }
 
-//
-// // for each line from the second line onwards, copy next line into this line
-// for (size_t x = 0; x < VGA_WIDTH; x++)
-// {
-//     // All lines move up one
-//     for (size_t y = 0; y < VGA_HEIGHT - 1; y++)
-//     {
-//         size_t start_index = (y + 1) * VGA_WIDTH + x;
-//         size_t end_index = (y) * (VGA_WIDTH) + x;
-//         terminal_buffer[end_index] = terminal_buffer[start_index];
-//     }
-//     // Bottom line is replaced with empty.
-//     terminal_buffer[VGA_WIDTH * (VGA_HEIGHT - 1) + x] = vga_entry(' ', terminal_color);
-// }
-// terminal_row -= 1;
-// }

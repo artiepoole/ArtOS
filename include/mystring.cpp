@@ -3,7 +3,7 @@
 //
 
 #include "mystring.h"
-
+#include "types.h"
 
 size_t mystrlen(const char* str)
 {

@@ -6,9 +6,7 @@
 #define IDT_H
 #include "system.h"
 #include "PIC.h"
-#include "PIT.h"
-#include "RTC.h"
-#include "EventQueue.h"
+
 
 
 

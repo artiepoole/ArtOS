@@ -3,8 +3,12 @@
 //
 
 #include "IDT.h"
-
 #include "PIT.h"
+#include "RTC.h"
+#include "EventQueue.h"
+#include "Serial.h"
+#include "ports.h"
+#include <stdint.h>
 
 // todo: move some of this stuff to an "interrupts.cpp" or similar.
 struct idt_entry_t
