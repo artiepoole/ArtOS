@@ -5,9 +5,9 @@
 #ifndef CMOS_H
 #define CMOS_H
 
-#include "../ports.h"
-#include "../Serial.h"
-#include "../system.h"
+#include "ports.h"
+#include "Serial.h"
+#include "system.h"
 #include "time.h"
 
 // struct tm // using u16 for ease of printing.

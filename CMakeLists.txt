@@ -16,6 +16,8 @@ file(GLOB INCLUDE
         "include/*.s"
         "include/timers/*.h"
         "include/timers/*.cpp"
+        "include/communication/*.h"
+        "include/communication/*.cpp"
 )
 
 file(GLOB KERNEL
@@ -30,7 +32,14 @@ add_subdirectory(pdclib)
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
 )
-target_include_directories(${KERNEL_BIN} PUBLIC include include/timers src src/sys)
+target_include_directories(
+        ${KERNEL_BIN} PUBLIC
+        include
+        include/timers
+        include/communication/
+        src
+        src/sys
+        )
 
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
