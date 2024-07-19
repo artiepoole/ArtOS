@@ -8,18 +8,11 @@
 
 #ifndef REGTEST
 
-#include "Timers.h"
+#include "kernel.h"
 
-clock_t clock( void )
+clock_t clock()
 {
-    struct tms buf;
-
-    if ( times( &buf ) != ( clock_t )-1 )
-    {
-        return buf.tms_utime + buf.tms_stime;
-    }
-
-    return -1;
+    return get_current_clock();
 }
 
 #endif

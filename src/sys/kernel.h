@@ -54,6 +54,9 @@ void _exit(int status);
 tm get_time();
 time_t get_epoch_time();
 
+u32 get_clock_rate();
+u64 get_current_clock();
+
 // void draw_screen_region(unsigned long * frame_buffer);
 
 

@@ -7,8 +7,6 @@
 
 #include "types.h"
 
-u64 get_tsc();
-
-
+u64 TSC_get_ticks();
 
 #endif //TSC_H

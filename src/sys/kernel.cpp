@@ -4,7 +4,9 @@
 
 #include "kernel.h"
 
-#include "../include/VideoGraphicsArray.h"
+#include "VideoGraphicsArray.h"
+#include "TSC.h"
+#include "SMBIOS.h"
 
 void write_standard(const char* buffer, unsigned long len)
 {
@@ -42,6 +44,15 @@ void _exit(int status)
 {
     auto & log = Serial::get();
     log.log("Exit status: ",status);
+}
+
+u32 get_clock_rate()
+{
+    return SMBIOS_get_CPU_clock_rate_hz();
+}
+u64 get_current_clock()
+{
+    return TSC_get_ticks();
 }
 
 // void draw_screen_region(u32* frame_buffer)

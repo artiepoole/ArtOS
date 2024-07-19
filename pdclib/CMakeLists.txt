@@ -156,7 +156,7 @@ set( PDCLIB_SOURCES
         functions/time/localtime_s.c
         functions/time/mktime.c
         functions/time/strftime.c
-#        platform/ArtOS/functions/time/clock.cpp
+        platform/ArtOS/functions/time/clock.cpp
         platform/ArtOS/functions/time/time.cpp
 #        platform/ArtOS/functions/time/timespec_get.c
 

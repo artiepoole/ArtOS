@@ -357,9 +357,9 @@ struct _PDCLIB_imaxdiv_t
 #ifdef __CYGWIN__
 #define _PDCLIB_clock_t unsigned long
 #else
-#define _PDCLIB_clock_t long
+#define _PDCLIB_clock_t unsigned long long
 #endif
-#define _PDCLIB_CLOCKS_PER_SEC 10000
+#define _PDCLIB_CLOCKS_PER_SEC
 
 /* For time_t, no such divider exists. Most implementations use a count of    */
 /* seconds since a specified epoch. While PDCLib really should support other  */

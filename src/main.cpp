@@ -18,6 +18,7 @@
 #include "RTC.h"
 #include "PIT.h"
 #include "TSC.h"
+#include "SMBIOS.h"
 #include "time.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
@@ -235,13 +236,16 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     vga.draw();
     terminal.write(" Loading Done.\n");
     log.log("LOADED OS.");
-    log.log("tsc: ", get_tsc());
+    log.log("tsc: ", TSC_get_ticks());
     sleep(1000);
-    log.log("tsc: ", get_tsc());
+    log.log("tsc: ", TSC_get_ticks());
 
-    cpuid_print_manufacturer_info();
-    cpuid_print_feature_info();
-    cpuid_get_core_crystal_freq();
+
+
+
+
+
+
 
     // Event handler loop.
     log.log("Entering event loop.");

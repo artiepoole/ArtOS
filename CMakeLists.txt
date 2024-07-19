@@ -31,6 +31,8 @@ add_subdirectory(pdclib)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
+        include/communication/SMBIOS.cpp
+        include/communication/SMBIOS.h
 )
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
