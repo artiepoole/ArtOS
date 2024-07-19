@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.1.3...3.27.7 FATAL_ERROR )
 
-project( pdclib LANGUAGES C CXX )
+project( pdclib_proj LANGUAGES C CXX )
 
 set(TARGET_NAME platform_functions)
 
@@ -284,7 +284,7 @@ set( PDCLIB_PRIVATE_HEADERS
 )
 
 #add_library( pdclib  SHARED ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
-add_library( pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
+add_library(pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
 
 #target_include_directories( pdclib  BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include include platform/ArtOS/include ../src ../src/sys ../include)
 target_include_directories( pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include )

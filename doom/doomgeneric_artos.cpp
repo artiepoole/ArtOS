@@ -1,6 +1,9 @@
 #include "m_argv.h"
 #include "doomgeneric.h"
 #include "doom.h"
+#include "kernel.h"
+
+long unsigned int screen_buffer[DOOMGENERIC_RESX * DOOMGENERIC_RESY];
 
 
 void DG_Init(){
@@ -35,7 +38,7 @@ int run_doom(int argc, char **argv)
 
     M_FindResponseFile();
 
-    DG_ScreenBuffer = malloc(DOOMGENERIC_RESX * DOOMGENERIC_RESY * 4);
+    DG_ScreenBuffer = screen_buffer;
 
     DG_Init();
 

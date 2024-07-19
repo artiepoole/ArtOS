@@ -27,12 +27,10 @@ file(GLOB KERNEL
 
 
 add_subdirectory(pdclib)
-
+add_subdirectory(doom)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
-        include/communication/SMBIOS.cpp
-        include/communication/SMBIOS.h
 )
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
@@ -43,14 +41,14 @@ target_include_directories(
         src/sys
         )
 
+
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
 add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
 
-
-target_link_libraries(${KERNEL_BIN} pdclib)
+target_link_libraries(${KERNEL_BIN} pdclib doom)
 
 
 ### Generating the ISO file
