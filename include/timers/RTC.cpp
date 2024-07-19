@@ -23,7 +23,7 @@ RTC::RTC()
     char outstr[20];
     toString(outstr);
     log.log("\tRTC read. New time: ", outstr);
-    setDivider(6); // also sets frequency
+    setDivider(15); // also sets frequency
     log.log("RTC initialised");
 }
 
@@ -243,9 +243,8 @@ void rtc_handler()
     outb(CMOS_SELECT, CMOS_STATUS_C); // select register C
     inb(CMOS_DATA); // throw away contents
     RTC_ticks++;
-    if (RTC_ticks % (1024) == 0)
+    if (auto & rtc = RTC::get(); RTC_ticks % (rtc.hz) == 0)
     {
-        auto & rtc = RTC::get();
         rtc.increment();
         seconds_since_start++;
     }

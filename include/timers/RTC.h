@@ -20,6 +20,9 @@
 class RTC
 {
 public:
+
+	u32 hz;
+
     RTC();
     ~RTC();
     static RTC& get();
@@ -42,7 +45,7 @@ public:
 
 private:
 	tm current_time{};
-	u32 hz;
+
     static u8 readRegister(u8 reg_select);
 	static u8 checkUpdating();
 };
