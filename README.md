@@ -20,7 +20,7 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [ ] User IO - mouse?
 - [ ] Detection and selection of video modes
 - [ ] Initialise frame buffer etc using the multiboot data instead of hard coded
-- [ ] Implement a standard library - WIP BRANCH: stdlib
+- [ ] Implement a standard library
 - [ ] Implement filesystem
 - [ ] Run an executable
 - [ ] Self hosting compiler
