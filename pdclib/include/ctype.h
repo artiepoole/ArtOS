@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#include "pdclib/_PDCLIB_internal.h"
+#include "_PDCLIB_internal.h"
 
 /* Character classification functions */
 

@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#include "pdclib/_PDCLIB_config.h"
+#include "_PDCLIB_config.h"
 
 typedef _PDCLIB_va_list va_list;
 

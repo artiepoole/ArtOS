@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-#include "pdclib/_PDCLIB_lib_ext1.h"
-#include "pdclib/_PDCLIB_internal.h"
+#include "_PDCLIB_lib_ext1.h"
+#include "_PDCLIB_internal.h"
 
 /* 7.18.1.1 Exact-width integer types. */
 

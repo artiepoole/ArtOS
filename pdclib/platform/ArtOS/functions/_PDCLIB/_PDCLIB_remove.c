@@ -10,7 +10,7 @@
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_glue.h"
+#include "_PDCLIB_glue.h"
 
 #ifdef __cplusplus
 extern "C" {

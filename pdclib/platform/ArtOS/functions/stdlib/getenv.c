@@ -7,8 +7,8 @@
 /* This is an ArtOS implementation of getenv() fit for use with POSIX kernels.
 */
 
-#include <string.h>
-#include <stdlib.h>
+#include "string.h"
+#include "stdlib.h"
 
 #ifndef REGTEST
 

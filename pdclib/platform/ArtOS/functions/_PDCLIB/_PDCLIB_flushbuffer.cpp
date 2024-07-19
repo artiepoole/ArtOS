@@ -8,12 +8,12 @@
    use with POSIX kernels.
 */
 
-#include <stdio.h>
-#include <string.h>
+#include "stdio.h"
+#include "string.h"
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_glue.h"
+#include "_PDCLIB_glue.h"
 
 
 #include "errno.h"

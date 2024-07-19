@@ -8,7 +8,7 @@
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_defguard.h"
+#include "_PDCLIB_defguard.h"
 
 #include "time.h"
 #include "kernel.h"

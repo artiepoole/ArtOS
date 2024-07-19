@@ -4,11 +4,11 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <signal.h>
+#include "signal.h"
 
 #ifndef REGTEST
 
-#include <stdlib.h>
+#include "stdlib.h"
 
 void ( *_PDCLIB_sigabrt )( int ) = SIG_DFL;
 void ( *_PDCLIB_sigfpe )( int )  = SIG_DFL;

@@ -12,11 +12,11 @@
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_glue.h"
-#include "pdclib/_PDCLIB_defguard.h"
+#include "_PDCLIB_glue.h"
+#include "_PDCLIB_defguard.h"
 
-#include "sys/stat.h"
-#include "sys/types.h"
+#include "stat.h"
+#include "types.h"
 #include "fcntl.h"
 #include "unistd.h"
 

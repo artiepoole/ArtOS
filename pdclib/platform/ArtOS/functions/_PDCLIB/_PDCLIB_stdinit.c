@@ -15,7 +15,7 @@
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_tzcode.h"
+#include "_PDCLIB_tzcode.h"
 
 /* In a POSIX system, stdin / stdout / stderr are equivalent to the (int) file
    descriptors 0, 1, and 2 respectively.

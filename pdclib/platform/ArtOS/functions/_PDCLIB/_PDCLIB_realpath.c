@@ -6,9 +6,9 @@
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_glue.h"
+#include "_PDCLIB_glue.h"
 
-#include <stddef.h>
+#include "stddef.h"
 
 #ifdef __cplusplus
 extern "C" {
