@@ -8,7 +8,6 @@ u32 rate = 0;
 
 volatile u32 timer_ticks = 0;
 
-volatile u32 clock_counter = 0;
 
 void configurePit(const u32 hz)
 {
@@ -51,9 +50,7 @@ void sleep(const u32 ms)
 
 void pit_handler()
 {
-    clock_counter++;
     // Check if sleep is still active.
     if (timer_ticks == 0) return;
-
     timer_ticks = timer_ticks - 1;
 }
