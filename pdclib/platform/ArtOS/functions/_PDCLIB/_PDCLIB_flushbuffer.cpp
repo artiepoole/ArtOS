@@ -25,7 +25,7 @@
 
 typedef long ssize_t;
 
-extern int write(int fd, const char* buf, unsigned long count);
+// extern int write(int fd, const char* buf, unsigned long count);
 
 // #ifdef __cplusplus
 // }
