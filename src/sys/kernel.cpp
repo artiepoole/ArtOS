@@ -11,8 +11,8 @@
 
 void write_standard(const char* buffer, unsigned long len)
 {
-    auto& term = Terminal::get();
-    term.write(buffer, len);
+    // auto& term = Terminal::get();
+    // term.write(buffer, len);
 
     auto& log = Serial::get();
     log.write(buffer, len);
@@ -20,9 +20,9 @@ void write_standard(const char* buffer, unsigned long len)
 
 void write_error(const char* buffer, unsigned long len)
 {
-    // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
-    auto& term = Terminal::get();
-    term.write(buffer, len, COLOR_RED);
+    // // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
+    // auto& term = Terminal::get();
+    // term.write(buffer, len, COLOR_RED);
 
     auto& log = Serial::get();
     log.write(buffer, len);

@@ -13,11 +13,11 @@
 class Serial
 {
 private:
-    char _read();
-    void _sendChar(unsigned char a);
-    int _received();
-    int _transmitEmpty();
-    void _write(const char* data, size_t size);
+    static char _read();
+    static void _sendChar(unsigned char a);
+    static int _received();
+    static int _transmitEmpty();
+    static void _write(const char* data, size_t size);
 
 public:
     Serial();
@@ -34,6 +34,9 @@ public:
     void write(unsigned char c);
     void write(const char* data);
     void write(const char* data, size_t len);
+
+    static int com_read(char* dest, unsigned long count);
+    static int com_write(const char* data, unsigned long count);
 
     void time_stamp();
 

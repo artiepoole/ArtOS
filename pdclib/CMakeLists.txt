@@ -231,7 +231,7 @@ set( PDCLIB_SOURCES
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_Exit.cpp
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_fillbuffer.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_flushbuffer.cpp
-#        platform/ArtOS/functions/_PDCLIB/_PDCLIB_open.c
+        platform/ArtOS/functions/_PDCLIB/_PDCLIB_open.cpp
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_realpath.c
 #        platform/ArtOS/functions/_PDCLIB/_PDCLIB_rename.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_remove.c

@@ -14,6 +14,7 @@
 // #include "stdlib.h"
 // #include "malloc.c"
 
+#include "stdio.h"
 #include "CPUID.h"
 #include "RTC.h"
 #include "PIT.h"
@@ -237,6 +238,9 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     terminal.write(" Loading Done.\n");
     log.log("LOADED OS.");
 
+
+    FILE* com = fopen("/dev/com1", "w");
+    auto ret = fprintf(com, "%s\n", "This should print to com0");
 
 
     // Event handler loop.

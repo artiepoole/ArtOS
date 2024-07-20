@@ -8,74 +8,79 @@
    kernels.
 */
 
-#include <stdio.h>
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
 
 #ifndef REGTEST
 
 #include "_PDCLIB_glue.h"
 #include "_PDCLIB_defguard.h"
 
-#include "stat.h"
 #include "types.h"
-#include "fcntl.h"
-#include "unistd.h"
-
 #include "errno.h"
 
-_PDCLIB_fd_t _PDCLIB_open( const char * const filename, unsigned int mode )
-{
-    /* This is an example implementation of _PDCLIB_open() fit for use with
-       POSIX kernels.
-    */
-    int osmode;
-    _PDCLIB_fd_t rc;
+// _PDCLIB_fd_t _PDCLIB_open( const char * const filename, unsigned int mode )
+// {
+//     /* This is an example implementation of _PDCLIB_open() fit for use with
+//        POSIX kernels.
+//     */
+//     int osmode;
+//     _PDCLIB_fd_t rc;
+//
+//     switch ( mode & ( _PDCLIB_FREAD | _PDCLIB_FWRITE | _PDCLIB_FAPPEND | _PDCLIB_FRW ) )
+//     {
+//         case _PDCLIB_FREAD: /* "r" */
+//             osmode = O_RDONLY;
+//             break;
+//
+//         case _PDCLIB_FWRITE: /* "w" */
+//             osmode = O_WRONLY | O_CREAT | O_TRUNC;
+//             break;
+//
+//         case _PDCLIB_FAPPEND: /* "a" */
+//             osmode = O_WRONLY | O_APPEND | O_CREAT;
+//             break;
+//
+//         case _PDCLIB_FREAD | _PDCLIB_FRW: /* "r+" */
+//             osmode = O_RDWR;
+//             break;
+//
+//         case _PDCLIB_FWRITE | _PDCLIB_FRW: /* "w+" */
+//             osmode = O_RDWR | O_CREAT | O_TRUNC;
+//             break;
+//
+//         case _PDCLIB_FAPPEND | _PDCLIB_FRW: /* "a+" */
+//             osmode = O_RDWR | O_APPEND | O_CREAT;
+//             break;
+//
+//         default: /* Invalid mode */
+//             return _PDCLIB_NOHANDLE;
+//     }
+//
+//     if ( osmode & O_CREAT )
+//     {
+//         rc = open( filename, osmode, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+//     }
+//     else
+//     {
+//         rc = open( filename, osmode );
+//     }
+//
+//     if ( rc == _PDCLIB_NOHANDLE )
+//     {
+//         /* The 1:1 mapping in _PDCLIB_config.h ensures this works. */
+//         *_PDCLIB_errno_func() = errno;
+//     }
+//
+//     return rc;
+// }
 
-    switch ( mode & ( _PDCLIB_FREAD | _PDCLIB_FWRITE | _PDCLIB_FAPPEND | _PDCLIB_FRW ) )
-    {
-        case _PDCLIB_FREAD: /* "r" */
-            osmode = O_RDONLY;
-            break;
 
-        case _PDCLIB_FWRITE: /* "w" */
-            osmode = O_WRONLY | O_CREAT | O_TRUNC;
-            break;
+extern _PDCLIB_fd_t open( const char * const filename, unsigned int mode );
 
-        case _PDCLIB_FAPPEND: /* "a" */
-            osmode = O_WRONLY | O_APPEND | O_CREAT;
-            break;
-
-        case _PDCLIB_FREAD | _PDCLIB_FRW: /* "r+" */
-            osmode = O_RDWR;
-            break;
-
-        case _PDCLIB_FWRITE | _PDCLIB_FRW: /* "w+" */
-            osmode = O_RDWR | O_CREAT | O_TRUNC;
-            break;
-
-        case _PDCLIB_FAPPEND | _PDCLIB_FRW: /* "a+" */
-            osmode = O_RDWR | O_APPEND | O_CREAT;
-            break;
-
-        default: /* Invalid mode */
-            return _PDCLIB_NOHANDLE;
-    }
-
-    if ( osmode & O_CREAT )
-    {
-        rc = open( filename, osmode, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
-    }
-    else
-    {
-        rc = open( filename, osmode );
-    }
-
-    if ( rc == _PDCLIB_NOHANDLE )
-    {
-        /* The 1:1 mapping in _PDCLIB_config.h ensures this works. */
-        *_PDCLIB_errno_func() = errno;
-    }
-
-    return rc;
+_PDCLIB_fd_t _PDCLIB_open( const char * const filename, unsigned int mode ) {
+    return open(filename, mode);
 }
 
 #endif

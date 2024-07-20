@@ -97,3 +97,16 @@ void Serial::time_stamp()
     auto&rtc= RTC::get();
     write(asctime(rtc.getTime()));
 }
+
+int Serial::com_read(char* dest, const unsigned long count)
+{
+    for(int i = 0; i < count; i++) {
+        dest[i] = _read();
+    }
+    return count;
+}
+int Serial::com_write(const char* data, unsigned long count)
+{
+    _write(data, count);
+    return count;
+}

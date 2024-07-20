@@ -11,13 +11,18 @@
 #ifndef REGTEST
 
 #include "_PDCLIB_glue.h"
+#include "stdio.h"
+#include "stdlib.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int unlink( const char * );
-
+int unlink( const char * path) {
+    // TODO not implemented
+    printf("ERROR: Unlink %s: not implemented", path);
+    exit(1);
+}
 #ifdef __cplusplus
 }
 #endif

@@ -22,26 +22,11 @@
 // extern "C" {
 // #endif
 
-#include "../../src/sys/kernel.h"
+#include "kernel.h"
 
 typedef long ssize_t;
-ssize_t write(int fd, const char* buf, size_t count);
-ssize_t write(const int fd, const char* buf, const size_t count)
-{
-    if (fd == stdout->handle)
-    {
-        write_standard(buf, count);
-        return 0;
-    }
 
-    if (fd == stderr->handle)
-    {
-        write_error(buf, count);
-        return 0;
-    }
-    // unhandled/unknown file descriptor
-    return -1;
-}
+extern int write(int fd, const char* buf, unsigned long count);
 
 // #ifdef __cplusplus
 // }
@@ -58,7 +43,6 @@ int _PDCLIB_flushbuffer(struct _PDCLIB_file_t* stream)
 {
     /* No need to handle buffers > INT_MAX, as PDCLib doesn't allow them */
     _PDCLIB_size_t written = 0;
-    int rc;
     unsigned int retries;
 
     if (!(stream->status & _PDCLIB_FBIN))
@@ -71,7 +55,7 @@ int _PDCLIB_flushbuffer(struct _PDCLIB_file_t* stream)
     */
     for (retries = _PDCLIB_IO_RETRIES; retries > 0; --retries)
     {
-        rc = (int)write(stream->handle, stream->buffer + written, stream->bufidx - written);
+        int rc = write(stream->handle, stream->buffer + written, stream->bufidx - written);
 
         if (rc < 0)
         {

@@ -8,7 +8,8 @@
    kernels.
 */
 
-#include <stdio.h>
+#include "stdio.h"
+#include "stdlib.h"
 
 #ifndef REGTEST
 
@@ -18,7 +19,11 @@
 extern "C" {
 #endif
 
-extern int close( int fd );
+    int close( int fd ) {
+        // TODO not implemented
+        printf("ERROR: Close %d: not implemented", fd);
+        exit(1);
+    }
 
 #ifdef __cplusplus
 }

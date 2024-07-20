@@ -14,7 +14,10 @@
 extern "C" {
 #endif
 
-extern char * realpath( const char * file_name, char * resolved_name );
+extern char * realpath( const char * file_name, char * resolved_name ) {
+    // TODO this is a stub
+    return file_name;
+}
 
 #ifdef __cplusplus
 }
