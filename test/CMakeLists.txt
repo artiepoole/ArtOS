@@ -26,6 +26,7 @@ add_executable(
         string_test
         string_test.cpp
 )
+
 target_link_libraries(
         string_test
         GTest::gtest_main
