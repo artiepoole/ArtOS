@@ -20,6 +20,12 @@ RTC::RTC()
     auto& log = Serial::get();
     log.write("Mon Jan 01 00:00:00 1970\tInitialising RTC\n");
     instance = this;
+    u8 flag = readRegister(CMOS_STATUS_B);
+    // Set the clock to binary mode (more efficient) and 24 hour mode.
+    // Bit 2 - Data Mode - 0: BCD, 1: Binary
+    // Bit 1 - 24/12 hour selection - 1 enables 24 hour mode
+    flag = flag | 0x1<<1 | 0x1<<2;
+    writeRegister(CMOS_STATUS_B, flag);
     read(); // also updates current time
     setDivider(15); // also sets frequency
     log.log("RTC initialised");
@@ -53,6 +59,12 @@ u8 RTC::readRegister(const u8 reg_select)
     return inb(CMOS_DATA);
 }
 
+void RTC::writeRegister(const u8 reg_select, u8 data_byte)
+{
+    outb(CMOS_SELECT, reg_select);
+    outb(CMOS_DATA, data_byte);
+}
+
 
 u8 RTC::checkUpdating()
 {
@@ -64,7 +76,6 @@ u8 RTC::checkUpdating()
 tm RTC::read()
 {
     while (checkUpdating()); // Make sure an update isn't in progress
-
     u8 second = readRegister(CMOS_SECONDS);
     u8 minute = readRegister(CMOS_MINUTES);
     u8 hour = readRegister(CMOS_HOURS);
@@ -73,6 +84,7 @@ tm RTC::read()
     u8 weekday = readRegister(CMOS_WEEKDAY);
     u16 year = readRegister(CMOS_YEAR);
     u8 century = 0;
+
     if constexpr (CMOS_CENTURY != 0)
     {
         century = readRegister(CMOS_CENTURY);
@@ -81,13 +93,14 @@ tm RTC::read()
 
     if (!(registerB & 0x04))
     {
-        // second = (second & 0x0F) + ((second / 16) * 10);
-        second = ((second & 0xF0) >> 1) + ((second & 0xF0) >> 3) + (second & 0xf);
-        // minute = (minute & 0x0F) + ((minute / 16) * 10);
-        minute = ((minute & 0xF0) >> 1) + ((minute & 0xF0) >> 3) + (minute & 0xf);
-        hour = ((hour & 0xF0) >> 1) + ((hour & 0xF0) >> 3) + (hour & 0xf);
-        // day = (day & 0x0F) + ((day / 16) * 10);
-        day = ((hour & 0xF0) >> 1) + ((day & 0xF0) >> 3) + (day & 0xf);
+        second = (second & 0x0F) + ((second / 16) * 10);
+        // second = ((second & 0xF0) >> 1) + ((second & 0xF0) >> 3) + (second & 0xf);
+        minute = (minute & 0x0F) + ((minute / 16) * 10);
+        // minute = ((minute & 0xF0) >> 1) + ((minute & 0xF0) >> 3) + (minute & 0xf);
+
+        hour = (hour & 0x0F) + ((hour / 16) * 10);
+        // hour = ((hour & 0xF0) >> 1) + ((hour & 0xF0) >> 3) + (hour & 0xf);
+        day = (day & 0x0F) + ((day / 16) * 10);
         // month = (month & 0x0F) + ((month / 16) * 10);
         month = ((month & 0xF0) >> 1) + ((month & 0xF0) >> 3) + (month & 0xf);
         // year = (year & 0x0F) + ((year / 16) * 10);
@@ -105,15 +118,9 @@ tm RTC::read()
     }
 
     // Calculate the full (4-digit) year accounting for change in century
-    if constexpr (CMOS_CENTURY != 0)
-    {
-        year += century * 100;
-    }
-    else
-    {
-        year += (CURRENT_YEAR / 100) * 100;
-        if (year < CURRENT_YEAR) year += 100;
-    }
+
+    year += century * 100;
+
     int yearday = 0;
     for (size_t i = 0; i < month; i++)
     {
@@ -129,9 +136,9 @@ tm RTC::read()
         minute,
         hour,
         day,
-        month,
+        month-1, // gets 1-12, needs 0-11
         year - 1900,
-        weekday,
+        weekday-1, // gets 1-7, needs 0-6
         yearday,
         0
     };

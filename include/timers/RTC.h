@@ -45,6 +45,8 @@ private:
 	tm current_time{};
 
     static u8 readRegister(u8 reg_select);
+
+	void writeRegister(u8 reg_select, u8 data_byte);
 	static u8 checkUpdating();
 };
 
