@@ -56,6 +56,7 @@ void close_file_handle(int fd)
     handles[fd] = NULL;
 }
 
+extern "C"
 int write(const int fd, const char* buf, const unsigned long count)
 {
     const FileHandle* h = get_file_handle(fd);
@@ -67,7 +68,7 @@ int write(const int fd, const char* buf, const unsigned long count)
     return h->write(buf, count);
 }
 
-
+extern "C"
 int open(const char* filename, unsigned int mode)
 {
     // TODO this is a stub. We probably want some kind of dispatch to filesystems/mounts so we can mount com0 to

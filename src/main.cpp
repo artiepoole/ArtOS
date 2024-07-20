@@ -217,12 +217,6 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     configurePit(2000);
     log.log("Singletons loaded.");
 
-    // long t = time(nullptr);
-    // auto tbreak = get_time();
-    // auto outstr = asctime(&tbreak);
-    // log.log("acstime: ");
-    // log.log(outstr);
-
 
     vga.drawSplash();
     vga.draw();
@@ -239,8 +233,8 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     log.log("LOADED OS.");
 
 
-    FILE* com = fopen("/dev/com1", "w");
-    auto ret = fprintf(com, "%s\n", "This should print to com0");
+    // FILE* com = fopen("/dev/com1", "w");
+    // fprintf(com, "%s\n", "This should print to com0");
 
 
     // Event handler loop.
