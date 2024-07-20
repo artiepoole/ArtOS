@@ -22,8 +22,6 @@
 // extern "C" {
 // #endif
 
-#include "kernel.h"
-
 typedef long ssize_t;
 
 extern int write(int fd, const char* buf, unsigned long count);
