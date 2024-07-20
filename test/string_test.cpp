@@ -8,7 +8,7 @@ TEST(StringTest, StrLen)
 {
     const size_t len = mystrlen("test");
 
-    EXPECT_EQ(len, 4);
+    EXPECT_EQ(len, 5);
 }
 
 TEST(StringTest, string_from_int_pos)
@@ -16,7 +16,7 @@ TEST(StringTest, string_from_int_pos)
     char outstr[32];
     string_from_int(1234, outstr);
     const int len = mystrlen(outstr);
-    char trimmed[len];
+    char trimmed[len+1];
     for (size_t i = 0; i < len; i++)
     {
         trimmed[i] = outstr[i];

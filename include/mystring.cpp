@@ -3,14 +3,14 @@
 //
 
 #include "mystring.h"
-#include "types.h"
+
 
 size_t mystrlen(const char* str)
 {
     int len = 0;
     while (str[len])
         len++;
-    return len;
+    return len+1;
 }
 
 
