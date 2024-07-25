@@ -187,7 +187,6 @@ void irq_handler(const cpu_registers_t* r)
     // register_to_serial(r);
 
     const auto int_no = r->int_no;
-    // log.log("IRQ: ",int_no);
 
     if (int_no >= 32)
     {
@@ -205,9 +204,7 @@ void irq_handler(const cpu_registers_t* r)
             rtc_handler();
             break;
         default:
-            log.write("Unhandled IRQ: ");
-            log.write(int_no);
-            log.newLine();
+            log.log("unhandled IRQ: ", int_no);
             break;
         }
     }
