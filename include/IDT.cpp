@@ -180,8 +180,8 @@ void irq_handler(const cpu_registers_t* r)
         11 	Free for peripherals / SCSI / NIC
         12 	PS2 Mouse
         13 	FPU / Coprocessor / Inter-processor
-        14 	Primary ATA Hard Disk
-        15 	Secondary ATA Hard Disk
+        14 	Primary ATA Bus
+        15 	Secondary ATA Bus
     */
     auto &log = Serial::get();
     // register_to_serial(r);
