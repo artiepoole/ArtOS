@@ -27,7 +27,7 @@ RTC::RTC()
     flag = flag | 0x1<<1 | 0x1<<2;
     writeRegister(CMOS_STATUS_B, flag);
     read(); // also updates current time
-    setDivider(15); // also sets frequency
+    _setDivider(15); // also sets frequency
     log.log("RTC initialised");
 }
 
@@ -186,6 +186,18 @@ void RTC::disableInterrupts()
 
 u32 RTC::setDivider(u8 divider)
 {
+    // After interrupts are enabled on boot, any further setDivider calls must disable interrupts before the change and reenable them after otherwise risking unspecified behaviour
+    //  0011b = 3 - 122 microseconds (minimum) // 8000 hz
+    //  1111b = 15 - 500 milliseconds //
+    //  0110b = 6 - 976.562 microseconds (default) // 1024 hz
+    disable_interrupts();
+    _setDivider(divider);
+    enable_interrupts();
+    return hz;
+}
+u32 RTC::_setDivider(u8 divider)
+{
+    // Must manually control interrupts on internal call
     //  0011b = 3 - 122 microseconds (minimum) // 8000 hz
     //  1111b = 15 - 500 milliseconds //
     //  0110b = 6 - 976.562 microseconds (default) // 1024 hz
@@ -194,12 +206,11 @@ u32 RTC::setDivider(u8 divider)
     hz = 32768 >> (divider - 1);
     log.log("Setting RTC divider. Divisor: ", static_cast<u16>(divider), " frequency: ", hz);
     divider &= 0x0F; // rate must be above 2 and not over 15
-    disable_interrupts();
     outb(CMOS_SELECT, CMOS_STATUS_A);
     const u8 prev = inb(CMOS_DATA); // get initial value of register A
     outb(CMOS_SELECT, CMOS_STATUS_A);
     outb(CMOS_DATA, (prev & 0xF0) | divider); //write only our rate to A. Note, rate is the bottom 4 bits.
-    enable_interrupts();
+
     return hz;
 }
 

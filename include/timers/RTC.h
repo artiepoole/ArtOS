@@ -48,6 +48,7 @@ private:
 
 	void writeRegister(u8 reg_select, u8 data_byte);
 	static u8 checkUpdating();
+	u32 _setDivider(u8 divider);
 };
 
 void read_RTC();
