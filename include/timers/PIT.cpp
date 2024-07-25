@@ -30,24 +30,12 @@ void sleep(const u32 ms)
     auto& log = Serial::get();
     if (rate == 0)
     {
-        log.write("Tried to sleep when timer is not initiated.");
+        log.log("Tried to sleep when timer is not initiated.");
         return;
     }
-
     timer_ticks = ms * rate / 1000; // rate is in hz, time is in ms
-
-    log.write("Sleeping for ");
-    log.write(ms);
-    log.write("ms. Ticks: ");
-    log.write(timer_ticks);
-    log.write(" Rate: ");
-    log.write(rate);
-    log.newLine();
+    log.log("Sleeping for ", ms, "ms. Ticks:", timer_ticks, " rate:", rate);
     while (timer_ticks > 0);
-    //log.write("Exited while loop. ");
-    //log.write("Remaining timer_ticks: ");
-    //log.write_int(timer_ticks);
-    // log.new_line();
 }
 
 void pit_handler()
