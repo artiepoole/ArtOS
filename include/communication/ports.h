@@ -38,36 +38,7 @@
 #define CMOS_STATUS_B 0x8B // 0x8* fixes the NMI to disabled
 #define CMOS_STATUS_C 0x8C // 0x8* fixes the NMI to disabled
 
-// ATA ports https://wiki.osdev.org/ATA_PIO_Mode
-#define ATA_PRIMARY_DATA 0x1F0  // 16 bit param size
-#define ATA_PRIMARY_ERROR 0x1F1  // 8 bit param sizes
-#define ATA_PRIMARY_FEATURES 0x1F1
-#define ATA_PRIMARY_SECTOR_COUNT 0x1F2
-#define ATA_PRIMARY_LBA_LO 0x1F3
-#define ATA_PRIMARY_LBA_MID 0x1F4
-#define ATA_PRIMARY_LBA_HI 0x1F5
-#define ATA_PRIMARY_DRIVE_SELECT 0x1F6
-#define ATA_PRIMARY_STATUS_COMMAND 0x1F7
-
-#define ATA_SECONDARY_DATA 0x170 // 16 bit param size
-#define ATA_SECONDARY_ERROR 0x171
-#define ATA_SECONDARY_FEATURES 0x171
-#define ATA_SECONDARY_SECTOR_COUNT 0x172
-#define ATA_SECONDARY_LBA_LO 0x173
-#define ATA_SECONDARY_LBA_MID 0x174
-#define ATA_SECONDARY_LBA_HI 0x175
-#define ATA_SECONDARY_DRIVE_SELECT 0x176
-#define ATA_SECONDARY_STATUS_COMMAND 0x177
-
-#define ATA_PRIMARY_CONTROL_STATUS 0x3F6
-#define ATA_SECONDARY_CONTROL_STATUS 0x376
-
-// ATA commands https://wiki.osdev.org/ATAPI
-#define ATA_PACKET_COMMAND 0xA0
-#define ATA_TARGET_MAIN 0xA0
-#define ATA_TARGET_SECONDARY 0xB0
-#define ATA_INDENTIFY_COMMAND 0xEC
-/*
+/* CMOS STATUS REGISTERS
 0Ah Status Register A (read/write) (usu 26h)
     Bit 7     - (1) time update cycle in progress, data ouputs undefined
                   (bit 7 is read only)
@@ -107,20 +78,54 @@ The rest of the CMOS memory is used to handle system state stuff like maximum ra
 */
 
 
+// ATA ports
+// https://wiki.osdev.org/ATA_PIO_Mode
+// https://wiki.osdev.org/ATAPI
+#define ATA_PRIMARY_DATA 0x1F0  // 16 bit param size
+#define ATA_PRIMARY_ERROR 0x1F1  // 8 bit param sizes
+#define ATA_PRIMARY_FEATURES 0x1F1
+#define ATA_PRIMARY_SECTOR_COUNT 0x1F2
+#define ATA_PRIMARY_LBA_LO 0x1F3
+#define ATA_PRIMARY_LBA_MID 0x1F4
+#define ATA_PRIMARY_LBA_HI 0x1F5
+#define ATA_PRIMARY_DRIVE_SELECT 0x1F6
+#define ATA_PRIMARY_STATUS_COMMAND 0x1F7
+
+#define ATA_SECONDARY_DATA 0x170 // 16 bit param size
+#define ATA_SECONDARY_ERROR 0x171
+#define ATA_SECONDARY_FEATURES 0x171
+#define ATA_SECONDARY_SECTOR_COUNT 0x172
+#define ATA_SECONDARY_LBA_LO 0x173
+#define ATA_SECONDARY_LBA_MID 0x174
+#define ATA_SECONDARY_LBA_HI 0x175
+#define ATA_SECONDARY_DRIVE_SELECT 0x176
+#define ATA_SECONDARY_STATUS_COMMAND 0x177
+
+#define ATA_PRIMARY_CONTROL_STATUS 0x3F6
+#define ATA_SECONDARY_CONTROL_STATUS 0x376
+
+// ATA commands
+// https://wiki.osdev.org/ATAPI
+// https://wiki.osdev.org/ATA_Command_Matrix
+#define ATA_PACKET_COMMAND 0xA0
+#define ATA_TARGET_MAIN 0xA0
+#define ATA_TARGET_SECONDARY 0xB0
+#define ATA_INDENTIFY_COMMAND 0xEC
+
+
+
 
 // extern "C"
 inline void outb(u16 port, u8 val)
 {
+    // Assembly wrapper to write one byte to the specified port
     __asm__ volatile ( "outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
-    /* There's an outb %al, $imm8 encoding, for compile-time constant port numbers that fit in 8b. (N constraint).
-     * Wider immediate constants would be truncated at assemble-time (e.g. "i" constraint).
-     * The  outb  %al, %dx  encoding is the only option for all other cases.
-     * %1 expands to %dx because  port  is a uint16_t.  %w1 could be used if we had the port number a wider C type */
 }
 
 // extern "C"
 inline u8 inb(u16 port)
 {
+    // Assembly wrapper to read one byte from the specified port
     u8 ret;
     __asm__ volatile ( "inb %w1, %b0"
                    : "=a"(ret)
@@ -132,11 +137,14 @@ inline u8 inb(u16 port)
 
 inline void outw(u16 port, u16 val)
 {
+    // Assembly wrapper to write one word (16 bits) to the specified port
     __asm__ volatile ( "outw %w0, %w1" : : "a"(val), "Nd"(port) : "memory");
 }
 
+
 inline u16 inw(u16 port)
 {
+    // Assembly wrapper to read one word (16 bits) from the specified port
     u16 ret;
     __asm__ volatile ( "inw %w1, %w0"
                    : "=a"(ret)
