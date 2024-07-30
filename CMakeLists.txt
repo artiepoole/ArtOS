@@ -33,8 +33,7 @@ add_subdirectory(pdclib)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
         ${INCLUDE} ${KERNEL}
-        src/sys/Files.cpp
-        src/sys/Files.h
+
 )
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
