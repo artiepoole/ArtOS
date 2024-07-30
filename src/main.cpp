@@ -14,6 +14,8 @@
 // #include "stdlib.h"
 // #include "malloc.c"
 
+#include "PCI.h"
+
 #include "stdio.h"
 #include "CPUID.h"
 #include "RTC.h"
@@ -203,6 +205,8 @@ extern int setGdt(u32 limit, u32 base);
 u8 modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
 
+
+
 extern "C"
 void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
@@ -236,7 +240,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     // FILE* com = fopen("/dev/com1", "w");
     // fprintf(com, "%s\n", "This should print to com0");
 
-
+    PCI_list();
     // Event handler loop.
     log.log("Entering event loop.");
     while (true)
