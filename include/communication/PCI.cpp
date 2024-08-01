@@ -23,7 +23,8 @@ using namespace std;
 //     SimpleCommController
 // };
 
-char dev_types[][32] = {
+
+char dev_types[255][32] = {
     "Unclassified",
     "Mass Storage",
     "Network",
@@ -56,79 +57,218 @@ char dev_types[][32] = {
 PCIDevice::PCIDevice(const u8 bus, const u8 slot, const u8 func)
 {
     address = PCI_Address_t{0, func, slot, bus, 0, 1};
+    header = populate_values();
     vendor = vendor_id();
 }
 
-u16 PCIDevice::vendor_id()
+PCI_header_t PCIDevice::populate_values() const
 {
-    return config_readw(0x0);
+    PCI_header_t local_header{};
+    local_header.reg0 = config_read_register(0x0);
+    if (local_header.vendor_id != 0xFFFF)
+    {
+        local_header.reg1 = config_read_register(0x4);
+        local_header.reg2 = config_read_register(0x8);
+        local_header.reg3 = config_read_register(0xC);
+        local_header.reg4 = config_read_register(0x10);
+        local_header.reg5 = config_read_register(0x14);
+        local_header.reg6 = config_read_register(0x18);
+        local_header.reg7 = config_read_register(0x1C);
+        local_header.reg8 = config_read_register(0x20);
+        local_header.reg9 = config_read_register(0x24);
+        local_header.regA = config_read_register(0x28);
+        local_header.regB = config_read_register(0x2C);
+        local_header.regC = config_read_register(0x30);
+        local_header.regD = config_read_register(0x34);
+        local_header.regE = config_read_register(0x38);
+        local_header.regF = config_read_register(0x3C);
+    }
+    return local_header;
 }
 
-u16 PCIDevice::device()
+u16 PCIDevice::vendor_id() const
 {
-    return config_readw(0x2);
+    return header.vendor_id;
 }
 
-u8 PCIDevice::sub_class()
+u16 PCIDevice::device_id() const
 {
-    return config_readb(0xA);
+    return header.device_id;
+}
+
+u8 PCIDevice::sub_class() const
+{
+    return header.subclass;
 }
 
 
-u8 PCIDevice::main_class()
+u8 PCIDevice::class_code() const
 {
-    u8 ret = config_readb(0xB);
-    //
-    // LOG("ret", static_cast<u16>(ret));
-    return ret;
+    return header.class_code;
 }
 
-u8 PCIDevice::header_type()
+u8 PCIDevice::header_type() const
 {
-    return config_readb(0xE);
+    return header.header_type;
 }
 
-u8 PCIDevice::intr_line()
+
+u32 PCIDevice::bar(u8 n) const
 {
-    return config_readb(0x3C);
+    if ((header_type() == 1 and n > 1) or (header_type() == 2))
+    {
+        LOG("Tried to access BAR outside of valid range for this header type. There are 6 BARs for type_0, 2 for type_1 and 0 for type_2.");
+        return 0;
+    }
+    switch (n)
+    {
+    case 0:
+        return header.reg4;
+    case 1:
+        return header.reg5;
+    case 2:
+        return header.reg6;
+    case 3:
+        return header.reg7;
+    case 4:
+        return header.reg8;
+    case 5:
+        return header.reg9;
+    default:
+        LOG("Tried to access BAR outside of valid range. ");
+        return 0;
+    }
 }
 
-u32 PCIDevice::bar(size_t n)
-{
-    return config_readl(0x10 + 4 * n);
-}
-
-u16 PCIDevice::subsystem()
+u16 PCIDevice::subsystem_id() const
 // only for header_type == 0
 {
-    return config_readw(0x2e);
+    if (header_type() == 0)
+    {
+        return static_cast<u16>(header.regB >> 16);
+    }
+    else return 0;
+}
+
+u32 PCIDevice::expansion_RBA() const
+{
+    switch (header_type())
+    {
+    case 0:
+        return header.regC;
+    case 1:
+        return header.regE;
+    default: return 0;
+    }
+}
+
+u8 PCIDevice::prog_if() const
+{
+    return header.prog_IF;
 }
 
 void PCIDevice::log_format()
 {
-
     LOG("PCI device. Bus: ", static_cast<u16>(address.components.bus), " slot: ", static_cast<u16>(address.components.slot), " function: ", static_cast<u16>(address.components.function));
 
-    LOG("class: ", dev_types[main_class()], " subclass: ", static_cast<u16>(sub_class()), " vendor id: ", vendor_id());
+    LOG("class: ", dev_types[class_code()], " subclass: ", static_cast<u16>(sub_class()), " vendor id: ", vendor_id());
 }
 
-u8 PCIDevice::config_readb(const u8 offset)
+u16 PCIDevice::command() const
 {
-    const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
-    outd(PCI_CONFIG_ADDRESS, offset_address.address);
-
-    return static_cast<u8>(ind(PCI_CONFIG_DATA));
+    return header.command;
 }
 
-u16 PCIDevice::config_readw(const u8 offset)
+u16 PCIDevice::status() const
 {
-    const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
-    outd(PCI_CONFIG_ADDRESS, offset_address.address);
-
-    return static_cast<u16>(ind(PCI_CONFIG_DATA));
+    return header.status;
 }
 
-u32 PCIDevice::config_readl(const u8 offset)
+u8 PCIDevice::rev_id() const
+{
+    return header.revision_id;
+}
+
+u8 PCIDevice::cache_line_size() const
+{
+    return header.cache_line_size;
+}
+
+u8 PCIDevice::latency_timer() const
+{
+    return header.latency_timer;
+}
+
+u8 PCIDevice::bist() const
+{
+    return header.BIST;
+}
+
+u8 PCIDevice::capablilites() const
+{
+    switch (header_type())
+    {
+    case 0:
+    case 1:
+        return static_cast<u8>(header.regD);
+    default:
+        LOG("Invalid field 'capabilities' for header type: ", header_type());
+        return 0;
+    }
+}
+
+u8 PCIDevice::interrupt_line() const
+{
+    return header.interrupt_line;
+}
+
+u8 PCIDevice::interrupt_pin() const
+{
+    return header.interrupt_pin;
+}
+
+// Header type 0 (device) only.
+u32 PCIDevice::card_cis() const
+{
+    if (header_type() != 0)
+    {
+        LOG("Invalid field 'card_cis' for header type: ", header_type());
+        return 0;
+    }
+    return header.regA;
+}
+
+u16 PCIDevice::subsystem_vendor_id() const
+{
+    switch (header_type())
+    {
+    case 0:
+        return static_cast<u16>(header.regB);
+    case 2:
+        return static_cast<u16>(config_read_register(0x40) <<16);
+    default:
+        LOG("Invalid field 'subsystem vendor id' for header type: ", header_type());
+        return 0;
+    }
+}
+
+// u8 PCIDevice::config_readb(const u8 offset)
+// {
+//     const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
+//     outd(PCI_CONFIG_ADDRESS, offset_address.address);
+//
+//     return static_cast<u8>(ind(PCI_CONFIG_DATA));
+// }
+//
+// u16 PCIDevice::config_readw(const u8 offset)
+// {
+//     const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
+//     outd(PCI_CONFIG_ADDRESS, offset_address.address);
+//
+//     return static_cast<u16>(ind(PCI_CONFIG_DATA));
+// }
+
+u32 PCIDevice::config_read_register(const u8 offset) const
 {
     const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
     outd(PCI_CONFIG_ADDRESS, offset_address.address);

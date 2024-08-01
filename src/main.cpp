@@ -241,6 +241,10 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     // fprintf(com, "%s\n", "This should print to com0");
 
     PCI_list();
+    auto IDE_controller = PCIDevice(0,1,1);
+    LOG("progif: ", static_cast<u16>(IDE_controller.prog_if()));
+
+
     // Event handler loop.
     LOG("Entering event loop.");
     while (true)
