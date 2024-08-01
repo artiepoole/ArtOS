@@ -115,8 +115,7 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
 
 void Terminal::setScale(const u32 new_scale)
 {
-    auto& log = Serial::get();
-    log.log("Terminal: Setting font scale to ", new_scale, " from ", font_scale);
+    LOG("Terminal: Setting font scale to ", new_scale, " from ", font_scale);
     // Checks if a character can be drawn in the region. Should be "_window width" or something.
     if (new_scale * char_dim < screen_region.w && new_scale * char_dim < screen_region.h)
     {
@@ -129,9 +128,9 @@ void Terminal::setScale(const u32 new_scale)
     }
     else
     {
-        log.write("Font scale not applied\n");
+        WRITE("Font scale not applied\n");
     }
-    log.log("Terminal: Font scale set to ", font_scale);
+    LOG("Terminal: Font scale set to ", font_scale);
 }
 
 u32 Terminal::getScale()

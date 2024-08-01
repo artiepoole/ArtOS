@@ -29,7 +29,7 @@ void decToBinary(u32 n)
 
 void cpuid_print_manufacturer_info()
 {
-    auto& log = Serial::get();
+
     u32 info[3];
     asm volatile("mov $0x0, %eax\n\t");
     asm volatile("cpuid\n\t":"=a"(max_param), "=b" (info[0]), "=d" (info[1]), "=c" (info[2]));
@@ -38,15 +38,15 @@ void cpuid_print_manufacturer_info()
     // __asm__("mov %%edx, %0\n\t":"=r" (info[1]));
     // __asm__("mov %%ecx, %0\n\t":"=r" (info[2]));
 
-    log.write("CPUID Manufacturer ID: ");
+    WRITE("CPUID Manufacturer ID: ");
     for (size_t i = 0; i < 3; i++)
     {
         for (size_t c = 0; c < 32 / 8; c++)
         {
-            log.write(static_cast<char>(info[i] >> (c * 8)));
+            WRITE(static_cast<char>(info[i] >> (c * 8)));
         }
     }
-    log.newLine();
+    NEWLINE();
 
     asm volatile("mov $0x80000000, %eax\n\t");
     asm volatile("cpuid\n\t":"=a"(max_extended_param));
@@ -61,31 +61,31 @@ void cpuid_print_manufacturer_info()
         asm volatile("cpuid\n\t":"=a"(parts[4]), "=b" (parts[5]), "=c" (parts[6]), "=d" (parts[7]));
         asm volatile("mov $0x80000004, %eax\n\t");
         asm volatile("cpuid\n\t":"=a"(parts[8]), "=b" (parts[9]), "=c" (parts[10]), "=d" (parts[11]));
-        log.write("Brand string: ");
+        WRITE("Brand string: ");
         for (size_t i = 0; i < 12; i++)
         {
             for (size_t c = 0; c < 32 / 8; c++)
             {
                 char letter = static_cast<char>(parts[i] >> (c * 8));
                 if(letter ==0){break;}
-                log.write(letter);
+                WRITE(letter);
             }
         }
-        log.newLine();
+        NEWLINE();
     }
 
-    log.write("CPUID max param: ");
-    log.write(max_param, true);
-    log.newLine();
-    log.write("CPUID max extended param: ");
-    log.write(max_extended_param, true);
-    log.newLine();
+    WRITE("CPUID max param: ");
+    WRITE(max_param, true);
+    NEWLINE();
+    WRITE("CPUID max extended param: ");
+    WRITE(max_extended_param, true);
+    NEWLINE();
 }
 
 
 void cpuid_print_feature_info()
 {
-    auto& log = Serial::get();
+
     u32 info[4]; // family info, addiitonal features, featureflag2, featureflag1
     __asm__("mov $0x1 , %eax\n\t");
     asm volatile("cpuid\n\t":"=a"(info[0]), "=b" (info[1]), "=c" (info[2]), "=d" (info[3]));
@@ -93,22 +93,22 @@ void cpuid_print_feature_info()
     for (size_t i = 0; i < 4; i++)
     {
         decToBinary(info[i]);
-        log.log("Feature info ", i, ": ");
+        LOG("Feature info ", i, ": ");
         for (size_t c = 0; c < 32; c++)
         {
-            log.write(decimal[binaryNum[c]]);
+            WRITE(decimal[binaryNum[c]]);
         }
-        log.newLine();
+        NEWLINE();
     }
 }
 
 
 void cpuid_get_core_crystal_freq()
 {
-    auto& log = Serial::get();
+
     if (0x15 > max_param)
     {
-        log.log("ERROR: Cannot get timing info. CPUID feature not supported.");
+        LOG("ERROR: Cannot get timing info. CPUID feature not supported.");
         return;
     }
     u32 info[6]; //denom, numer, freq,  base, max, reference;
@@ -118,8 +118,8 @@ void cpuid_get_core_crystal_freq()
     asm volatile("cpuid\n\t":"=a"(info[3]), "=b" (info[4]), "=c" (info[5]));
     for (size_t i = 0; i < 6; i++)
     {
-        log.log("Timing info ", i, ": ");
-        log.write(info[i]);
-        log.newLine();
+        LOG("Timing info ", i, ": ");
+        WRITE(info[i]);
+        NEWLINE();
     }
 }

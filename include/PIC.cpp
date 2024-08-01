@@ -50,8 +50,8 @@ PIC::PIC()
 
 void PIC::disable()
 {
-    auto& log = Serial::get();
-    log.write("Disabled PIC");
+
+    WRITE("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
     outb(PIC1_DATA, 0xff);
@@ -60,8 +60,8 @@ void PIC::disable()
 
 void PIC::enable()
 {
-    auto& log = Serial::get();
-    log.write("Renabled PIC");
+
+    WRITE("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
 }
@@ -106,8 +106,8 @@ void IRQ_clear_mask(u8 IRQline)
 
 void PIC::enableIRQ(u8 irq_id)
 {
-    auto& log = Serial::get();
-    log.log("PIC: Enabling IRQ", static_cast<u16>(irq_id));
+
+    LOG("PIC: Enabling IRQ", static_cast<u16>(irq_id));
 
     if (irq_id < 8)
     {
@@ -120,15 +120,15 @@ void PIC::enableIRQ(u8 irq_id)
         mask2 = mask2 & ~(1 << (irq_id - 8));
         outb(PIC2_DATA, mask2);
     }
-    log.log("\tmask1: ", static_cast<u16>(mask1), " mask2: ", static_cast<u16>(mask2));
-    log.log("PIC: IRQ", static_cast<u16>(irq_id), " enabled");
+    LOG("\tmask1: ", static_cast<u16>(mask1), " mask2: ", static_cast<u16>(mask2));
+    LOG("PIC: IRQ", static_cast<u16>(irq_id), " enabled");
 }
 
 
 void PIC::disableIRQ(const u8 irq_id)
 {
-    auto& log = Serial::get();
-    log.log("Disabling IRQ", static_cast<u16>(irq_id));
+
+    LOG("Disabling IRQ", static_cast<u16>(irq_id));
 
     if (irq_id < 8)
     {
@@ -140,7 +140,7 @@ void PIC::disableIRQ(const u8 irq_id)
         mask2 = mask2 | (1 << (irq_id-8));
         outb(PIC2_DATA, mask2);
     }
-    log.log("mask1: ", static_cast<u16>(mask1), " mask2: ", static_cast<u16>(mask2));
+    LOG("mask1: ", static_cast<u16>(mask1), " mask2: ", static_cast<u16>(mask2));
 }
 
 void PIC::enableAll()

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 
 ENABLE_LANGUAGE(ASM)
-
+option(ENABLE_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 
 project(ArtOS)
 
@@ -53,6 +53,10 @@ add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
 
 
 target_link_libraries(${KERNEL_BIN} pdclib)
+target_compile_definitions(${KERNEL_BIN}
+        PUBLIC
+        ENABLE_LOGGING=$<BOOL:${ENABLE_LOGGING}>
+)
 
 
 ### Generating the ISO file

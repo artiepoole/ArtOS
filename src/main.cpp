@@ -143,45 +143,45 @@ struct gdt_entry
 
 void get_GDT()
 {
-    auto& log = Serial::get();
+
     gdt_info gdt{};
     asm("sgdt %0" : "=m"(gdt));
-    log.write("GDT limit: ");
-    log.write(gdt.limit, true);
-    log.write(" GDT base: ");
-    log.write(gdt.base, true);
-    log.newLine();
+    WRITE("GDT limit: ");
+    WRITE(gdt.limit, true);
+    WRITE(" GDT base: ");
+    WRITE(gdt.base, true);
+    NEWLINE();
 
     for (size_t i = 0; i < 8; i++)
     {
-        log.write("GDT entry:");
-        log.write(i);
-        log.write(" data: ");
+        WRITE("GDT entry:");
+        WRITE(i);
+        WRITE(" data: ");
         uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base + (8 * i));
-        log.write(gdt_ptr, true);
-        log.newLine();
+        WRITE(gdt_ptr, true);
+        NEWLINE();
     }
 }
 
 u16 get_cs()
 {
-    auto& log = Serial::get();
+
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
-    log.write("CS: ");
-    log.write(i, true);
-    log.newLine();
+    WRITE("CS: ");
+    WRITE(i, true);
+    NEWLINE();
     return i;
 }
 
 u16 get_ds()
 {
-    auto& log = Serial::get();
+
     u16 i;
     asm("mov %%ds,%0" : "=r"(i));
-    log.write("DS: ");
-    log.write(i, true);
-    log.newLine();
+    WRITE("DS: ");
+    WRITE(i, true);
+    NEWLINE();
     return i;
 }
 
@@ -211,7 +211,7 @@ extern "C"
 void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
 {
     auto log = Serial();
-    log.write("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
+    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     RTC rtc;
     EventQueue events;
     VideoGraphicsArray vga(multiboot_structure, frame_buffer);
@@ -219,7 +219,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     PIC pic;
     IDT idt;
     configurePit(2000);
-    log.log("Singletons loaded.");
+    LOG("Singletons loaded.");
 
 
     vga.drawSplash();
@@ -234,7 +234,7 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
     terminal.setScale(2);
     vga.draw();
     terminal.write(" Loading Done.\n");
-    log.log("LOADED OS.");
+    LOG("LOADED OS.");
 
 
     // FILE* com = fopen("/dev/com1", "w");
@@ -242,18 +242,18 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
 
     PCI_list();
     // Event handler loop.
-    log.log("Entering event loop.");
+    LOG("Entering event loop.");
     while (true)
     {
         if (events.pendingEvents())
         {
             auto [type, data] = events.getEvent();
-            // log.log("Found event. Type: ", static_cast<int>(type), " lower: ", data.lower_data, " upper: ",data.upper_data);
+            // LOG("Found event. Type: ", static_cast<int>(type), " lower: ", data.lower_data, " upper: ",data.upper_data);
             switch (type)
             {
             case NULL_EVENT:
                 {
-                    log.write("NULL EVENT\n");
+                    WRITE("NULL EVENT\n");
                     break;
                 }
             case KEY_UP:
@@ -293,16 +293,16 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                     // todo: handle backspace
                     // todo: write an actual terminal class.
 
-                    // log.write("Key up event in main loop.\n");
+                    // WRITE("Key up event in main loop.\n");
                     break;
                 }
             case KEY_DOWN:
                 {
-                    // log.write("Key down event in main loop: ");
+                    // WRITE("Key down event in main loop: ");
                     size_t cin = data.lower_data;
                     char key = key_map[cin];
-                    // log.write(key);
-                    // log.newLine();
+                    // WRITE(key);
+                    // NEWLINE();
                     if (key_map[cin] != 0)
                     {
                         switch (key)
@@ -395,20 +395,20 @@ void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_s
                 }
             default:
                 {
-                    log.write("Unhandled event.\n");
-                    log.write("Type: ");
-                    log.write(static_cast<int>(type));
-                    log.write(" lower: ");
-                    log.write(data.lower_data, true);
-                    log.write(" upper: ");
-                    log.write(data.upper_data, true);
-                    log.newLine();
+                    WRITE("Unhandled event.\n");
+                    WRITE("Type: ");
+                    WRITE(static_cast<int>(type));
+                    WRITE(" lower: ");
+                    WRITE(data.lower_data, true);
+                    WRITE(" upper: ");
+                    WRITE(data.upper_data, true);
+                    NEWLINE();
                     break;
                 }
             }
         }
     }
-    log.write("ERROR: Left main loop.");
+    WRITE("ERROR: Left main loop.");
     asm("hlt");
 
 

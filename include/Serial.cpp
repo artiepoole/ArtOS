@@ -94,18 +94,17 @@ void Serial::_write(const char* data, const size_t size)
 
 void Serial::time_stamp()
 {
-    auto&rtc= RTC::get();
-    write(asctime(rtc.getTime()));
+    WRITE(asctime(RTC::get().getTime()));
 }
 
-int Serial::com_read(char* dest, const unsigned long count)
+u32 Serial::com_read(char* dest, const u32 count)
 {
-    for(int i = 0; i < count; i++) {
+    for(u32 i = 0; i < count; i++) {
         dest[i] = _read();
     }
     return count;
 }
-int Serial::com_write(const char* data, unsigned long count)
+u32 Serial::com_write(const char* data, const u32 count)
 {
     _write(data, count);
     return count;

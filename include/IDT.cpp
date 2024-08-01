@@ -74,61 +74,60 @@ inline char exception_messages[][40] =
 void register_to_serial(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
-    log.write("int_no, err_code: ");
+    WRITE("int_no, err_code: ");
     log.newLine();
-    log.write(r->int_no, true);
-    log.write(", ");
-    log.write(r->err_code, true);
-    log.newLine();
-
-    log.write("gs, fs, es, ds: ");
-    log.newLine();
-    log.write(r->gs, true);
-    log.write(", ");
-    log.write(r->fs, true);
-    log.write(", ");
-    log.write(r->es, true);
-    log.write(", ");
-    log.write(r->ds, true);
+    WRITE(r->int_no, true);
+    WRITE(", ");
+    WRITE(r->err_code, true);
     log.newLine();
 
-    log.write("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    WRITE("gs, fs, es, ds: ");
     log.newLine();
-    log.write(r->edi, true);
-    log.write(", ");
-    log.write(r->esi, true);
-    log.write(", ");
-    log.write(r->ebp, true);
-    log.write(", ");
-    log.write(r->esp, true);
-    log.write(", ");
-    log.write(r->ebx, true);
-    log.write(", ");
-    log.write(r->edx, true);
-    // log.write(", ");
+    WRITE(r->gs, true);
+    WRITE(", ");
+    WRITE(r->fs, true);
+    WRITE(", ");
+    WRITE(r->es, true);
+    WRITE(", ");
+    WRITE(r->ds, true);
+    log.newLine();
+
+    WRITE("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    log.newLine();
+    WRITE(r->edi, true);
+    WRITE(", ");
+    WRITE(r->esi, true);
+    WRITE(", ");
+    WRITE(r->ebp, true);
+    WRITE(", ");
+    WRITE(r->esp, true);
+    WRITE(", ");
+    WRITE(r->ebx, true);
+    WRITE(", ");
+    WRITE(r->edx, true);
+    // WRITE(", ");
     // log.write_hex(r->ecx, true);
-    // log.write(", ");
-    // log.write(r->eax, true);
+    // WRITE(", ");
+    // WRITE(r->eax, true);
     log.newLine();
 
-    log.write("eip, cs, eflags, useresp, ss;");
+    WRITE("eip, cs, eflags, useresp, ss;");
     log.newLine();
-    log.write(r->eip, true);
-    log.write(", ");
-    log.write(r->cs, true);
-    log.write(", ");
-    log.write(r->eflags, true);
-    log.write(", ");
-    log.write(r->useresp, true);
-    log.write(", ");
-    log.write(r->ss, true);
+    WRITE(r->eip, true);
+    WRITE(", ");
+    WRITE(r->cs, true);
+    WRITE(", ");
+    WRITE(r->eflags, true);
+    WRITE(", ");
+    WRITE(r->useresp, true);
+    WRITE(", ");
+    WRITE(r->ss, true);
     log.newLine();
 }
 
 void handle_div_by_zero(const cpu_registers_t* r)
 {
-    auto &log = Serial::get();
-    log.write("Div by zero not handled. oops.\n");
+    WRITE("Div by zero not handled. oops.\n");
     register_to_serial(r);
 }
 
@@ -139,7 +138,7 @@ void exception_handler(const cpu_registers_t* r)
     auto &log = Serial::get();
     register_to_serial(r);
 
-    log.write("Exception: ");
+    WRITE("Exception: ");
     // log.write_hex(r->int_no, 4);
     // log.new_line();
 
@@ -148,7 +147,7 @@ void exception_handler(const cpu_registers_t* r)
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
-        log.write(exception_messages[r->int_no]);
+        WRITE(exception_messages[r->int_no]);
         log.newLine();
         switch (r->int_no)
         {
@@ -156,7 +155,7 @@ void exception_handler(const cpu_registers_t* r)
             // handle_div_by_zero(r);
             return;
         default:
-            log.write("Unhandled exception. System Halted!");
+            WRITE("Unhandled exception. System Halted!");
             for (;;);
         }
     }
@@ -183,7 +182,6 @@ void irq_handler(const cpu_registers_t* r)
         14 	Primary ATA Bus
         15 	Secondary ATA Bus
     */
-    auto &log = Serial::get();
     // register_to_serial(r);
 
     const auto int_no = r->int_no;
@@ -204,7 +202,7 @@ void irq_handler(const cpu_registers_t* r)
             rtc_handler();
             break;
         default:
-            log.log("unhandled IRQ: ", int_no);
+            LOG("unhandled IRQ: ", int_no);
             break;
         }
     }
@@ -240,7 +238,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 IDT::IDT()
 {
     auto &log = Serial::get();
-    log.log("Initialising IDT");
+    LOG("Initialising IDT");
     idt_pointer.limit = (sizeof(idt_entry_t) * 48) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
 
@@ -251,14 +249,14 @@ IDT::IDT()
         idt_vectors[idt_index] = true;
     }
     log.time_stamp();
-    log.write("\tSetting IDT base and limit. ");
-    log.write("Base: ");
-    log.write(idt_pointer.base, true);
-    log.write(" Limit: ");
-    log.write(idt_pointer.limit, true);
-    log.newLine();
+    WRITE("\tSetting IDT base and limit. ");
+    WRITE("Base: ");
+    WRITE(idt_pointer.base, true);
+    WRITE(" Limit: ");
+    WRITE(idt_pointer.limit, true);
+    NEWLINE();
     __asm__ volatile ("lidt %0" : : "m"(idt_pointer)); // load the new IDT
-    log.log("IDT has been set");
+    LOG("IDT has been set");
     enable_interrupts();
-    log.log("IDT initialised");
+    LOG("IDT initialised");
 }

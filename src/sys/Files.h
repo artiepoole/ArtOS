@@ -4,10 +4,11 @@
 
 #ifndef FILES_H
 #define FILES_H
+#include "types.h"
 
 
-typedef int (ReadFunc)(char* dest, unsigned long count);
-typedef int (WriteFunc)(const char* data, unsigned long count);
+typedef u32 (ReadFunc)(char* dest, u32 count);
+typedef u32 (WriteFunc)(const char* data, u32 count);
 
 struct FileInfo
 {
@@ -22,7 +23,7 @@ struct FileHandle
 };
 
 FileHandle* get_file_handle(int fd);
-int register_file_handle(int fd, const char* path, ReadFunc* read, WriteFunc* write);
+u32 register_file_handle(int fd, const char* path, ReadFunc* read, WriteFunc* write);
 void close_file_handle(int fd);
 extern "C"
 int open(const char* filename, unsigned int mode);

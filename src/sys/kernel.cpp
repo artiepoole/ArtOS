@@ -14,8 +14,8 @@ void write_standard(const char* buffer, unsigned long len)
     // auto& term = Terminal::get();
     // term.write(buffer, len);
 
-    auto& log = Serial::get();
-    log.write(buffer, len);
+
+    WRITE(buffer, len);
 }
 
 void write_error(const char* buffer, unsigned long len)
@@ -24,8 +24,8 @@ void write_error(const char* buffer, unsigned long len)
     // auto& term = Terminal::get();
     // term.write(buffer, len, COLOR_RED);
 
-    auto& log = Serial::get();
-    log.write(buffer, len);
+
+    WRITE(buffer, len);
 }
 
 tm* get_time()
@@ -44,8 +44,8 @@ time_t get_epoch_time()
 extern "C"
 void _exit(int status)
 {
-    auto& log = Serial::get();
-    log.log("Exit status: ", status);
+
+    LOG("Exit status: ", status);
 }
 
 u32 get_clock_rate()

@@ -34,7 +34,7 @@ int find_free_handle()
     return ERR_TOO_MANY_FILES;
 }
 
-int register_file_handle(const int fd, const char* path, ReadFunc* read, WriteFunc* write)
+u32 register_file_handle(const int fd, const char* path, ReadFunc* read, WriteFunc* write)
 {
     if (handles[fd] != NULL)
     {

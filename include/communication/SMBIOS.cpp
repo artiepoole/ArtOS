@@ -41,8 +41,8 @@ smbios_t search_for_SMBIOS()
         /* Next 16-byte-aligned address */
         eps += 16;
     }
-    auto& log = Serial::get();
-    log.log(reinterpret_cast<u32>(eps));
+
+    LOG(reinterpret_cast<u32>(eps));
     smbios = reinterpret_cast<smbios_t*>(eps);
     return *smbios; // return a copy
 }
@@ -60,7 +60,7 @@ size_t find_real_len(smbios_header_t* hd)
 
 void SMBIOS_populate_cpu_info()
 {
-    auto& log = Serial::get();
+
     if (smbios == NULL)
     {
         search_for_SMBIOS();
@@ -73,7 +73,7 @@ void SMBIOS_populate_cpu_info()
 
         if (header->type == 4)
         {
-            log.log("header found at: ", reinterpret_cast<u32>(header));
+            LOG("header found at: ", reinterpret_cast<u32>(header));
             auto* processor_info = reinterpret_cast<smbios_processor_info_t*>(header);
             if (processor_info->processor_type == 3) // cpu
             {
@@ -81,7 +81,7 @@ void SMBIOS_populate_cpu_info()
             }
             else
             {
-                log.log("other processor type detected: ", processor_info->processor_type);
+                LOG("other processor type detected: ", processor_info->processor_type);
             }
         }
         // Go to next header

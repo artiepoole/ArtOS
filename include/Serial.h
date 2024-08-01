@@ -8,6 +8,17 @@
 #include "mystring.h"
 #include "types.h" // TODO: Use stdlib "string.h" instead.
 
+#pragma once
+#if ENABLE_LOGGING
+#define LOG(...) Serial::get().log(__VA_ARGS__)
+#define WRITE(...) Serial::get().write(__VA_ARGS__)
+#define NEWLINE() Serial::get().newLine()
+#else
+#define LOG(...)
+#define WRITE(...)
+#define NEWLINE()
+#endif
+
 #define PORT 0x3f8          // COM1
 
 class Serial
@@ -35,8 +46,8 @@ public:
     void write(const char* data);
     void write(const char* data, size_t len);
 
-    static int com_read(char* dest, unsigned long count);
-    static int com_write(const char* data, unsigned long count);
+    static u32 com_read(char* dest, u32 count);
+    static u32 com_write(const char* data, u32 count);
 
     void time_stamp();
 

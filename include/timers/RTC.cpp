@@ -17,8 +17,8 @@ u32 seconds_since_start = 0;
 
 RTC::RTC()
 {
-    auto& log = Serial::get();
-    log.write("Mon Jan 01 00:00:00 1970\tInitialising RTC\n");
+
+    WRITE("Mon Jan 01 00:00:00 1970\tInitialising RTC\n");
     instance = this;
     u8 flag = readRegister(CMOS_STATUS_B);
     // Set the clock to binary mode (more efficient) and 24 hour mode.
@@ -28,7 +28,7 @@ RTC::RTC()
     writeRegister(CMOS_STATUS_B, flag);
     read(); // also updates current time
     _setDivider(15); // also sets frequency
-    log.log("RTC initialised");
+    LOG("RTC initialised");
 }
 
 RTC::~RTC()
@@ -201,10 +201,10 @@ u32 RTC::_setDivider(u8 divider)
     //  0011b = 3 - 122 microseconds (minimum) // 8000 hz
     //  1111b = 15 - 500 milliseconds //
     //  0110b = 6 - 976.562 microseconds (default) // 1024 hz
-    auto& log = Serial::get();
+
 
     hz = 32768 >> (divider - 1);
-    log.log("Setting RTC divider. Divisor: ", static_cast<u16>(divider), " frequency: ", hz);
+    LOG("Setting RTC divider. Divisor: ", static_cast<u16>(divider), " frequency: ", hz);
     divider &= 0x0F; // rate must be above 2 and not over 15
     outb(CMOS_SELECT, CMOS_STATUS_A);
     const u8 prev = inb(CMOS_DATA); // get initial value of register A

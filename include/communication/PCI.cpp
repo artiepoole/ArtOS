@@ -78,8 +78,8 @@ u8 PCIDevice::sub_class()
 u8 PCIDevice::main_class()
 {
     u8 ret = config_readb(0xB);
-    // auto& log = Serial::get();
-    // log.log("ret", static_cast<u16>(ret));
+    //
+    // LOG("ret", static_cast<u16>(ret));
     return ret;
 }
 
@@ -106,10 +106,10 @@ u16 PCIDevice::subsystem()
 
 void PCIDevice::log_format()
 {
-    auto& log = Serial::get();
-    log.log("PCI device. Bus: ", static_cast<u16>(address.components.bus), " slot: ", static_cast<u16>(address.components.slot), " function: ", static_cast<u16>(address.components.function));
 
-    log.log("class: ", dev_types[main_class()], " subclass: ", static_cast<u16>(sub_class()), " vendor id: ", vendor_id());
+    LOG("PCI device. Bus: ", static_cast<u16>(address.components.bus), " slot: ", static_cast<u16>(address.components.slot), " function: ", static_cast<u16>(address.components.function));
+
+    LOG("class: ", dev_types[main_class()], " subclass: ", static_cast<u16>(sub_class()), " vendor id: ", vendor_id());
 }
 
 u8 PCIDevice::config_readb(const u8 offset)
