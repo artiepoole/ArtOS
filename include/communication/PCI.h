@@ -29,56 +29,8 @@ struct PCI_Address_t
 
 struct PCI_header_t
 {
-    union
-    {
-        struct
-        {
-            u16 vendor_id, device_id;
-        };
-        u32 reg0;
-    };
-    union
-    {
-        struct
-        {
-            u16 command, status;
-        };
-        u32 reg1;
-    };
-    union
-    {
-        struct
-        {
-            u8 revision_id, prog_IF, subclass, class_code;
-        };
-        u32 reg2;
-    };
-    union
-    {
-        struct
-        {
-            u8 cache_line_size,latency_timer, header_type, BIST;
-        };
-        u32 reg3;
-    };
-    u32 reg4, reg5, reg6, reg7, reg8, reg9, regA, regB, regC, regD, regE;
-    union
-    {
-        struct
-        {
-            u8 interrupt_line, interrupt_pin;
-            u16 half_reg_F;
-        };
-        u32 regF;
-    };
-
-};
-
-
-class PCIDevice
-{
-public:
-    PCIDevice(u8 bus, u8 slot, u8 func);
+    // Generic to all header types:
+    //
     // 0                   1                   2                   3
     // 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -90,6 +42,103 @@ public:
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     // |cache line size| latency timer |   header type |      bist     |
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    union
+    {
+        struct
+        {
+            u16 vendor_id;
+            u16 device_id;
+        };
+
+        u32 reg0;
+    };
+
+    union
+    {
+        struct
+        {
+            u16 command;
+            u16 status;
+        };
+
+        u32 reg1;
+    };
+
+    union
+    {
+        struct
+        {
+            u8 revision_id;
+            u8 prog_IF;
+            u8 subclass;
+            u8 class_code;
+        };
+
+        u32 reg2;
+    };
+
+    union
+    {
+        struct
+        {
+            u8 cache_line_size;
+            u8 latency_timer;
+            u8 header_type;
+            u8 BIST;
+        };
+
+        u32 reg3;
+    };
+
+    u32 reg4;
+    u32 reg5;
+    u32 reg6;
+    u32 reg7;
+    u32 reg8;
+    u32 reg9;
+    u32 regA;
+    u32 regB;
+    u32 regC;
+    u32 regD;
+    u32 regE;
+
+    union
+    {
+        struct
+        {
+            u8 interrupt_line;
+            u8 interrupt_pin;
+            u16 half_reg_F;
+        };
+
+        u32 regF;
+    };
+
+    // Only valid for device 2
+    union
+    {
+        struct
+        {
+            u16 subsystem_device_id;
+            u16 subsystem_vendor_id;
+        };
+
+        u32 reg10;
+    };
+
+    union
+    {
+        u32 legacy_mode_address;
+        u32 reg11;
+    };
+};
+
+
+class PCIDevice
+{
+public:
+    PCIDevice(u8 bus, u8 slot, u8 func);
+
 
     PCI_Address_t address{};
     u16 vendor;
@@ -152,12 +201,8 @@ public:
     // 16-bit PC Card legacy mode base address
 
 
-
-
-
     u8 min_grant() const;
     u8 max_latency() const;
-
 
 
     void log_format();
@@ -168,7 +213,6 @@ private:
     u8 config_readb(u8 offset);
     u16 config_readw(u8 offset);
     u32 config_read_register(u8 offset) const;
-
 };
 
 void PCI_list();

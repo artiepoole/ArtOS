@@ -65,7 +65,7 @@ PCI_header_t PCIDevice::populate_values() const
 {
     PCI_header_t local_header{};
     local_header.reg0 = config_read_register(0x0);
-    if (local_header.vendor_id != 0xFFFF)
+    if (local_header.vendor_id != 0xFFFF) // If the device does not exist, returns 0xFFFF
     {
         local_header.reg1 = config_read_register(0x4);
         local_header.reg2 = config_read_register(0x8);
@@ -82,6 +82,11 @@ PCI_header_t PCIDevice::populate_values() const
         local_header.regD = config_read_register(0x34);
         local_header.regE = config_read_register(0x38);
         local_header.regF = config_read_register(0x3C);
+    }
+    if (header_type() == 2)
+    {
+        local_header.reg10 = config_read_register(0x40);
+        local_header.reg11 = config_read_register(0x44);
     }
     return local_header;
 }
@@ -245,7 +250,7 @@ u16 PCIDevice::subsystem_vendor_id() const
     case 0:
         return static_cast<u16>(header.regB);
     case 2:
-        return static_cast<u16>(config_read_register(0x40) <<16);
+        return header.subsystem_vendor_id; // only populated specifically if header type is 2
     default:
         LOG("Invalid field 'subsystem vendor id' for header type: ", header_type());
         return 0;
