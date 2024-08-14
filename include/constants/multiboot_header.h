@@ -101,6 +101,6 @@ struct multiboot_header {
     u8 framebuffer_type;
     u8 color_info[5];
 };
-// __attribute__((section(".multiboot")));
+
 
 #endif

@@ -15,7 +15,7 @@
 // #include "malloc.c"
 
 #include "PCI.h"
-
+#include "multiboot2.h"
 #include "stdio.h"
 #include "CPUID.h"
 #include "RTC.h"
@@ -23,6 +23,7 @@
 #include "TSC.h"
 #include "SMBIOS.h"
 #include "EventQueue.h"
+#include "string.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -143,7 +144,6 @@ struct gdt_entry
 
 void get_GDT()
 {
-
     gdt_info gdt{};
     asm("sgdt %0" : "=m"(gdt));
     WRITE("GDT limit: ");
@@ -165,7 +165,6 @@ void get_GDT()
 
 u16 get_cs()
 {
-
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
     WRITE("CS: ");
@@ -176,7 +175,6 @@ u16 get_cs()
 
 u16 get_ds()
 {
-
     u16 i;
     asm("mov %%ds,%0" : "=r"(i));
     WRITE("DS: ");
@@ -205,16 +203,133 @@ extern int setGdt(u32 limit, u32 base);
 u8 modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
 
-
-
 extern "C"
-void kernel_main(const u32 /*stackPointer*/, const multiboot_header* multiboot_structure, const u32 /*multiboot_magic*/)
+void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 {
+        if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) // Should be 0x36d76289
+    {
+        // Invalid magic
+        return;
+    }
+
+    if (boot_info_addr & 7)
+    {
+        // misaligned MBI
+        return;
+    }
+
     auto log = Serial();
-    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     RTC rtc;
+    LOG("Populating boot info.");
+    artos_boot_header boot_info{};
+    // auto boot_info = reinterpret_cast<artos_boot_header*>(boot_info_addr);
+    auto start_address = reinterpret_cast<u8*>(boot_info_addr);
+    auto target_addr = reinterpret_cast<u8*>(boot_info_addr + 8);
+    u32 size = *reinterpret_cast<u32*>(start_address);
+    while (target_addr < (start_address + size))
+    {
+        auto tag = reinterpret_cast<multiboot2_tag*>(target_addr);
+        switch (tag->type)
+        {
+        case MULTIBOOT2_TAG_TYPE_BOOT_LOADER_NAME:
+            {
+                char buffer[tag->size-4];
+                // memcpy(buffer, target_addr+4, tag->size-4);
+                for (size_t i = 8; i < tag->size; i++)
+                {
+                    buffer[i-8] = *reinterpret_cast<char*>(target_addr+i);
+                }
+                log.time_stamp();
+                log.write("Boot info: bootloader name: ");
+                log.write(buffer);
+                log.newLine();
+                break;
+            }
+        case MULTIBOOT2_TAG_TYPE_APM:
+            LOG("Boot info: APM info loaded");
+            boot_info.apm = *reinterpret_cast<multiboot2_tag_apm*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_VBE:
+            LOG("Boot info: VBE info loaded");
+            boot_info.vbe = *reinterpret_cast<multiboot2_tag_vbe*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_LOAD_BASE_ADDR:
+            LOG("Boot info: base address loaded");
+            boot_info.base_addr = *reinterpret_cast<multiboot2_tag_load_base_addr*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_CMDLINE:
+            LOG("Boot info: cmdline loaded");
+            boot_info.cmd_info = *reinterpret_cast<multiboot2_tag_info_cmd_line*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_FRAMEBUFFER:
+            LOG("Boot info: framebuffer info loaded");
+            boot_info.framebuffer_common = *reinterpret_cast<multiboot2_tag_framebuffer_common*>(target_addr);
+            switch (boot_info.framebuffer_common.framebuffer_type)
+            {
+                case MULTIBOOT2_FRAMEBUFFER_TYPE_INDEXED:
+                    LOG("Framebuffer type: indexed");
+                    break;
+                case MULTIBOOT2_FRAMEBUFFER_TYPE_RGB:
+                    LOG("Framebuffer type: rgb");
+                    break;
+                case MULTIBOOT2_FRAMEBUFFER_TYPE_EGA_TEXT:
+                    LOG("Framebuffer type: ega text");
+                    break;
+                default:
+                    LOG("Framebuffer type unknown. Type: ", boot_info.framebuffer_common.framebuffer_type);
+            }
+            break;
+        case MULTIBOOT2_TAG_TYPE_ELF_SECTIONS:
+            LOG("Boot info: ELF info loaded");
+            boot_info.elf_sections = *reinterpret_cast<multiboot2_tag_elf_sections*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_ACPI_NEW:
+            LOG("Boot info: new ACPI info loaded");
+            boot_info.new_acpi = *reinterpret_cast<multiboot2_tag_new_acpi*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_ACPI_OLD:
+            LOG("Boot info: new ACPI info loaded");
+            boot_info.old_acpi = *reinterpret_cast<multiboot2_tag_old_acpi*>(target_addr);
+            // todo: This needs to store the ACPI tables which are contained.
+            break;
+        case MULTIBOOT2_TAG_TYPE_SMBIOS:
+            LOG("Boot info: SMBIOS info loaded");
+            boot_info.smbios = *reinterpret_cast<multiboot2_tag_smbios*>(target_addr);
+            // todo: need to actually get the smbios data. Getting grub errors. This needs to store the SMBIOS tables which are contained.
+            break;
+        case MULTIBOOT2_TAG_TYPE_BOOTDEV:
+            LOG("Boot info: boot device info loaded");
+            boot_info.bootdev = *reinterpret_cast<multiboot2_tag_bootdev*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_BASIC_MEMINFO:
+            LOG("Boot info: memory info loaded");
+            boot_info.meminfo = *reinterpret_cast<multiboot2_tag_basic_meminfo*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_MMAP:
+            LOG("Boot info: memory map info loaded");
+            boot_info.mmap = *reinterpret_cast<multiboot2_tag_mmap*>(target_addr);
+            break;
+        case MULTIBOOT2_TAG_TYPE_END:
+            LOG("Boot info: done loading boot info.");
+            break;
+        default:
+            LOG("Boot info: unhandled tag with id: ", tag->type);
+            break;
+        }
+        // Next tag is always 8 bytes aligned (64-bit boundary)
+        if (tag->size % 8 == 0)
+            target_addr += tag->size;
+        else
+        {
+            target_addr += tag->size + (8 - (tag->size % 8));
+        }
+    }
+
+
+
+    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     EventQueue events;
-    VideoGraphicsArray vga(multiboot_structure, frame_buffer);
+    VideoGraphicsArray vga(boot_info.framebuffer_common, frame_buffer);
     Terminal terminal;
     PIC pic;
     IDT idt;

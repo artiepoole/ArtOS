@@ -3,9 +3,9 @@
 GRUB_SRC="../include/grub.cfg"
 DOOMWAD_SRC="../res/doomwad/doom1.wad"
 
-if grub-file --is-x86-multiboot ArtOS.bin; then
+if grub-file --is-x86-multiboot2 ArtOS.bin; then
   if test -f $GRUB_SRC; then
-    echo multiboot confirmed
+    echo multiboot2 confirmed
     mkdir -p isodir/boot/grub
     mkdir -p isodir/fs
     cp ArtOS.bin isodir/boot/ArtOS.bin
@@ -18,7 +18,7 @@ if grub-file --is-x86-multiboot ArtOS.bin; then
     exit 1
   fi
 else
-  echo the file is not multiboot
+  echo the file is not multiboot2
   exit 1
 fi
 

@@ -34,14 +34,13 @@ As the is no memory management the Offscreen buffer is allocated elsewhere and p
 This class could be re-worked as a Canvas with out to many changes */
 
 
-VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32* buffer)
+VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common& info, u32* buffer)
 {
-    [[maybe_unused]]
     LOG("Initialising VGA.");
     instance = this;
-    width = boot_header->framebuffer_width;
-    height = boot_header->framebuffer_height;
-    _screen = reinterpret_cast<u32*>(boot_header->framebuffer_addr);
+    width = info.framebuffer_width;
+    height = info.framebuffer_height;
+    _screen = reinterpret_cast<u32*>(info.framebuffer_addr);
 
     _buffer = buffer;
 

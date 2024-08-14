@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef __MYOS__DRIVERS__VGA_H
 #define __MYOS__DRIVERS__VGA_H
 
-#include "multiboot_header.h"
+#include "multiboot2.h"
 #include "types.h"
 
 
@@ -47,7 +47,7 @@ private:
     window_t _screen_region{};
 
 public:
-    VideoGraphicsArray(const multiboot_header* boot_header, u32* buffer);
+    VideoGraphicsArray(const multiboot2_tag_framebuffer_common& info, u32* buffer);
     ~VideoGraphicsArray();
     static VideoGraphicsArray& get();
 
@@ -63,7 +63,7 @@ public:
     void clearBuffer() const;
     void drawSplash() const;
     void draw_region(const u32* buffer_to_draw) const;
-    [[nodiscard]] window_t * getScreen();
+    [[nodiscard]] window_t* getScreen();
 
 
     // Font Definition

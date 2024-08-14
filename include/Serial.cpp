@@ -27,6 +27,8 @@ Serial::Serial()
     // If serial is not faulty set it in normal operation mode
     // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
     outb(PORT + 4, 0x0F);
+    connected = true;
+    write("Serial Connected\n");
 }
 
 
