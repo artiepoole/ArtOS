@@ -1,4 +1,24 @@
+/*   Copyright (C) 1999,2003,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to
+ *  deal in the Software without restriction, including without limitation the
+ *  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ *  sell copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL ANY
+ *  DEVELOPER OR DISTRIBUTOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+ *  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
+/* Modified by Artie Poole on 14/08/2024 */
 
 #ifndef MULTIBOOT2_HEADER
 #define MULTIBOOT2_HEADER 1
@@ -227,7 +247,7 @@ struct multiboot2_tag_mmap
     multiboot2_uint32_t size;
     multiboot2_uint32_t entry_size;
     multiboot2_uint32_t entry_version;
-    struct multiboot2_mmap_entry entries[0];
+    struct multiboot2_mmap_entry* entries;
 };
 
 struct multiboot2_vbe_info_block
@@ -280,7 +300,7 @@ struct multiboot2_tag_framebuffer
         struct
         {
             multiboot2_uint16_t framebuffer_palette_num_colors;
-            struct multiboot2_color framebuffer_palette[0];
+            struct multiboot2_color* framebuffer_palette;
         };
 
         struct
@@ -302,7 +322,7 @@ struct multiboot2_tag_elf_sections
     multiboot2_uint32_t num;
     multiboot2_uint32_t entsize;
     multiboot2_uint32_t shndx;
-    char sections[0];
+    char* sections;
 };
 
 struct multiboot2_tag_apm
@@ -341,28 +361,37 @@ struct multiboot2_tag_smbios
     multiboot2_uint8_t major;
     multiboot2_uint8_t minor;
     multiboot2_uint8_t reserved[6];
-    multiboot2_uint8_t tables[0];
+    multiboot2_uint32_t* tables;
 };
+
+struct RSDP_v1
+{
+    char Signature[8];
+    multiboot2_uint8_t Checksum;
+    char OEMID[6];
+    multiboot2_uint8_t Revision;
+    multiboot2_uint32_t* RsdtAddress;
+} __attribute__ ((packed));
 
 struct multiboot2_tag_old_acpi
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
-    multiboot2_uint8_t rsdp[0];
+    RSDP_v1 rsdp;
 };
 
 struct multiboot2_tag_new_acpi
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
-    multiboot2_uint8_t rsdp[0];
+    multiboot2_uint32_t* rsdp;
 };
 
 struct multiboot2_tag_network
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
-    multiboot2_uint8_t dhcpack[0];
+    multiboot2_uint32_t* dhcpack;
 };
 
 struct multiboot2_tag_efi_mmap
@@ -371,14 +400,14 @@ struct multiboot2_tag_efi_mmap
     multiboot2_uint32_t size;
     multiboot2_uint32_t descr_size;
     multiboot2_uint32_t descr_vers;
-    multiboot2_uint8_t efi_mmap[0];
+    multiboot2_uint32_t* efi_mmap;
 };
 
 struct multiboot2_tag_efi32_ih
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
-    multiboot2_uint32_t pointer;
+    multiboot2_uint32_t* pointer;
 };
 
 struct multiboot2_tag_efi64_ih
@@ -403,6 +432,7 @@ struct multiboot2_tag_info_cmd_line
 
 };
 
+
 struct artos_boot_header
 {
     multiboot2_tag_load_base_addr base_addr;
@@ -418,6 +448,11 @@ struct artos_boot_header
     multiboot2_tag_apm apm;
     multiboot2_tag_vbe vbe;
 };
+
+artos_boot_header* multiboot2_populate(multiboot2_uint32_t boot_info_address);
+multiboot2_uint32_t multiboot2_get_APIC_address();
+multiboot2_uint32_t multiboot2_get_MADT_table_address();
+multiboot2_tag_framebuffer_common* multiboot2_get_framebuffer();
 
 #endif /*  ! ASM_FILE */
 

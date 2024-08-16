@@ -14,6 +14,7 @@
 // #include "stdlib.h"
 // #include "malloc.c"
 
+#include "ACPI.h"
 #include "PCI.h"
 #include "multiboot2.h"
 #include "stdio.h"
@@ -36,10 +37,6 @@
 #endif
 
 
-VideoGraphicsArray* vgap;
-#define width 1024 // hard coded - not good please change
-#define height 768 // hard coded - not good please change
-u32 frame_buffer[width * height];
 
 
 template <typename int_like>
@@ -78,50 +75,6 @@ void print_hex(const int_like val)
 {
     auto& terminal = Terminal::get();
     terminal.write(val, true);
-}
-
-void print_multiboot_header_info(const u32 stackPointer, const multiboot_header* multiboot_structure)
-{
-    printf("multiboot_structure    : 0x", (int)multiboot_structure);
-    printf("stackPointer           : 0x", stackPointer);
-    printf("screen buffer          : 0x", (int)frame_buffer);
-    printf("screen buffer[1024*768]: 0x", (int)&frame_buffer[1024 * 768]);
-    // printf("FONT                   : 0x", *FONT);
-    printf("buffer size            : 0x", 1024 * 768 * 4);
-    printf("vga                    : 0x", (int)vgap);
-
-    //    printf("multiboot_header
-    printf("u32 flags              : 0x", (int)multiboot_structure->flags);
-    printf("u32 mem_lower          : 0x", (int)multiboot_structure->mem_lower);
-    printf("u32 mem_upper          : 0x", (int)multiboot_structure->mem_upper);
-    printf("u32 boot_device        : 0x", (int)multiboot_structure->boot_device);
-    printf("u32 cmdline            : 0x", (int)multiboot_structure->cmdline);
-    printf("u32 mods_count         : 0x", (int)multiboot_structure->mods_count);
-    printf("u32 mods_addr          : 0x", (int)multiboot_structure->mods_addr);
-    printf("u32 syms1              : 0x", (int)multiboot_structure->syms1);
-    printf("u32 syms2              : 0x", (int)multiboot_structure->syms2);
-    printf("u32 syms3              : 0x", (int)multiboot_structure->syms3);
-    printf("u32 mmap_length        : 0x", (int)multiboot_structure->mmap_length);
-    printf("u32 mmap_addr          : 0x", (int)multiboot_structure->mmap_addr);
-    printf("u32 drives_length      : 0x", (int)multiboot_structure->drives_length);
-    printf("u32 drives_addr        : 0x", (int)multiboot_structure->drives_addr);
-    printf("u32 config_table       : 0x", (int)multiboot_structure->config_table);
-    printf("u32 boot_loader_name   : 0x", (int)multiboot_structure->boot_loader_name);
-    printf("u32 apm_table          : 0x", (int)multiboot_structure->apm_table);
-    printf("u32 vbe_control_info   : 0x", (int)multiboot_structure->vbe_control_info);
-    printf("u32 vbe_mode_info      : 0x", (int)multiboot_structure->vbe_mode_info);
-    printf("u16 vbe_mode           : 0x", (int)multiboot_structure->vbe_mode);
-    printf("u16 vbe_interface_seg  : 0x", (int)multiboot_structure->vbe_interface_seg);
-    printf("u32 vbe_interface_off  : 0x", (int)multiboot_structure->vbe_interface_off);
-    printf("u32 vbe_interface_len  : 0x", (int)multiboot_structure->vbe_interface_len);
-    printf("u64 framebuffer_addr   : 0x", (long)multiboot_structure->framebuffer_addr);
-    printf("u32 framebuffer_pitch  : 0x", (int)multiboot_structure->framebuffer_pitch);
-
-    printf("u32 framebuffer_width  : 0x", (int)multiboot_structure->framebuffer_width);
-    printf("u32 framebuffer_height : 0x", (int)multiboot_structure->framebuffer_height);
-    printf("u8 framebuffer_bpp     : 0x", (int)multiboot_structure->framebuffer_bpp);
-    printf("u8 framebuffer_type    : 0x", (int)multiboot_structure->framebuffer_type);
-    printf("u8 color_info[5]       : 0x", (int)multiboot_structure->color_info);
 }
 
 
@@ -183,15 +136,10 @@ u16 get_ds()
     return i;
 }
 
-// void test_writing_print_numbers()
-// {
-//     for (size_t i = 0; i < 50; i++)
-//     {
-//         // get_cs();
-//         print_int(i);
-//         print_string("\n");
-//     }
-// }
+void process_events(EventQueue events)
+{
+
+}
 
 extern u32 DATA_CS;
 extern u32 TEXT_CS;
@@ -199,14 +147,14 @@ extern int setGdt(u32 limit, u32 base);
 /**
  *
  */
-
-u8 modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
+// VideoGraphicsArray* vgap;
+u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
 
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 {
-        if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) // Should be 0x36d76289
+    if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) // Should be 0x36d76289
     {
         // Invalid magic
         return;
@@ -218,118 +166,20 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         return;
     }
 
+    // Get logging and timestamping running asap
     auto log = Serial();
     RTC rtc;
+
+    // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
-    artos_boot_header boot_info{};
-    // auto boot_info = reinterpret_cast<artos_boot_header*>(boot_info_addr);
-    auto start_address = reinterpret_cast<u8*>(boot_info_addr);
-    auto target_addr = reinterpret_cast<u8*>(boot_info_addr + 8);
-    u32 size = *reinterpret_cast<u32*>(start_address);
-    while (target_addr < (start_address + size))
-    {
-        auto tag = reinterpret_cast<multiboot2_tag*>(target_addr);
-        switch (tag->type)
-        {
-        case MULTIBOOT2_TAG_TYPE_BOOT_LOADER_NAME:
-            {
-                char buffer[tag->size-4];
-                // memcpy(buffer, target_addr+4, tag->size-4);
-                for (size_t i = 8; i < tag->size; i++)
-                {
-                    buffer[i-8] = *reinterpret_cast<char*>(target_addr+i);
-                }
-                log.time_stamp();
-                log.write("Boot info: bootloader name: ");
-                log.write(buffer);
-                log.newLine();
-                break;
-            }
-        case MULTIBOOT2_TAG_TYPE_APM:
-            LOG("Boot info: APM info loaded");
-            boot_info.apm = *reinterpret_cast<multiboot2_tag_apm*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_VBE:
-            LOG("Boot info: VBE info loaded");
-            boot_info.vbe = *reinterpret_cast<multiboot2_tag_vbe*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_LOAD_BASE_ADDR:
-            LOG("Boot info: base address loaded");
-            boot_info.base_addr = *reinterpret_cast<multiboot2_tag_load_base_addr*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_CMDLINE:
-            LOG("Boot info: cmdline loaded");
-            boot_info.cmd_info = *reinterpret_cast<multiboot2_tag_info_cmd_line*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_FRAMEBUFFER:
-            LOG("Boot info: framebuffer info loaded");
-            boot_info.framebuffer_common = *reinterpret_cast<multiboot2_tag_framebuffer_common*>(target_addr);
-            switch (boot_info.framebuffer_common.framebuffer_type)
-            {
-                case MULTIBOOT2_FRAMEBUFFER_TYPE_INDEXED:
-                    LOG("Framebuffer type: indexed");
-                    break;
-                case MULTIBOOT2_FRAMEBUFFER_TYPE_RGB:
-                    LOG("Framebuffer type: rgb");
-                    break;
-                case MULTIBOOT2_FRAMEBUFFER_TYPE_EGA_TEXT:
-                    LOG("Framebuffer type: ega text");
-                    break;
-                default:
-                    LOG("Framebuffer type unknown. Type: ", boot_info.framebuffer_common.framebuffer_type);
-            }
-            break;
-        case MULTIBOOT2_TAG_TYPE_ELF_SECTIONS:
-            LOG("Boot info: ELF info loaded");
-            boot_info.elf_sections = *reinterpret_cast<multiboot2_tag_elf_sections*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_ACPI_NEW:
-            LOG("Boot info: new ACPI info loaded");
-            boot_info.new_acpi = *reinterpret_cast<multiboot2_tag_new_acpi*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_ACPI_OLD:
-            LOG("Boot info: new ACPI info loaded");
-            boot_info.old_acpi = *reinterpret_cast<multiboot2_tag_old_acpi*>(target_addr);
-            // todo: This needs to store the ACPI tables which are contained.
-            break;
-        case MULTIBOOT2_TAG_TYPE_SMBIOS:
-            LOG("Boot info: SMBIOS info loaded");
-            boot_info.smbios = *reinterpret_cast<multiboot2_tag_smbios*>(target_addr);
-            // todo: need to actually get the smbios data. Getting grub errors. This needs to store the SMBIOS tables which are contained.
-            break;
-        case MULTIBOOT2_TAG_TYPE_BOOTDEV:
-            LOG("Boot info: boot device info loaded");
-            boot_info.bootdev = *reinterpret_cast<multiboot2_tag_bootdev*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_BASIC_MEMINFO:
-            LOG("Boot info: memory info loaded");
-            boot_info.meminfo = *reinterpret_cast<multiboot2_tag_basic_meminfo*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_MMAP:
-            LOG("Boot info: memory map info loaded");
-            boot_info.mmap = *reinterpret_cast<multiboot2_tag_mmap*>(target_addr);
-            break;
-        case MULTIBOOT2_TAG_TYPE_END:
-            LOG("Boot info: done loading boot info.");
-            break;
-        default:
-            LOG("Boot info: unhandled tag with id: ", tag->type);
-            break;
-        }
-        // Next tag is always 8 bytes aligned (64-bit boundary)
-        if (tag->size % 8 == 0)
-            target_addr += tag->size;
-        else
-        {
-            target_addr += tag->size + (8 - (tag->size % 8));
-        }
-    }
+    artos_boot_header *boot_info = multiboot2_populate(boot_info_addr);
+    multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
+    populate_madt(multiboot2_get_MADT_table_address());
 
-
-
+    // then load the rest of the singleton classes.
     WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     EventQueue events;
-    VideoGraphicsArray vga(boot_info.framebuffer_common, frame_buffer);
+    VideoGraphicsArray vga(frame_info);
     Terminal terminal;
     PIC pic;
     IDT idt;
@@ -386,18 +236,18 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                         {
                         case '*': // shift bit 0
                             {
-                                modifiers &= 0b1110; // not 0100
+                                keyboard_modifiers &= 0b1110; // not 0100
                                 break;
                             }
 
                         case '^': // ctrl bit 1
                             {
-                                modifiers &= 0b1101; // not 0010
+                                keyboard_modifiers &= 0b1101; // not 0010
                                 break;
                             }
                         case '!': // alt bit 2
                             {
-                                modifiers &= 0b1011; // not 0001
+                                keyboard_modifiers &= 0b1011; // not 0001
                                 break;
                             }
                         default:
@@ -407,7 +257,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                         }
                     }
 
-                    // todo: Add a line byffer and parsing to inputs on enter.
+                    // todo: Add a line buffer and parsing to inputs on enter.
                     // todo: Add an key handler which deals with modifier keys
                     // todo: handle backspace
                     // todo: write an actual terminal class.
@@ -438,18 +288,18 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                             }
                         case '^': // ctrl bit 1
                             {
-                                modifiers |= 0b0010;
+                                keyboard_modifiers |= 0b0010;
                                 break;
                             }
                         case '*': // shift bit 0
                             {
-                                modifiers |= 0b0001;
-                                // print("Shift pressed", modifiers);
+                                keyboard_modifiers |= 0b0001;
+                                // print("Shift pressed", keyboard_modifiers);
                                 break;
                             }
                         case '!': // alt bit 2
                             {
-                                modifiers |= 0b0100;
+                                keyboard_modifiers |= 0b0100;
                                 break;
                             }
                         case 'H': // Home
@@ -484,19 +334,19 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                             }
                         case 'C': // capital C meaning caps lock
                             {
-                                modifiers ^= 0b1000;
+                                keyboard_modifiers ^= 0b1000;
                                 break;
                             }
                         default:
                             {
                                 bool is_alpha = (key >= 97 && key <= 122);
-                                if (modifiers & 0b1000) // caps lock enabled
+                                if (keyboard_modifiers & 0b1000) // caps lock enabled
                                     if (is_alpha) // alphanumeric keys get shifted to caps
                                     {
                                         terminal.write(shift_map[cin]);
                                         break;
                                     }
-                                if ((modifiers & 0b0001)) // shift is down or capslock is on
+                                if ((keyboard_modifiers & 0b0001)) // shift is down or capslock is on
                                 {
                                     terminal.write(shift_map[cin]);
                                     break;
@@ -535,7 +385,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // todo: Create string handling to concatenate strings and print them more easily
     // todo: restructure code to have the graphics stuff handled in a different file with only printf handled in
     // main.cpp
-    // todo: add data to the data section contianing the splash screen
+    // todo: add data to the data section containing the splash screen
     // Todo: implement user typing from keyboard inputs
     // Todo: automate the build process
 }

@@ -10,13 +10,16 @@
 
 #pragma once
 #if ENABLE_LOGGING
+
 #define LOG(...) Serial::get().log(__VA_ARGS__)
 #define WRITE(...) Serial::get().write(__VA_ARGS__)
 #define NEWLINE() Serial::get().newLine()
+#define TIMESTAMP Serial::get().time_stamp()
 #else
 #define LOG(...)
 #define WRITE(...)
 #define NEWLINE()
+#define TIMESTAMP
 #endif
 
 #define PORT 0x3f8          // COM1

@@ -206,6 +206,7 @@ void Terminal::write(const char c, const u32 color)
 
 void Terminal::_scroll()
 {
+    // TODO: use px_x and px_y or row/column for this stuff and throughout the file for legibility reasons..
     // auto& vga = VideoGraphicsArray::get();
     // vga.clearWindow();
     for (size_t x = 0; x < buffer_width; x++)

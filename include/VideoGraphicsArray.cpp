@@ -22,6 +22,9 @@ Basic graphics utility methods
 */
 
 #include "VideoGraphicsArray.h"
+
+#include "stdlib.h"
+
 #include "splash_screen.h"
 #include "Serial.h"
 
@@ -33,16 +36,17 @@ As the is no memory management the Offscreen buffer is allocated elsewhere and p
 
 This class could be re-worked as a Canvas with out to many changes */
 
+u32* buffer;
 
-VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common& info, u32* buffer)
+VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info)
 {
     LOG("Initialising VGA.");
     instance = this;
-    width = info.framebuffer_width;
-    height = info.framebuffer_height;
-    _screen = reinterpret_cast<u32*>(info.framebuffer_addr);
+    width = framebuffer_info->framebuffer_width;
+    height = framebuffer_info->framebuffer_height;
+    _screen = reinterpret_cast<u32*>(framebuffer_info->framebuffer_addr);
 
-    _buffer = buffer;
+    _buffer = static_cast<u32*>(malloc(width * height * sizeof(u32)));
 
     // initialiase to 0
     for (u32 i = 0; i < (width * (height)); i++)

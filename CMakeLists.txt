@@ -16,8 +16,8 @@ file(GLOB INCLUDE
         "include/*.s"
         "include/timers/*.h"
         "include/timers/*.cpp"
-        "include/communication/*.h"
-        "include/communication/*.cpp"
+        "include/device_info/*.h"
+        "include/device_info/*.cpp"
         "include/constants/*.h"
         "include/constants/*.cpp"
 )
@@ -33,13 +33,14 @@ add_subdirectory(pdclib)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.S src/main.cpp
         ${INCLUDE} ${KERNEL}
+        include/device_info/ACPI.h
 )
 
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
         include
         include/timers
-        include/communication/
+        include/device_info/
         include/constants
         src
         src/sys

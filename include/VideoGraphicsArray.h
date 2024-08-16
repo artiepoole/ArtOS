@@ -47,7 +47,7 @@ private:
     window_t _screen_region{};
 
 public:
-    VideoGraphicsArray(const multiboot2_tag_framebuffer_common& info, u32* buffer);
+    VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info);
     ~VideoGraphicsArray();
     static VideoGraphicsArray& get();
 

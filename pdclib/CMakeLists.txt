@@ -270,7 +270,7 @@ set( PDCLIB_HEADERS
 
 file(GLOB KERNEL
         "../include/*.h"
-        "../include/communication/*.h"
+        "../include/device_info/*.h"
         "../include/constants/*.h"
         "../include/timers/*.h"
         "../src/sys/*.h"
@@ -325,7 +325,7 @@ target_include_directories(pdclib PUBLIC
         ../src/sys
         ../include
         ../include/timers
-        ../include/communication
+        ../include/device_info
         ../include/constants
 
 )
