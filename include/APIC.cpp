@@ -134,20 +134,42 @@ void IOAPIC::resume()
 void IOAPIC::remapIRQ(const u8 irq_before, const u8 irq_after)
 {
     io_redirect_entry data{};
-    for (size_t i = 0; i < 3; i++)
-    {
-        data.lvt.interrupt_mask = false;
-        data.lvt.interrupt_vector = irq_after;
-        *base_addr = (0x10 + irq_before*2);
-        *data_addr = data.lower;
-        *base_addr = (0x10 +  irq_before*2+1);
-        *data_addr = 0; // in our case, upper always 0
-        redirect_entries[i] = data;
-    }
+    // load the previous entry, ensuring it is populated.
+    *base_addr = (0x10 + irq_before*2);
+    data.lower = *data_addr;
+    *base_addr = (0x10 + irq_before*2+1);
+    data.upper = *data_addr ;
+    // change settings
+    data.lvt.interrupt_mask = false;
+    data.lvt.interrupt_vector = irq_after;
+    // apply settings
+    *base_addr = (0x10 + irq_before*2);
+    *data_addr = data.lower;
+    *base_addr = (0x10 +  irq_before*2+1);
+    *data_addr = 0; // in our case, upper always 0
+    redirect_entries[irq_before] = data;
 }
 
-void disableIRQ(u8 irq_id)
+
+void IOAPIC::disableIRQ(const u8 irq_before)
 {
+    if (redirect_entries[irq_before].lvt.interrupt_mask == true) return;
+
+    io_redirect_entry data{};
+    // load the previous entry, ensuring it is populated.
+    *base_addr = (0x10 + irq_before*2);
+    data.lower = *data_addr;
+    *base_addr = (0x10 + irq_before*2+1);
+    data.upper = *data_addr ;
+    // change settings
+    data.lvt.interrupt_mask = true;
+    // write out data
+    *base_addr = (0x10 + irq_before*2);
+    *data_addr = data.lower;
+    *base_addr = (0x10 +  irq_before*2+1);
+    *data_addr = data.upper; // in our case, upper always 0
+    // store for lookup
+    redirect_entries[irq_before] = data;
 }
 
 void enableAll()

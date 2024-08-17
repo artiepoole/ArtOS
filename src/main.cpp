@@ -171,7 +171,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
-    artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
+    [[nodiscard]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
     full_madt_t* full_madt = populate_madt(multiboot2_get_MADT_table_address());
     [[nodiscard]] LocalAPIC local_apic(full_madt->madt_stub->local_apic_address);
@@ -198,6 +198,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // pic.enableIRQ(1); // Keyboard interrupts
     // pic.enableIRQ(2); // Enable secondary PIC to raise interrupts
     // pic.enableIRQ(8); // RTC interrupts
+
     io_apic.remapIRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
     io_apic.remapIRQ(1, 33); // Keyboard
     io_apic.remapIRQ(8, 40); // RTC todo: not working.
@@ -290,6 +291,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                             }
                         case '\t': // tab
                             {
+                                LOG("TAB");
                                 terminal.write("    ");
                                 break;
                             }
