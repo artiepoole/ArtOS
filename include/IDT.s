@@ -143,6 +143,7 @@ irq_stub 44 // IRQ12
 irq_stub 45 // IRQ13
 irq_stub 46 // IRQ14
 irq_stub 47 // IRQ15
+irq_stub 255 // IRQ16 - spurious
 
 
 
@@ -197,3 +198,4 @@ isr_stub_table:
     .long isr_stub_45
     .long isr_stub_46
     .long isr_stub_47
+    .long isr_stub_255

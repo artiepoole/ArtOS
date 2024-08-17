@@ -6,6 +6,8 @@
 #include "multiboot2.h"
 #include "Serial.h"
 #include "ACPI.h"
+#include "stdlib.h"
+#include "string.h"
 
 
 artos_boot_header boot_info{};
@@ -103,6 +105,11 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
         case MULTIBOOT2_TAG_TYPE_MMAP:
             LOG("Boot info: memory map info loaded");
             boot_info.mmap = *reinterpret_cast<multiboot2_tag_mmap*>(target_addr);
+            for (size_t i = 0; i < 6; i++)
+            {
+                boot_info.mmap.entries[i] = reinterpret_cast<multiboot2_mmap_entry*>(target_addr + 16 + (i * sizeof(multiboot2_mmap_entry)));
+            }
+
             break;
         case MULTIBOOT2_TAG_TYPE_END:
             LOG("Boot info: done loading boot info.");
@@ -119,7 +126,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
             target_addr += tag->size + (8 - (tag->size % 8));
         }
     }
-    return & boot_info;
+    return &boot_info;
 }
 
 /*
@@ -127,12 +134,12 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
  */
 u32 multiboot2_get_APIC_address()
 {
-    return reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt->apicAddress;
+    return reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt_stub->local_apic_address;
 }
 
 u32 multiboot2_get_MADT_table_address()
 {
-    return reinterpret_cast<u32>(reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt);
+    return reinterpret_cast<u32>(reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt_stub);
 }
 
 /*

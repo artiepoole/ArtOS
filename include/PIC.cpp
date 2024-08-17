@@ -48,7 +48,7 @@ PIC::PIC()
     outb(PIC2_DATA, 0xFF); // Output mask - disable pic
 }
 
-void PIC::disable()
+void PIC::pause_PIC()
 {
 
     WRITE("Disabled PIC");
@@ -58,7 +58,7 @@ void PIC::disable()
     outb(PIC2_DATA, 0xff);
 }
 
-void PIC::enable()
+void PIC::resume_PIC()
 {
 
     WRITE("Renabled PIC");
@@ -149,4 +149,18 @@ void PIC::enableAll()
     mask2 = 0x00;
     outb(PIC1_DATA, 0x00);
     outb(PIC2_DATA, 0x00);
+}
+
+void PIC::disable_entirely()
+{
+    outb(PIC1, 0x11);
+    outb(PIC2, 0x11);
+    outb(PIC1_DATA, 0x20);
+    outb(PIC2_DATA, 0x28);
+    outb(PIC1_DATA, 0x2);
+    outb(PIC2_DATA, 0x4);
+    outb(PIC1_DATA, 0x01);
+    outb(PIC2_DATA, 0x01);
+    outb(PIC1_DATA, 0xFF);
+    outb(PIC2_DATA, 0xFF);
 }

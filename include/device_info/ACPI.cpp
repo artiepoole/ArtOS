@@ -5,18 +5,18 @@
 #include "ACPI.h"
 #include "Serial.h"
 
-full_madt madt ={};
+full_madt_t madt ={};
 
 /*
  *  Must start at the original MADT entry point with signature APIC as this is the only place that describes the total length of the APIC entries.
  */
-void populate_madt(const u32 madt_location)
+full_madt_t* populate_madt(const u32 madt_location)
 {
-    madt.madt = reinterpret_cast<MADT*>(madt_location);
+    madt.madt_stub = reinterpret_cast<MADT_stub*>(madt_location);
     const auto start_address = reinterpret_cast<u8*>(madt_location);
     u8* current_address = start_address + 0x2C; // first tag is at this offset
     size_t iso_index = 0;
-    const u32 size = reinterpret_cast<MADT*>(madt_location)->h.Length;
+    const u32 size = reinterpret_cast<MADT_stub*>(madt_location)->h.Length;
     while (current_address < start_address + size)
     {
         const auto tag = reinterpret_cast<apic_madt_entry_header*>(current_address);
@@ -51,5 +51,6 @@ void populate_madt(const u32 madt_location)
     }
 
     // madt = reinterpret_cast<full_madt*>(reinterpret_cast<u8*>(madt_location));
+    return &madt;
     LOG("MADT popualted");
 }

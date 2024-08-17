@@ -3,12 +3,16 @@
 //
 
 #include "IDT.h"
+
+#include <APIC.h>
+
 #include "PIT.h"
 #include "RTC.h"
 #include "EventQueue.h"
 #include "Serial.h"
 #include "ports.h"
 #include <stdint.h>
+
 
 // todo: move some of this stuff to an "interrupts.cpp" or similar.
 struct idt_entry_t
@@ -167,7 +171,7 @@ void irq_handler(const cpu_registers_t* r)
     /*
         0 	Programmable Interrupt Timer Interrupt
         1 	Keyboard Interrupt
-        2 	Cascade (used internally by the two PICs. never raised)
+        2 	Cascade (used internally by the two PICs. never raised) or timer redirect in APIC
         3 	COM2 (if enabled)
         4 	COM1 (if enabled)
         5 	LPT2 (if enabled)
@@ -181,6 +185,7 @@ void irq_handler(const cpu_registers_t* r)
         13 	FPU / Coprocessor / Inter-processor
         14 	Primary ATA Bus
         15 	Secondary ATA Bus
+        255-32  Spurious APIC
     */
     // register_to_serial(r);
 
@@ -188,6 +193,7 @@ void irq_handler(const cpu_registers_t* r)
 
     if (int_no >= 32)
     {
+
         switch (int_no - 32)
         {
         case 0:
@@ -199,7 +205,11 @@ void irq_handler(const cpu_registers_t* r)
         case 4:
             break;
         case 8:
+            LOG("RTC INT");
             rtc_handler();
+            break;
+        case 223:
+            LOG("Spurious Interrupt");
             break;
         default:
             LOG("unhandled IRQ: ", int_no);
@@ -207,17 +217,18 @@ void irq_handler(const cpu_registers_t* r)
         }
     }
 
-    /* If the IDT entry that was invoked was greater than 40
-    *  (meaning IRQ8 - 15), then we need to send an EOI to
-    *  the slave controller */
-    if (int_no >= 40)
-    {
-        outb(PIC2_COMMAND, PIC_EOI);
-    }
-
-    /* In either case, we need to send an EOI to the master
-    *  interrupt controller too */
-    outb(PIC1_COMMAND, PIC_EOI);
+    // /* If the IDT entry that was invoked was greater than 40
+    // *  (meaning IRQ8 - 15), then we need to send an EOI to
+    // *  the slave controller */
+    // if (int_no >= 40)
+    // {
+    //     outb(PIC2_COMMAND, PIC_EOI);
+    // }
+    //
+    // /* In either case, we need to send an EOI to the master
+    // *  interrupt controller too */
+    // outb(PIC1_COMMAND, PIC_EOI);
+    LAPIC_EOI();
 }
 
 

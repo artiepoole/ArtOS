@@ -99,10 +99,10 @@ struct FADT
 };
 
 
-struct MADT
+struct MADT_stub
 {
     ACPISDTHeader h;
-    u32 apicAddress;
+    u32 local_apic_address;
     u32 flags;
 };
 
@@ -110,7 +110,7 @@ struct RSDT
 {
     ACPISDTHeader h;
     FADT* facp;
-    MADT* madt;
+    MADT_stub* madt_stub;
 };
 
 struct apic_madt_entry_header
@@ -177,9 +177,9 @@ struct local_apic_source_address_override_entry
     u64 local_apic_address;
 };
 
-struct full_madt
+struct full_madt_t
 {
-    MADT *madt;
+    MADT_stub *madt_stub;
     u64 pad1;
     u32 pad2;
     local_apic_entry local_apic;
@@ -188,6 +188,6 @@ struct full_madt
 };
 
 
-void populate_madt(u32 madt_location);
+full_madt_t* populate_madt(u32 madt_location);
 
 #endif //ACPI_H

@@ -96,8 +96,6 @@ char shift_map[128] =
 /* Handles the keyboard interrupt */
 void keyboardHandler()
 {
-    [[maybe_unused]]
-
     auto& queue = EventQueue::getInstance();
 
     /* Read from the keyboard's data buffer */

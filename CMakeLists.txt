@@ -34,6 +34,8 @@ add_subdirectory(pdclib)
 add_executable(${KERNEL_BIN} src/boot.S src/main.cpp
         ${INCLUDE} ${KERNEL}
         include/device_info/ACPI.h
+        include/APIC.cpp
+        include/APIC.h
 )
 
 target_include_directories(

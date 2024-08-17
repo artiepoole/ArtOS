@@ -27,6 +27,14 @@ void decToBinary(u32 n)
     }
 }
 
+
+// In general, move a requested leaf into eax
+// call cpuid
+// read registers out into variables
+// parse the info.
+
+//todo: put this data into structs for easier inspection for each leaf.
+
 void cpuid_print_manufacturer_info()
 {
 

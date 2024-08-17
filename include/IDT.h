@@ -8,7 +8,8 @@
 #include "PIC.h"
 
 
-
+#define IDT_SIZE 49
+#define IDT_SPURIOUS_ID 0xFF
 
 
 class IDT

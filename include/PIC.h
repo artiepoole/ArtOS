@@ -7,14 +7,13 @@
 #include "types.h"
 
 
-
-
 class PIC
 {
 public:
     PIC();
-    void disable();
-    void enable();
+    void pause_PIC();
+    void resume_PIC();
+    static void disable_entirely();
     void enableIRQ(u8 irq_id);
     void disableIRQ(u8 irq_id);
     void enableAll();

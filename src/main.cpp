@@ -14,6 +14,8 @@
 // #include "stdlib.h"
 // #include "malloc.c"
 
+#include <APIC.h>
+
 #include "ACPI.h"
 #include "PCI.h"
 #include "multiboot2.h"
@@ -35,8 +37,6 @@
 #if !defined(__i386__)
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
-
-
 
 
 template <typename int_like>
@@ -138,7 +138,6 @@ u16 get_ds()
 
 void process_events(EventQueue events)
 {
-
 }
 
 extern u32 DATA_CS;
@@ -172,16 +171,20 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
-    artos_boot_header *boot_info = multiboot2_populate(boot_info_addr);
+    artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
-    populate_madt(multiboot2_get_MADT_table_address());
+    full_madt_t* full_madt = populate_madt(multiboot2_get_MADT_table_address());
+    [[nodiscard]] LocalAPIC local_apic(full_madt->madt_stub->local_apic_address);
+    [[nodiscard]] IOAPIC io_apic(full_madt->io_apic.physical_address);
 
     // then load the rest of the singleton classes.
     WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     EventQueue events;
     VideoGraphicsArray vga(frame_info);
     Terminal terminal;
-    PIC pic;
+    PIC::disable_entirely();
+
+    // local_apic.configure_timer(1024);
     IDT idt;
     configurePit(2000);
     LOG("Singletons loaded.");
@@ -191,22 +194,26 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.draw();
 
 
-    pic.enableIRQ(0); // PIT interrupts
-    pic.enableIRQ(1); // Keyboard interrupts
-    pic.enableIRQ(2); // Enable secondary PIC to raise interrupts
-    pic.enableIRQ(8); // RTC interrupts
+    // pic.enableIRQ(0); // PIT interrupts
+    // pic.enableIRQ(1); // Keyboard interrupts
+    // pic.enableIRQ(2); // Enable secondary PIC to raise interrupts
+    // pic.enableIRQ(8); // RTC interrupts
+    io_apic.remapIRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
+    io_apic.remapIRQ(1, 33); // Keyboard
+    io_apic.remapIRQ(8, 40); // RTC todo: not working.
+
+
 
     terminal.setScale(2);
     vga.draw();
     terminal.write(" Loading Done.\n");
     LOG("LOADED OS.");
 
-
     // FILE* com = fopen("/dev/com1", "w");
     // fprintf(com, "%s\n", "This should print to com0");
 
     PCI_list();
-    auto IDE_controller = PCIDevice(0,1,1);
+    auto IDE_controller = PCIDevice(0, 1, 1);
     LOG("progif: ", static_cast<u16>(IDE_controller.prog_if()));
 
 
