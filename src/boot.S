@@ -1,21 +1,12 @@
 
 /* Declare constants for the multiboot header. */
-.set MAGIC, 0x1badb002 /* 'magic number' lets bootloader find the header */
-.set FLAGS, 7
-/*.set FLAGS, 3 */
-.set CHECKSUM, -(MAGIC + FLAGS)
-.set MODE_TYPE, 0
+#define ASM_FILE 1
+#include <multiboot2.h>
+
+
 .set WIDTH, 1024  /* requested width */
 .set HEIGHT, 768  /* requested height */
-/* .set WIDTH, 640
-.set HEIGHT, 480 */
 .set DEPTH, 32    /* requested bits per pixel BPP */
-
-.set HEADER_ADDR, 0
-.set LOAD_ADDR, 0
-.set LOAD_END_ADDR, 0
-.set BSS_END_ADDR, 0
-.set ENTRY_ADDR, 0
 
 /*
 Declare a multiboot header that marks the program as a kernel. These are magic
@@ -39,65 +30,89 @@ from https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#OS-image-
 40	u32	height	if flags[2] is set
 44	u32	depth	if flags[2] is set
 */
-.section .multiboot
-    .align 4
-    .long MAGIC
-    .long FLAGS
-    .long CHECKSUM
-    .long HEADER_ADDR
-    .long LOAD_ADDR
-    .long LOAD_END_ADDR
-    .long BSS_END_ADDR
-    .long ENTRY_ADDR
-    .long MODE_TYPE
-    .long WIDTH
-    .long HEIGHT
-    .long DEPTH
-    /* enough space for the returned header */
-    .space 4 * 13
+/*
+*.section .multiboot
+*    .align 4
+*    .long MAGIC
+*    .long FLAGS
+*    .long CHECKSUM
+*    .long HEADER_ADDR
+*    .long LOAD_ADDR
+*    .long LOAD_END_ADDR
+*    .long BSS_END_ADDR
+*    .long ENTRY_ADDR
+*    .long MODE_TYPE
+*    .long WIDTH
+*    .long HEIGHT
+*    .long DEPTH
+*    /* enough space for the returned header */
+/*    .space 4 * 13
+*/
+
+
 
 /*
-The multiboot standard does not define the value of the stack pointer register
-(esp) and it is up to the kernel to provide a stack. This allocates room for a
-small stack by creating a symbol at the bottom of it, then allocating 16384
-bytes for it, and finally creating a symbol at the top. The stack grows
-downwards on x86. The stack is in its own section so it can be marked nobits,
-which means the kernel file is smaller because it does not contain an
-uninitialized stack. The stack on x86 must be 16-byte aligned according to the
-System V ABI standard and de-facto extensions. The compiler will assume the
-stack is properly aligned and failure to align the stack will result in
-undefined behavior.
+.section .multiboot2
+    .align 4
+    .long MAGIC
+    .long ARCHITECTURE
+    .long HEADER_LENGTH
+    .long CHECKSUM
+    .long TAGS
 */
+.section .multiboot
+/*  Align 64 bits boundary. */
+.align  8
+/*  Multiboot header. */
+multiboot_header:
+            /*  magic */
+    .long   MULTIBOOT2_HEADER_MAGIC
+    /*  ISA: i386 */
+    .long   MULTIBOOT2_ARCHITECTURE_I386
+    /*  Header length. */
+    .long   multiboot_header_end - multiboot_header
+    /*  checksum */
+    .long   -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT2_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header))
+
+    .align 8
+    multiboot_requests_start:
+        .short MULTIBOOT2_HEADER_TAG_INFORMATION_REQUEST
+        .short 0
+        .long multiboot_requests_end-multiboot_requests_start
+        .long MULTIBOOT2_TAG_TYPE_BOOTDEV
+        .long MULTIBOOT2_HEADER_TAG_FRAMEBUFFER
+        .long MULTIBOOT2_TAG_TYPE_EFI32
+        .long MULTIBOOT2_TAG_TYPE_ACPI_NEW
+        .long MULTIBOOT2_TAG_TYPE_ACPI_OLD
+    multiboot_requests_end:
+
+    .align 8
+    framebuffer_tag_start:
+        .short MULTIBOOT2_HEADER_TAG_FRAMEBUFFER
+        .short MULTIBOOT2_HEADER_TAG_OPTIONAL
+        .long framebuffer_tag_end - framebuffer_tag_start
+        .long WIDTH
+        .long HEIGHT
+        .long DEPTH
+    framebuffer_tag_end:
+
+    .align  8
+        .short MULTIBOOT2_HEADER_TAG_END
+        .short 0
+        .long 8
+
+multiboot_header_end:
+
+
 .section .bss
 .align 16
 stack_bottom:
 .skip 200*1024*1024 # 200MiB
 stack_top:
 
-/*
-Creating a function to write to GDT
-
-gdtr DW 0 //For limit storage
-     DD 0 // For base storage
-
-setGdt:
-   mov   ax, [esp + 4]
-   mov   [gdtr], AX
-   mov   EAX, [ESP + 8]
-   mov   [gdtr + 2], EAX
-   lgdt  [gdtr]
-   ret
-*/
-
-/*
-The linker script specifies _start as the entry point to the kernel and the
-bootloader will jump to this position once the kernel has been loaded. It
-doesn't make sense to return from this function as the bootloader is gone.
-*/
-
 .section .text
-.global _start
-.type _start, @function
+.globl  start, _start
+start:
 _start:
 	/*
 	The bootloader has loaded us into 32-bit protected mode on a x86
@@ -138,10 +153,18 @@ _start:
 	preserved and the call is well defined.
 	*/
     mov $stack_top, %esp
-    mov $stack_top, %ecx
-    push %eax
+
+    /* Reset flags*/
+
+    pushl   $0
+    popf
+
+    /*  Push the pointer to the Multiboot information structure. */
     push %ebx
-    push %ecx
+    /*  Push the magic value. */
+    push %eax
+
+    /* push %ecx Not necessary now. */
     call kernel_main
 	/*
 	If the system has nothing more to do, put the computer into an
@@ -156,11 +179,18 @@ _start:
 	   non-maskable interrupt occurring or due to system management mode.
 	*/
 	cli
-1:	hlt
-	jmp 1b
+
+loop:
+    hlt
+    jmp     loop
+
+
+
 
 /*
 Set the size of the _start symbol to the current location '.' minus its start.
 This is useful when debugging or when you implement call tracing.
 */
 .size _start, . - _start
+.size start, . - start
+

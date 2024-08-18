@@ -15,8 +15,7 @@
 #define SMBIOS_H
 
 #include "types.h"
-#include "string.h"
-#include "Serial.h"
+
 
 
 struct smbios_t

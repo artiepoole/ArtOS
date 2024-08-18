@@ -4,24 +4,35 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
-#include <float.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+
 #include "mystring.h"
-#include "ports.h"
-#include "RTC.h"
+#include "types.h"
+// TODO: Use stdlib "string.h" instead.
+
+#pragma once
+#if ENABLE_LOGGING
+
+#define LOG(...) Serial::get().log(__VA_ARGS__)
+#define WRITE(...) Serial::get().write(__VA_ARGS__)
+#define NEWLINE() Serial::get().newLine()
+#define TIMESTAMP Serial::get().time_stamp()
+#else
+#define LOG(...)
+#define WRITE(...)
+#define NEWLINE()
+#define TIMESTAMP
+#endif
 
 #define PORT 0x3f8          // COM1
 
 class Serial
 {
 private:
-    char _read();
-    void _sendChar(unsigned char a);
-    int _received();
-    int _transmitEmpty();
-    void _write(const char* data, size_t size);
+    static char _read();
+    static void _sendChar(unsigned char a);
+    static int _received();
+    static int _transmitEmpty();
+    static void _write(const char* data, size_t size);
 
 public:
     Serial();
@@ -38,6 +49,9 @@ public:
     void write(unsigned char c);
     void write(const char* data);
     void write(const char* data, size_t len);
+
+    static u32 com_read(char* dest, u32 count);
+    static u32 com_write(const char* data, u32 count);
 
     void time_stamp();
 

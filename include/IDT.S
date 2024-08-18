@@ -1,5 +1,11 @@
+/*
+ * IDT_STUB_COUNT in IDT.h must be updated after adding entries to this file.
+ */
+
 .extern exception_handler
 .extern irq_handler
+
+#define KERNEL_DS 0x18
 
 .macro isr_err_stub_ i
     isr_stub_\i:
@@ -10,7 +16,7 @@
     push %es
     push %fs
     push %gs
-    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov $KERNEL_DS, %ax    // Load the Kernel Data Segment descriptor!
     mov  %ax, %ds
     mov  %ax, %es
     mov  %ax, %fs
@@ -44,7 +50,7 @@
     push %es
     push %fs
     push %gs
-    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov $KERNEL_DS, %ax    // Load the Kernel Data Segment descriptor!
     mov  %ax, %ds
     mov  %ax, %es
     mov  %ax, %fs
@@ -73,7 +79,7 @@
     push %es
     push %fs
     push %gs
-    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov $KERNEL_DS, %ax    // Load the Kernel Data Segment descriptor!
     mov  %ax, %ds
     mov  %ax, %es
     mov  %ax, %fs
@@ -143,8 +149,7 @@ irq_stub 44 // IRQ12
 irq_stub 45 // IRQ13
 irq_stub 46 // IRQ14
 irq_stub 47 // IRQ15
-
-
+irq_stub 240 // IRQ16 - spurious
 
 .section	.data
 .global isr_stub_table
@@ -197,3 +202,4 @@ isr_stub_table:
     .long isr_stub_45
     .long isr_stub_46
     .long isr_stub_47
+    .long isr_stub_240

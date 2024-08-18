@@ -6,15 +6,15 @@ set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
 set(TOOLS $ENV{HOME}/opt/cross-compiler/)
-set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-elf-as)
+set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-elf-gcc)
 set(CMAKE_C_COMPILER ${TOOLS}/bin/i686-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLS}/bin/i686-elf-g++)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti") ###
-set(CMAKE_C_FLAGS "-ffreestanding -O2 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti") ###
+set(CMAKE_C_FLAGS "-ffreestanding -Wall -Wextra")
 
 
 

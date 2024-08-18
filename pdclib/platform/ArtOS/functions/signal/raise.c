@@ -8,8 +8,8 @@
 
 #ifndef REGTEST
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdio.h"
+#include "stdlib.h"
 
 extern void ( *_PDCLIB_sigabrt )( int );
 extern void ( *_PDCLIB_sigfpe )( int );

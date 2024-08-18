@@ -8,7 +8,7 @@
    POSIX kernels.
  */
 
-#include <stdio.h>
+#include "stdio.h"
 
 #ifndef REGTEST
 
@@ -23,10 +23,10 @@
 #define _GNU_SOURCE 1
 #endif
 
-#include "pdclib/_PDCLIB_glue.h"
-#include "pdclib/_PDCLIB_defguard.h"
+#include "_PDCLIB_glue.h"
+#include "_PDCLIB_defguard.h"
 
-#include <errno.h>
+#include "errno.h"
 
 /* The system calls provided for renaming are rename(), renameat()
    and renameat2(). Using rename() is not possible, since we have

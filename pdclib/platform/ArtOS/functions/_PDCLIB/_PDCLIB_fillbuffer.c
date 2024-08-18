@@ -8,13 +8,13 @@
    use with POSIX kernels.
 */
 
-#include <stdio.h>
+#include "stdio.h"
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_glue.h"
+#include "_PDCLIB_glue.h"
 
-#include "../include/errno.h"
+#include "errno.h"
 
 #ifdef __cplusplus
 extern "C" {

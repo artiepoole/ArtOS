@@ -4,7 +4,15 @@
 
 #include "IDT.h"
 
+#include "LocalAPIC.h"
+
 #include "PIT.h"
+#include "RTC.h"
+#include "EventQueue.h"
+#include "Serial.h"
+#include "ports.h"
+#include <stdint.h>
+
 
 // todo: move some of this stuff to an "interrupts.cpp" or similar.
 struct idt_entry_t
@@ -22,8 +30,9 @@ struct idt_ptr_t
     u32 base;
 } __attribute__((packed));
 
+
 extern void* isr_stub_table[];
-static bool idt_vectors[48];
+static bool idt_vectors[IDT_STUB_COUNT];
 static idt_ptr_t idt_pointer;
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
@@ -70,61 +79,60 @@ inline char exception_messages[][40] =
 void register_to_serial(const cpu_registers_t* r)
 {
     auto &log = Serial::get();
-    log.write("int_no, err_code: ");
+    WRITE("int_no, err_code: ");
     log.newLine();
-    log.write(r->int_no, true);
-    log.write(", ");
-    log.write(r->err_code, true);
-    log.newLine();
-
-    log.write("gs, fs, es, ds: ");
-    log.newLine();
-    log.write(r->gs, true);
-    log.write(", ");
-    log.write(r->fs, true);
-    log.write(", ");
-    log.write(r->es, true);
-    log.write(", ");
-    log.write(r->ds, true);
+    WRITE(r->int_no, true);
+    WRITE(", ");
+    WRITE(r->err_code, true);
     log.newLine();
 
-    log.write("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    WRITE("gs, fs, es, ds: ");
     log.newLine();
-    log.write(r->edi, true);
-    log.write(", ");
-    log.write(r->esi, true);
-    log.write(", ");
-    log.write(r->ebp, true);
-    log.write(", ");
-    log.write(r->esp, true);
-    log.write(", ");
-    log.write(r->ebx, true);
-    log.write(", ");
-    log.write(r->edx, true);
-    // log.write(", ");
+    WRITE(r->gs, true);
+    WRITE(", ");
+    WRITE(r->fs, true);
+    WRITE(", ");
+    WRITE(r->es, true);
+    WRITE(", ");
+    WRITE(r->ds, true);
+    log.newLine();
+
+    WRITE("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    log.newLine();
+    WRITE(r->edi, true);
+    WRITE(", ");
+    WRITE(r->esi, true);
+    WRITE(", ");
+    WRITE(r->ebp, true);
+    WRITE(", ");
+    WRITE(r->esp, true);
+    WRITE(", ");
+    WRITE(r->ebx, true);
+    WRITE(", ");
+    WRITE(r->edx, true);
+    // WRITE(", ");
     // log.write_hex(r->ecx, true);
-    // log.write(", ");
-    // log.write(r->eax, true);
+    // WRITE(", ");
+    // WRITE(r->eax, true);
     log.newLine();
 
-    log.write("eip, cs, eflags, useresp, ss;");
+    WRITE("eip, cs, eflags, useresp, ss;");
     log.newLine();
-    log.write(r->eip, true);
-    log.write(", ");
-    log.write(r->cs, true);
-    log.write(", ");
-    log.write(r->eflags, true);
-    log.write(", ");
-    log.write(r->useresp, true);
-    log.write(", ");
-    log.write(r->ss, true);
+    WRITE(r->eip, true);
+    WRITE(", ");
+    WRITE(r->cs, true);
+    WRITE(", ");
+    WRITE(r->eflags, true);
+    WRITE(", ");
+    WRITE(r->useresp, true);
+    WRITE(", ");
+    WRITE(r->ss, true);
     log.newLine();
 }
 
 void handle_div_by_zero(const cpu_registers_t* r)
 {
-    auto &log = Serial::get();
-    log.write("Div by zero not handled. oops.\n");
+    WRITE("Div by zero not handled. oops.\n");
     register_to_serial(r);
 }
 
@@ -135,7 +143,7 @@ void exception_handler(const cpu_registers_t* r)
     auto &log = Serial::get();
     register_to_serial(r);
 
-    log.write("Exception: ");
+    WRITE("Exception: ");
     // log.write_hex(r->int_no, 4);
     // log.new_line();
 
@@ -144,7 +152,7 @@ void exception_handler(const cpu_registers_t* r)
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
-        log.write(exception_messages[r->int_no]);
+        WRITE(exception_messages[r->int_no]);
         log.newLine();
         switch (r->int_no)
         {
@@ -152,7 +160,7 @@ void exception_handler(const cpu_registers_t* r)
             // handle_div_by_zero(r);
             return;
         default:
-            log.write("Unhandled exception. System Halted!");
+            WRITE("Unhandled exception. System Halted!");
             for (;;);
         }
     }
@@ -164,7 +172,7 @@ void irq_handler(const cpu_registers_t* r)
     /*
         0 	Programmable Interrupt Timer Interrupt
         1 	Keyboard Interrupt
-        2 	Cascade (used internally by the two PICs. never raised)
+        2 	Cascade (used internally by the two PICs. never raised) or timer redirect in APIC
         3 	COM2 (if enabled)
         4 	COM1 (if enabled)
         5 	LPT2 (if enabled)
@@ -176,17 +184,17 @@ void irq_handler(const cpu_registers_t* r)
         11 	Free for peripherals / SCSI / NIC
         12 	PS2 Mouse
         13 	FPU / Coprocessor / Inter-processor
-        14 	Primary ATA Hard Disk
-        15 	Secondary ATA Hard Disk
+        14 	Primary ATA Bus
+        15 	Secondary ATA Bus
+        240-32  Spurious APIC
     */
-    auto &log = Serial::get();
     // register_to_serial(r);
 
     const auto int_no = r->int_no;
-    // log.log("IRQ: ",int_no);
 
     if (int_no >= 32)
     {
+
         switch (int_no - 32)
         {
         case 0:
@@ -200,25 +208,27 @@ void irq_handler(const cpu_registers_t* r)
         case 8:
             rtc_handler();
             break;
+        case 208:
+            LOG("Spurious Interrupt");
+            break;
         default:
-            log.write("Unhandled IRQ: ");
-            log.write(int_no);
-            log.newLine();
+            LOG("unhandled IRQ: ", int_no);
             break;
         }
     }
 
-    /* If the IDT entry that was invoked was greater than 40
-    *  (meaning IRQ8 - 15), then we need to send an EOI to
-    *  the slave controller */
-    if (int_no >= 40)
-    {
-        outb(PIC2_COMMAND, PIC_EOI);
-    }
-
-    /* In either case, we need to send an EOI to the master
-    *  interrupt controller too */
-    outb(PIC1_COMMAND, PIC_EOI);
+    // /* If the IDT entry that was invoked was greater than 40
+    // *  (meaning IRQ8 - 15), then we need to send an EOI to
+    // *  the slave controller */
+    // if (int_no >= 40)
+    // {
+    //     outb(PIC2_COMMAND, PIC_EOI);
+    // }
+    //
+    // /* In either case, we need to send an EOI to the master
+    // *  interrupt controller too */
+    // outb(PIC1_COMMAND, PIC_EOI);
+    LAPIC_EOI();
 }
 
 
@@ -239,25 +249,25 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 IDT::IDT()
 {
     auto &log = Serial::get();
-    log.log("Initialising IDT");
-    idt_pointer.limit = (sizeof(idt_entry_t) * 48) - 1;
+    LOG("Initialising IDT");
+    idt_pointer.limit = (sizeof(idt_entry_t) * IDT_STUB_COUNT) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
 
 
-    for (u8 idt_index = 0; idt_index < 48; idt_index++)
+    for (u8 idt_index = 0; idt_index < IDT_STUB_COUNT; idt_index++)
     {
         _setDescriptor(idt_index, isr_stub_table[idt_index], 0x8E);
         idt_vectors[idt_index] = true;
     }
     log.time_stamp();
-    log.write("\tSetting IDT base and limit. ");
-    log.write("Base: ");
-    log.write(idt_pointer.base, true);
-    log.write(" Limit: ");
-    log.write(idt_pointer.limit, true);
-    log.newLine();
+    WRITE("\tSetting IDT base and limit. ");
+    WRITE("Base: ");
+    WRITE(idt_pointer.base, true);
+    WRITE(" Limit: ");
+    WRITE(idt_pointer.limit, true);
+    NEWLINE();
     __asm__ volatile ("lidt %0" : : "m"(idt_pointer)); // load the new IDT
-    log.log("IDT has been set");
+    LOG("IDT has been set");
     enable_interrupts();
-    log.log("IDT initialised");
+    LOG("IDT initialised");
 }

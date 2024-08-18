@@ -5,6 +5,7 @@
 #include "mystring.h"
 
 
+// Get length of string including first termination character.
 size_t mystrlen(const char* str)
 {
     int len = 0;

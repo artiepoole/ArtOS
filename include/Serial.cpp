@@ -1,4 +1,6 @@
 #include "Serial.h"
+#include "ports.h"
+#include "RTC.h"
 
 static Serial *instance{ nullptr };
 
@@ -25,6 +27,10 @@ Serial::Serial()
     // If serial is not faulty set it in normal operation mode
     // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
     outb(PORT + 4, 0x0F);
+    connected = true;
+    #if ENABLE_LOGGING
+        write("Mon Jan 01 00:00:00 1970\tSerial connected\n");
+    #endif
 }
 
 
@@ -92,6 +98,18 @@ void Serial::_write(const char* data, const size_t size)
 
 void Serial::time_stamp()
 {
-    auto&rtc= RTC::get();
-    write(asctime(rtc.getTime()));
+    WRITE(asctime(RTC::get().getTime()));
+}
+
+u32 Serial::com_read(char* dest, const u32 count)
+{
+    for(u32 i = 0; i < count; i++) {
+        dest[i] = _read();
+    }
+    return count;
+}
+u32 Serial::com_write(const char* data, const u32 count)
+{
+    _write(data, count);
+    return count;
 }

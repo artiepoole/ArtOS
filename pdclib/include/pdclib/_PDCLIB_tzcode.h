@@ -11,11 +11,11 @@
 extern "C" {
 #endif
 
-#include <pdclib/_PDCLIB_config.h>
+#include <_PDCLIB_config.h>
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <time.h>
+#include "stdbool.h"
+#include "stdint.h"
+#include "time.h"
 
 /* Handy macros that are independent of tzfile implementation. */
 #define YEARSPERREPEAT  400 /* years before a Gregorian repeat */

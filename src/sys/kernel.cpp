@@ -7,24 +7,25 @@
 #include "VideoGraphicsArray.h"
 #include "TSC.h"
 #include "SMBIOS.h"
+#include "Serial.h"
 
 void write_standard(const char* buffer, unsigned long len)
 {
-    auto& term = Terminal::get();
-    term.write(buffer, len);
+    // auto& term = Terminal::get();
+    // term.write(buffer, len);
 
-    auto& log = Serial::get();
-    log.write(buffer, len);
+
+    WRITE(buffer, len);
 }
 
 void write_error(const char* buffer, unsigned long len)
 {
-    // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
-    auto& term = Terminal::get();
-    term.write(buffer, len, COLOR_RED);
+    // // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
+    // auto& term = Terminal::get();
+    // term.write(buffer, len, COLOR_RED);
 
-    auto& log = Serial::get();
-    log.write(buffer, len);
+
+    WRITE(buffer, len);
 }
 
 tm* get_time()
@@ -43,8 +44,8 @@ time_t get_epoch_time()
 extern "C"
 void _exit(int status)
 {
-    auto& log = Serial::get();
-    log.log("Exit status: ", status);
+
+    LOG("Exit status: ", status);
 }
 
 u32 get_clock_rate()

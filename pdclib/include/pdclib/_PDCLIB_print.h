@@ -7,11 +7,11 @@
 #ifndef _PDCLIB_PRINT_H
 #define _PDCLIB_PRINT_H _PDCLIB_PRINT_H
 
-#include "pdclib/_PDCLIB_internal.h"
+#include "_PDCLIB_internal.h"
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "stddef.h"
+#include "stdint.h"
+#include "stdio.h"
 
 /* This macro delivers a given character to either a memory buffer or a stream,
    depending on the contents of 'status' (struct _PDCLIB_status_t).

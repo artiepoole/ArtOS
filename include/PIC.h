@@ -5,17 +5,15 @@
 #ifndef PIC_H
 #define PIC_H
 #include "types.h"
-#include "Serial.h"
-#include "ports.h"
-
 
 
 class PIC
 {
 public:
     PIC();
-    void disable();
-    void enable();
+    void pause_PIC();
+    void resume_PIC();
+    static void disable_entirely();
     void enableIRQ(u8 irq_id);
     void disableIRQ(u8 irq_id);
     void enableAll();

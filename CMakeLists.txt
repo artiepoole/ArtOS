@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 
 ENABLE_LANGUAGE(ASM)
-
+option(ENABLE_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 
 project(ArtOS)
 
@@ -13,11 +13,13 @@ set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
-        "include/*.s"
+        "include/*.S"
         "include/timers/*.h"
         "include/timers/*.cpp"
-        "include/communication/*.h"
-        "include/communication/*.cpp"
+        "include/device_info/*.h"
+        "include/device_info/*.cpp"
+        "include/constants/*.h"
+        "include/constants/*.cpp"
 )
 
 file(GLOB KERNEL
@@ -29,25 +31,35 @@ file(GLOB KERNEL
 add_subdirectory(pdclib)
 add_subdirectory(doom)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} src/boot.s src/main.cpp
+add_executable(${KERNEL_BIN} src/boot.S src/main.cpp
         ${INCLUDE} ${KERNEL}
+        include/communication/SMBIOS.cpp
+        include/communication/SMBIOS.h
 )
+
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
         include
         include/timers
-        include/communication/
+        include/device_info/
+        include/constants
         src
         src/sys
         )
 
-
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
-add_custom_command(TARGET ${KERNEL_BIN} POST_BUILD
+add_custom_command(
+        TARGET ${KERNEL_BIN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/)
+        COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_BIN} ${CMAKE_SOURCE_DIR}/bin/
+)
 
+
+target_compile_definitions(${KERNEL_BIN}
+        PUBLIC
+        ENABLE_LOGGING=$<BOOL:${ENABLE_LOGGING}>
+)
 target_link_libraries(${KERNEL_BIN} pdclib doom)
 
 

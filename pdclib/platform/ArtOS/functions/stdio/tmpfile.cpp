@@ -4,20 +4,20 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <stdio.h>
+#include "stdio.h"
 
 #ifndef REGTEST
 
 #ifndef __STDC_NO_THREADS__
-#include <threads.h>
+#include "threads.h"
 extern mtx_t _PDCLIB_filelist_mtx;
 #endif
 
-#include "pdclib/_PDCLIB_glue.h"
-#include "pdclib/_PDCLIB_defguard.h"
+#include "_PDCLIB_glue.h"
+#include "_PDCLIB_defguard.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include "stdlib.h"
+#include "string.h"
 
 #include "types.h"
 #include "stat.h"

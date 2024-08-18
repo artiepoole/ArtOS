@@ -10,12 +10,12 @@
 
 #ifndef REGTEST
 
-#include <stdio.h>
-#include <stdint.h>
+#include "stdio.h"
+#include "stdint.h"
 
-#include "pdclib/_PDCLIB_glue.h"
+#include "_PDCLIB_glue.h"
 
-#include <errno.h>
+#include "errno.h"
 
 #ifdef __cplusplus
 extern "C" {

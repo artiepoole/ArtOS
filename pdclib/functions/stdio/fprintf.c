@@ -4,8 +4,8 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <stdarg.h>
-#include <stdio.h>
+#include "stdarg.h"
+#include "stdio.h"
 
 #ifndef REGTEST
 

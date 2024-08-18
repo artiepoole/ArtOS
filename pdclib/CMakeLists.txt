@@ -231,7 +231,7 @@ set( PDCLIB_SOURCES
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_Exit.cpp
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_fillbuffer.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_flushbuffer.cpp
-#        platform/ArtOS/functions/_PDCLIB/_PDCLIB_open.c
+        platform/ArtOS/functions/_PDCLIB/_PDCLIB_open.cpp
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_realpath.c
 #        platform/ArtOS/functions/_PDCLIB/_PDCLIB_rename.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_remove.c
@@ -270,7 +270,8 @@ set( PDCLIB_HEADERS
 
 file(GLOB KERNEL
         "../include/*.h"
-        "../include/communication/*.h"
+        "../include/device_info/*.h"
+        "../include/constants/*.h"
         "../include/timers/*.h"
         "../src/sys/*.h"
         "../src/sys/*.cpp"
@@ -291,6 +292,7 @@ target_include_directories( pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured
 target_include_directories(pdclib PUBLIC
         include
         include/pdclib
+
 
         platform/ArtOS/include
 
@@ -323,7 +325,8 @@ target_include_directories(pdclib PUBLIC
         ../src/sys
         ../include
         ../include/timers
-        ../include/communication
+        ../include/device_info
+        ../include/constants
 
 )
 

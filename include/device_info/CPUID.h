@@ -5,7 +5,7 @@
 #ifndef CPUID_H
 #define CPUID_H
 
-#include "types.h"
+
 
 void cpuid_print_feature_info();
 void cpuid_print_manufacturer_info();

@@ -32,10 +32,10 @@
 
 #ifndef REGTEST
 
-#include "pdclib/_PDCLIB_glue.h"
+#include "_PDCLIB_glue.h"
 
-#include <limits.h>
-#include <stddef.h>
+#include "limits.h"
+#include "stddef.h"
 
 int _PDCLIB_changemode( struct _PDCLIB_file_t * stream, unsigned int mode )
 {

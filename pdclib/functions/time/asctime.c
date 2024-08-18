@@ -4,11 +4,11 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <time.h>
+#include "time.h"
 
 #ifndef REGTEST
 
-#include <stdio.h>
+#include "stdio.h"
 
 char * asctime( const struct tm * timeptr )
 {

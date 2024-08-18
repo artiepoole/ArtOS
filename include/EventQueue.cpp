@@ -3,6 +3,9 @@
 //
 
 #include "EventQueue.h"
+#include "ports.h"
+#include "Serial.h"
+
 
 static EventQueue* instance{nullptr};
 
@@ -22,7 +25,7 @@ char key_map[128] =
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', /* 39 */
     '\'', '`', '*', /* Left shift */
     '\\', 'z', 'x', 'c', 'v', 'b', 'n', /* 49 */
-    'm', ',', '.', '/', '+', /* Right shift */
+    'm', ',', '.', '/', '*', /* Right shift */
     '*',
     '!', /* Alt */
     ' ', /* Space bar */
@@ -93,8 +96,6 @@ char shift_map[128] =
 /* Handles the keyboard interrupt */
 void keyboardHandler()
 {
-    [[maybe_unused]] auto& log = Serial::get();
-
     auto& queue = EventQueue::getInstance();
 
     /* Read from the keyboard's data buffer */
@@ -116,8 +117,8 @@ void keyboardHandler()
 
 EventQueue::EventQueue()
 {
-    auto& log = Serial::get();
-    log.log("Initialising EventQueue");
+
+    LOG("Initialising EventQueue");
     instance = this;
     _unread_counter = 0;
     _write_index = 0;
@@ -127,7 +128,7 @@ EventQueue::EventQueue()
     {
         i = event_t{NULL_EVENT, event_data_t{0, 0}};
     }
-    log.log("EventQueue initialised");
+    LOG("EventQueue initialised");
 }
 
 EventQueue::~EventQueue()
@@ -146,13 +147,13 @@ void EventQueue::addEvent(const event_t& event)
     [[maybe_unused]] auto & log = Serial::get();
 
 
-    // log.write("Adding event.\n");
-    // log.write("type: ");
-    // log.write(static_cast<int>(event.type));
-    // log.write(" lower: ");
-    // log.write(event.data.lower_data true);
-    // log.write(" upper: ");
-    // log.write(event.data.upper_data, true);
+    // WRITE("Adding event.\n");
+    // WRITE("type: ");
+    // WRITE(static_cast<int>(event.type));
+    // WRITE(" lower: ");
+    // WRITE(event.data.lower_data true);
+    // WRITE(" upper: ");
+    // WRITE(event.data.upper_data, true);
     // log.newLine();
 
     _event_queue[_write_index] = event;
@@ -173,8 +174,8 @@ event_t EventQueue::getEvent()
 {
     if (_unread_counter == 0)
     {
-        auto& log = Serial::get();
-        log.write("Tried to get read event ahead of event queue. Returning NONE event");
+
+        WRITE("Tried to get read event ahead of event queue. Returning NONE event");
         return event_t{NULL_EVENT, event_data_t{0, 0}};
     }
 

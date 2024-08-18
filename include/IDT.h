@@ -6,11 +6,10 @@
 #define IDT_H
 #include "system.h"
 #include "PIC.h"
-#include "PIT.h"
-#include "RTC.h"
-#include "EventQueue.h"
 
 
+#define IDT_STUB_COUNT 49
+#define IDT_SPURIOUS_ID 0xFF
 
 
 class IDT

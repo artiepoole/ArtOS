@@ -4,7 +4,7 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <stdlib.h>
+#include "stdlib.h"
 
 /* This is an ArtOS implementation of system() fit for use with POSIX kernels.
 */

@@ -5,13 +5,13 @@
 */
 
 #define __STDC_WANT_LIB_EXT1__ 1
-#include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
+#include "stdint.h"
+#include "stdlib.h"
+#include "time.h"
 
 #ifndef REGTEST
 
-#include <stdio.h>
+#include "stdio.h"
 
 errno_t asctime_s( char * s, rsize_t maxsize, const struct tm * timeptr )
 {

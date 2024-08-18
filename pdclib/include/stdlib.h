@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-#include "pdclib/_PDCLIB_lib_ext1.h"
-#include "pdclib/_PDCLIB_internal.h"
+#include "_PDCLIB_lib_ext1.h"
+#include "_PDCLIB_internal.h"
 
 #ifndef _PDCLIB_SIZE_T_DEFINED
 #define _PDCLIB_SIZE_T_DEFINED _PDCLIB_SIZE_T_DEFINED

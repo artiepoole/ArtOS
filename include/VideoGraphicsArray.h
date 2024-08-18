@@ -17,12 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef __MYOS__DRIVERS__VGA_H
 #define __MYOS__DRIVERS__VGA_H
 
-#include "multiboot_header.h"
+#include "multiboot2.h"
 #include "types.h"
-#include "splash_screen.h"
-#include "mystring.h"
-#include "Serial.h"
-#include "FONT.h"
+
 
 struct window_t
 {
@@ -34,26 +31,6 @@ struct window_t
     u32 h;
 };
 
-// Solarised colours definitions
-enum COLORS
-{
-    COLOR_BASE03 = 0x002b36, // Darkest (near black, bluey grey)
-    COLOR_BASE02 = 0x073642,
-    COLOR_BASE01 = 0x586e75,
-    COLOR_BASE00 = 0x657b83,
-    COLOR_BASE0 = 0x839496,
-    COLOR_BASE1 = 0x93a1a1,
-    COLOR_BASE2 = 0xeee8d5,
-    COLOR_BASE3 = 0xfdf6e3, // Lightest (cream)
-    COLOR_YELLOW = 0xb58900,
-    COLOR_ORANGE = 0xcb4b16,
-    COLOR_RED = 0xdc322f,
-    COLOR_MAGENTA = 0xd33682,
-    COLOR_VIOLET = 0x6c71c4,
-    COLOR_BLUE = 0x268bd2,
-    COLOR_CYAN = 0x2aa198,
-    COLOR_GREEN = 0x859900,
-};
 
 class VideoGraphicsArray
 {
@@ -70,7 +47,7 @@ private:
     window_t _screen_region{};
 
 public:
-    VideoGraphicsArray(const multiboot_header* boot_header, u32* buffer);
+    VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info);
     ~VideoGraphicsArray();
     static VideoGraphicsArray& get();
 
@@ -86,7 +63,7 @@ public:
     void clearBuffer() const;
     void drawSplash() const;
     void draw_region(const u32* buffer_to_draw) const;
-    [[nodiscard]] window_t * getScreen();
+    [[nodiscard]] window_t* getScreen();
 
 
     // Font Definition

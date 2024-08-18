@@ -23,6 +23,11 @@ Basic graphics utility methods
 
 #include "VideoGraphicsArray.h"
 
+#include "stdlib.h"
+
+#include "splash_screen.h"
+#include "Serial.h"
+
 static VideoGraphicsArray* instance{nullptr};
 
 /*
@@ -31,17 +36,17 @@ As the is no memory management the Offscreen buffer is allocated elsewhere and p
 
 This class could be re-worked as a Canvas with out to many changes */
 
+u32* buffer;
 
-VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32* buffer)
+VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info)
 {
-    [[maybe_unused]] auto& log = Serial::get();
-    log.log("Initialising VGA.");
+    LOG("Initialising VGA.");
     instance = this;
-    width = boot_header->framebuffer_width;
-    height = boot_header->framebuffer_height;
-    _screen = reinterpret_cast<u32*>(boot_header->framebuffer_addr);
+    width = framebuffer_info->framebuffer_width;
+    height = framebuffer_info->framebuffer_height;
+    _screen = reinterpret_cast<u32*>(framebuffer_info->framebuffer_addr);
 
-    _buffer = buffer;
+    _buffer = static_cast<u32*>(malloc(width * height * sizeof(u32)));
 
     // initialiase to 0
     for (u32 i = 0; i < (width * (height)); i++)
@@ -57,13 +62,12 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot_header* boot_header, u32*
     _window.h = _window.y2 - _window.y1;
     _screen_region = window_t{0, 0, width, height, width, height};
 
-    log.log("VGA initialised.");
+    LOG("VGA initialised.");
 }
 
 VideoGraphicsArray::~VideoGraphicsArray()
 {
-    auto & log = Serial::get();
-    log.write("VGA - Deconstructor called.");
+    WRITE("VGA - Deconstructor called.");
     instance = nullptr;
 }
 
@@ -163,19 +167,3 @@ void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
     }
 }
 
-//
-// // for each line from the second line onwards, copy next line into this line
-// for (size_t x = 0; x < VGA_WIDTH; x++)
-// {
-//     // All lines move up one
-//     for (size_t y = 0; y < VGA_HEIGHT - 1; y++)
-//     {
-//         size_t start_index = (y + 1) * VGA_WIDTH + x;
-//         size_t end_index = (y) * (VGA_WIDTH) + x;
-//         terminal_buffer[end_index] = terminal_buffer[start_index];
-//     }
-//     // Bottom line is replaced with empty.
-//     terminal_buffer[VGA_WIDTH * (VGA_HEIGHT - 1) + x] = vga_entry(' ', terminal_color);
-// }
-// terminal_row -= 1;
-// }
