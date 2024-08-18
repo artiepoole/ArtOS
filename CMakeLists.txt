@@ -31,11 +31,7 @@ file(GLOB KERNEL
 add_subdirectory(pdclib)
 add_subdirectory(doom)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} src/boot.S src/main.cpp
-        ${INCLUDE} ${KERNEL}
-        include/communication/SMBIOS.cpp
-        include/communication/SMBIOS.h
-)
+add_executable(${KERNEL_BIN} src/boot.S src/main.cpp ${INCLUDE} ${KERNEL} )
 
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
