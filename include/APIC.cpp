@@ -15,10 +15,10 @@
 
 uintptr_t get_local_apic_base_addr()
 {
-    uintptr_t eax;
-    uintptr_t edx;
+    u32 eax;
+    u32 edx;
     cpu_get_MSR(IA32_APIC_BASE_MSR, &eax, &edx);
-    return (eax & 0xfffff000);
+    return (static_cast<uintptr_t>(eax) & 0xfffff000);
 }
 
 void set_local_apic_base_addr(const uintptr_t local_apic_base_addr)

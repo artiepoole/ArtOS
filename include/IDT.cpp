@@ -30,8 +30,9 @@ struct idt_ptr_t
     u32 base;
 } __attribute__((packed));
 
+
 extern void* isr_stub_table[];
-static bool idt_vectors[48];
+static bool idt_vectors[IDT_STUB_COUNT];
 static idt_ptr_t idt_pointer;
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
@@ -185,7 +186,7 @@ void irq_handler(const cpu_registers_t* r)
         13 	FPU / Coprocessor / Inter-processor
         14 	Primary ATA Bus
         15 	Secondary ATA Bus
-        255-32  Spurious APIC
+        240-32  Spurious APIC
     */
     // register_to_serial(r);
 
@@ -207,7 +208,7 @@ void irq_handler(const cpu_registers_t* r)
         case 8:
             rtc_handler();
             break;
-        case 223:
+        case 208:
             LOG("Spurious Interrupt");
             break;
         default:
@@ -249,11 +250,11 @@ IDT::IDT()
 {
     auto &log = Serial::get();
     LOG("Initialising IDT");
-    idt_pointer.limit = (sizeof(idt_entry_t) * 48) - 1;
+    idt_pointer.limit = (sizeof(idt_entry_t) * IDT_STUB_COUNT) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
 
 
-    for (u8 idt_index = 0; idt_index < 48; idt_index++)
+    for (u8 idt_index = 0; idt_index < IDT_STUB_COUNT; idt_index++)
     {
         _setDescriptor(idt_index, isr_stub_table[idt_index], 0x8E);
         idt_vectors[idt_index] = true;

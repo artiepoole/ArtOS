@@ -33,12 +33,12 @@ u32 read_register(uintptr_t addr)
     return *reinterpret_cast<uintptr_t*>(addr);
 }
 
-void cpu_get_MSR(u32 msr, uintptr_t* lo, uintptr_t* hi)
+void cpu_get_MSR(u32 msr, u32* lo, u32* hi)
 {
     asm volatile("rdmsr" : "=a"(*lo), "=d"(*hi) : "c"(msr));
 }
 
-void cpu_set_MSR(u32 msr, uintptr_t lo, uintptr_t hi)
+void cpu_set_MSR(u32 msr, u32 lo, u32 hi)
 {
     asm volatile("wrmsr" : : "a"(lo), "d"(hi), "c"(msr));
 }

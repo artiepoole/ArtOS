@@ -1,3 +1,7 @@
+/*
+ * IDT_STUB_COUNT in IDT.h must be updated after adding entries to this file.
+ */
+
 .extern exception_handler
 .extern irq_handler
 
@@ -145,9 +149,7 @@ irq_stub 44 // IRQ12
 irq_stub 45 // IRQ13
 irq_stub 46 // IRQ14
 irq_stub 47 // IRQ15
-irq_stub 255 // IRQ16 - spurious
-
-
+irq_stub 240 // IRQ16 - spurious
 
 .section	.data
 .global isr_stub_table
@@ -200,4 +202,4 @@ isr_stub_table:
     .long isr_stub_45
     .long isr_stub_46
     .long isr_stub_47
-    .long isr_stub_255
+    .long isr_stub_240

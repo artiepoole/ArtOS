@@ -16,9 +16,8 @@ public:
 
 private:
     uintptr_t* base;
-
     LVT full_lvt;
-    LVT_spurious_vector spurious;
+    LVT_spurious_vector* spurious_vector_entry;
 };
 
 void LAPIC_EOI();

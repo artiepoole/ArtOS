@@ -3,6 +3,7 @@
 //
 
 #include "LocalAPIC.h"
+#include "Serial.h"
 
 uintptr_t* eoi_addr;
 
@@ -25,8 +26,17 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 {
     base = reinterpret_cast<uintptr_t*>(local_apic_physical_address);
     eoi_addr = reinterpret_cast<uintptr_t*>(local_apic_physical_address + EOI_OFFSET);
-    spurious = *reinterpret_cast<LVT_spurious_vector*>(local_apic_physical_address + SPURIOUS_OFFSET_VECTOR);
+    auto spv_addr = reinterpret_cast<u32*>(local_apic_physical_address + SPURIOUS_OFFSET_VECTOR);
 
+    // Writing to registers must be done using a 32-bit write. This means that you cannot vary the members using a pointer obj
+    // We take a copy, edit the copy and write the entire 32-bit copy to the original address and store the new register.
+    auto local_spurious = *reinterpret_cast<LVT_spurious_vector*>(spv_addr);
+    local_spurious.spurious_vector = 0xF0;
+    local_spurious.software_enable = true;
+    *spv_addr = local_spurious.raw;
+
+    spurious_vector_entry = reinterpret_cast<LVT_spurious_vector*>(spv_addr);
+    LOG("Spurious vector set. Spurious entry raw value: ", spurious_vector_entry->raw);
     // todo: troubleshoot not being able to set the value of the spurious vector here.
     full_lvt.timer = *reinterpret_cast<LVT_timer_entry*>(local_apic_physical_address + TIMER_LVT_OFFSET);
     full_lvt.thermal = *reinterpret_cast<LVT_entry*>(local_apic_physical_address + THERMAL_LVT_OFFSET);

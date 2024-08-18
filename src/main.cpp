@@ -39,17 +39,6 @@
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
 
-
-
-
-
-
-
-
-
-/**
- *
- */
 // VideoGraphicsArray* vgap;
 u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
@@ -78,7 +67,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
     full_madt_t* full_madt = populate_madt(multiboot2_get_MADT_table_address());
-    [[maybe_unused]] LocalAPIC local_apic(full_madt->madt_stub->local_apic_address);
+    [[maybe_unused]] LocalAPIC local_apic(get_local_apic_base_addr());
     [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
 
     // then load the rest of the singleton classes.
@@ -106,7 +95,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.draw();
 
 
-
     terminal.setScale(2);
     vga.draw();
     terminal.write(" Loading Done.\n");
@@ -118,7 +106,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
 
     LOG("LOADED OS.");
-
 
     // Event handler loop.
     LOG("Entering event loop.");

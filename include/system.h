@@ -59,8 +59,8 @@ void enable_interrupts();
 
 void write_register(uintptr_t addr, uintptr_t val);
 u32 read_register(uintptr_t addr);
-void cpu_get_MSR(u32 msr, uintptr_t* lo, uintptr_t* hi);
-void cpu_set_MSR(u32 msr, uintptr_t lo, uintptr_t hi);
+void cpu_get_MSR(u32 msr, u32* lo, u32* hi);
+void cpu_set_MSR(u32 msr, u32 lo, u32 hi);
 
 extern u32 DATA_CS;
 extern u32 TEXT_CS;
