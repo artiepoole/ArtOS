@@ -102,7 +102,7 @@ struct FADT
 struct MADT_stub
 {
     ACPISDTHeader h;
-    u32 local_apic_address;
+    uintptr_t local_apic_address;
     u32 flags;
 };
 
@@ -135,7 +135,7 @@ struct io_apic_entry
     apic_madt_entry_header h;
     u8 io_apic_id;
     u8 reserved;
-    u32 physical_address;
+    uintptr_t physical_address;
     u32 global_system_interrupt_base;
 };
 
@@ -188,6 +188,6 @@ struct full_madt_t
 };
 
 
-full_madt_t* populate_madt(u32 madt_location);
+full_madt_t* populate_madt(uintptr_t madt_location);
 
 #endif //ACPI_H

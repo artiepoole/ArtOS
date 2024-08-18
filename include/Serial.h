@@ -6,7 +6,8 @@
 
 
 #include "mystring.h"
-#include "types.h" // TODO: Use stdlib "string.h" instead.
+#include "types.h"
+// TODO: Use stdlib "string.h" instead.
 
 #pragma once
 #if ENABLE_LOGGING

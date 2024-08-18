@@ -73,57 +73,10 @@ struct LVT
     LVT_entry error;
 };
 
-struct io_redirect_entry
-{
-    union
-    {
-        struct
-        {
-            LVT_entry lvt;
-            u64 reserved : 23;
-            u64 destination : 8;
-        };
 
-        struct
-        {
-            u32 lower;
-            u32 upper;
-        };
-    };
-};
-
-
-void LAPIC_EOI();
-
-class LocalAPIC
-{
-public:
-    LocalAPIC(u32 local_apic_physical_address);
-    void configure_timer(u32 hz);
-
-private:
-    u32* base;
-
-    LVT full_lvt;
-    LVT_spurious_vector spurious;
-};
-
-
-class IOAPIC
-{
-public:
-    IOAPIC(u32 io_apic_physical_address);
-    void pause();
-    void resume();
-    void remapIRQ(u8 irq_before, u8 irq_after);
-    void disableIRQ(u8 irq_before);
-    void enableAll();
-
-private:
-    u32 volatile * base_addr;
-    u32 volatile * data_addr;
-    io_redirect_entry redirect_entries[23];
-};
+// Helper functions but are not used. Can be used to remap the APIC
+uintptr_t get_local_apic_base_addr();
+void set_local_apic_base_addr(uintptr_t addr);
 
 
 #endif //APIC_H

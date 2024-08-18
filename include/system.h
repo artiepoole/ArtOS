@@ -57,4 +57,16 @@ eflags_t get_eflags();
 void disable_interrupts();
 void enable_interrupts();
 
+void write_register(uintptr_t addr, uintptr_t val);
+u32 read_register(uintptr_t addr);
+void cpu_get_MSR(u32 msr, uintptr_t* lo, uintptr_t* hi);
+void cpu_set_MSR(u32 msr, uintptr_t lo, uintptr_t hi);
+
+extern u32 DATA_CS;
+extern u32 TEXT_CS;
+void get_GDT();
+u16 get_cs();
+u16 get_ds();
+
+
 #endif //SYSTEM_H

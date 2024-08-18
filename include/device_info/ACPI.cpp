@@ -10,7 +10,7 @@ full_madt_t madt ={};
 /*
  *  Must start at the original MADT entry point with signature APIC as this is the only place that describes the total length of the APIC entries.
  */
-full_madt_t* populate_madt(const u32 madt_location)
+full_madt_t* populate_madt(const uintptr_t madt_location)
 {
     madt.madt_stub = reinterpret_cast<MADT_stub*>(madt_location);
     const auto start_address = reinterpret_cast<u8*>(madt_location);

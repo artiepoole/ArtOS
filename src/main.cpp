@@ -14,7 +14,8 @@
 // #include "stdlib.h"
 // #include "malloc.c"
 
-#include <APIC.h>
+#include "LocalAPIC.h"
+#include "IOAPIC.h"
 
 #include "ACPI.h"
 #include "PCI.h"
@@ -39,107 +40,13 @@
 #endif
 
 
-template <typename int_like>
-void printf(const char* str, int_like key)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(str);
-
-    int l = 0;
-    for (; str[l] != 0; l++);
-    terminal.write(key, true);
-    terminal.newLine();
-}
-
-template <typename int_like>
-void print_int(int_like val)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(val);
-}
-
-void print_string(const char* str)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(str);
-}
-
-void print_char(const char c)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(c);
-}
-
-template <typename int_like>
-void print_hex(const int_like val)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(val, true);
-}
 
 
-struct gdt_info
-{
-    u16 limit;
-    u32 base;
-}__attribute__((packed));
-
-struct gdt_entry
-{
-    u16 limit_low;
-    u16 base_low;
-    u8 base_middle;
-    u8 access;
-    u8 granularity;
-    u8 base_high;
-} __attribute__((packed));
 
 
-void get_GDT()
-{
-    gdt_info gdt{};
-    asm("sgdt %0" : "=m"(gdt));
-    WRITE("GDT limit: ");
-    WRITE(gdt.limit, true);
-    WRITE(" GDT base: ");
-    WRITE(gdt.base, true);
-    NEWLINE();
-
-    for (size_t i = 0; i < 8; i++)
-    {
-        WRITE("GDT entry:");
-        WRITE(i);
-        WRITE(" data: ");
-        [[maybe_unused]] uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base + (8 * i));
-        WRITE(gdt_ptr, true);
-        NEWLINE();
-    }
-}
-
-u16 get_cs()
-{
-    u16 i;
-    asm("mov %%cs,%0" : "=r"(i));
-    WRITE("CS: ");
-    WRITE(i, true);
-    NEWLINE();
-    return i;
-}
-
-u16 get_ds()
-{
-    u16 i;
-    asm("mov %%ds,%0" : "=r"(i));
-    WRITE("DS: ");
-    WRITE(i, true);
-    NEWLINE();
-    return i;
-}
 
 
-extern u32 DATA_CS;
-extern u32 TEXT_CS;
-extern int setGdt(u32 limit, u32 base);
+
 /**
  *
  */

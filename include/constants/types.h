@@ -16,6 +16,7 @@ This program is free software: you can redistribute it and/or modify
 #define __TYPES_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 /*
   define some specific length types

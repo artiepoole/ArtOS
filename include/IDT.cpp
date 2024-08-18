@@ -4,7 +4,7 @@
 
 #include "IDT.h"
 
-#include <APIC.h>
+#include "LocalAPIC.h"
 
 #include "PIT.h"
 #include "RTC.h"

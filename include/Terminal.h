@@ -63,4 +63,42 @@ private:
 };
 
 
+template <typename int_like>
+void printf(const char* str, int_like key)
+{
+    auto& terminal = Terminal::get();
+    terminal.write(str);
+
+    int l = 0;
+    for (; str[l] != 0; l++);
+    terminal.write(key, true);
+    terminal.newLine();
+}
+
+template <typename int_like>
+void print_int(int_like val)
+{
+    auto& terminal = Terminal::get();
+    terminal.write(val);
+}
+
+inline void print_string(const char* str)
+{
+    auto& terminal = Terminal::get();
+    terminal.write(str);
+}
+
+inline void print_char(const char c)
+{
+    auto& terminal = Terminal::get();
+    terminal.write(c);
+}
+
+template <typename int_like>
+void print_hex(const int_like val)
+{
+    auto& terminal = Terminal::get();
+    terminal.write(val, true);
+}
+
 #endif //TERMINAL_H
