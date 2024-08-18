@@ -1,6 +1,8 @@
 .extern exception_handler
 .extern irq_handler
 
+#define KERNEL_DS 0x18
+
 .macro isr_err_stub_ i
     isr_stub_\i:
     // errorcode already pushed and is non-zero
@@ -10,7 +12,7 @@
     push %es
     push %fs
     push %gs
-    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov $KERNEL_DS, %ax    // Load the Kernel Data Segment descriptor!
     mov  %ax, %ds
     mov  %ax, %es
     mov  %ax, %fs
@@ -44,7 +46,7 @@
     push %es
     push %fs
     push %gs
-    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov $KERNEL_DS, %ax    // Load the Kernel Data Segment descriptor!
     mov  %ax, %ds
     mov  %ax, %es
     mov  %ax, %fs
@@ -73,7 +75,7 @@
     push %es
     push %fs
     push %gs
-    mov $0x18, %ax    // Load the Kernel Data Segment descriptor!
+    mov $KERNEL_DS, %ax    // Load the Kernel Data Segment descriptor!
     mov  %ax, %ds
     mov  %ax, %es
     mov  %ax, %fs

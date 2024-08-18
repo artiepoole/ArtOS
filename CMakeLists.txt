@@ -13,7 +13,7 @@ set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
-        "include/*.s"
+        "include/*.S"
         "include/timers/*.h"
         "include/timers/*.cpp"
         "include/device_info/*.h"
@@ -33,9 +33,6 @@ add_subdirectory(pdclib)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} src/boot.S src/main.cpp
         ${INCLUDE} ${KERNEL}
-        include/device_info/ACPI.h
-        include/APIC.cpp
-        include/APIC.h
 )
 
 target_include_directories(
