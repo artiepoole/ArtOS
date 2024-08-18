@@ -28,7 +28,9 @@ Serial::Serial()
     // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
     outb(PORT + 4, 0x0F);
     connected = true;
-    write("Mon Jan 01 00:00:00 1970\t Serial connected\n");
+    #if ENABLE_LOGGING
+        write("Mon Jan 01 00:00:00 1970\tSerial connected\n");
+    #endif
 }
 
 
