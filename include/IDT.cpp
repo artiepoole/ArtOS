@@ -205,7 +205,6 @@ void irq_handler(const cpu_registers_t* r)
         case 4:
             break;
         case 8:
-            LOG("RTC INT");
             rtc_handler();
             break;
         case 223:

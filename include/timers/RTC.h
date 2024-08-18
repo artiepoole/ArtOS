@@ -9,13 +9,6 @@
 #include "system.h"
 #include "time.h"
 
-// struct tm // using u16 for ease of printing.
-// {
-// 	u8 second, minute, hour, day, month, weekday;
-// 	u16 year; //  4 digit year
-// 	u8 regB;
-// };
-
 class RTC
 {
 public:
@@ -31,8 +24,8 @@ public:
 
 	tm read();
 	void increment();
-	void disableInterrupts();
-	void enableInterrupts();
+	void disableIRQs();
+	void enableIRQs();
 
 	u32 setDivider(u8 divider);
 
@@ -48,7 +41,6 @@ private:
 
 	void writeRegister(u8 reg_select, u8 data_byte);
 	static u8 checkUpdating();
-	u32 _setDivider(u8 divider);
 };
 
 void read_RTC();

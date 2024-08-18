@@ -110,7 +110,7 @@ void get_GDT()
         WRITE("GDT entry:");
         WRITE(i);
         WRITE(" data: ");
-        uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base + (8 * i));
+        [[maybe_unused]] uintptr_t gdt_ptr = static_cast<ptrdiff_t>(gdt.base + (8 * i));
         WRITE(gdt_ptr, true);
         NEWLINE();
     }
@@ -136,9 +136,6 @@ u16 get_ds()
     return i;
 }
 
-void process_events(EventQueue events)
-{
-}
 
 extern u32 DATA_CS;
 extern u32 TEXT_CS;
@@ -171,11 +168,11 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
-    [[nodiscard]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
+    [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
     full_madt_t* full_madt = populate_madt(multiboot2_get_MADT_table_address());
-    [[nodiscard]] LocalAPIC local_apic(full_madt->madt_stub->local_apic_address);
-    [[nodiscard]] IOAPIC io_apic(full_madt->io_apic.physical_address);
+    [[maybe_unused]] LocalAPIC local_apic(full_madt->madt_stub->local_apic_address);
+    [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
 
     // then load the rest of the singleton classes.
     WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
@@ -184,9 +181,17 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     Terminal terminal;
     PIC::disable_entirely();
 
-    // local_apic.configure_timer(1024);
-    IDT idt;
+    // remap IRQs in APIC
+    io_apic.remapIRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
+    io_apic.remapIRQ(1, 33); // Keyboard
+    io_apic.remapIRQ(8, 40); // RTC
+
     configurePit(2000);
+
+    // local_apic.configure_timer(1024);
+    // Configure interrupt tables and enable interrupts.
+    IDT idt;
+
     LOG("Singletons loaded.");
 
 
@@ -194,28 +199,18 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.draw();
 
 
-    // pic.enableIRQ(0); // PIT interrupts
-    // pic.enableIRQ(1); // Keyboard interrupts
-    // pic.enableIRQ(2); // Enable secondary PIC to raise interrupts
-    // pic.enableIRQ(8); // RTC interrupts
-
-    io_apic.remapIRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
-    io_apic.remapIRQ(1, 33); // Keyboard
-    io_apic.remapIRQ(8, 40); // RTC todo: not working.
-
-
 
     terminal.setScale(2);
     vga.draw();
     terminal.write(" Loading Done.\n");
-    LOG("LOADED OS.");
 
     // FILE* com = fopen("/dev/com1", "w");
     // fprintf(com, "%s\n", "This should print to com0");
 
     PCI_list();
-    auto IDE_controller = PCIDevice(0, 1, 1);
-    LOG("progif: ", static_cast<u16>(IDE_controller.prog_if()));
+    [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
+
+    LOG("LOADED OS.");
 
 
     // Event handler loop.
@@ -291,7 +286,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                             }
                         case '\t': // tab
                             {
-                                LOG("TAB");
                                 terminal.write("    ");
                                 break;
                             }

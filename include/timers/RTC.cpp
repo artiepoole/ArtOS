@@ -17,17 +17,18 @@ u32 seconds_since_start = 0;
 
 RTC::RTC()
 {
-
     WRITE("Mon Jan 01 00:00:00 1970\tInitialising RTC\n");
     instance = this;
     u8 flag = readRegister(CMOS_STATUS_B);
     // Set the clock to binary mode (more efficient) and 24 hour mode.
     // Bit 2 - Data Mode - 0: BCD, 1: Binary
     // Bit 1 - 24/12 hour selection - 1 enables 24 hour mode
-    flag = flag | 0x1<<1 | 0x1<<2;
+    flag = flag | 0x1 << 1 | 0x1 << 2;
     writeRegister(CMOS_STATUS_B, flag);
     read(); // also updates current time
-    _setDivider(15); // also sets frequency
+    setDivider(15); // also sets frequency
+    enableIRQs();
+
     LOG("RTC initialised");
 }
 
@@ -48,7 +49,7 @@ tm* RTC::getTime()
 
 time_t RTC::epochTime()
 {
-    u32 days = (current_time.tm_year -70) * 365 + current_time.tm_yday;
+    u32 days = (current_time.tm_year - 70) * 365 + current_time.tm_yday;
     return ((days * 24 + current_time.tm_hour) * 60 + current_time.tm_min) * 60 + current_time.tm_sec;
 }
 
@@ -136,9 +137,9 @@ tm RTC::read()
         minute,
         hour,
         day,
-        month-1, // gets 1-12, needs 0-11
+        month - 1, // gets 1-12, needs 0-11
         year - 1900,
-        weekday-1, // gets 1-7, needs 0-6
+        weekday - 1, // gets 1-7, needs 0-6
         yearday,
         0
     };
@@ -163,56 +164,57 @@ void RTC::increment()
 }
 
 
-void RTC::enableInterrupts()
+void RTC::enableIRQs()
 {
-    disable_interrupts(); // disable interrupts
+    // Must disable interrupts while configuring
+    const bool interrupts_enabled = get_eflags().IF;
+    if (interrupts_enabled) disable_interrupts(); // disable interrupts
     outb(CMOS_SELECT, CMOS_STATUS_B);
     const u8 prev = inb(CMOS_DATA); // read the current value of register B
     outb(CMOS_SELECT, CMOS_STATUS_B);
     outb(CMOS_DATA, prev | 0x40); // write the previous value ORed with 0x40. This turns on bit 6 of register B
-    enable_interrupts();
+    if (interrupts_enabled) enable_interrupts();
 }
 
-void RTC::disableInterrupts()
+void RTC::disableIRQs()
 {
-    disable_interrupts(); // disable interrupts
+    // Must disable interrupts while configuring
+    const bool interrupts_enabled = get_eflags().IF;
+    if (interrupts_enabled) disable_interrupts();
     outb(CMOS_SELECT, CMOS_STATUS_B);
     const u8 prev = inb(CMOS_DATA); // read the current value of register B
     outb(CMOS_SELECT, CMOS_STATUS_B);
     outb(CMOS_DATA, prev & ~0x40); // remove bit 6
-    enable_interrupts();
+    if (interrupts_enabled) enable_interrupts();
 }
 
 
 u32 RTC::setDivider(u8 divider)
 {
-    // After interrupts are enabled on boot, any further setDivider calls must disable interrupts before the change and reenable them after otherwise risking unspecified behaviour
-    //  0011b = 3 - 122 microseconds (minimum) // 8000 hz
-    //  1111b = 15 - 500 milliseconds //
-    //  0110b = 6 - 976.562 microseconds (default) // 1024 hz
-    disable_interrupts();
-    _setDivider(divider);
-    enable_interrupts();
-    return hz;
-}
-u32 RTC::_setDivider(u8 divider)
-{
-    // Must manually control interrupts on internal call
     //  0011b = 3 - 122 microseconds (minimum) // 8000 hz
     //  1111b = 15 - 500 milliseconds //
     //  0110b = 6 - 976.562 microseconds (default) // 1024 hz
 
+    // Must disable interrupts while configuring
+    const bool interrupts_enabled = get_eflags().IF;
+    if (interrupts_enabled) disable_interrupts();
 
+    // set interrupt frequency
     hz = 32768 >> (divider - 1);
     LOG("Setting RTC divider. Divisor: ", static_cast<u16>(divider), " frequency: ", hz);
     divider &= 0x0F; // rate must be above 2 and not over 15
     outb(CMOS_SELECT, CMOS_STATUS_A);
-    const u8 prev = inb(CMOS_DATA); // get initial value of register A
+    u8 prev = inb(CMOS_DATA); // get initial value of register A
     outb(CMOS_SELECT, CMOS_STATUS_A);
     outb(CMOS_DATA, (prev & 0xF0) | divider); //write only our rate to A. Note, rate is the bottom 4 bits.
 
+    if (interrupts_enabled) enable_interrupts();
     return hz;
 }
+
+
+
+
 
 void RTC::toString(char* out_str) const
 {
@@ -252,14 +254,13 @@ void RTC::toString(char* out_str) const
 }
 
 
-
 void rtc_handler()
 {
     // Must read register c in order to let CMOS interrupt again
     outb(CMOS_SELECT, CMOS_STATUS_C); // select register C
     inb(CMOS_DATA); // throw away contents
     RTC_ticks++;
-    if (auto & rtc = RTC::get(); RTC_ticks % (rtc.hz) == 0)
+    if (auto& rtc = RTC::get(); RTC_ticks % (rtc.hz) == 0)
     {
         rtc.increment();
         seconds_since_start++;
