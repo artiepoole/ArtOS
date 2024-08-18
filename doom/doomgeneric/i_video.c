@@ -41,11 +41,11 @@ rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <fcntl.h>
+// #include <fcntl.h>
 
 #include <stdarg.h>
 
-#include <sys/types.h>
+#include <doomtypes.h>
 
 //#define CMAP256
 

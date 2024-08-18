@@ -17,24 +17,24 @@
 //	System interface for sound.
 //
 
-#include "config.h"
+#include "../doomgeneric/config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <ctype.h>
+#include <../../pdclib/include/stdio.h>
+#include <../../pdclib/include/stdlib.h>
+#include <../../pdclib/include/string.h>
+#include <../../pdclib/include/assert.h>
+#include <../../pdclib/include/ctype.h>
 
-#include "deh_str.h"
-#include "i_sound.h"
-#include "i_system.h"
-#include "i_swap.h"
-#include "m_argv.h"
-#include "m_misc.h"
-#include "w_wad.h"
-#include "z_zone.h"
+#include "../doomgeneric/deh_str.h"
+#include "../doomgeneric/i_sound.h"
+#include "../doomgeneric/i_system.h"
+#include "../doomgeneric/i_swap.h"
+#include "../doomgeneric/m_argv.h"
+#include "../doomgeneric/m_misc.h"
+#include "../doomgeneric/w_wad.h"
+#include "../doomgeneric/z_zone.h"
 
-#include "doomtype.h"
+#include "../doomgeneric/doomtype.h"
 
 #include <allegro/base.h>
 #include <allegro/sound.h>

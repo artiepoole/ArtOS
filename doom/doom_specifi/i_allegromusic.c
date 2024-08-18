@@ -17,27 +17,27 @@
 //
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <../../pdclib/include/stdio.h>
+#include <../../pdclib/include/stdlib.h>
+#include <../../pdclib/include/string.h>
+#include <../../pdclib/include/ctype.h>
 
-#include "config.h"
-#include "doomtype.h"
-#include "memio.h"
-#include "mus2mid.h"
+#include "../doomgeneric/config.h"
+#include "../doomgeneric/doomtype.h"
+#include "../doomgeneric/memio.h"
+#include "../doomgeneric/mus2mid.h"
 
-#include "deh_str.h"
-#include "gusconf.h"
-#include "i_sound.h"
-#include "i_system.h"
-#include "i_swap.h"
-#include "m_argv.h"
-#include "m_config.h"
-#include "m_misc.h"
-#include "sha1.h"
-#include "w_wad.h"
-#include "z_zone.h"
+#include "../doomgeneric/deh_str.h"
+#include "../doomgeneric/gusconf.h"
+#include "../doomgeneric/i_sound.h"
+#include "../doomgeneric/i_system.h"
+#include "../doomgeneric/i_swap.h"
+#include "../doomgeneric/m_argv.h"
+#include "../doomgeneric/m_config.h"
+#include "../doomgeneric/m_misc.h"
+#include "../doomgeneric/sha1.h"
+#include "../doomgeneric/w_wad.h"
+#include "../doomgeneric/z_zone.h"
 
 #include <allegro/base.h>
 #include <allegro/midi.h>

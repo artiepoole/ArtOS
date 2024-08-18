@@ -32,8 +32,8 @@
 #include <direct.h>
 #endif
 #else
-#include <sys/stat.h>
-#include <sys/types.h>
+// #include <sys/stat.h>
+#include <doomtypes.h>
 #endif
 
 #include "doomtype.h"
@@ -52,14 +52,14 @@
 // Create a directory
 //
 
-void M_MakeDirectory(char *path)
-{
-#ifdef _WIN32
-    mkdir(path);
-#else
-    mkdir(path, 0755);
-#endif
-}
+// void M_MakeDirectory(char *path)
+// {
+// #ifdef _WIN32
+//     mkdir(path);
+// #else
+//     mkdir(path, 0755);
+// #endif
+// }
 
 // Check if a file exists
 

@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+// #include <math.h>
 
 #include "i_system.h"
 
@@ -845,6 +845,7 @@ void V_ScreenShot(char *format)
 
 void V_DrawMouseSpeedBox(int speed)
 {
+    return;
     extern int usemouse;
     int bgcolor, bordercolor, red, black, white, yellow;
     int box_x, box_y;
@@ -865,10 +866,10 @@ void V_DrawMouseSpeedBox(int speed)
     // If the mouse is turned off or acceleration is turned off, don't
     // draw the box at all.
 
-    if (!usemouse || fabs(mouse_acceleration - 1) < 0.01)
-    {
-        return;
-    }
+    // if (!usemouse || fabs(mouse_acceleration - 1) < 0.01)
+    // {
+    //     return;
+    // }
 
     // Calculate box position
 

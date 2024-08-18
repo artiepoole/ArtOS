@@ -19,7 +19,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
+// #include <math.h>
 
 #include "doomdef.h" 
 #include "doomkeys.h"
