@@ -108,12 +108,28 @@ _PDCLIB_PUBLIC int strcoll( const char * s1, const char * s2 );
 */
 _PDCLIB_PUBLIC int strncmp( const char * s1, const char * s2, size_t n );
 
+
+/* Compare no more than N characters of S1 and S2,
+   ignoring case, returning less than, equal to or
+   greater than zero if S1 is lexicographically less
+   than, equal to or greater than S2.  */
+int strncasecmp(const char* s1, const char* s2, size_t n);
+
+/* Compare s1 and s2, ignoring case, returning less than, equal to or
+greater than zero if s1 is  less than, equal to or greater than s2.  */
+int strcasecmp(const char* s1, const char* s2);
+
+/* Duplicate S, returning an identical malloc'd string.  */
+char * strdup (const char *s);
+
 /* Transform the character array s2 as appropriate for the LC_COLLATE setting of
-   the current locale. If length of resulting string is less than n, store it in
-   the character array pointed to by s1. Return the length of the resulting
-   string.
+the current locale. If length of resulting string is less than n, store it in
+the character array pointed to by s1. Return the length of the resulting
+string.
 */
 _PDCLIB_PUBLIC size_t strxfrm( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2, size_t n );
+
+
 
 /* Search functions */
 
