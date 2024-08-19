@@ -1,7 +1,9 @@
 /* The bootloader will look at this image and start execution at the symbol
    designated as the entry point. */
 TARGET(binary)
-INPUT("/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad")
+INPUT(/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad)
+OUTPUT_FORMAT(default)
+
 
 ENTRY(start)
 
@@ -46,6 +48,7 @@ SECTIONS
         KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
         end_ctors = .;
         *(.data)
+        *(.doom_blob*);
     }
 
 
@@ -56,12 +59,6 @@ SECTIONS
 		*(COMMON)
 		*(.bss)
 	}
-
-	.doomwad : ALIGN(4K){
-	"/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad"
-	doom_wad_loc = .;
-	}
-
 
     /DISCARD/ : { *(.fini_array*) *(.comment) }
 	/* The compiler may produce other sections, by default it will put them in

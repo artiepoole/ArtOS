@@ -194,3 +194,8 @@ This is useful when debugging or when you implement call tracing.
 .size _start, . - _start
 .size start, . - start
 
+.section .doom_blob
+.globl  doom_wad_loc_ptr, doom_wad_end_ptr
+doom_wad_loc_ptr:
+.incbin "/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad"
+doom_wad_end_ptr:
