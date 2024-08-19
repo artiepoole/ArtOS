@@ -144,6 +144,9 @@ set( PDCLIB_SOURCES
         functions/string/strerrorlen_s.c
         functions/string/strncat_s.c
         functions/string/strncpy_s.c
+        functions/string/strcasecmp.c
+        functions/string/strdup.c
+        functions/string/strncasecmp.c
 #
         functions/time/asctime.c
         functions/time/asctime_s.c
