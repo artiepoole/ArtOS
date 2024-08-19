@@ -1413,7 +1413,7 @@ static boolean IsNullKey(int key)
 //
 // M_Responder
 //
-boolean M_Responder (event_t* ev)
+boolean M_Responder (doom_event_t* ev)
 {
     int             ch;
     int             key;

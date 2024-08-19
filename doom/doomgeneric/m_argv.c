@@ -246,7 +246,6 @@ void M_FindResponseFile(void)
 }
 
 // Return the name of the executable used to start the program:
-
 char *M_GetExecutableName(void)
 {
     char *sep;

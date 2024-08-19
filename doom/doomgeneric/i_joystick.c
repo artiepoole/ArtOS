@@ -323,7 +323,7 @@ void I_UpdateJoystick(void)
 #ifdef ORIGCODE
     if (joystick != NULL)
     {
-        event_t ev;
+        doom_event_t ev;
 
         ev.type = ev_joystick;
         ev.data1 = GetButtonsState();

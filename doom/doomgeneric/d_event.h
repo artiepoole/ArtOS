@@ -65,7 +65,7 @@ typedef struct
     //    data4: Third axis mouse movement (strafe).
 
     int data1, data2, data3, data4;
-} event_t;
+} doom_event_t;
 
  
 //
@@ -126,11 +126,11 @@ typedef enum
 
 
 // Called by IO functions when input is detected.
-void D_PostEvent (event_t *ev);
+void D_PostEvent (doom_event_t *ev);
 
 // Read an event from the event queue
 
-event_t *D_PopEvent(void);
+doom_event_t *D_PopEvent(void);
 
 
 #endif

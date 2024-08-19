@@ -24,7 +24,7 @@
 
 #define MAXEVENTS 64
 
-static event_t events[MAXEVENTS];
+static doom_event_t events[MAXEVENTS];
 static int eventhead;
 static int eventtail;
 
@@ -32,7 +32,7 @@ static int eventtail;
 // D_PostEvent
 // Called by the I/O functions when input is detected
 //
-void D_PostEvent (event_t* ev)
+void D_PostEvent (doom_event_t* ev)
 {
     events[eventhead] = *ev;
     eventhead = (eventhead + 1) % MAXEVENTS;
@@ -40,9 +40,9 @@ void D_PostEvent (event_t* ev)
 
 // Read an event from the queue.
 
-event_t *D_PopEvent(void)
+doom_event_t *D_PopEvent(void)
 {
-    event_t *result;
+    doom_event_t *result;
 
     // No more events waiting.
 

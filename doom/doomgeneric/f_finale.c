@@ -99,7 +99,7 @@ char*	finaleflat;
 
 void	F_StartCast (void);
 void	F_CastTicker (void);
-boolean F_CastResponder (event_t *ev);
+boolean F_CastResponder (doom_event_t *ev);
 void	F_CastDrawer (void);
 
 //
@@ -157,7 +157,7 @@ void F_StartFinale (void)
 
 
 
-boolean F_Responder (event_t *event)
+boolean F_Responder (doom_event_t *event)
 {
     if (finalestage == F_STAGE_CAST)
 	return F_CastResponder (event);
@@ -462,7 +462,7 @@ void F_CastTicker (void)
 // F_CastResponder
 //
 
-boolean F_CastResponder (event_t* ev)
+boolean F_CastResponder (doom_event_t* ev)
 {
     if (ev->type != ev_keydown)
 	return false;

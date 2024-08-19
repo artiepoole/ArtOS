@@ -37,7 +37,7 @@
 //
 
 // Called by main loop.
-boolean ST_Responder (event_t* ev);
+boolean ST_Responder (doom_event_t* ev);
 
 // Called by main loop.
 void ST_Ticker (void);
