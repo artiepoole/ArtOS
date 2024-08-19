@@ -7,8 +7,7 @@ file(GLOB SRC
         "doomgeneric/*.c"
 )
 
-
-add_library(doom STATIC doomgeneric_artos.cpp ${SRC} ${PDCLIB_H})
+add_library(doom STATIC doomgeneric_artos.cpp ${SRC})
 target_include_directories(doom PRIVATE doomgeneric)
-target_include_directories(doom PUBLIC ./)
+target_include_directories(doom PUBLIC .)
 target_link_libraries(doom pdclib)
