@@ -28,6 +28,10 @@
 #include "SMBIOS.h"
 #include "EventQueue.h"
 #include "string.h"
+extern "C" {
+#include "doomgeneric/doomgeneric.h"
+}
+
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -106,6 +110,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
 
     LOG("LOADED OS.");
+
+    run_doom();
 
     // Event handler loop.
     LOG("Entering event loop.");
