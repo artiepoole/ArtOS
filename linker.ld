@@ -1,5 +1,8 @@
 /* The bootloader will look at this image and start execution at the symbol
    designated as the entry point. */
+TARGET(binary)
+INPUT("/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad")
+
 ENTRY(start)
 
 OUTPUT_FORMAT(elf32-i386)
@@ -52,6 +55,11 @@ SECTIONS
 	{
 		*(COMMON)
 		*(.bss)
+	}
+
+	.doomwad : ALIGN(4K){
+	"/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad"
+	doom_wad_loc = .;
 	}
 
 
