@@ -56,6 +56,7 @@ target_compile_definitions(${KERNEL_BIN}
         PUBLIC
         ENABLE_LOGGING=$<BOOL:${ENABLE_LOGGING}>
 )
+
 target_link_libraries(${KERNEL_BIN} pdclib doom)
 
 
@@ -70,4 +71,13 @@ add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/)
 
 
-
+#file(GLOB DOOM_SRC
+#        "doom/doomgeneric/*.h"
+#        "doom/doomgeneric/*.c"
+#)
+#
+#add_executable(doomexec doom/doomgeneric_artos.cpp ${DOOM_SRC} ${KERNEL} ${INCLUDE})
+#target_include_directories(doomexec PUBLIC doomgeneric)
+#target_link_libraries(doomexec pdclib)
+#set_target_properties(doomexec PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
+#
