@@ -1,46 +1,62 @@
-#include "m_argv.h"
-#include "doomgeneric.h"
-#include "doom.h"
-#include "kernel.h"
+#include "../include/constants/types.h"
 
-long unsigned int screen_buffer[DOOMGENERIC_RESX * DOOMGENERIC_RESY];
-
-
-void DG_Init(){
-
-}
-void DG_DrawFrame(){
-
-}
-void DG_SleepMs(uint32_t ms)
-{
-
-}
-uint32_t DG_GetTicksMs()
-{
-    return 0;
-}
-int DG_GetKey(int* pressed, unsigned char* key)
-{
-    return 0;
-}
-void DG_SetWindowTitle(const char * title)
-{
-
+extern "C" {
+#include "doomgeneric/doomgeneric.h"
 }
 
+#include "../src/sys/kernel.h"
+#include "../include/VideoGraphicsArray.h"
+
+u32 screen_buffer[DOOMGENERIC_RESX * DOOMGENERIC_RESY];
 
 extern "C"
-int run_doom(int argc, char **argv)
+void DG_Init()
 {
-    int myargc = argc;
-    char** myargv = argv;
-
-    M_FindResponseFile();
-
-    DG_ScreenBuffer = screen_buffer;
-
-    DG_Init();
-
-    D_DoomMain();
+    write_standard("DG_init called.\n", 17);
 }
+
+extern "C"
+void DG_DrawFrame()
+{
+    VideoGraphicsArray::get().draw_region(DG_ScreenBuffer);
+}
+
+extern "C"
+void DG_SleepMs(const uint32_t ms)
+{
+    sleep_ms(ms);
+}
+
+extern "C"
+uint32_t DG_GetTicksMs()
+{
+    return get_tick_ms();
+}
+
+extern "C"
+int DG_GetKey(int* pressed, unsigned char* key)
+{
+    //todo: get event queue or smth
+    return 0;
+}
+
+extern "C"
+void DG_SetWindowTitle(const char* title)
+{
+
+}
+
+extern "C"
+int run_doom()
+{
+    doomgeneric_Create(0, nullptr);
+
+    while (true)
+    {
+        doomgeneric_Tick();
+    }
+
+    return 0;
+}
+
+
