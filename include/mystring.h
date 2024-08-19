@@ -29,7 +29,7 @@ char digit_as_char(const int_like val)
 
 //extern "C"
 template <typename int_like>
-void string_from_int(int_like val, char* out_str)
+size_t string_from_int(int_like val, char* out_str)
 {
     bool const is_negative = val < 0;
 
@@ -62,11 +62,12 @@ void string_from_int(int_like val, char* out_str)
         val /= 10;
     }
     out_str[len - 1] = '\0';
+    return len;
 }
 
 //extern "C"
 template <typename int_like1, typename int_like2>
-void hex_from_int(int_like1 val, char* out_str, int_like2 n_bytes)
+size_t hex_from_int(int_like1 val, char* out_str, int_like2 n_bytes)
 {
     const bool neg = val < 0;
     int_like2 len;
@@ -87,6 +88,7 @@ void hex_from_int(int_like1 val, char* out_str, int_like2 n_bytes)
 
 
     out_str[len - 1] = '\0';
+    return len;
 }
 
 

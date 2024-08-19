@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "colours.h"
+#include "mystring.h"
 
 struct terminal_char_t
 {
@@ -33,24 +34,25 @@ public:
     void clear();
 
 
-    void write(const char* data, u32 color = COLOR_BASE0); // buffer without known length also with colour
+    void write(const char* data, u32 colour = COLOR_BASE0); // buffer without known length also with colour
     void write(char c, u32 color = COLOR_BASE0); // single char
-    void write(const char* data, size_t len, u32 color = COLOR_BASE0); // buffer of fixed len
+    void write(const char* data, size_t len, u32 colour=COLOR_BASE0); // buffer of fixed len
 
     template <typename int_like>
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
-    void write(int_like val, size_t hex_len = 0, u32 color = COLOR_BASE0)
+    void write(int_like val, size_t hex_len = 0, const u32 color=COLOR_BASE0)
     {
         char out_str[255]; // long enough for any int type possible
+        size_t len=0;
         if (hex_len > 0)
         {
-            hex_from_int(val, out_str, hex_len);
+            len = hex_from_int(val, out_str, hex_len);
         }
         else
         {
-            string_from_int(val, out_str);
+            len =string_from_int(val, out_str);
         }
-        write(out_str, color);
+        write(out_str, len, color);
     }
 
 

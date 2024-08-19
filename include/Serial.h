@@ -37,6 +37,7 @@ private:
 public:
     Serial();
     ~Serial();
+
     static Serial& get();
 
     // remove copy functionality
@@ -46,7 +47,9 @@ public:
     bool connected;
 
     void newLine();
+    void write(bool b);
     void write(unsigned char c);
+    void write(char c);
     void write(const char* data);
     void write(const char* data, size_t len);
 

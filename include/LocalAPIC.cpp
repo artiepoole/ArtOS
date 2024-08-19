@@ -36,7 +36,11 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     *spv_addr = local_spurious.raw;
 
     spurious_vector_entry = reinterpret_cast<LVT_spurious_vector*>(spv_addr);
-    LOG("Spurious vector set. Spurious entry raw value: ", spurious_vector_entry->raw);
+    LOG(
+        "Spurious vector set. Spurious vector: ",
+        static_cast<u16>(spurious_vector_entry->raw & 0xFF),
+        " Software enabled: ",
+        static_cast<bool>(local_spurious.software_enable));
     // todo: troubleshoot not being able to set the value of the spurious vector here.
     full_lvt.timer = *reinterpret_cast<LVT_timer_entry*>(local_apic_physical_address + TIMER_LVT_OFFSET);
     full_lvt.thermal = *reinterpret_cast<LVT_entry*>(local_apic_physical_address + THERMAL_LVT_OFFSET);
