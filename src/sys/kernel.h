@@ -46,7 +46,8 @@ void print_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
     auto& term = Terminal::get();
     term.write(val, hex_len, color);
     term.newLine();
-};
+}
+
 extern "C"
 void _exit(int status);
 

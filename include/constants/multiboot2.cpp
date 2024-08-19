@@ -132,12 +132,12 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
 /*
  *  Must call multiboot2_populate before use
  */
-u32 multiboot2_get_APIC_address()
+multiboot2_uint32_t multiboot2_get_APIC_address()
 {
     return reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt_stub->local_apic_address;
 }
 
-u32 multiboot2_get_MADT_table_address()
+multiboot2_uint32_t multiboot2_get_MADT_table_address()
 {
     return reinterpret_cast<u32>(reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt_stub);
 }

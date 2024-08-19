@@ -47,6 +47,11 @@ void Serial::write(const unsigned char c)
     _sendChar(c);
 }
 
+void Serial::write(const char c)
+{
+    _sendChar(c);
+}
+
 void Serial::write(const char* data)
 {
     _write(data, mystrlen(data));
@@ -86,6 +91,19 @@ void Serial::_sendChar(unsigned char a)
 
     outb(PORT, a);
 }
+
+void Serial::write(bool b)
+{
+    if (b == true)
+    {
+        _write("true", 4);
+    }
+    else
+    {
+        _write("false", 5);
+    }
+}
+
 
 void Serial::_write(const char* data, const size_t size)
 {
