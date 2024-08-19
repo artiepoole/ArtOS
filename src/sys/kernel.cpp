@@ -4,6 +4,7 @@
 
 #include "kernel.h"
 
+#include "PIT.h"
 #include "VideoGraphicsArray.h"
 #include "TSC.h"
 #include "SMBIOS.h"
@@ -56,6 +57,16 @@ u32 get_clock_rate()
 u64 get_current_clock()
 {
     return TSC_get_ticks();
+}
+
+uint32_t get_tick_ms()
+{
+    return TSC_get_ticks()/SMBIOS_get_CPU_clock_rate_hz()*1000;
+}
+
+void sleep_ms(const u32 ms)
+{
+    sleep(ms);
 }
 
 // void draw_screen_region(u32* frame_buffer)
