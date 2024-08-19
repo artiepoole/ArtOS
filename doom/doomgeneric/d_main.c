@@ -71,7 +71,7 @@
 #include "p_setup.h"
 #include "r_local.h"
 #include "statdump.h"
-
+#include "d_event.h"
 #include "d_main.h"
 
 //
@@ -138,7 +138,7 @@ void D_CheckNetGame(void);
 //
 void D_ProcessEvents (void)
 {
-    event_t*	ev;
+    doom_event_t*	ev;
 	
     // IF STORE DEMO, DO NOT ACCEPT INPUT
     if (storedemo)
@@ -1355,15 +1355,16 @@ void D_DoomMain (void)
 
     // Load configuration files before initialising other subsystems.
     DEH_printf("M_LoadDefaults: Load system defaults.\n");
-    M_SetConfigFilenames("default.cfg", PROGRAM_PREFIX "doom.cfg");
+    // M_SetConfigFilenames("default.cfg", PROGRAM_PREFIX "doom.cfg");
     D_BindVariables();
-    M_LoadDefaults();
+    // M_LoadDefaults();
 
     // Save configuration at exit.
-    I_AtExit(M_SaveDefaults, false);
+    // I_AtExit(M_SaveDefaults, false);
 
     // Find main IWAD file and load it.
     iwadfile = D_FindIWAD(IWAD_MASK_DOOM, &gamemission);
+    iwadfile = "doom1.wad";
 
     // None found?
 
@@ -1611,8 +1612,8 @@ void D_DoomMain (void)
     I_CheckIsScreensaver();
     I_InitTimer();
     I_InitJoystick();
-    I_InitSound(true);
-    I_InitMusic();
+    // I_InitSound(true);
+    // I_InitMusic();
 
 #ifdef FEATURE_MULTIPLAYER
     printf ("NET_Init: Init network subsystem.\n");
@@ -1766,8 +1767,8 @@ void D_DoomMain (void)
     DEH_printf("\nP_Init: Init Playloop state.\n");
     P_Init ();
 
-    DEH_printf("S_Init: Setting up sound.\n");
-    S_Init (sfxVolume * 8, musicVolume * 8);
+    // DEH_printf("S_Init: Setting up sound.\n");
+    // S_Init (sfxVolume * 8, musicVolume * 8);
 
     DEH_printf("D_CheckNetGame: Checking network game status.\n");
     D_CheckNetGame ();
