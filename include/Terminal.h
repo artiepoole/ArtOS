@@ -19,7 +19,7 @@ private:
 public:
     // Single isntance. Cannot be used if not initialised.
     // explicit Terminal(const window_t* screen);
-    Terminal();
+    Terminal(u32 width, u32 height);
     ~Terminal();
     static Terminal& get();
 
