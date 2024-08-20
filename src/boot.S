@@ -4,8 +4,8 @@
 #include <multiboot2.h>
 
 
-.set WIDTH, 1024  /* requested width */
-.set HEIGHT, 768  /* requested height */
+.set WIDTH, 1280  /* requested width */
+.set HEIGHT, 960 /* requested height */
 .set DEPTH, 32    /* requested bits per pixel BPP */
 
 /*
@@ -107,7 +107,7 @@ multiboot_header_end:
 .section .bss
 .align 16
 stack_bottom:
-.skip 200*1024*1024 # 200MiB
+.skip 256*1024*1024 # 200MiB
 stack_top:
 
 .section .text
@@ -195,7 +195,8 @@ This is useful when debugging or when you implement call tracing.
 .size start, . - start
 
 .section .doom_blob
-.globl  doom_wad_loc_ptr, doom_wad_end_ptr
-doom_wad_loc_ptr:
+.align  16
+.globl  doom_wad_file, doom_wad_file_end
+doom_wad_file:
 .incbin "/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad"
-doom_wad_end_ptr:
+doom_wad_file_end:

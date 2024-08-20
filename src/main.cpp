@@ -21,6 +21,7 @@
 #include "PCI.h"
 #include "multiboot2.h"
 #include "stdio.h"
+#include "Files.h"
 #include "CPUID.h"
 #include "RTC.h"
 #include "PIT.h"
@@ -78,7 +79,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     EventQueue events;
     VideoGraphicsArray vga(frame_info);
-    Terminal terminal;
+    Terminal terminal(frame_info->framebuffer_width, frame_info->framebuffer_height);
     PIC::disable_entirely();
 
     // remap IRQs in APIC
@@ -95,7 +96,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("Singletons loaded.");
 
 
-    vga.drawSplash();
+    // vga.drawSplash();
     vga.draw();
 
 
@@ -103,8 +104,14 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.draw();
     terminal.write(" Loading Done.\n");
 
-    // FILE* com = fopen("/dev/com1", "w");
-    // fprintf(com, "%s\n", "This should print to com0");
+
+    register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
+    register_file_handle(1, "/dev/stdout", NULL, Serial::com_write);
+    register_file_handle(2, "/dev/stderr", NULL, Serial::com_write);
+    FILE* com = fopen("/dev/com1", "w");
+    fprintf(com, "%s\n", "This should print to com0 via fprintf");
+    printf("This should print to com0 via printf\n");
+
 
     PCI_list();
     [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);

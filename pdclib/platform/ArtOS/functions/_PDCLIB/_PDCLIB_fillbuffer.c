@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 typedef long ssize_t;
-extern ssize_t read( int fd, void * buf, size_t count );
+extern ssize_t read( int fd, char * buf, size_t count );
 
 #ifdef __cplusplus
 }

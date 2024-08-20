@@ -1363,7 +1363,7 @@ void D_DoomMain (void)
     // I_AtExit(M_SaveDefaults, false);
 
     // Find main IWAD file and load it.
-    iwadfile = D_FindIWAD(IWAD_MASK_DOOM, &gamemission);
+    // iwadfile = D_FindIWAD(IWAD_MASK_DOOM, &gamemission);
     iwadfile = "doom1.wad";
 
     // None found?

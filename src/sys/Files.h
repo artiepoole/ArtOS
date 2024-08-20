@@ -29,6 +29,7 @@ extern "C"
 int open(const char* filename, unsigned int mode);
 extern "C"
 int write(int fd, const char* buf, unsigned long count);
-
+extern "C"
+int read( int fd, char* buf, const size_t count);
 
 #endif //FILES_H

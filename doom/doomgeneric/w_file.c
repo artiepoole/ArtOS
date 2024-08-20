@@ -78,7 +78,7 @@ wad_file_t *W_OpenFile(char *path)
             break;
         }
     }
-
+    // It seems like the wad file length is not being populated properly in the OpenFile call.
     return result;
 }
 

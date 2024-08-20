@@ -13,10 +13,13 @@
 extern "C" {
 #endif
 
-extern int fork( void );
-extern int execve( const char * filename, char * const argv[], char * const envp[] );
-extern int wait( int * status );
-
+int fork( void ){return 0;}
+int execve( const char * filename, char * const argv[], char * const envp[] ){return 0;}
+int wait( int * status )
+{
+    return 0;
+}
+int _PDCLIB_rename( const char * oldpath, const char * newpath ){return 0;}
 #ifdef __cplusplus
 }
 #endif

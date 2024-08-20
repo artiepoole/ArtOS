@@ -76,6 +76,7 @@
 //     return rc;
 // }
 
+#include "Files.h"
 
 extern _PDCLIB_fd_t open( const char * const filename, unsigned int mode );
 
