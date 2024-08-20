@@ -1,3 +1,5 @@
+#include <EventQueue.h>
+
 #include "../include/constants/types.h"
 
 extern "C" {
@@ -37,9 +39,26 @@ uint32_t DG_GetTicksMs()
 extern "C"
 int DG_GetKey(int* pressed, unsigned char* key)
 {
-    // fprintf("DG_GetKey called: \n");
-    //todo: get event queue or smth
-    return 0;
+    // should return 0 if no events
+    // should update just one keypress if keypress
+    // should skip to next event if not keypress
+    auto & queue = EventQueue::getInstance();
+    if (!queue.pendingEvents()) return 0; // no events
+
+    auto latest = queue.getEvent();
+    switch (latest.type)
+    {
+        case KEY_DOWN:
+            *pressed = 1;
+            *key = latest.data.lower_data;
+            break;
+        case KEY_UP:
+            *pressed = 0;
+            *key = latest.data.lower_data;
+            break;
+    }
+    return queue.pendingEvents();
+
 }
 
 extern "C"
@@ -61,5 +80,3 @@ int run_doom()
 
     return 0;
 }
-
-
