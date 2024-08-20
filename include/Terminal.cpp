@@ -1,4 +1,8 @@
 #include "Terminal.h"
+
+#include <stdlib.h>
+#include <string.h>
+
 #include "VideoGraphicsArray.h"
 #include "FONT.h"
 #include "Serial.h"
@@ -17,13 +21,22 @@ u32 accent;
 u32 error;
 u32 buffer_width;
 u32 buffer_height;
-terminal_char_t terminal_buffer[1024 / 8 * 768 / 8]; // 12288 characters total
-terminal_char_t rendered_buffer[1024 / 8 * 768 / 8]; // 12288 characters total
+terminal_char_t* terminal_buffer; // 12288 characters total
+terminal_char_t* rendered_buffer; // 12288 characters total
 
-u32 term_screen_buffer[1024 * 768];
+u32 * term_screen_buffer;
 
-Terminal::Terminal()
+Terminal::Terminal(u32 width, u32 height)
 {
+    screen_region = {0, 0, width, height, width, height};
+    buffer_width = screen_region.w / (scaled_char_dim);
+    buffer_height = screen_region.h / (scaled_char_dim);
+    term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
+    terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+    rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+    memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+    memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+
     instance = this;
     bkgd = COLOR_BASE02;
     frgd = COLOR_BASE0;
@@ -125,6 +138,12 @@ void Terminal::setScale(const u32 new_scale)
         terminal_column = 0;
         buffer_width = screen_region.w / (scaled_char_dim);
         buffer_height = screen_region.h / (scaled_char_dim);
+        free(terminal_buffer);
+        free(rendered_buffer);
+        terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+        rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+        memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+        memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
     }
     else
     {
@@ -175,7 +194,6 @@ void Terminal::userLine() // for use after an application prints.
     terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent}; // Add an arrow to the start of the line
     _render();
 }
-
 
 
 void Terminal::write(const char* data, const u32 color)

@@ -74,7 +74,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     EventQueue events;
     VideoGraphicsArray vga(frame_info);
-    Terminal terminal;
+    Terminal terminal(frame_info->framebuffer_width, frame_info->framebuffer_height);
     PIC::disable_entirely();
 
     // remap IRQs in APIC
