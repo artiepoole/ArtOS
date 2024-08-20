@@ -23,6 +23,8 @@ Basic graphics utility methods
 
 #include "VideoGraphicsArray.h"
 
+#include <string.h>
+
 #include "stdlib.h"
 
 #include "splash_screen.h"
@@ -161,9 +163,6 @@ window_t * VideoGraphicsArray::getScreen()
 
 void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
 {
-    for(size_t i=0; i<width*height; i++)
-    {
-        _screen[i] = buffer_to_draw[i];
-    }
+    memcpy(_screen, buffer_to_draw, width * height * sizeof(u32));
 }
 
