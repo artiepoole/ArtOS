@@ -92,7 +92,7 @@ void SMBIOS_populate_cpu_info()
     }
 }
 
-i32 SMBIOS_get_CPU_clock_rate_hz()
+u64 SMBIOS_get_CPU_clock_rate_hz()
 {
     if (clock_rate!=0) return clock_rate;
     if (cpu_info == NULL)

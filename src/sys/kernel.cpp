@@ -61,7 +61,7 @@ u64 get_current_clock()
 
 uint32_t get_tick_ms()
 {
-    return TSC_get_ticks()/SMBIOS_get_CPU_clock_rate_hz()*1000;
+    return TSC_get_ticks()/(SMBIOS_get_CPU_clock_rate_hz()/1000);
 }
 
 void sleep_ms(const u32 ms)
