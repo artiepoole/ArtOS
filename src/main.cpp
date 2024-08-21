@@ -50,7 +50,8 @@ u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
 void process_cmd(char* buf, size_t len)
 {
-    if (strncasecmp(buf, "play doom", len)==0)
+    if (len ==0) return;
+    if (strncasecmp(buf, "play doom", 9)==0)
     {
         run_doom();
     }
@@ -137,10 +138,12 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("LOADED OS.");
 
+    // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
     constexpr size_t cmd_buffer_size = 1024;
     char cmd_buffer[cmd_buffer_size] = {0};
     size_t cmd_buffer_idx = 0;
     // Event handler loop.
+    MAINLOOP:
     LOG("Entering event loop.\n");
     while (true)
     {
@@ -209,6 +212,10 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                         case '\b': // backspace
                             {
                                 terminal.backspace();
+                                if (cmd_buffer_idx >0)
+                                {
+                                    cmd_buffer[--cmd_buffer_idx] = ' ';
+                                }
                                 break;
                             }
                         case '\t': // tab
@@ -272,7 +279,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                                 terminal.write("\n");
                                 process_cmd(cmd_buffer, cmd_buffer_idx);
                                 memset(cmd_buffer, 0, cmd_buffer_size);
-                                cmd_buffer[cmd_buffer_idx] = 0;
+                                cmd_buffer_idx = 0;
+                                terminal.refresh();
                                 break;
                             }
                         default:

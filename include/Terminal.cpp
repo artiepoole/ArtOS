@@ -167,6 +167,11 @@ u32 Terminal::getScale()
     return font_scale;
 }
 
+void Terminal::refresh()
+{
+    _render();
+}
+
 void Terminal::_render()
 {
     if (!instance) return;

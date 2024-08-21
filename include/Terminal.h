@@ -94,6 +94,7 @@ public:
         newLine();
     };
     void backspace();
+    void refresh();
 
 private:
     static void _scroll();
