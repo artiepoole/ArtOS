@@ -18,7 +18,7 @@ u32 char_dim = 8;
 u32 font_scale = 2;
 u32 scaled_char_dim = 16;
 size_t terminal_row = 0;
-size_t terminal_column = 0;
+size_t terminal_column = 1;
 u32 buffer_width;
 u32 buffer_height;
 terminal_char_t* terminal_buffer; // 12288 characters total
