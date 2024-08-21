@@ -876,9 +876,9 @@ void G_Ticker (void)
 	  case ga_loadgame: 
 	    G_DoLoadGame (); 
 	    break; 
-	  case ga_savegame: 
-	    G_DoSaveGame (); 
-	    break; 
+	  case ga_savegame:
+	    // G_DoSaveGame ();
+	    break;
 	  case ga_playdemo: 
 	    G_DoPlayDemo (); 
 	    break; 
@@ -1551,7 +1551,7 @@ void G_DoLoadGame (void)
 	 
     gameaction = ga_nothing; 
 	 
-    save_stream = fopen(savename, "rb");
+    // save_stream = fopen(savename, "rb");
 
     if (save_stream == NULL)
     {
@@ -1560,11 +1560,11 @@ void G_DoLoadGame (void)
 
     savegame_error = false;
 
-    if (!P_ReadSaveGameHeader())
-    {
-        fclose(save_stream);
-        return;
-    }
+    // if (!P_ReadSaveGameHeader())
+    // {
+    //     fclose(save_stream);
+    //     return;
+    // }
 
     savedleveltime = leveltime;
     
@@ -1582,7 +1582,7 @@ void G_DoLoadGame (void)
     if (!P_ReadSaveGameEOF())
 	I_Error ("Bad savegame");
 
-    fclose(save_stream);
+    // fclose(save_stream);
     
     if (setsizeneeded)
     	R_ExecuteSetViewSize ();

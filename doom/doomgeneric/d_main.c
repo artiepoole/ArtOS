@@ -73,6 +73,7 @@
 #include "statdump.h"
 #include "d_event.h"
 #include "d_main.h"
+#include "doomgeneric.h"
 
 //
 // D-DoomLoop()
@@ -126,6 +127,8 @@ char		wadfile[1024];		// primary wad file
 char		mapdir[1024];           // directory of development maps
 
 int             show_endoom = 1;
+
+
 
 
 void D_ConnectNetGame(void);
@@ -402,8 +405,9 @@ boolean D_GrabMouseCallback(void)
     return (gamestate == GS_LEVEL) && !demoplayback && !advancedemo;
 }
 
-void doomgeneric_Tick()
+boolean doomgeneric_Tick()
 {
+    if (!doom_is_running) return false;
     // frame syncronous IO operations
     I_StartFrame ();
 
@@ -416,6 +420,7 @@ void doomgeneric_Tick()
     {
         D_Display ();
     }
+    return true;
 }
 
 //
@@ -1081,8 +1086,8 @@ static void D_Endoom(void)
     endoom = W_CacheLumpName(DEH_String("ENDOOM"), PU_STATIC);
 
     I_Endoom(endoom);
-
-	exit(0);
+    doom_is_running = false;
+	// exit(0);
 }
 
 #if ORIGCODE

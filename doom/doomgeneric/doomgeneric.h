@@ -26,9 +26,11 @@ typedef u32 pixel_t;
 
 
 extern pixel_t* DG_ScreenBuffer;
-
+extern boolean doom_is_running;
 void doomgeneric_Create(int argc, char **argv);
-void doomgeneric_Tick();
+boolean doomgeneric_Tick();
+
+
 
 
 //Implement below functions for your platform

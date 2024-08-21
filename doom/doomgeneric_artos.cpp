@@ -65,7 +65,7 @@ void DG_Init()
 extern "C"
 void DG_DrawFrame()
 {
-    VideoGraphicsArray::get().draw_region(DG_ScreenBuffer);
+    draw_screen_region(DG_ScreenBuffer);
 }
 
 extern "C"
@@ -112,7 +112,6 @@ int DG_GetKey(int* pressed, unsigned char* key)
 extern "C"
 void DG_SetWindowTitle(const char* title)
 {
-    // fprintf("DG_SetWindowTitle called: \n");
 }
 
 extern "C"
@@ -121,10 +120,8 @@ int run_doom()
     // printf("run_doom called: \n");
     doomgeneric_Create(0, nullptr);
 
-    while (true)
-    {
-        doomgeneric_Tick();
-    }
+    while (doomgeneric_Tick());
+
 
     return 0;
 }
