@@ -3,8 +3,7 @@
 //
 
 #include "LocalAPIC.h"
-#include "Serial.h"
-
+#include "logging.h"
 uintptr_t* eoi_addr;
 
 // LVT entry offsets

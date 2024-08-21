@@ -4,7 +4,7 @@
 
 #include "EventQueue.h"
 #include "ports.h"
-#include "Serial.h"
+#include "logging.h"
 
 
 static EventQueue* instance{nullptr};
@@ -144,7 +144,7 @@ EventQueue& EventQueue::getInstance()
 
 void EventQueue::addEvent(const event_t& event)
 {
-    [[maybe_unused]] auto & log = Serial::get();
+
 
 
     // WRITE("Adding event.\n");

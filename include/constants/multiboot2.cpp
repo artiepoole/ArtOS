@@ -4,7 +4,7 @@
 
 
 #include "multiboot2.h"
-#include "Serial.h"
+#include "logging.h"
 #include "ACPI.h"
 #include "stdlib.h"
 #include "string.h"

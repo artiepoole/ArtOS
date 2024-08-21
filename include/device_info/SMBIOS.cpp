@@ -4,8 +4,9 @@
 
 #include "SMBIOS.h"
 #include "string.h"
-#include "Serial.h"
+// #include "Serial.h"
 
+#include "logging.h"
 #define LENGTH = 5;
 #define MAJOR_VERSION = 6;
 #define MINOR_VERSION = 7;

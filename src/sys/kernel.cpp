@@ -3,7 +3,7 @@
 //
 
 #include "kernel.h"
-
+#include "logging.h"
 #include "PIT.h"
 #include "VideoGraphicsArray.h"
 #include "TSC.h"

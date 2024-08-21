@@ -42,7 +42,7 @@ u32* buffer;
 
 VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info)
 {
-    LOG("Initialising VGA.");
+    // LOG("Initialising VGA.");
     instance = this;
     width = framebuffer_info->framebuffer_width;
     height = framebuffer_info->framebuffer_height;
@@ -64,12 +64,12 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* 
     _window.h = _window.y2 - _window.y1;
     _screen_region = window_t{0, 0, width, height, width, height};
 
-    LOG("VGA initialised.");
+    // LOG("VGA initialised.");
 }
 
 VideoGraphicsArray::~VideoGraphicsArray()
 {
-    WRITE("VGA - Deconstructor called.");
+    // WRITE("VGA - Deconstructor called.");
     instance = nullptr;
 }
 

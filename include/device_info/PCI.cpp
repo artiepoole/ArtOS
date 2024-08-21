@@ -4,7 +4,7 @@
 
 #include "PCI.h"
 
-#include "Serial.h"
+#include "logging.h"
 
 #include "ports.h"
 #include "stdlib.h"

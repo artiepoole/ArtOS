@@ -32,6 +32,7 @@
 extern "C" {
 #include "doomgeneric/doomgeneric.h"
 }
+#include "logging.h"
 
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
@@ -62,25 +63,31 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         // misaligned MBI
         return;
     }
+    // Load serial immediately for logging.
+    auto serial = Serial();
 
-    // Get logging and timestamping running asap
-    auto log = Serial();
+    // We want timestamping to work asap.
+    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     RTC rtc;
 
     // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
+    // And then we want graphics.
+    VideoGraphicsArray vga(frame_info);
+    vga.draw();
+
+    // Then we enable interrupts and disable the old PIC.
+    PIC::disable_entirely();
     full_madt_t* full_madt = populate_madt(multiboot2_get_MADT_table_address());
     [[maybe_unused]] LocalAPIC local_apic(get_local_apic_base_addr());
     [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
 
     // then load the rest of the singleton classes.
-    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
-    EventQueue events;
-    VideoGraphicsArray vga(frame_info);
     Terminal terminal(frame_info->framebuffer_width, frame_info->framebuffer_height);
-    PIC::disable_entirely();
+    EventQueue events;
+
 
     // remap IRQs in APIC
     io_apic.remapIRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
@@ -97,12 +104,12 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
 
     // vga.drawSplash();
-    vga.draw();
+    // vga.draw();
 
 
-    terminal.setScale(2);
-    vga.draw();
-    terminal.write(" Loading Done.\n");
+    // terminal.setScale(2);
+    // vga.draw();
+
 
 
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
@@ -121,7 +128,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     run_doom();
 
     // Event handler loop.
-    LOG("Entering event loop.");
+    LOG("Entering event loop.\n");
     while (true)
     {
         if (events.pendingEvents())

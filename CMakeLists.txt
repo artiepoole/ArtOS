@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 
 ENABLE_LANGUAGE(ASM)
-option(ENABLE_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
+option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
+option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
 
 project(ArtOS)
 
@@ -31,7 +32,8 @@ file(GLOB KERNEL
 add_subdirectory(pdclib)
 add_subdirectory(doom)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} src/boot.S src/main.cpp ${INCLUDE} ${KERNEL} )
+add_executable(${KERNEL_BIN} src/boot.S src/main.cpp ${INCLUDE} ${KERNEL}
+        src/sys/logging.h)
 
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
@@ -54,7 +56,8 @@ add_custom_command(
 
 target_compile_definitions(${KERNEL_BIN}
         PUBLIC
-        ENABLE_LOGGING=$<BOOL:${ENABLE_LOGGING}>
+        ENABLE_SERIAL_LOGGING=$<BOOL:${ENABLE_SERIAL_LOGGING}>
+        ENABLE_TERMINAL_LOGGING=$<BOOL:${ENABLE_TERMINAL_LOGGING}>
 )
 
 target_link_libraries(${KERNEL_BIN} pdclib doom)

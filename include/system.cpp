@@ -1,7 +1,7 @@
 #include <system.h>
 
-#include "Serial.h"
-
+// #include "Serial.h"
+#include "logging.h"
 eflags_t get_eflags()
 {
     eflags_t flags;

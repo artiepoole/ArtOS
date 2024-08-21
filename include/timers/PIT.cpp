@@ -3,7 +3,7 @@
 //
 
 #include "PIT.h"
-#include "Serial.h"
+#include "logging.h"
 #include "ports.h"
 
 u32 rate = 0;
@@ -34,7 +34,7 @@ void sleep(const u32 ms)
         return;
     }
     timer_ticks = ms * rate / 1000; // rate is in hz, time is in ms
-    LOG("Sleeping for ", ms, "ms. Ticks:", timer_ticks, " rate:", rate);
+    // LOG("Sleeping for ", ms, "ms. Ticks:", timer_ticks, " rate:", rate);
     while (timer_ticks > 0);
 }
 

@@ -4,7 +4,8 @@
 
 #include "RTC.h"
 #include "ports.h"
-#include "Serial.h"
+#include "logging.h"
+#include "mystring.h"
 
 u16 CURRENT_YEAR = 2000;
 RTC* instance = nullptr;

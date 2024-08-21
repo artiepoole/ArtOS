@@ -9,7 +9,7 @@
 #include "PIT.h"
 #include "RTC.h"
 #include "EventQueue.h"
-#include "Serial.h"
+#include "logging.h"
 #include "ports.h"
 #include <stdint.h>
 
@@ -78,16 +78,16 @@ inline char exception_messages[][40] =
 
 void register_to_serial(const cpu_registers_t* r)
 {
-    auto &log = Serial::get();
+    // auto &log = Serial::get();
     WRITE("int_no, err_code: ");
-    log.newLine();
+    NEWLINE();
     WRITE(r->int_no, true);
     WRITE(", ");
     WRITE(r->err_code, true);
-    log.newLine();
+    NEWLINE();
 
     WRITE("gs, fs, es, ds: ");
-    log.newLine();
+    NEWLINE();
     WRITE(r->gs, true);
     WRITE(", ");
     WRITE(r->fs, true);
@@ -95,10 +95,10 @@ void register_to_serial(const cpu_registers_t* r)
     WRITE(r->es, true);
     WRITE(", ");
     WRITE(r->ds, true);
-    log.newLine();
+    NEWLINE();
 
     WRITE("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
-    log.newLine();
+    NEWLINE();
     WRITE(r->edi, true);
     WRITE(", ");
     WRITE(r->esi, true);
@@ -114,10 +114,10 @@ void register_to_serial(const cpu_registers_t* r)
     // log.write_hex(r->ecx, true);
     // WRITE(", ");
     // WRITE(r->eax, true);
-    log.newLine();
+    NEWLINE();
 
     WRITE("eip, cs, eflags, useresp, ss;");
-    log.newLine();
+    NEWLINE();
     WRITE(r->eip, true);
     WRITE(", ");
     WRITE(r->cs, true);
@@ -127,7 +127,7 @@ void register_to_serial(const cpu_registers_t* r)
     WRITE(r->useresp, true);
     WRITE(", ");
     WRITE(r->ss, true);
-    log.newLine();
+    NEWLINE();
 }
 
 void handle_div_by_zero(const cpu_registers_t* r)
@@ -140,7 +140,6 @@ void handle_div_by_zero(const cpu_registers_t* r)
 extern "C"
 void exception_handler(const cpu_registers_t* r)
 {
-    auto &log = Serial::get();
     register_to_serial(r);
 
     WRITE("Exception: ");
@@ -153,7 +152,7 @@ void exception_handler(const cpu_registers_t* r)
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
         WRITE(exception_messages[r->int_no]);
-        log.newLine();
+        NEWLINE();
         switch (r->int_no)
         {
         case 0:
@@ -248,7 +247,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 
 IDT::IDT()
 {
-    auto &log = Serial::get();
+
     LOG("Initialising IDT");
     idt_pointer.limit = (sizeof(idt_entry_t) * IDT_STUB_COUNT) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt
@@ -259,7 +258,7 @@ IDT::IDT()
         _setDescriptor(idt_index, isr_stub_table[idt_index], 0x8E);
         idt_vectors[idt_index] = true;
     }
-    log.time_stamp();
+    TIMESTAMP();
     WRITE("\tSetting IDT base and limit. ");
     WRITE("Base: ");
     WRITE(idt_pointer.base, true);
