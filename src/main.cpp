@@ -57,7 +57,10 @@ void process_cmd(char* buf, size_t len)
     }
     else
     {
-        Terminal::get().log("Unknown command: ", buf);
+        auto & term = Terminal::get();
+        term.write("Unknown command: ", COLOR_RED);
+        term.write(buf, len, COLOR_MAGENTA);
+        term.newLine();
     }
 }
 
