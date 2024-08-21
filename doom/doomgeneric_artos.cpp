@@ -19,10 +19,10 @@ u8 doom_key_map[128] =
     0, KEY_ESCAPE, '1', '2', '3', '4', '5', '6', '7', '8', /* 9 */
     '9', '0', '-', '=', KEY_BACKSPACE, /* Backspace */
     KEY_TAB, /* Tab */
-    'q', KEY_FIRE, KEY_USE, 'r', /* 19 */ // q w e r
+    'q', KEY_UPARROW, KEY_USE, 'r', /* 19 */ // q w e r
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', KEY_ENTER, /* Enter key */
     KEYB_CONTROL, /* 29   - Control */
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', /* 39 */
+    KEY_STRAFE_L, KEY_DOWNARROW, KEY_STRAFE_R, 'f', 'g', 'h', KEY_LEFTARROW, KEY_FIRE, KEY_RIGHTARROW, ';', /* 39 */
     '\'', '`', KEY_RSHIFT, /* Left shift */
     '\\', 'z', 'x', 'c', 'v', 'b', 'n', /* 49 */
     'm', ',', '.', '/', KEY_RSHIFT, /* Right shift */
@@ -56,11 +56,10 @@ u8 doom_key_map[128] =
 
 u32 screen_buffer[DOOMGENERIC_RESX * DOOMGENERIC_RESY];
 
-uint32_t start_ticks = 0;
 extern "C"
 void DG_Init()
 {
-    start_ticks = get_tick_ms();
+
 }
 
 extern "C"
@@ -81,7 +80,7 @@ extern "C"
 uint32_t DG_GetTicksMs()
 {
     // fprintf("DG_GetTicksMs called: \n");
-    return get_tick_ms()-start_ticks;
+    return get_tick_ms();
 }
 
 extern "C"
@@ -107,7 +106,7 @@ int DG_GetKey(int* pressed, unsigned char* key)
         *key = doom_key_map[latest.data.lower_data];
         break;
     }
-    return queue.pendingEvents();
+    return 1;
 }
 
 extern "C"
