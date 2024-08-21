@@ -20,17 +20,17 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] PCI device detection
 - [x] Real time clock implemented
 - [ ] Read from CDRom
-- [ ] Use grub2 and multiboot2
+- [x] Use grub2 and multiboot2
 - [ ] replace PIC and PIT with APIC and HPET
 - [ ] Proper handling of a scheduler to allow for sleeping of a task.
 - [ ] User IO - mouse
 - [ ] Detection and selection of video modes
-- [ ] Initialise frame buffer etc using the multiboot data instead of hard coded
+- [x] Initialise frame buffer etc using the multiboot data instead of hard coded
 - [ ] Implement a standard library
 - [ ] Implement filesystem
 - [ ] Run an executable
 - [ ] Self hosting compiler
-- [ ] Play DOOM for ArtOS! - WIP BRANCH: doom (requires several stdlib features)
+- [x] Play DOOM for ArtOS! - Currently running as a function, not in userspace.
 
 ## Progress markers
 Loading Screen and Keyboard
