@@ -21,49 +21,50 @@
 extern "C" {
 #endif
 
-extern int64_t lseek64( int fd, _PDCLIB_int_least64_t offset, int whence );
-extern long lseek( int fd, long offset, int whence );
+extern int seek(struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence);
+extern long lseek(int fd, long offset, int whence);
 
 #ifdef __cplusplus
 }
 #endif
 
-_PDCLIB_int_least64_t _PDCLIB_seek( struct _PDCLIB_file_t * stream, _PDCLIB_int_least64_t offset, int whence )
+_PDCLIB_int_least64_t _PDCLIB_seek(struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence)
 {
     _PDCLIB_int_least64_t rc;
-
-    switch ( whence )
-    {
-        case SEEK_SET:
-        case SEEK_CUR:
-        case SEEK_END:
-            /* EMPTY - OK */
-            break;
-
-        default:
-            *_PDCLIB_errno_func() = _PDCLIB_EINVAL;
-            return EOF;
-            break;
-    }
-
-#ifdef __CYGWIN__
-    rc = lseek( stream->handle, offset, whence );
-#else
-    rc = lseek64( stream->handle, offset, whence );
-#endif
-
-    if ( rc != EOF )
-    {
-        stream->ungetidx = 0;
-        stream->bufidx = 0;
-        stream->bufend = 0;
-        stream->pos.offset = rc;
-        return rc;
-    }
-
-    /* The 1:1 mapping in _PDCLIB_config.h ensures that this works. */
-    *_PDCLIB_errno_func() = errno;
-    return EOF;
+    seek(stream, offset, whence);
+    //     switch ( whence )
+    //     {
+    //
+    //         case SEEK_SET:
+    //         case SEEK_CUR:
+    //         case SEEK_END:
+    //             /* EMPTY - OK */
+    //             break;
+    //
+    //         default:
+    //             *_PDCLIB_errno_func() = _PDCLIB_EINVAL;
+    //             return EOF;
+    //             break;
+    //     }
+    //
+    // #ifdef __CYGWIN__
+    //     rc = lseek( stream->handle, offset, whence );
+    // #else
+    //     rc = lseek64( stream->handle, offset, whence );
+    // #endif
+    //
+    //     if ( rc != EOF )
+    //     {
+    //         stream->ungetidx = 0;
+    //         stream->bufidx = 0;
+    //         stream->bufend = 0;
+    //         stream->pos.offset = rc;
+    //         return rc;
+    //     }
+    //
+    //     /* The 1:1 mapping in _PDCLIB_config.h ensures that this works. */
+    //     *_PDCLIB_errno_func() = errno;
+    //     return EOF;
 }
 
 #endif

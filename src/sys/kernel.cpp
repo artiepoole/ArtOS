@@ -3,11 +3,14 @@
 //
 
 #include "kernel.h"
-
+#include "logging.h"
+#include "PIT.h"
 #include "VideoGraphicsArray.h"
 #include "TSC.h"
 #include "SMBIOS.h"
 #include "Serial.h"
+
+// u64 clock_rate = 0;
 
 void write_standard(const char* buffer, unsigned long len)
 {
@@ -48,9 +51,10 @@ void _exit(int status)
     LOG("Exit status: ", status);
 }
 
-u32 get_clock_rate()
+u64 get_clock_rate_hz()
 {
-    return SMBIOS_get_CPU_clock_rate_hz();
+
+    return SMBIOS_get_CPU_clock_rate_hz();;
 }
 
 u64 get_current_clock()
@@ -58,8 +62,17 @@ u64 get_current_clock()
     return TSC_get_ticks();
 }
 
-// void draw_screen_region(u32* frame_buffer)
-// {
-//     auto &vga = VideoGraphicsArray::get();
-//     vga.
-// }
+uint32_t get_tick_ms()
+{
+    return TSC_get_ticks()/(SMBIOS_get_CPU_clock_rate_hz()/1000);
+}
+
+void sleep_ms(const u32 ms)
+{
+    sleep(ms);
+}
+
+void draw_screen_region(const u32* frame_buffer)
+{
+    VideoGraphicsArray::get().draw_region(frame_buffer);
+}

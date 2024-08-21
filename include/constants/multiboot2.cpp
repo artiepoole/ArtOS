@@ -4,7 +4,7 @@
 
 
 #include "multiboot2.h"
-#include "Serial.h"
+#include "logging.h"
 #include "ACPI.h"
 #include "stdlib.h"
 #include "string.h"
@@ -36,7 +36,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
                 {
                     buffer[i - 8] = *reinterpret_cast<char*>(target_addr + i);
                 }
-                TIMESTAMP;
+                TIMESTAMP();
                 WRITE("Boot info: bootloader name: ");
                 WRITE(buffer);
                 NEWLINE();

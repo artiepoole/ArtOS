@@ -3,7 +3,9 @@
 //
 
 #include "ACPI.h"
-#include "Serial.h"
+// #include "Serial.h"
+
+#include "logging.h"
 
 full_madt_t madt ={};
 

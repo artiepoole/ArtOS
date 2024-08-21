@@ -4,8 +4,9 @@
 
 #include "SMBIOS.h"
 #include "string.h"
-#include "Serial.h"
+// #include "Serial.h"
 
+#include "logging.h"
 #define LENGTH = 5;
 #define MAJOR_VERSION = 6;
 #define MINOR_VERSION = 7;
@@ -13,7 +14,7 @@
 
 smbios_t* smbios = nullptr;
 smbios_processor_info_t* cpu_info = nullptr;
-i32 clock_rate = 0;
+u64 clock_rate = 0;
 
 
 smbios_t search_for_SMBIOS()
@@ -91,14 +92,14 @@ void SMBIOS_populate_cpu_info()
     }
 }
 
-i32 SMBIOS_get_CPU_clock_rate_hz()
+u64 SMBIOS_get_CPU_clock_rate_hz()
 {
     if (clock_rate!=0) return clock_rate;
     if (cpu_info == NULL)
     {
         SMBIOS_populate_cpu_info();
     }
-    clock_rate = static_cast<i32>(cpu_info->current_speed) * 1000000;
+    clock_rate = static_cast<u64>(cpu_info->current_speed) * 1000000;
     return clock_rate;
 }
 

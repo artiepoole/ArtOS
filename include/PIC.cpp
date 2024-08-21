@@ -3,7 +3,8 @@
 //
 
 #include "PIC.h"
-#include "Serial.h"
+// #include "Serial.h"
+#include "logging.h"
 #include "ports.h"
 
 #define ICW1_ICW4	0x01		/* Indicates that ICW4 will be present */

@@ -23,6 +23,8 @@ Basic graphics utility methods
 
 #include "VideoGraphicsArray.h"
 
+#include <string.h>
+
 #include "stdlib.h"
 
 #include "splash_screen.h"
@@ -40,7 +42,7 @@ u32* buffer;
 
 VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info)
 {
-    LOG("Initialising VGA.");
+    // LOG("Initialising VGA.");
     instance = this;
     width = framebuffer_info->framebuffer_width;
     height = framebuffer_info->framebuffer_height;
@@ -62,12 +64,12 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* 
     _window.h = _window.y2 - _window.y1;
     _screen_region = window_t{0, 0, width, height, width, height};
 
-    LOG("VGA initialised.");
+    // LOG("VGA initialised.");
 }
 
 VideoGraphicsArray::~VideoGraphicsArray()
 {
-    WRITE("VGA - Deconstructor called.");
+    // WRITE("VGA - Deconstructor called.");
     instance = nullptr;
 }
 
@@ -161,9 +163,6 @@ window_t * VideoGraphicsArray::getScreen()
 
 void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
 {
-    for(size_t i=0; i<width*height; i++)
-    {
-        _screen[i] = buffer_to_draw[i];
-    }
+    memcpy(_screen, buffer_to_draw, width * height * sizeof(u32));
 }
 

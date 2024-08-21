@@ -3,7 +3,7 @@
 
 
 // Solarised colours definitions
-enum COLOURS
+enum PALETTE_t
 {
     COLOR_BASE03 = 0x002b36, // Darkest (near black, bluey grey)
     COLOR_BASE02 = 0x073642,

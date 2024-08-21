@@ -21,6 +21,7 @@
 #include "PCI.h"
 #include "multiboot2.h"
 #include "stdio.h"
+#include "Files.h"
 #include "CPUID.h"
 #include "RTC.h"
 #include "PIT.h"
@@ -28,6 +29,11 @@
 #include "SMBIOS.h"
 #include "EventQueue.h"
 #include "string.h"
+extern "C" {
+#include "doomgeneric/doomgeneric.h"
+}
+#include "logging.h"
+
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -41,6 +47,19 @@
 
 // VideoGraphicsArray* vgap;
 u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
+
+void process_cmd(char* buf, size_t len)
+{
+    if (len ==0) return;
+    if (strncasecmp(buf, "play doom", 9)==0)
+    {
+        run_doom();
+    }
+    else
+    {
+        Terminal::get().log("Unknown command: ", buf);
+    }
+}
 
 
 extern "C"
@@ -57,25 +76,31 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         // misaligned MBI
         return;
     }
+    // Load serial immediately for logging.
+    auto serial = Serial();
 
-    // Get logging and timestamping running asap
-    auto log = Serial();
+    // We want timestamping to work asap.
+    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
     RTC rtc;
 
     // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
+    // And then we want graphics.
+    VideoGraphicsArray vga(frame_info);
+    vga.draw();
+
+    // Then we enable interrupts and disable the old PIC.
+    PIC::disable_entirely();
     full_madt_t* full_madt = populate_madt(multiboot2_get_MADT_table_address());
     [[maybe_unused]] LocalAPIC local_apic(get_local_apic_base_addr());
     [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
 
     // then load the rest of the singleton classes.
-    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
-    EventQueue events;
-    VideoGraphicsArray vga(frame_info);
     Terminal terminal(frame_info->framebuffer_width, frame_info->framebuffer_height);
-    PIC::disable_entirely();
+    EventQueue events;
+
 
     // remap IRQs in APIC
     io_apic.remapIRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
@@ -91,24 +116,34 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("Singletons loaded.");
 
 
-    vga.drawSplash();
-    vga.draw();
+    // vga.drawSplash();
+    // vga.draw();
 
 
-    terminal.setScale(2);
-    vga.draw();
-    terminal.write(" Loading Done.\n");
+    // terminal.setScale(2);
+    // vga.draw();
 
-    // FILE* com = fopen("/dev/com1", "w");
-    // fprintf(com, "%s\n", "This should print to com0");
+
+
+    register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
+    register_file_handle(1, "/dev/stdout", NULL, Serial::com_write);
+    register_file_handle(2, "/dev/stderr", NULL, Serial::com_write);
+    FILE* com = fopen("/dev/com1", "w");
+    fprintf(com, "%s\n", "This should print to com0 via fprintf");
+    printf("This should print to com0 via printf\n");
+
 
     PCI_list();
     [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
 
     LOG("LOADED OS.");
 
+    // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
+    constexpr size_t cmd_buffer_size = 1024;
+    char cmd_buffer[cmd_buffer_size] = {0};
+    size_t cmd_buffer_idx = 0;
     // Event handler loop.
-    LOG("Entering event loop.");
+    LOG("Entering event loop.\n");
     while (true)
     {
         if (events.pendingEvents())
@@ -176,6 +211,10 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                         case '\b': // backspace
                             {
                                 terminal.backspace();
+                                if (cmd_buffer_idx >0)
+                                {
+                                    cmd_buffer[--cmd_buffer_idx] = ' ';
+                                }
                                 break;
                             }
                         case '\t': // tab
@@ -234,22 +273,34 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                                 keyboard_modifiers ^= 0b1000;
                                 break;
                             }
+                        case '\n':
+                            {
+                                terminal.write("\n");
+                                process_cmd(cmd_buffer, cmd_buffer_idx);
+                                memset(cmd_buffer, 0, cmd_buffer_size);
+                                cmd_buffer_idx = 0;
+                                terminal.refresh();
+                                break;
+                            }
                         default:
                             {
                                 bool is_alpha = (key >= 97 && key <= 122);
                                 if (keyboard_modifiers & 0b1000) // caps lock enabled
                                     if (is_alpha) // alphanumeric keys get shifted to caps
                                     {
+                                        cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
                                         terminal.write(shift_map[cin]);
                                         break;
                                     }
                                 if ((keyboard_modifiers & 0b0001)) // shift is down or capslock is on
                                 {
+                                    cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
                                     terminal.write(shift_map[cin]);
                                     break;
                                 }
                                 else
                                 {
+                                    cmd_buffer[cmd_buffer_idx++] = key;
                                     terminal.write(key);
                                 }
 

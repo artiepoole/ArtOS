@@ -7,7 +7,7 @@
 
 #include <Terminal.h>
 #include "types.h"
-#include "Serial.h"
+#include "logging.h"
 
 u8 binaryNum[32];
 u8 decimal[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};

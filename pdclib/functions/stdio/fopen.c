@@ -50,7 +50,6 @@ struct _PDCLIB_file_t * fopen( const char * _PDCLIB_restrict filename, const cha
        interactive device."
     */
     rc->status |= filemode | _IOLBF;
-
     if ( ( rc->handle = _PDCLIB_open( filename, rc->status ) ) == _PDCLIB_NOHANDLE )
     {
         /* OS open() failed */

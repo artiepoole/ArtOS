@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.1.3...3.27.7 FATAL_ERROR )
 
-project( pdclib LANGUAGES C CXX )
+project( pdclib_proj LANGUAGES C CXX )
 
 set(TARGET_NAME platform_functions)
 
@@ -86,6 +86,7 @@ set( PDCLIB_SOURCES
         functions/stdlib/at_quick_exit.c
         functions/stdlib/atexit.c
         functions/stdlib/atoi.c
+        functions/stdlib/atof.c
         functions/stdlib/atol.c
         functions/stdlib/atoll.c
         functions/stdlib/bsearch.c
@@ -144,6 +145,9 @@ set( PDCLIB_SOURCES
         functions/string/strerrorlen_s.c
         functions/string/strncat_s.c
         functions/string/strncpy_s.c
+        functions/string/strcasecmp.c
+        functions/string/strdup.c
+        functions/string/strncasecmp.c
 #
         functions/time/asctime.c
         functions/time/asctime_s.c
@@ -282,10 +286,11 @@ set( PDCLIB_PRIVATE_HEADERS
         include/pdclib/_PDCLIB_internal.h
         include/pdclib/_PDCLIB_lib_ext1.h
         platform/ArtOS/include/pdclib/_PDCLIB_config.h
+        functions/stdlib/atof.c
 )
 
 #add_library( pdclib  SHARED ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
-add_library( pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
+add_library(pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
 
 #target_include_directories( pdclib  BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include include platform/ArtOS/include ../src ../src/sys ../include)
 target_include_directories( pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include )
@@ -333,30 +338,8 @@ target_include_directories(pdclib PUBLIC
 
 set_property( TARGET pdclib PROPERTY POSITION_INDEPENDENT_CODE 1 )
 
-
-
 set( CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wmissing-declarations -Wredundant-decls -Winline -Wno-long-long -Wuninitialized -fno-builtin -fvisibility=hidden -D_STDC_PREDEF_H -nostdlib " )
-
-
 
 set_source_files_properties( functions/_dtoa/dtoa.c PROPERTIES COMPILE_OPTIONS -Wno-sign-compare )
 
-#set_property( TARGET pdclib  APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_BUILD ${FLAGS}" )
 set_property( TARGET pdclib APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_STATIC_DEFINE ${FLAGS}" )
-
-
-#if ( UNIX )
-#    set_target_properties( pdclibs PROPERTIES OUTPUT_NAME pdclib )
-#endif()
-
-#file(GLOB_RECURSE SOURCES
-#
-#        "platform/**.c"
-#)
-
-#project(platform)
-#
-#add_library(${TARGET_NAME} ${SOURCES})
-#target_include_directories(${TARGET_NAME} PUBLIC functions/_PDCLIB/)
-#target_include_directories(${TARGET_NAME} PUBLIC libc/include)
-#target_include_directories(${TARGET_NAME} PUBLIC platform/include)

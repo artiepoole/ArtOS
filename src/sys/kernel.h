@@ -54,10 +54,13 @@ void _exit(int status);
 tm *get_time();
 time_t get_epoch_time();
 
-u32 get_clock_rate();
+u64 get_clock_rate_hz();
 u64 get_current_clock();
+uint32_t get_tick_ms();
+void sleep_ms(u32 ms);
+void get_clock_ms();
 
-// void draw_screen_region(unsigned long * frame_buffer);
+void draw_screen_region(const u32 * frame_buffer);
 
 
 #endif //KERNEL_H

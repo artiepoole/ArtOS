@@ -8,16 +8,23 @@
 struct terminal_char_t
 {
     char letter;
-    u32 color;
+    PALETTE_t colour;
 };
+
+
+inline PALETTE_t bkgd = COLOR_BASE02;
+inline PALETTE_t frgd = COLOR_BASE0;
+inline PALETTE_t accent = COLOR_CYAN;
+inline PALETTE_t value = COLOR_MAGENTA;
+inline PALETTE_t error = COLOR_RED;
+
 
 class Terminal
 {
-private:
-    // window_t _screen{};
+
 
 public:
-    // Single isntance. Cannot be used if not initialised.
+    // Single instance. Cannot be used if not initialised.
     // explicit Terminal(const window_t* screen);
     Terminal(u32 width, u32 height);
     ~Terminal();
@@ -33,35 +40,67 @@ public:
     u32 getScale();
     void clear();
 
+    void write(const terminal_char_t* data, size_t len); // used to display data from before.
+    void write(const char* data, PALETTE_t colour = COLOR_BASE0); // buffer without known length also with colour
+    // void write(const char* data);
+    void write(char c, PALETTE_t colour = COLOR_BASE0); // single char
+    void write(const char* data, size_t len, PALETTE_t colour = COLOR_BASE0); // buffer of fixed len
 
-    void write(const char* data, u32 colour = COLOR_BASE0); // buffer without known length also with colour
-    void write(char c, u32 color = COLOR_BASE0); // single char
-    void write(const char* data, size_t len, u32 colour=COLOR_BASE0); // buffer of fixed len
+    void time_stamp();
 
     template <typename int_like>
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
-    void write(int_like val, size_t hex_len = 0, const u32 color=COLOR_BASE0)
+    void write(const int_like val, const bool hex = false, PALETTE_t colour = value)
     {
-        char out_str[255]; // long enough for any int type possible
-        size_t len=0;
-        if (hex_len > 0)
+        char out_str[255];
+        if (hex)
         {
-            len = hex_from_int(val, out_str, hex_len);
+            hex_from_int(val, out_str, sizeof(val));
         }
         else
         {
-            len =string_from_int(val, out_str);
+            string_from_int(val, out_str);
         }
-        write(out_str, len, color);
+        write(out_str, colour);
+    }
+
+    template <typename type_t>
+    void log(type_t const& arg1)
+    {
+        time_stamp();
+        write(arg1);
+        newLine();
+    }
+
+    template <typename... args_t>
+    void log(args_t&&... args)
+    {
+        time_stamp();
+        (write(args), ...);
+        newLine();
     }
 
 
+    template <typename int_like>
+        requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
+    void logHex(int_like val, const char* val_name = "")
+    {
+        if (mystrlen(val_name) > 0)
+        {
+            write(val_name, from_hex(val));
+            write(": ");
+        }
+        write(val, true);
+        newLine();
+    };
     void backspace();
+    void refresh();
 
 private:
     static void _scroll();
     static void _render();
     static void _putChar(terminal_char_t ch, u32 origin_x, u32 origin_y);
+    void _setChar(size_t x,size_t y, char c, PALETTE_t colour);
 };
 
 
