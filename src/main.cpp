@@ -48,6 +48,18 @@ extern "C" {
 // VideoGraphicsArray* vgap;
 u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
+void process_cmd(char* buf, size_t len)
+{
+    if (strncasecmp(buf, "play doom", len)==0)
+    {
+        run_doom();
+    }
+    else
+    {
+        Terminal::get().log("Unknown command: ", buf);
+    }
+}
+
 
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
@@ -125,8 +137,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("LOADED OS.");
 
-    run_doom();
-
+    constexpr size_t cmd_buffer_size = 1024;
+    char cmd_buffer[cmd_buffer_size] = {0};
+    size_t cmd_buffer_idx = 0;
     // Event handler loop.
     LOG("Entering event loop.\n");
     while (true)
@@ -254,22 +267,33 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                                 keyboard_modifiers ^= 0b1000;
                                 break;
                             }
+                        case '\n':
+                            {
+                                terminal.write("\n");
+                                process_cmd(cmd_buffer, cmd_buffer_idx);
+                                memset(cmd_buffer, 0, cmd_buffer_size);
+                                cmd_buffer[cmd_buffer_idx] = 0;
+                                break;
+                            }
                         default:
                             {
                                 bool is_alpha = (key >= 97 && key <= 122);
                                 if (keyboard_modifiers & 0b1000) // caps lock enabled
                                     if (is_alpha) // alphanumeric keys get shifted to caps
                                     {
+                                        cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
                                         terminal.write(shift_map[cin]);
                                         break;
                                     }
                                 if ((keyboard_modifiers & 0b0001)) // shift is down or capslock is on
                                 {
+                                    cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
                                     terminal.write(shift_map[cin]);
                                     break;
                                 }
                                 else
                                 {
+                                    cmd_buffer[cmd_buffer_idx++] = key;
                                     terminal.write(key);
                                 }
 
