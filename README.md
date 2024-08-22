@@ -42,25 +42,34 @@ The aim of this project is simply to learn. If it becomes something I want other
 
 
 ## Progress markers
-Loading Screen and Keyboard
 
-![Loading Screen and Keyboard demo.](https://github.com/stupoole/ArtOS/blob/main/res/img/keyboard_support.gif?raw=true)
+Running DOOM (1993):
 
-Splash Screen
+https://github.com/user-attachments/assets/c0464620-f6a0-44e3-b5c9-f59bd1c55018
 
-![Splash image drawn in 1024x768x32 graphics mode screen.](https://github.com/stupoole/ArtOS/blob/main/res/img/Splash.png)
+Loading Screen and Keyboard:
 
-Pixel Mode
+![keyboard_support](https://github.com/user-attachments/assets/8fea2d96-1281-46d2-94d4-97fe90898c3f)
 
-![Welcome to ArtOS! written in the centre of a 1024x768x32 graphics mode screen.](https://github.com/stupoole/ArtOS/blob/main/res/img/PixelMode.png)
+Splash Screen:
+
+![Splash Screen](https://github.com/user-attachments/assets/7e11bf7d-7b6a-4f3f-b169-63956f5d99e4)
+
+
+Pixel Mode:
+
+![Pixel Mode Graphics](https://github.com/user-attachments/assets/7409c5e2-a6e2-4e1f-a4d6-326ad56a3bef)
+
 
 Colours:
 
-![A printed with different FG and BG colours across the whole screen](https://github.com/stupoole/ArtOS/blob/main/res/img/Colours.png)
+![VGA Text Mode Colours](https://github.com/user-attachments/assets/185d925c-64bc-4986-af92-3fdbf05f513e)
 
-HelloWorld:
 
-![Hello World in qemu](https://github.com/stupoole/ArtOS/blob/main/res/img/HelloWorld.png)
+Hello World:
+
+![Hello World](https://github.com/user-attachments/assets/27ce4931-914b-4c4e-bdbf-f9c89d69ac8a)
+
 
 
 ## Tools
