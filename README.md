@@ -19,18 +19,27 @@ The aim of this project is simply to learn. If it becomes something I want other
 - [x] SMBIOS detection
 - [x] PCI device detection
 - [x] Real time clock implemented
-- [ ] Read from CDRom
 - [x] Use grub2 and multiboot2
-- [ ] replace PIC and PIT with APIC and HPET
-- [ ] Proper handling of a scheduler to allow for sleeping of a task.
+- [x] Replace PIC with APIC
+- [x] Initialise frame buffer etc using the multiboot2 data instead of hard coded
+- [x] Implement c standard library for kernel space
+- [x] Play DOOM for ArtOS!
+- [ ] DOOM: run in user space
+- [ ] DOOM: add sound
+- [ ] DOOM: add save games
+- [ ] DOOM: add loading from CDROM instead of from memory
 - [ ] User IO - mouse
-- [ ] Detection and selection of video modes
-- [x] Initialise frame buffer etc using the multiboot data instead of hard coded
-- [ ] Implement a standard library
-- [ ] Implement filesystem
+- [ ] Read from CDRom
+- [ ] Attach a RW storage device in Qemu
+- [ ] Implement a filesystem
+- [ ] Detect and mount/unmount storage devices on real hardware
+- [ ] Replace PIT with HPET
+- [ ] Proper handling of a scheduler to allow for sleeping of a task
+- [ ] Detection and selection of video modes i.e. reconfiguring the VGA hardware
+- [ ] Implement a standard library for user space
 - [ ] Run an executable
 - [ ] Self hosting compiler
-- [x] Play DOOM for ArtOS! - Currently running as a function, not in userspace.
+
 
 ## Progress markers
 Loading Screen and Keyboard
