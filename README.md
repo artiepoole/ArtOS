@@ -9,6 +9,8 @@ Running DOOM (1993):
 
 https://github.com/user-attachments/assets/c0464620-f6a0-44e3-b5c9-f59bd1c55018
 
+p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recording and compression makes it look clunky 
+
 Loading Screen and Keyboard:
 
 ![keyboard_support](https://github.com/user-attachments/assets/8fea2d96-1281-46d2-94d4-97fe90898c3f)
@@ -72,8 +74,11 @@ Hello World:
 
 ## Tools
 - i686-elf gcc cross-compiler
-- qemu emulator
-- grub
+- QEMU
+- GRUB2
+- Multiboot2
 - CMake
-- CLion
-
+- Jetbrains CLion
+- xorriso
+- [Public Domain C Library](https://github.com/DevSolar/pdclib)
+- [DOOM Generic](https://github.com/ozkl/doomgeneric)
