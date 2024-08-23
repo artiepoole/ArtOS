@@ -10,6 +10,12 @@ eflags_t get_eflags()
     return flags;
 }
 
+bool get_interrupts_are_enabled()
+{
+    return get_eflags().IF;
+}
+
+
 void disable_interrupts()
 {
     LOG("\tInterrupts disabled");

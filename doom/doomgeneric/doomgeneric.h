@@ -6,11 +6,19 @@
 #include "d_main.h"
 
 #ifndef DOOMGENERIC_RESX
-#define DOOMGENERIC_RESX 1280
+    #if FORLAPTOP
+        #define DOOMGENERIC_RESX 1920
+    #else
+        #define DOOMGENERIC_RESX 1280
+    #endif
 #endif  // DOOMGENERIC_RESX
 
 #ifndef DOOMGENERIC_RESY
-#define DOOMGENERIC_RESY 960
+    #if FORLAPTOP
+        #define DOOMGENERIC_RESY 1080
+    #else
+        #define DOOMGENERIC_RESY 960
+    #endif
 #endif  // DOOMGENERIC_RESY
 
 #include "doomtypes.h"

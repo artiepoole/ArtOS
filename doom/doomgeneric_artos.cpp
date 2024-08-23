@@ -11,7 +11,6 @@ extern "C" {
 
 
 #include "../src/sys/kernel.h"
-#include "../include/VideoGraphicsArray.h"
 
 
 u8 doom_key_map[128] =
@@ -54,7 +53,6 @@ u8 doom_key_map[128] =
     0, /* All other keys are undefined */
 };
 
-u32 screen_buffer[DOOMGENERIC_RESX * DOOMGENERIC_RESY];
 
 extern "C"
 void DG_Init()

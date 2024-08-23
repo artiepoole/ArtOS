@@ -88,6 +88,15 @@
 #define MULTIBOOT2_CONSOLE_FLAGS_CONSOLE_REQUIRED 1
 #define MULTIBOOT2_CONSOLE_FLAGS_EGA_TEXT_SUPPORTED 2
 
+#if FORLAPTOP
+    #define TARGET_WIDTH 1920
+    #define TARGET_HEIGHT 1080
+#else
+    #define TARGET_WIDTH 1280
+    #define TARGET_HEIGHT 960
+#endif
+
+
 #ifndef ASM_FILE
 
 typedef unsigned char multiboot2_uint8_t;
@@ -373,6 +382,19 @@ struct RSDP_v1
     multiboot2_uint32_t* RsdtAddress;
 } __attribute__ ((packed));
 
+struct RSDP_v2
+{
+    char Signature[8];
+    multiboot2_uint8_t Checksum;
+    char OEMID[6];
+    multiboot2_uint8_t Revision;
+    multiboot2_uint32_t* RsdtAddress;
+    multiboot2_uint32_t length;
+    multiboot2_uint64_t XsdtAddress;
+    multiboot2_uint8_t ExChecksum;
+    multiboot2_uint8_t reserved[3];
+} __attribute__ ((packed));
+
 struct multiboot2_tag_old_acpi
 {
     multiboot2_uint32_t type;
@@ -384,7 +406,7 @@ struct multiboot2_tag_new_acpi
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
-    multiboot2_uint32_t* rsdp;
+    RSDP_v2 rsdp;
 };
 
 struct multiboot2_tag_network

@@ -5,6 +5,8 @@
 #include "colours.h"
 #include "mystring.h"
 
+
+
 struct terminal_char_t
 {
     char letter;
@@ -40,6 +42,7 @@ public:
     u32 getScale();
     void clear();
 
+    void write(bool b);
     void write(const terminal_char_t* data, size_t len); // used to display data from before.
     void write(const char* data, PALETTE_t colour = COLOR_BASE0); // buffer without known length also with colour
     // void write(const char* data);

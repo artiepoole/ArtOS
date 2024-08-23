@@ -96,11 +96,11 @@ void Serial::write(bool b)
 {
     if (b == true)
     {
-        _write("true", 4);
+        _write("True", 4);
     }
     else
     {
-        _write("false", 5);
+        _write("False", 5);
     }
 }
 

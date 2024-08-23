@@ -30,7 +30,7 @@ RTC::RTC()
     setDivider(15); // also sets frequency
     enableIRQs();
 
-    LOG("RTC initialised");
+    LOG("RTC initialised at rate: ", hz);
 }
 
 RTC::~RTC()
@@ -197,7 +197,7 @@ u32 RTC::setDivider(u8 divider)
     //  0110b = 6 - 976.562 microseconds (default) // 1024 hz
 
     // Must disable interrupts while configuring
-    const bool interrupts_enabled = get_eflags().IF;
+    const bool interrupts_enabled = get_interrupts_are_enabled();
     if (interrupts_enabled) disable_interrupts();
 
     // set interrupt frequency

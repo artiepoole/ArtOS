@@ -4,8 +4,9 @@
 #include <multiboot2.h>
 
 
-.set WIDTH, 1280  /* requested width */
-.set HEIGHT, 960 /* requested height */
+
+.set WIDTH, TARGET_WIDTH  /* requested width */
+.set HEIGHT, TARGET_HEIGHT /* requested height */
 .set DEPTH, 32    /* requested bits per pixel BPP */
 
 /*

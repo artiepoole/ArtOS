@@ -15,8 +15,9 @@ struct io_redirect_entry
         struct
         {
             LVT_entry lvt;
-            u64 reserved : 23;
-            u64 destination : 8;
+            u32 reserved : 24;
+            u32 destination_lapic_addr : 4;
+            u32 destination_cluster_addr : 4;
         };
 
         struct
@@ -38,11 +39,10 @@ public:
     void enableAll();
 
 private:
-    uintptr_t volatile * base_addr;
-    uintptr_t volatile * data_addr;
+    uintptr_t volatile* base_addr;
+    uintptr_t volatile* data_addr;
     io_redirect_entry redirect_entries[23];
 };
-
 
 
 #endif //IOAPIC_H

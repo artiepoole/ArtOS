@@ -13,13 +13,13 @@ struct LVT_timer_entry
     {
         struct
         {
-            u8 interrupt_vector : 8;
-            u8 pad0 : 4;
-            bool delivery_status : 1; // 12
-            u8 pad1 : 3;
-            bool interrupt_mask : 1;
-            u8 timer_mode : 2;
-            u16 pad : 13;
+            u32 interrupt_vector : 8;
+            u32 pad0 : 4;
+            u32 delivery_status : 1; // 12
+            u32 pad1 : 3;
+            u32 interrupt_mask : 1;
+            u32 timer_mode : 2;
+            u32 pad : 13;
         } parts;
 
         u32 entry;
@@ -32,15 +32,15 @@ struct LVT_entry
     {
         struct
         {
-            u8 interrupt_vector : 8;
-            u8 delivery_mode : 3;
-            bool destination_mode : 1;
-            bool delivery_status : 1;
-            bool pin_polarity : 1;
-            bool remote_IRR : 1;
-            bool trigger_mode : 1;
-            bool interrupt_mask : 1;
-            u16 pad : 15;
+            u32 interrupt_vector : 8;
+            u32 delivery_mode : 3;
+            u32 destination_mode : 1;
+            u32 delivery_status : 1;
+            u32 pin_polarity : 1;
+            u32 remote_IRR : 1;
+            u32 trigger_mode : 1;
+            u32 interrupt_mask : 1;
+            u32 pad : 15;
         };
 
         u32 entry;
@@ -53,9 +53,9 @@ struct LVT_spurious_vector
     {
         struct
         {
-            u8 spurious_vector : 8;
-            bool software_enable : 1;
-            bool focus_checking : 1;
+            u32 spurious_vector : 8;
+            u32 software_enable : 1;
+            u32 focus_checking : 1;
             u32 reserved : 22;
         };
 

@@ -10,12 +10,20 @@
 #include "FONT.h"
 #include "Serial.h"
 
+
+#if FORLAPTOP
+#define DEFAULT_SCALE 1
+#else
+#define DEFAULT_SCALE 2
+#endif
+
+
 static Terminal* instance{nullptr};
 
 window_t screen_region = {0, 0, 1024, 768, 1024, 768};
 u32 char_dim = 8;
-u32 font_scale = 2;
-u32 scaled_char_dim = 16;
+u32 font_scale = DEFAULT_SCALE;
+u32 scaled_char_dim = DEFAULT_SCALE*8;
 size_t terminal_row = 0;
 size_t terminal_column = 1;
 u32 buffer_width;
@@ -129,7 +137,7 @@ void Terminal::setScale(u32 new_scale)
     // 0 is default: 2
     // LOG("Terminal: Setting font scale to ", new_scale, " from ", font_scale);
     // Checks if a character can be drawn in the region. Should be "_window width" or something.
-    if (new_scale == 0) new_scale = 2;
+    if (new_scale == 0) new_scale = DEFAULT_SCALE;
 
     if (new_scale * char_dim < screen_region.w && new_scale * char_dim < screen_region.h)
     {
@@ -185,7 +193,9 @@ void Terminal::_render()
             if (c_to_draw.letter != c_drawn.letter)
             {
                 _putChar(c_to_draw, col * scaled_char_dim, row * scaled_char_dim);
+                rendered_buffer[i] = c_to_draw;
             }
+
             ++i;
         }
     }
@@ -194,6 +204,17 @@ void Terminal::_render()
 }
 
 
+void Terminal::write(bool b)
+{
+    if (b == true)
+    {
+        write("True", 4);
+    }
+    else
+    {
+        write("False", 5);
+    }
+}
 // void Terminal::write(const char* data, const u32 colour)
 // {
 //     const size_t len = mystrlen(data);
@@ -357,6 +378,7 @@ void Terminal::newLine()
     if (!instance)
     {
         terminal_queue[queue_pos++ % queue_size] = terminal_char_t{'\n', bkgd};
+        return;
     }
     terminal_column = 1;
     terminal_row++;
@@ -367,6 +389,7 @@ void Terminal::newLine()
 
     _setChar(0, terminal_row - 1, ' ', bkgd);
     _setChar(0, terminal_row, '>', accent);
+    _render();
 }
 
 void Terminal::_scroll()

@@ -20,13 +20,54 @@ uintptr_t* eoi_addr;
 #define TIMER_DIVISOR_OFFSET 0x3E0
 #define LOCAL_APIC_ID_OFFSET 0x20
 #define EOI_OFFSET 0xB0
+#define LDR_OFFSET 0xD0
+#define DFR_OFFSET 0xE0
+#define ID_OFFSET 0x20
+
+struct destination_format_register
+{
+    union
+    {
+        struct
+        {
+
+            u32 pad0 : 28;
+            u32 model:4;
+        };
+
+        u32 raw;
+    };
+};
+struct local_destination_register
+{
+    union
+    {
+        struct
+        {
+
+            u32 pad0 : 8;
+            u32 pad1: 16;
+            u32 lapic_addr: 4;
+            u32 cluster_addr: 4;
+        };
+
+        u32 raw;
+    };
+};
+
 
 LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 {
-    base = reinterpret_cast<uintptr_t*>(local_apic_physical_address);
-    eoi_addr = reinterpret_cast<uintptr_t*>(local_apic_physical_address + EOI_OFFSET);
-    auto spv_addr = reinterpret_cast<u32*>(local_apic_physical_address + SPURIOUS_OFFSET_VECTOR);
 
+    base = local_apic_physical_address;
+    TIMESTAMP();
+    WRITE("LAPIC base addr: ");
+    WRITE(local_apic_physical_address, true);
+    NEWLINE();
+    eoi_addr = reinterpret_cast<uintptr_t*>(base + EOI_OFFSET);
+    auto spv_addr = reinterpret_cast<u32*>(base + SPURIOUS_OFFSET_VECTOR);
+    u32 id = *reinterpret_cast<u32*>(base + ID_OFFSET);
+    LOG("LAPIC id: ", id);
     // Writing to registers must be done using a 32-bit write. This means that you cannot vary the members using a pointer obj
     // We take a copy, edit the copy and write the entire 32-bit copy to the original address and store the new register.
     auto local_spurious = *reinterpret_cast<LVT_spurious_vector*>(spv_addr);
@@ -40,13 +81,29 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
         static_cast<u16>(spurious_vector_entry->raw & 0xFF),
         " Software enabled: ",
         static_cast<bool>(local_spurious.software_enable));
-    // todo: troubleshoot not being able to set the value of the spurious vector here.
-    full_lvt.timer = *reinterpret_cast<LVT_timer_entry*>(local_apic_physical_address + TIMER_LVT_OFFSET);
-    full_lvt.thermal = *reinterpret_cast<LVT_entry*>(local_apic_physical_address + THERMAL_LVT_OFFSET);
-    full_lvt.performance = *reinterpret_cast<LVT_entry*>(local_apic_physical_address + PERFORMANCE_LVT_OFFSET);
-    full_lvt.LINT0 = *reinterpret_cast<LVT_entry*>(local_apic_physical_address + LINT0_LVT_OFFSET);
-    full_lvt.LINT1 = *reinterpret_cast<LVT_entry*>(local_apic_physical_address + PERFORMANCE_LVT_OFFSET);
-    full_lvt.error = *reinterpret_cast<LVT_entry*>(local_apic_physical_address + ERROR_LVT_OFFSET);
+
+    full_lvt.timer = *reinterpret_cast<LVT_timer_entry*>(base + TIMER_LVT_OFFSET);
+    full_lvt.thermal = *reinterpret_cast<LVT_entry*>(base + THERMAL_LVT_OFFSET);
+    full_lvt.performance = *reinterpret_cast<LVT_entry*>(base + PERFORMANCE_LVT_OFFSET);
+    full_lvt.LINT0 = *reinterpret_cast<LVT_entry*>(base + LINT0_LVT_OFFSET);
+    full_lvt.LINT1 = *reinterpret_cast<LVT_entry*>(base + PERFORMANCE_LVT_OFFSET);
+    full_lvt.error = *reinterpret_cast<LVT_entry*>(base + ERROR_LVT_OFFSET);
+
+    auto volatile model = reinterpret_cast<u32*>(base + DFR_OFFSET);
+    *model = 0xFFFFFFFF;
+    auto dfr = reinterpret_cast<destination_format_register*>(base + DFR_OFFSET);
+    LOG("LAPIC DFR mode: ", static_cast<u16>(dfr->model));
+
+    local_destination_register local_ldr = {0};
+    auto ldr_addr = reinterpret_cast<u32*>(base + LDR_OFFSET);
+    local_ldr.lapic_addr= 0;
+    local_ldr.cluster_addr = 1;
+    *ldr_addr = local_ldr.raw;
+    auto volatile * ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
+    LOG(
+        "LAPIC LDR cluster address set: ",
+        static_cast<u16>(ldr->cluster_addr)
+        );
 }
 
 void LocalAPIC::configure_timer(const u32 hz)

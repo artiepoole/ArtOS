@@ -180,11 +180,12 @@ struct local_apic_source_address_override_entry
 struct full_madt_t
 {
     MADT_stub *madt_stub;
-    u64 pad1;
-    u32 pad2;
-    local_apic_entry local_apic;
+    local_apic_entry local_apics[4];
     io_apic_entry io_apic;
     io_apic_interrupt_source_override_entry iso[5];
+    size_t ISO_count = 0;
+    size_t LAPIC_count = 0;
+
 };
 
 

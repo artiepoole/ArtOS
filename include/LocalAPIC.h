@@ -15,9 +15,9 @@ public:
     void configure_timer(u32 hz);
 
 private:
-    uintptr_t* base;
+    uintptr_t base;
     LVT full_lvt;
-    LVT_spurious_vector* spurious_vector_entry;
+    LVT_spurious_vector volatile * spurious_vector_entry;
 };
 
 void LAPIC_EOI();

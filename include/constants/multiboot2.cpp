@@ -139,7 +139,9 @@ multiboot2_uint32_t multiboot2_get_APIC_address()
 
 multiboot2_uint32_t multiboot2_get_MADT_table_address()
 {
-    return reinterpret_cast<u32>(reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt_stub);
+    if (boot_info.old_acpi.type == 14) return reinterpret_cast<uintptr_t>(reinterpret_cast<RSDT*>(boot_info.old_acpi.rsdp.RsdtAddress)->madt_stub);
+    if (boot_info.new_acpi.type == 15) return reinterpret_cast<uintptr_t>(reinterpret_cast<RSDT*>(boot_info.new_acpi.rsdp.RsdtAddress)->madt_stub);
+    return 0;
 }
 
 /*

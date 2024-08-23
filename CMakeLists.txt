@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 ENABLE_LANGUAGE(ASM)
 option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
+option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 
 project(ArtOS)
 
@@ -58,6 +59,7 @@ target_compile_definitions(${KERNEL_BIN}
         PUBLIC
         ENABLE_SERIAL_LOGGING=$<BOOL:${ENABLE_SERIAL_LOGGING}>
         ENABLE_TERMINAL_LOGGING=$<BOOL:${ENABLE_TERMINAL_LOGGING}>
+        FORLAPTOP=$<BOOL:${FORLAPTOP}>
 )
 
 target_link_libraries(${KERNEL_BIN} pdclib doom)

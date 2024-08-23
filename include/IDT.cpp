@@ -76,7 +76,7 @@ inline char exception_messages[][40] =
     "reserved exceptions", // 31
 };
 
-void register_to_serial(const cpu_registers_t* r)
+void log_registers(const cpu_registers_t* r)
 {
     // auto &log = Serial::get();
     WRITE("int_no, err_code: ");
@@ -133,14 +133,14 @@ void register_to_serial(const cpu_registers_t* r)
 void handle_div_by_zero(const cpu_registers_t* r)
 {
     WRITE("Div by zero not handled. oops.\n");
-    register_to_serial(r);
+    log_registers(r);
 }
 
 
 extern "C"
 void exception_handler(const cpu_registers_t* r)
 {
-    register_to_serial(r);
+    log_registers(r);
 
     WRITE("Exception: ");
     // log.write_hex(r->int_no, 4);
@@ -187,7 +187,7 @@ void irq_handler(const cpu_registers_t* r)
         15 	Secondary ATA Bus
         240-32  Spurious APIC
     */
-    // register_to_serial(r);
+
 
     const auto int_no = r->int_no;
 

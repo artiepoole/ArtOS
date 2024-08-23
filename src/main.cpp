@@ -50,14 +50,14 @@ u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 
 void process_cmd(char* buf, size_t len)
 {
-    if (len ==0) return;
-    if (strncasecmp(buf, "play doom", 9)==0)
+    if (len == 0) return;
+    if (strncasecmp(buf, "play doom", 9) == 0)
     {
         run_doom();
     }
     else
     {
-        auto & term = Terminal::get();
+        auto& term = Terminal::get();
         term.write("Unknown command: ", COLOR_RED);
         term.write(buf, len, COLOR_MAGENTA);
         term.newLine();
@@ -80,7 +80,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         return;
     }
     // Load serial immediately for logging.
+#if ENABLE_SERIAL_LOGGING
     auto serial = Serial();
+#endif
 
     // We want timestamping to work asap.
     WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
@@ -94,9 +96,16 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     VideoGraphicsArray vga(frame_info);
     vga.draw();
 
-    // Then we enable interrupts and disable the old PIC.
+    // Then we disable the old PIC.
     PIC::disable_entirely();
-    full_madt_t* full_madt = populate_madt(multiboot2_get_MADT_table_address());
+    // and load boot info
+    uintptr_t madt_addr = multiboot2_get_MADT_table_address();
+    TIMESTAMP();
+    WRITE("MADT address: ");
+    WRITE(madt_addr, true);
+    NEWLINE();
+    full_madt_t* full_madt = populate_madt(madt_addr);
+    LOG("LAPIC count: ", full_madt->LAPIC_count);
     [[maybe_unused]] LocalAPIC local_apic(get_local_apic_base_addr());
     [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
 
@@ -111,7 +120,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     io_apic.remapIRQ(8, 40); // RTC
 
     configurePit(2000);
-
     // local_apic.configure_timer(1024);
     // Configure interrupt tables and enable interrupts.
     IDT idt;
@@ -127,13 +135,14 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // vga.draw();
 
 
-
+#if !ENABLE_SERIAL_LOGGING
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
     register_file_handle(1, "/dev/stdout", NULL, Serial::com_write);
     register_file_handle(2, "/dev/stderr", NULL, Serial::com_write);
     FILE* com = fopen("/dev/com1", "w");
     fprintf(com, "%s\n", "This should print to com0 via fprintf");
     printf("This should print to com0 via printf\n");
+#endif
 
 
     PCI_list();
@@ -146,7 +155,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     char cmd_buffer[cmd_buffer_size] = {0};
     size_t cmd_buffer_idx = 0;
     // Event handler loop.
-    LOG("Entering event loop.\n");
+    LOG("Entering event loop.");
     while (true)
     {
         if (events.pendingEvents())
@@ -214,7 +223,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                         case '\b': // backspace
                             {
                                 terminal.backspace();
-                                if (cmd_buffer_idx >0)
+                                if (cmd_buffer_idx > 0)
                                 {
                                     cmd_buffer[--cmd_buffer_idx] = ' ';
                                 }

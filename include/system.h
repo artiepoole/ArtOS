@@ -53,6 +53,7 @@ struct eflags_t
 };
 
 eflags_t get_eflags();
+bool get_interrupts_are_enabled();
 
 void disable_interrupts();
 void enable_interrupts();

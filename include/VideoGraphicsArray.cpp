@@ -28,7 +28,7 @@ Basic graphics utility methods
 #include "stdlib.h"
 
 #include "splash_screen.h"
-#include "Serial.h"
+#include "logging.h"
 
 static VideoGraphicsArray* instance{nullptr};
 
@@ -64,7 +64,7 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* 
     _window.h = _window.y2 - _window.y1;
     _screen_region = window_t{0, 0, width, height, width, height};
 
-    // LOG("VGA initialised.");
+    LOG("VGA initialised with width: ", width, " and height: ", height);
 }
 
 VideoGraphicsArray::~VideoGraphicsArray()
