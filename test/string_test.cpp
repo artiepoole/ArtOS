@@ -16,8 +16,8 @@ TEST(StringTest, string_from_int_pos)
     char outstr[32];
     string_from_int(1234, outstr);
     const int len = mystrlen(outstr);
-    char trimmed[len+1];
-    for (size_t i = 0; i < len; i++)
+    char trimmed[len];
+    for (size_t i = 0; i <= len; i++)
     {
         trimmed[i] = outstr[i];
     }
@@ -32,8 +32,8 @@ TEST(StringTest, string_from_int_neg)
     char outstr[32];
     string_from_int(-1234, outstr);
     const int len =  mystrlen(outstr);
-    char trimmed[len+1];
-    for (size_t i = 0; i < len; i++)
+    char trimmed[len];
+    for (size_t i = 0; i <=len; i++)
     {
         trimmed[i] = outstr[i];
     }
@@ -48,8 +48,8 @@ TEST(StringTest, string_from_int_zero)
     char outstr[32];
     string_from_int(0, outstr);
     const int len = mystrlen(outstr);
-    char trimmed[len+1];
-    for (size_t i = 0; i < len; i++)
+    char trimmed[len];
+    for (size_t i = 0; i <= len; i++)
     {
         trimmed[i] = outstr[i];
     }
@@ -65,8 +65,8 @@ TEST(StringTest, string_from_hex_pos)
     unsigned char in = 0xAE;
     hex_from_int(in, outstr, 1);
     const int len = mystrlen(outstr);
-    char trimmed[len+1];
-    for (size_t i = 0; i < len; i++)
+    char trimmed[len];
+    for (size_t i = 0; i <= len; i++)
     {
         trimmed[i] = outstr[i];
     }
@@ -82,8 +82,8 @@ TEST(StringTest, string_from_hex_neg)
     signed char in = -33;
     hex_from_int(in, outstr, 1);
     const int len = mystrlen(outstr);
-    char trimmed[len+1];
-    for (size_t i = 0; i < len; i++)
+    char trimmed[len];
+    for (size_t i = 0; i <= len; i++)
     {
         trimmed[i] = outstr[i];
     }
@@ -99,8 +99,8 @@ TEST(StringTest, string_from_hex_neg_hexin)
     const int in = -0xFE;
     hex_from_int(in, outstr, 4);
     const int len = mystrlen(outstr);
-    char trimmed[len+1];
-    for (size_t i = 0; i < len; i++)
+    char trimmed[len];
+    for (size_t i = 0; i <= len; i++)
     {
         trimmed[i] = outstr[i];
     }
@@ -116,8 +116,8 @@ TEST(StringTest, string_from_hex_zero)
     unsigned char in = 0x00;
     hex_from_int(in, outstr, 1);
     const int len = mystrlen(outstr);
-    char trimmed[len+1];
-    for (size_t i = 0; i < len; i++)
+    char trimmed[len];
+    for (size_t i = 0; i <= len; i++)
     {
         trimmed[i] = outstr[i];
     }
