@@ -55,6 +55,7 @@ Hello World:
 - [x] Initialise frame buffer etc using the multiboot2 data instead of hard coded
 - [x] Implement c standard library for kernel space
 - [x] Play DOOM for ArtOS!
+- [x] Boot ArtOS on real hardware 
 - [ ] DOOM: run in user space
 - [ ] DOOM: add sound
 - [ ] DOOM: add save games
