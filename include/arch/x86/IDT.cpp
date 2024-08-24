@@ -233,8 +233,7 @@ void irq_handler(const cpu_registers_t* r)
 void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 {
     idt_entry_t* descriptor = &idt_entries[idt_index];
-    KERNEL_CS = get_cs();
-    KERNEL_DS = get_ds();
+
     descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
     descriptor->kernel_cs = KERNEL_CS;
 
@@ -248,7 +247,8 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 
 IDT::IDT()
 {
-
+    KERNEL_CS = get_cs();
+    KERNEL_DS = get_ds();
     LOG("Initialising IDT");
     idt_pointer.limit = (sizeof(idt_entry_t) * IDT_STUB_COUNT) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt

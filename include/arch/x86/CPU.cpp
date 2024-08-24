@@ -92,9 +92,6 @@ u16 get_cs()
 {
     u16 i;
     asm("mov %%cs,%0" : "=r"(i));
-    WRITE("CS: ");
-    WRITE(i, true);
-    NEWLINE();
     return i;
 }
 
@@ -102,8 +99,5 @@ u16 get_ds()
 {
     u16 i;
     asm("mov %%ds,%0" : "=r"(i));
-    WRITE("DS: ");
-    WRITE(i, true);
-    NEWLINE();
     return i;
 }

@@ -14,11 +14,11 @@ struct terminal_char_t
 };
 
 
-inline PALETTE_t bkgd = COLOR_BASE02;
-inline PALETTE_t frgd = COLOR_BASE0;
-inline PALETTE_t accent = COLOR_CYAN;
-inline PALETTE_t value = COLOR_MAGENTA;
-inline PALETTE_t error = COLOR_RED;
+inline PALETTE_t colour_bkgd = COLOR_BASE02;
+inline PALETTE_t colour_frgd = COLOR_BASE0;
+inline PALETTE_t colour_accent = COLOR_CYAN;
+inline PALETTE_t colour_value = COLOR_MAGENTA;
+inline PALETTE_t colour_error = COLOR_RED;
 
 
 class Terminal
@@ -36,24 +36,29 @@ public:
     Terminal(Terminal const& other) = delete;
     Terminal& operator=(Terminal const& other) = delete;
 
-    void newLine();
+    static void newLine();
     void userLine();
     void setScale(u32 new_scale);
     u32 getScale();
-    void clear();
+    static void clear();
+
+
+    static u32 user_write(const char* data, u32 count);
+    static u32 user_err(const char* data, u32 count);
+
 
     void write(bool b);
-    void write(const terminal_char_t* data, size_t len); // used to display data from before.
-    void write(const char* data, PALETTE_t colour = COLOR_BASE0); // buffer without known length also with colour
-    // void write(const char* data);
-    void write(char c, PALETTE_t colour = COLOR_BASE0); // single char
-    void write(const char* data, size_t len, PALETTE_t colour = COLOR_BASE0); // buffer of fixed len
+    static void write(const char* data, size_t len, PALETTE_t colour = COLOR_BASE0); // buffer of fixed len
 
-    void time_stamp();
+    static void write(const char* data, PALETTE_t colour = COLOR_BASE0); // buffer without known length also with colour
+    static void write(char c, PALETTE_t colour = COLOR_BASE0); // single char
+
+    static void setChar(size_t x,size_t y, char c, PALETTE_t colour);
+    static void time_stamp();
 
     template <typename int_like>
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
-    void write(const int_like val, const bool hex = false, PALETTE_t colour = value)
+    void write(const int_like val, const bool hex = false, PALETTE_t colour = colour_value)
     {
         char out_str[255];
         if (hex)
@@ -96,53 +101,19 @@ public:
         write(val, true);
         newLine();
     };
-    void backspace();
+    static void backspace();
     void refresh();
 
 private:
     static void _scroll();
     static void _render();
     static void _putChar(terminal_char_t ch, u32 origin_x, u32 origin_y);
-    void _setChar(size_t x,size_t y, char c, PALETTE_t colour);
+    static void _write(const char* data, u32 count, PALETTE_t colour);
+    static void _append(const char* data, u32 count, PALETTE_t colour);
+    static void _render_queue(const terminal_char_t* data, size_t len); // used to display data from before.
+
 };
 
 
-template <typename int_like>
-void printf(const char* str, int_like key)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(str);
-
-    int l = 0;
-    for (; str[l] != 0; l++);
-    terminal.write(key, true);
-    terminal.newLine();
-}
-
-template <typename int_like>
-void print_int(int_like val)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(val);
-}
-
-inline void print_string(const char* str)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(str);
-}
-
-inline void print_char(const char c)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(c);
-}
-
-template <typename int_like>
-void print_hex(const int_like val)
-{
-    auto& terminal = Terminal::get();
-    terminal.write(val, true);
-}
 
 #endif //TERMINAL_H

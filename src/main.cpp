@@ -135,27 +135,34 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // vga.draw();
 
 
-#if !ENABLE_SERIAL_LOGGING
+
+
+
+    PCI_list();
+    [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
+
+#if ENABLE_SERIAL_LOGGING
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
     register_file_handle(1, "/dev/stdout", NULL, Serial::com_write);
     register_file_handle(2, "/dev/stderr", NULL, Serial::com_write);
     FILE* com = fopen("/dev/com1", "w");
     fprintf(com, "%s\n", "This should print to com0 via fprintf");
     printf("This should print to com0 via printf\n");
+#elif ENABLE_TERMINAL_LOGGING
+    register_file_handle(0, "/dev/stdin", NULL, NULL);
+    register_file_handle(1, "/dev/stdout", NULL, Terminal::user_write);
+    register_file_handle(2, "/dev/stderr", NULL, Terminal::user_err);
+    printf("This should print to terminal via printf\n");
 #endif
-
-
-    PCI_list();
-    [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
-
-    LOG("LOADED OS.");
 
     // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
     constexpr size_t cmd_buffer_size = 1024;
     char cmd_buffer[cmd_buffer_size] = {0};
     size_t cmd_buffer_idx = 0;
+    LOG("LOADED OS. Entering event loop.");
+
     // Event handler loop.
-    LOG("Entering event loop.");
+
     while (true)
     {
         if (events.pendingEvents())

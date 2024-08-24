@@ -53,10 +53,10 @@ Terminal::Terminal(u32 width, u32 height)
 
     for (size_t i = 0; i < screen_region.w * screen_region.h; i++)
     {
-        term_screen_buffer[i] = bkgd;
+        term_screen_buffer[i] = colour_bkgd;
     }
 
-    write(terminal_queue, queue_pos);
+    _render_queue(terminal_queue, queue_pos);
     // delete terminal_queue;
 }
 
@@ -99,7 +99,7 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
                 }
                 else
                 {
-                    term_screen_buffer[i++] = bkgd;
+                    term_screen_buffer[i++] = colour_bkgd;
                 }
             }
             i += line_step_amount;
@@ -123,7 +123,7 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
                 }
                 else
                 {
-                    term_screen_buffer[i++] = bkgd;
+                    term_screen_buffer[i++] = colour_bkgd;
                 }
             }
             i += line_step_amount;
@@ -165,7 +165,7 @@ void Terminal::setScale(u32 new_scale)
     else
     {
         time_stamp();
-        write("\tFont scale not applied.\n", error);
+        write("\tFont scale not applied.\n", colour_error);
     }
 }
 
@@ -203,83 +203,29 @@ void Terminal::_render()
     vga.draw_region(term_screen_buffer);
 }
 
-
-void Terminal::write(bool b)
+void Terminal::_append(const char* data, const u32 count, const PALETTE_t colour)
 {
-    if (b == true)
+    for (int i = 0; i < count; i++)
     {
-        write("True", 4);
-    }
-    else
-    {
-        write("False", 5);
+        terminal_queue[queue_pos++ % queue_size] = terminal_char_t{data[i], colour};
     }
 }
-// void Terminal::write(const char* data, const u32 colour)
-// {
-//     const size_t len = mystrlen(data);
-//     // put data into the text buffer
-//     write(data, len, colour);
-// }
 
-void Terminal::write(const char* data, PALETTE_t colour)
-{
-    const size_t len = mystrlen(data);
-    // put data into the text buffer
-    write(data, len, colour);
-}
-
-
-// void Terminal::write(const char* data)
-// {
-//     const size_t len = mystrlen(data);
-//     // put data into the text buffer
-//     write(data, len, COLOR_BASE0);
-// }
-
-void Terminal::write(const char c, const PALETTE_t colour)
+void Terminal::_write(const char* data, const u32 count, const PALETTE_t colour)
 {
     if (!instance)
     {
-        terminal_queue[queue_pos++ % queue_size] = terminal_char_t{c, colour};
+        _append(data, count, colour);
         return;
     }
-    if (c == '\n')
-    {
-        newLine();
-        terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent};
-    }
-    else
-    {
-        terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, colour};
-    }
-    if (terminal_column >= buffer_width)
-    {
-        newLine();
-    }
-    _render();
-}
-
-
-void Terminal::write(const char* data, const size_t len, PALETTE_t color)
-{
-    if (!instance)
-    {
-        for (int i = 0; i < len; i++)
-        {
-            terminal_queue[queue_pos++ % queue_size] = terminal_char_t{data[i], color};
-        }
-        return;
-    }
-
-    for (size_t i = 0; i < len; i++)
+    for (size_t i = 0; i < count; i++)
     {
         const char c = data[i];
         switch (c)
         {
         case '\t':
             {
-                write("    ", 4, color);
+                _write("    ", 4, colour);
                 if (terminal_column >= buffer_width) newLine();
                 break;
             }
@@ -290,22 +236,79 @@ void Terminal::write(const char* data, const size_t len, PALETTE_t color)
             }
         default:
             {
-                terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, color};;
+                terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, colour};;
 
                 if (terminal_column >= buffer_width) newLine();
             }
         }
 
         if (terminal_row > buffer_height)_scroll();
-        // write the text buffer to screen_region
     }
     _render();
 }
 
-// flush queue.
-void Terminal::write(const terminal_char_t* data, size_t len)
+u32 Terminal::user_write(const char* data, u32 count)
 {
-    terminal_buffer[0] = terminal_char_t{'>', accent};
+    PALETTE_t colour = colour_frgd;
+    _write(data, count, colour);
+    return count;
+}
+
+u32 Terminal::user_err(const char* data, u32 count)
+{
+    PALETTE_t colour = colour_frgd;
+    _write(data, count, colour);
+    return count;
+}
+
+void Terminal::write(bool b)
+{
+    if (b == true)
+    {
+        _write("True", 4, colour_value);
+    }
+    else
+    {
+        _write("False", 5, colour_value);
+    }
+}
+
+
+void Terminal::write(const char* data, PALETTE_t colour)
+{
+    const size_t len = mystrlen(data);
+    // put data into the text buffer
+    _write(data, len, colour);
+}
+
+
+
+void Terminal::write(const char c, const PALETTE_t colour)
+{
+    const char data[1] = {c};
+    if (!instance)
+    {
+        _append(data, 1, colour);
+        return;
+    }
+    _write(data, 1, colour);
+}
+
+
+void Terminal::write(const char* data, const size_t len, PALETTE_t colour)
+{
+    if (!instance)
+    {
+        _append(data, len, colour);
+        return;
+    }
+    _write(data, len, colour);
+}
+
+// flush queue.
+void Terminal::_render_queue(const terminal_char_t* data, size_t len)
+{
+    terminal_buffer[0] = terminal_char_t{'>', colour_accent};
     for (size_t i = 0; i < len; i++)
     {
         auto item = data[i];
@@ -335,12 +338,12 @@ void Terminal::write(const terminal_char_t* data, size_t len)
     _render();
 }
 
-
 void Terminal::backspace()
 {
+    if (!instance) return;
     if (terminal_column > 1)
     {
-        terminal_buffer[terminal_row * buffer_width + (terminal_column - 1)] = terminal_char_t{' ', bkgd};;
+        terminal_buffer[terminal_row * buffer_width + (terminal_column - 1)] = terminal_char_t{' ', colour_bkgd};;
         --terminal_column;
     }
     _render();
@@ -348,6 +351,7 @@ void Terminal::backspace()
 
 void Terminal::clear()
 {
+    if (!instance) return;
     memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
 
     // 1 so that it doesn't match terminal buffer clears and redraws whole screen
@@ -361,23 +365,20 @@ void Terminal::time_stamp()
 }
 
 // used to add and remove cursor
-void Terminal::_setChar(size_t x, size_t y, char c, PALETTE_t colour)
+void Terminal::setChar(size_t x, size_t y, char c, PALETTE_t colour)
 {
-    terminal_buffer[y * buffer_width + x] = terminal_char_t{c, colour};
+    if (instance)
+    {
+        terminal_buffer[y * buffer_width + x] = terminal_char_t{c, colour};
+    }
 }
 
-void Terminal::userLine() // for use after an application prints.
-{
-    newLine();
-    terminal_buffer[terminal_row * buffer_width] = terminal_char_t{'>', accent}; // Add an arrow to the start of the line
-    _render();
-}
 
 void Terminal::newLine()
 {
     if (!instance)
     {
-        terminal_queue[queue_pos++ % queue_size] = terminal_char_t{'\n', bkgd};
+        terminal_queue[queue_pos++ % queue_size] = terminal_char_t{'\n', colour_bkgd};
         return;
     }
     terminal_column = 1;
@@ -387,16 +388,15 @@ void Terminal::newLine()
         _scroll();
     }
 
-    _setChar(0, terminal_row - 1, ' ', bkgd);
-    _setChar(0, terminal_row, '>', accent);
+    setChar(0, terminal_row - 1, ' ', colour_bkgd);
+    setChar(0, terminal_row, '>', colour_accent);
     _render();
 }
 
 void Terminal::_scroll()
 {
     // TODO: use px_x and px_y or row/column for this stuff and throughout the file for legibility reasons..
-    // auto& vga = VideoGraphicsArray::get();
-    // vga.clearWindow();
+    if (!instance) return;
     for (size_t x = 0; x < buffer_width; x++)
     {
         // All lines move up one
@@ -405,7 +405,7 @@ void Terminal::_scroll()
             terminal_buffer[y * buffer_width + x] = terminal_buffer[(y + 1) * buffer_width + x];
         }
         // Bottom line is replaced with empty.
-        terminal_buffer[(buffer_height - 1) * buffer_width + x] = terminal_char_t{' ', bkgd};
+        terminal_buffer[(buffer_height - 1) * buffer_width + x] = terminal_char_t{' ', colour_bkgd};
     }
     terminal_row -= 1;
 }
