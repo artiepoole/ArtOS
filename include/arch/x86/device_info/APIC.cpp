@@ -5,7 +5,6 @@
 #include "APIC.h"
 
 #include "ACPI.h"
-#include "IDT.h"
 #include "CPU.h"
 
 

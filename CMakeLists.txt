@@ -16,10 +16,12 @@ file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
         "include/*.S"
-        "include/timers/*.h"
-        "include/timers/*.cpp"
-        "include/device_info/*.h"
-        "include/device_info/*.cpp"
+        "include/arch/x86/*.h"
+        "include/arch/x86/*.cpp"
+        "include/arch/x86/timers/*.h"
+        "include/arch/x86/timers/*.cpp"
+        "include/arch/x86/device_info/*.h"
+        "include/arch/x86/device_info/*.cpp"
         "include/constants/*.h"
         "include/constants/*.cpp"
 )
@@ -39,8 +41,9 @@ add_executable(${KERNEL_BIN} src/boot.S src/main.cpp ${INCLUDE} ${KERNEL}
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
         include
-        include/timers
-        include/device_info/
+        include/arch/x86/
+        include/arch/x86/timers
+        include/arch/x86/device_info/
         include/constants
         src
         src/sys

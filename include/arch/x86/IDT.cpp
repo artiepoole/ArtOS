@@ -11,7 +11,7 @@
 #include "EventQueue.h"
 #include "logging.h"
 #include "ports.h"
-#include <stdint.h>
+#include "stdint.h"
 
 
 // todo: move some of this stuff to an "interrupts.cpp" or similar.
