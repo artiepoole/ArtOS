@@ -10,7 +10,6 @@
 #include "RTC.h"
 #include "EventQueue.h"
 #include "logging.h"
-#include "ports.h"
 #include "stdint.h"
 
 
@@ -36,8 +35,8 @@ static bool idt_vectors[IDT_STUB_COUNT];
 static idt_ptr_t idt_pointer;
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
-u16 KERNEL_CS = 0x0010;
-u16 KERNEL_DS = 0x0018;
+u16 KERNEL_CS;
+u16 KERNEL_DS;
 
 
 inline char exception_messages[][40] =
@@ -234,9 +233,11 @@ void irq_handler(const cpu_registers_t* r)
 void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 {
     idt_entry_t* descriptor = &idt_entries[idt_index];
-
+    KERNEL_CS = get_cs();
+    KERNEL_DS = get_ds();
     descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
     descriptor->kernel_cs = KERNEL_CS;
+
     // this value can be whatever offset your sys code selector is in your GDT.
     // My entry point is 0x001005e0 so the offset is 0x0010(XXXX) (because of GRUB)
     descriptor->attributes = flags;

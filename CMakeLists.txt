@@ -15,7 +15,7 @@ set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 file(GLOB INCLUDE
         "include/*.h"
         "include/*.cpp"
-        "include/*.S"
+        "include/arch/x86/*.S"
         "include/arch/x86/*.h"
         "include/arch/x86/*.cpp"
         "include/arch/x86/timers/*.h"
