@@ -90,14 +90,21 @@ void get_GDT()
 
 u16 get_cs()
 {
-    u16 i;
-    asm("mov %%cs,%0" : "=r"(i));
-    return i;
+    u16 cs;
+    asm("mov %%cs,%0" : "=r"(cs));
+    return cs;
 }
 
 u16 get_ds()
 {
-    u16 i;
-    asm("mov %%ds,%0" : "=r"(i));
-    return i;
+    u16 ds;
+    asm("mov %%ds,%0" : "=r"(ds));
+    return ds;
+}
+
+cr0_t get_cr0()
+{
+    cr0_t cr0{};
+    asm("mov %%cr0,%0" : "=r"(cr0.raw));
+    return cr0;
 }

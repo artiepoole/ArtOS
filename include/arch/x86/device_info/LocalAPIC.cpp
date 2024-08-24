@@ -78,7 +78,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     spurious_vector_entry = reinterpret_cast<LVT_spurious_vector*>(spv_addr);
     LOG(
         "Spurious vector set. Spurious vector: ",
-        static_cast<u16>(spurious_vector_entry->raw & 0xFF),
+        static_cast<u8>(spurious_vector_entry->raw & 0xFF), // vector is only bottom 8 bits. This cast is very pedantic.
         " Software enabled: ",
         static_cast<bool>(local_spurious.software_enable));
 
@@ -92,7 +92,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     auto volatile model = reinterpret_cast<u32*>(base + DFR_OFFSET);
     *model = 0xFFFFFFFF;
     auto dfr = reinterpret_cast<destination_format_register*>(base + DFR_OFFSET);
-    LOG("LAPIC DFR mode: ", static_cast<u16>(dfr->model));
+    LOG("LAPIC DFR mode: ", static_cast<u8>(dfr->model));
 
     local_destination_register local_ldr = {0};
     auto ldr_addr = reinterpret_cast<u32*>(base + LDR_OFFSET);
@@ -102,7 +102,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     auto volatile * ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
     LOG(
         "LAPIC LDR cluster address set: ",
-        static_cast<u16>(ldr->cluster_addr)
+        static_cast<u8>(ldr->cluster_addr)
         );
 }
 

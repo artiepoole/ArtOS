@@ -85,13 +85,25 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 #endif
 
     // We want timestamping to work asap.
-    WRITE("Mon Jan 01 00:00:00 1970\tLoading singletons...\n");
+    WRITE("DAY MON DD HH:MM:SS YYYY\tLoading singletons...\n");
     RTC rtc;
 
     // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
+
+#if FORLAPTOP
+    cpuid_manufacturer_info_t* manu_info= cpuid_get_manufacturer_info();
+    LOG("CPUID Max parameter in decimal: ", manu_info->max_param);
+
+    cpuid_core_frequency_info_t* freq_info= cpuid_get_frequency_info();
+    LOG("CPUID freq info: core clock freq: ", freq_info->core_clock_freq_hz, " base freq: ", freq_info->cpu_base_freq_MHz, " cpu_max_freq: ", freq_info->cpu_max_freq_MHz);
+
+    LOG("Current speed from SMBIOS: ", SMBIOS_get_CPU_clock_rate_hz());
+
+    LOG("CR0 CACHE DISABLED?: ", static_cast<bool>(get_cr0().CD));
+#endif
     // And then we want graphics.
     VideoGraphicsArray vga(frame_info);
     vga.draw();
@@ -121,22 +133,13 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     configurePit(2000);
     // local_apic.configure_timer(1024);
+    // todo: configure apic timer.
     // Configure interrupt tables and enable interrupts.
     IDT idt;
 
     LOG("Singletons loaded.");
 
-
-    // vga.drawSplash();
-    // vga.draw();
-
-
-    // terminal.setScale(2);
-    // vga.draw();
-
-
-
-
+    // TODO: Drawsplash should programatically draw using the logo from the middle as a texture.
 
     PCI_list();
     [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
@@ -154,6 +157,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     register_file_handle(2, "/dev/stderr", NULL, Terminal::user_err);
     printf("This should print to terminal via printf\n");
 #endif
+
+
 
     // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
     constexpr size_t cmd_buffer_size = 1024;

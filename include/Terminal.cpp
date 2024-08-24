@@ -176,10 +176,10 @@ u32 Terminal::getScale()
 
 void Terminal::refresh()
 {
-    _render();
+    _draw_changes();
 }
 
-void Terminal::_render()
+void Terminal::_draw_changes()
 {
     if (!instance) return;
     size_t i = 0;
@@ -203,7 +203,7 @@ void Terminal::_render()
     vga.draw_region(term_screen_buffer);
 }
 
-void Terminal::_append(const char* data, const u32 count, const PALETTE_t colour)
+void Terminal::_append_to_queue(const char* data, const u32 count, const PALETTE_t colour)
 {
     for (int i = 0; i < count; i++)
     {
@@ -211,11 +211,11 @@ void Terminal::_append(const char* data, const u32 count, const PALETTE_t colour
     }
 }
 
-void Terminal::_write(const char* data, const u32 count, const PALETTE_t colour)
+void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE_t colour)
 {
     if (!instance)
     {
-        _append(data, count, colour);
+        _append_to_queue(data, count, colour);
         return;
     }
     for (size_t i = 0; i < count; i++)
@@ -225,7 +225,7 @@ void Terminal::_write(const char* data, const u32 count, const PALETTE_t colour)
         {
         case '\t':
             {
-                _write("    ", 4, colour);
+                _write_to_screen("    ", 4, colour);
                 if (terminal_column >= buffer_width) newLine();
                 break;
             }
@@ -244,65 +244,65 @@ void Terminal::_write(const char* data, const u32 count, const PALETTE_t colour)
 
         if (terminal_row > buffer_height)_scroll();
     }
-    _render();
+    _draw_changes();
 }
 
 u32 Terminal::user_write(const char* data, u32 count)
 {
     PALETTE_t colour = colour_frgd;
-    _write(data, count, colour);
+    _write_to_screen(data, count, colour);
     return count;
 }
 
 u32 Terminal::user_err(const char* data, u32 count)
 {
     PALETTE_t colour = colour_frgd;
-    _write(data, count, colour);
+    _write_to_screen(data, count, colour);
     return count;
 }
 
-void Terminal::write(bool b)
+u32 Terminal::write(bool b)
 {
     if (b == true)
     {
-        _write("True", 4, colour_value);
+        _write_to_screen("True", 4, colour_value);
+        return 4;
     }
-    else
-    {
-        _write("False", 5, colour_value);
-    }
+    _write_to_screen("False", 5, colour_value);
+    return 5;
+
 }
 
-
-void Terminal::write(const char* data, PALETTE_t colour)
+u32 Terminal::write(const char* data, PALETTE_t colour)
 {
     const size_t len = mystrlen(data);
     // put data into the text buffer
-    _write(data, len, colour);
+    _write_to_screen(data, len, colour);
+    return len;
 }
 
-
-
-void Terminal::write(const char c, const PALETTE_t colour)
+u32 Terminal::write(const char c, const PALETTE_t colour)
 {
     const char data[1] = {c};
     if (!instance)
     {
-        _append(data, 1, colour);
-        return;
+        _append_to_queue(data, 1, colour);
+        return 1;
     }
-    _write(data, 1, colour);
+    _write_to_screen(data, 1, colour);
+    return 1;
 }
 
 
-void Terminal::write(const char* data, const size_t len, PALETTE_t colour)
+u32 Terminal::write(const char* data, const size_t len, PALETTE_t colour)
 {
     if (!instance)
     {
-        _append(data, len, colour);
-        return;
+        _append_to_queue(data, len, colour);
+        return len;
     }
-    _write(data, len, colour);
+    _write_to_screen(data, len, colour);
+    return len;
 }
 
 // flush queue.
@@ -335,7 +335,7 @@ void Terminal::_render_queue(const terminal_char_t* data, size_t len)
             newLine();
         }
     }
-    _render();
+    _draw_changes();
 }
 
 void Terminal::backspace()
@@ -346,7 +346,7 @@ void Terminal::backspace()
         terminal_buffer[terminal_row * buffer_width + (terminal_column - 1)] = terminal_char_t{' ', colour_bkgd};;
         --terminal_column;
     }
-    _render();
+    _draw_changes();
 }
 
 void Terminal::clear()
@@ -356,7 +356,7 @@ void Terminal::clear()
 
     // 1 so that it doesn't match terminal buffer clears and redraws whole screen
     memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t));
-    _render();
+    _draw_changes();
 }
 
 void Terminal::time_stamp()
@@ -390,7 +390,7 @@ void Terminal::newLine()
 
     setChar(0, terminal_row - 1, ' ', colour_bkgd);
     setChar(0, terminal_row, '>', colour_accent);
-    _render();
+    _draw_changes();
 }
 
 void Terminal::_scroll()

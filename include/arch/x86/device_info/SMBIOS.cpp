@@ -43,7 +43,7 @@ smbios_t search_for_SMBIOS()
         eps += 16;
     }
 
-    LOG(reinterpret_cast<u32>(eps));
+    // LOG(reinterpret_cast<u32>(eps));
     smbios = reinterpret_cast<smbios_t*>(eps);
     return *smbios; // return a copy
 }

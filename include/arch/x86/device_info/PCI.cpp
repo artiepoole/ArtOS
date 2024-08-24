@@ -176,7 +176,7 @@ void PCIDevice::log_format()
 {
     LOG("PCI device. Bus: ", static_cast<u16>(address.components.bus), " slot: ", static_cast<u16>(address.components.slot), " function: ", static_cast<u16>(address.components.function));
 
-    LOG("class: ", dev_types[class_code()], " subclass: ", static_cast<u16>(sub_class()), " vendor id: ", vendor_id());
+    LOG("class: ", dev_types[class_code()], " subclass: ", sub_class(), " vendor id: ", vendor_id());
 }
 
 u16 PCIDevice::command() const

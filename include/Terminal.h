@@ -20,14 +20,19 @@ inline PALETTE_t colour_accent = COLOR_CYAN;
 inline PALETTE_t colour_value = COLOR_MAGENTA;
 inline PALETTE_t colour_error = COLOR_RED;
 
-
+/* Terminal class for interacting with text on screen.
+ * If not initialised, all writes will append to a queue to be rendered upon initialisation.
+ * If initialised, all writes will add text to screen.
+ * log can be used to print many strings and variables to screen in one call
+ * write has many type overloads for default types.
+ *
+ */
 class Terminal
 {
 
 
 public:
-    // Single instance. Cannot be used if not initialised.
-    // explicit Terminal(const window_t* screen);
+    // Single instance.
     Terminal(u32 width, u32 height);
     ~Terminal();
     static Terminal& get();
@@ -39,23 +44,34 @@ public:
     static void newLine();
     void userLine();
     void setScale(u32 new_scale);
-    u32 getScale();
+    static u32 getScale();
     static void clear();
 
-
+    // for use with stdout/stderr
     static u32 user_write(const char* data, u32 count);
     static u32 user_err(const char* data, u32 count);
 
-
-    void write(bool b);
-    static void write(const char* data, size_t len, PALETTE_t colour = COLOR_BASE0); // buffer of fixed len
-
-    static void write(const char* data, PALETTE_t colour = COLOR_BASE0); // buffer without known length also with colour
-    static void write(char c, PALETTE_t colour = COLOR_BASE0); // single char
+    // for normal use/logging.
+    static u32 write(bool b);
+    static u32 write(const char* data, size_t len, PALETTE_t colour = COLOR_BASE0); // buffer of fixed len
+    static u32 write(const char* data, PALETTE_t colour = COLOR_BASE0); // buffer without known length also with colour
+    static u32 write(char c, PALETTE_t colour = COLOR_BASE0); // single char
 
     static void setChar(size_t x,size_t y, char c, PALETTE_t colour);
-    static void time_stamp();
 
+    static void time_stamp();
+    static void backspace();
+    static void refresh();
+
+private:
+    static void _scroll();
+    static void _draw_changes();
+    static void _putChar(terminal_char_t ch, u32 origin_x, u32 origin_y);
+    static void _write_to_screen(const char* data, u32 count, PALETTE_t colour); // or append to queue if not init'ed
+    static void _append_to_queue(const char* data, u32 count, PALETTE_t colour);
+    static void _render_queue(const terminal_char_t* data, size_t len); // used to display data from before init.
+
+public:
     template <typename int_like>
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>) // Any interger like number but not a char or char array.
     void write(const int_like val, const bool hex = false, PALETTE_t colour = colour_value)
@@ -87,31 +103,6 @@ public:
         (write(args), ...);
         newLine();
     }
-
-
-    template <typename int_like>
-        requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
-    void logHex(int_like val, const char* val_name = "")
-    {
-        if (mystrlen(val_name) > 0)
-        {
-            write(val_name, from_hex(val));
-            write(": ");
-        }
-        write(val, true);
-        newLine();
-    };
-    static void backspace();
-    void refresh();
-
-private:
-    static void _scroll();
-    static void _render();
-    static void _putChar(terminal_char_t ch, u32 origin_x, u32 origin_y);
-    static void _write(const char* data, u32 count, PALETTE_t colour);
-    static void _append(const char* data, u32 count, PALETTE_t colour);
-    static void _render_queue(const terminal_char_t* data, size_t len); // used to display data from before.
-
 };
 
 

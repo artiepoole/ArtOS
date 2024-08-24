@@ -27,20 +27,20 @@ full_madt_t* populate_madt(const uintptr_t madt_location)
             madt.local_apics[madt.LAPIC_count] = *reinterpret_cast<local_apic_entry*>(current_address);
             LOG(
                 "Found local APIC with ID: ",
-                static_cast<u16>(madt.local_apics[madt.LAPIC_count].apic_id),
+                madt.local_apics[madt.LAPIC_count].apic_id,
                 " and processor id: ",
-                static_cast<u16>(madt.local_apics[madt.LAPIC_count].apic_processor_id)
+                madt.local_apics[madt.LAPIC_count].apic_processor_id
                 );
 
             madt.LAPIC_count++;
             break;
         case 1:
             madt.io_apic = *reinterpret_cast<io_apic_entry*>(current_address);
-            LOG("Found IO APIC with ID: ", static_cast<u16>(madt.io_apic.io_apic_id));
+            LOG("Found IO APIC with ID: ", madt.io_apic.io_apic_id);
             break;
         case 2:
             madt.iso[madt.ISO_count] = *reinterpret_cast<io_apic_interrupt_source_override_entry*>(current_address);
-            LOG("Found IO APIC ISO. Global: ", madt.iso[madt.ISO_count].global_system_interrupt, " IRQ_source: ", static_cast<u16>(madt.iso[madt.ISO_count].irq_source));
+            LOG("Found IO APIC ISO. Global: ", madt.iso[madt.ISO_count].global_system_interrupt, " IRQ_source: ", madt.iso[madt.ISO_count].irq_source);
             madt.ISO_count++;
             break;
         case 3:
@@ -53,7 +53,7 @@ full_madt_t* populate_madt(const uintptr_t madt_location)
             LOG("local_apic_source_address_override_entry");
             break;
         default:
-            LOG("Unknown apic entry type: ", static_cast<u16>(tag->type));
+            LOG("Unknown apic entry type: ", tag->type);
         }
         current_address += tag->length;
     }

@@ -16,11 +16,11 @@
 class Serial
 {
 private:
-    static char _read();
-    static void _sendChar(unsigned char a);
-    static int _received();
-    static int _transmitEmpty();
-    static void _write(const char* data, size_t size);
+    static char _read_one_byte();
+    static void _send_one_byte(unsigned char a);
+    static int _get_read_ready_status();
+    static int _get_transmit_empty();
+    static void _write_buffer(const char* data, size_t size);
 
 public:
     Serial();
@@ -36,7 +36,7 @@ public:
 
     void newLine();
     void write(bool b);
-    void write(unsigned char c);
+    // void write(unsigned char c);
     void write(char c);
     void write(const char* data);
     void write(const char* data, size_t len);

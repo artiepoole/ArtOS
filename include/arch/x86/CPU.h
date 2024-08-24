@@ -22,33 +22,59 @@ struct eflags_t
     {
         struct
         {
-            bool CF : 1;
-            bool res0 : 1;
-            bool PF : 1;
-            bool res1 : 1;
-            bool AF : 1;
-            bool res2 : 1;
-            bool ZF : 1;
-            bool SF : 1;
-            bool TF : 1;
-            bool IF : 1;
-            bool DF : 1;
-            bool OF : 1;
-            u8 IOPL : 2;
-            bool NT : 1;
-            bool MD : 1;
-            bool RF : 1;
-            bool VM : 1;
-            bool AC : 1;
-            bool VIF : 1;
-            bool VIP : 1;
-            bool ID : 1;
-            u8 res3 : 8;
-            bool AES : 1;
-            bool AI : 1;
+            u32 CF : 1;
+            u32 res0 : 1;
+            u32 PF : 1;
+            u32 res1 : 1;
+            u32 AF : 1;
+            u32 res2 : 1;
+            u32 ZF : 1;
+            u32 SF : 1;
+            u32 TF : 1;
+            u32 IF : 1;
+            u32 DF : 1;
+            u32 OF : 1;
+            u32 IOPL : 2;
+            u32 NT : 1;
+            u32 MD : 1;
+            u32 RF : 1;
+            u32 VM : 1;
+            u32 AC : 1;
+            u32 VIF : 1;
+            u32 VIP : 1;
+            u32 ID : 1;
+            u32 res3 : 8;
+            u32 AES : 1;
+            u32 AI : 1;
         };
 
         u32 flag_double;
+    };
+};
+
+struct cr0_t
+{
+    union
+    {
+        struct
+        {
+            u32 PE : 1; // 0
+            u32 MP : 1; // 1
+            u32 EM : 1; // 2
+            u32 TS : 1; // 3
+            u32 ET : 1; // 4
+            u32 NE : 1; // 5
+            u32 res0 : 10;// up to bit 15
+            u32 WP : 1; // 16
+            u32 res1 : 1; // 17
+            u32 AM : 1; // 18
+            u32 res2 : 10;// up to 28
+            u32 NW : 1;  // 29
+            u32 CD : 1;  // 30
+            u32 PG : 1; // 31
+        };
+
+        u32 raw;
     };
 };
 
@@ -68,6 +94,6 @@ extern u32 TEXT_CS;
 void get_GDT();
 u16 get_cs();
 u16 get_ds();
-
+cr0_t get_cr0();
 
 #endif //SYSTEM_H

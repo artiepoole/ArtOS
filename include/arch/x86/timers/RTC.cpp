@@ -18,7 +18,7 @@ u32 seconds_since_start = 0;
 
 RTC::RTC()
 {
-    WRITE("Mon Jan 01 00:00:00 1970\tInitialising RTC\n");
+    WRITE("DAY MON DD HH:MM:SS YYYY\tInitialising RTC\n");
     instance = this;
     u8 flag = readRegister(CMOS_STATUS_B);
     // Set the clock to binary mode (more efficient) and 24 hour mode.
@@ -202,7 +202,7 @@ u32 RTC::setDivider(u8 divider)
 
     // set interrupt frequency
     hz = 32768 >> (divider - 1);
-    LOG("Setting RTC divider. Divisor: ", static_cast<u16>(divider), " frequency: ", hz);
+    LOG("Setting RTC divider. Divisor: ", divider, " frequency: ", hz);
     divider &= 0x0F; // rate must be above 2 and not over 15
     outb(CMOS_SELECT, CMOS_STATUS_A);
     u8 prev = inb(CMOS_DATA); // get initial value of register A

@@ -49,19 +49,9 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* 
     _screen = reinterpret_cast<u32*>(framebuffer_info->framebuffer_addr);
 
     _buffer = static_cast<u32*>(malloc(width * height * sizeof(u32)));
+    memset(_buffer, 0, width * height * sizeof(u32));
 
-    // initialiase to 0
-    for (u32 i = 0; i < (width * (height)); i++)
-    {
-        _buffer[i] = static_cast<u32>(0);
-    }
 
-    _window.x1 = 30;
-    _window.y1 = 30;
-    _window.x2 = width - (_window.x1);
-    _window.y2 = height - (_window.y1);
-    _window.w = _window.x2 - _window.x1;
-    _window.h = _window.y2 - _window.y1;
     _screen_region = window_t{0, 0, width, height, width, height};
 
     LOG("VGA initialised with width: ", width, " and height: ", height);

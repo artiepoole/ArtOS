@@ -43,7 +43,6 @@ protected:
     u32* _screen;
 
 private:
-    window_t _window{};
     window_t _screen_region{};
 
 public:
