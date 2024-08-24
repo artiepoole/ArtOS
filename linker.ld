@@ -29,12 +29,13 @@ SECTIONS
 	   /* I have since changed this line based on another tutorial and haven't checked this value */
    . = 2M;
 
-	/* First put the multiboot header, as it is required to be put very early
-	   in the image or the bootloader won't recognize the file format.
-	   Next we'll put the .text section. */
+   .mboot ALIGN (4K) : AT(ADDR(.mboot))
+   {
+       *(.multiboot_header)
+   }
+
     .text BLOCK(4K) : ALIGN(4K)
     {
-        *(.multiboot)
         *(.text*)
         *(.rodata)
     }
@@ -48,7 +49,7 @@ SECTIONS
         KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
         end_ctors = .;
         *(.data)
-        *(.doom_blob*);
+        *(.doom_blob*)
     }
 
 

@@ -61,10 +61,11 @@ from https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#OS-image-
     .long CHECKSUM
     .long TAGS
 */
-.section .multiboot
+
 /*  Align 64 bits boundary. */
 .align  8
 /*  Multiboot header. */
+.globl multiboot_header
 multiboot_header:
             /*  magic */
     .long   MULTIBOOT2_HEADER_MAGIC
