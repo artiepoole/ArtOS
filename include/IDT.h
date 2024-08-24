@@ -4,7 +4,7 @@
 
 #ifndef IDT_H
 #define IDT_H
-#include "system.h"
+#include "CPU.h"
 #include "PIC.h"
 
 

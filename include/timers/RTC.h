@@ -6,7 +6,7 @@
 #define CMOS_H
 
 
-#include "system.h"
+#include "CPU.h"
 #include "time.h"
 
 class RTC
