@@ -16,9 +16,9 @@
 #define ERR_HANDLE_TAKEN -2
 #define ERR_NOT_FOUND -3
 
-static struct FileHandle* handles[MAX_HANDLES] = {0};
+static FileHandle* handles[MAX_HANDLES] = {0};
 
-struct FileHandle* get_file_handle(int fd)
+FileHandle* get_file_handle(int fd)
 {
     return handles[fd];
 }
@@ -58,10 +58,8 @@ void close_file_handle(int fd)
 }
 
 u32 doomwad_seek_pos;
-extern u8 doom_wad_file;
-extern u8 doom_wad_file_end;
-char* doom_wad_loc;
-char* doom_wad_end;
+extern char doom_wad_file[];
+extern char doom_wad_file_end[];
 u32 doomwad_size;
 
 extern "C"
@@ -103,7 +101,7 @@ u32 doomwad_read(char* dest, u32 count)
     size_t i = 0;
     while (i < doomwad_size && i < count)
     {
-        dest[i] = doom_wad_loc[i + doomwad_seek_pos];
+        dest[i] = doom_wad_file[i + doomwad_seek_pos];
         i++;
     }
     doomwad_seek_pos += i;
@@ -153,23 +151,12 @@ int open(const char* filename, unsigned int mode)
 
     if (strcmp("doom1.wad", filename) == 0)
     {
-        doom_wad_loc = reinterpret_cast<char*>(&doom_wad_file);
-        doom_wad_end = reinterpret_cast<char*>(&doom_wad_file_end);
-        doomwad_size = reinterpret_cast<u32>(doom_wad_end) - reinterpret_cast<u32>(doom_wad_loc);
-
-        // auto header = reinterpret_cast<doomheader*>(&doom_wad_file);
-        // entries = reinterpret_cast<dir_entry*>(header->dir_loc + &doom_wad_file);
-        //
-        // for (size_t i =0; i< header->n_entries; i++)
-        // {
-        //     LOG("lump name: ", entries[i].name);
-        // }
-        // dir_entry** entries[header->n_entries] = reinterpret_cast<dir_entry>(header->dir_loc);
+        doomwad_size = reinterpret_cast<u32>(&doom_wad_file_end) - reinterpret_cast<u32>(&doom_wad_file);
         TIMESTAMP();
         WRITE("doomwad loc: ");
-        WRITE(reinterpret_cast<u32>(doom_wad_loc), true);
+        WRITE(reinterpret_cast<u32>(&doom_wad_file), true);
         WRITE(" doomwad end: ");
-        WRITE(reinterpret_cast<u32>(doom_wad_end), true);
+        WRITE(reinterpret_cast<u32>(&doom_wad_file_end), true);
         WRITE(" doomwad len: ");
         WRITE(doomwad_size, true);
         NEWLINE();
