@@ -4,6 +4,8 @@
 
 #include "IDT.h"
 
+#include <drivers/storage/IDE.h>
+
 #include "LocalAPIC.h"
 
 #include "PIT.h"
@@ -205,6 +207,12 @@ void irq_handler(const cpu_registers_t* r)
             break;
         case 8:
             rtc_handler();
+            break;
+        case 14:
+            IDE_handler(true);
+            break;
+        case 15:
+            IDE_handler(false);
             break;
         case 208:
             LOG("Spurious Interrupt");

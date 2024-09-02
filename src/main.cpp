@@ -14,6 +14,8 @@
 // #include "stdlib.h"
 // #include "malloc.c"
 
+#include <drivers/storage/IDE.h>
+
 #include "LocalAPIC.h"
 #include "IOAPIC.h"
 
@@ -28,10 +30,14 @@
 #include "TSC.h"
 #include "SMBIOS.h"
 #include "EventQueue.h"
+#include "ports.h"
 #include "string.h"
+#include "drivers/storage/ATA.h"
+
 extern "C" {
 #include "doomgeneric/doomgeneric.h"
 }
+
 #include "logging.h"
 
 
@@ -64,6 +70,91 @@ void process_cmd(char* buf, size_t len)
     }
 }
 
+
+void Start_IDE()
+{
+    [[maybe_unused]] auto PCI_IDE_controller = PCI_get_IDE_controller();
+    if (PCI_IDE_controller->prog_if() == 0x80)
+    {
+        LOG("IDE controller supports bus mastering.");
+    }
+    else
+    {
+        LOG("IDE controller doesn't support bus mastering. Aborting.");
+        return;
+    }
+
+    uintptr_t IDE_base_port = PCI_IDE_controller->bar(4);
+    if (IDE_base_port & 0x1)
+    {
+        LOG("Using port access not memory mapped io for configuration");
+        IDE_base_port -= 1; // remove the last bit which was set
+    }
+    else
+    {
+        LOG("base port is memory address. Not implemented.");
+        return;
+    }
+
+    LOG("IDE base port raw: ", IDE_base_port);
+
+    // enable busmastering in control register
+    u16 command = PCI_IDE_controller->set_command_bit(2, true);
+
+    if ((command & 0x1 << 2) > 0)
+    {
+        LOG("IDE busmastering enabled");
+    }
+    else
+    {
+        LOG("IDE busmastering not enabled. Aborting");
+        return;
+    }
+
+    // PREPARE CD ROM
+    // Could be more legible by returning a struct or list of devices
+    IDE_drive_t drive = find_drive();
+    if (drive.present)
+    {
+        LOG("Drive found. Primary controller: ", !drive.controller_id, ". Main drive: ", !drive.drive_id);
+    }
+    else
+    {
+        LOG("Drive not found. Aborting");
+        return;
+    }
+
+    if (init_busmaster_device(IDE_base_port, drive))
+    {
+        LOG("Bustmaster dma not initialised. Aborting.");
+        return;
+    }
+
+    if (ATAPI_init(drive))
+    {
+        LOG("ATAPI device not initialised. Aborting.");
+        return;
+    }
+    u32 capacity = ATAPI_get_capacity();
+    if (capacity>0)
+    {
+        LOG("Total blocks in disc: ", capacity);
+    }
+    else
+    {
+        LOG("Getting capacity failed. Aborting");
+        return;
+    }
+
+
+    // //todo : https://forum.osdev.org/viewtopic.php?t=19056
+    // // Assign 1K PRDT
+    const size_t buf_size = 1024*64;
+    u8 buffer[buf_size];
+    DMA_read(buffer, buf_size);
+    LOG("First data: ", buffer[0]);
+    LOG("READ 64k");
+}
 
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
@@ -127,11 +218,13 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
 
     // remap IRQs in APIC
-    io_apic.remapIRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
-    io_apic.remapIRQ(1, 33); // Keyboard
-    io_apic.remapIRQ(8, 40); // RTC
+    io_apic.remap_IRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
+    io_apic.remap_IRQ(1, 33); // Keyboard
+    io_apic.remap_IRQ(8, 40); // RTC
+    io_apic.remap_IRQ(14, 46); // IDE primary
+    io_apic.remap_IRQ(15, 47); // IDE primary
 
-    configurePit(2000);
+    configure_pit(2000);
     // local_apic.configure_timer(1024);
     // todo: configure apic timer.
     // Configure interrupt tables and enable interrupts.
@@ -139,10 +232,13 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("Singletons loaded.");
 
-    // TODO: Drawsplash should programatically draw using the logo from the middle as a texture.
+    // TODO: Draw splash should programmatically draw using the logo from the middle as a texture.
+    PCI_populate_list();
+    Start_IDE();
 
-    PCI_list();
-    [[maybe_unused]] auto IDE_controller = PCIDevice(0, 1, 1);
+
+    // PREPARE CD ROM
+
 
 #if ENABLE_SERIAL_LOGGING
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
@@ -159,12 +255,16 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 #endif
 
 
-
     // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
     constexpr size_t cmd_buffer_size = 1024;
     char cmd_buffer[cmd_buffer_size] = {0};
     size_t cmd_buffer_idx = 0;
     LOG("LOADED OS. Entering event loop.");
+
+#if !ENABLE_TERMINAL_LOGGING
+    terminal.write("Loading done.\n");
+#endif
+
 
     // Event handler loop.
 
@@ -348,6 +448,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                 }
             }
         }
+        // else
+        sleep(1);
     }
     WRITE("ERROR: Left main loop.");
     asm("hlt");

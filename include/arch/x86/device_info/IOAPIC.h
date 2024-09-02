@@ -34,9 +34,9 @@ public:
     IOAPIC(uintptr_t io_apic_physical_address);
     void pause();
     void resume();
-    void remapIRQ(u8 irq_before, u8 irq_after);
-    void disableIRQ(u8 irq_before);
-    void enableAll();
+    void remap_IRQ(u8 irq_before, u8 irq_after);
+    void disable_IRQ(u8 irq_before);
+    void enable_all();
 
 private:
     uintptr_t volatile* base_addr;

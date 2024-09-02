@@ -46,9 +46,8 @@ void IOAPIC::resume()
 }
 
 // Also un masks
-void IOAPIC::remapIRQ(const u8 irq_before, const u8 irq_after)
+void IOAPIC::remap_IRQ(const u8 irq_before, const u8 irq_after)
 {
-    LOG("Remapping IRQ from ", irq_before, " to ", irq_after);
     io_redirect_entry data = {0};
     // load the previous entry, ensuring it is populated.
     *base_addr = (IOREDTBL_START + irq_before * 2);
@@ -73,7 +72,7 @@ void IOAPIC::remapIRQ(const u8 irq_before, const u8 irq_after)
 }
 
 
-void IOAPIC::disableIRQ(const u8 irq_before)
+void IOAPIC::disable_IRQ(const u8 irq_before)
 {
     if (redirect_entries[irq_before].lvt.interrupt_mask == true) return;
 

@@ -7,7 +7,7 @@
 
 #include "types.h"
 
-void configurePit(u32 hz);
+void configure_pit(u32 hz);
 
 
 void sleep(u32 ms);

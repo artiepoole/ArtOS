@@ -53,6 +53,13 @@ char dev_types[255][32] = {
     "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Unassigned"
 };
 
+size_t pci_device_count = 0;
+PCIDevice device_list[32];
+
+PCIDevice::PCIDevice()
+{
+    vendor = 0xFFFF;
+}
 
 PCIDevice::PCIDevice(const u8 bus, const u8 slot, const u8 func)
 {
@@ -179,13 +186,34 @@ void PCIDevice::log_format()
     LOG("class: ", dev_types[class_code()], " subclass: ", sub_class(), " vendor id: ", vendor_id());
 }
 
-u16 PCIDevice::command() const
+u16 PCIDevice::get_command()
 {
+    header.reg1 = config_read_register(0x04);
     return header.command;
 }
 
-u16 PCIDevice::status() const
+u16 PCIDevice::set_command_bit(u8 bit, bool value)
 {
+    if (value) header.command |= 0x1 << bit;
+    else header.command &= (~0x1) << bit;
+
+    header.reg1 = config_write_register(0x4, header.reg1);
+
+    return header.command;
+}
+
+
+u16 PCIDevice::get_status()
+{
+    header.reg1 = config_read_register(0x04);
+    return header.status;
+}
+
+u16 PCIDevice::set_status_bit(u8 bit, bool value)
+{
+    if (value) header.status |= 0x1 << bit;
+    else header.status &= (~0x1) << bit;
+    header.reg1 = config_write_register(0x04, header.reg1);
     return header.status;
 }
 
@@ -275,27 +303,59 @@ u16 PCIDevice::subsystem_vendor_id() const
 
 u32 PCIDevice::config_read_register(const u8 offset) const
 {
-    const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
+    const PCI_Address_t offset_address = {offset, address.components.function, address.components.slot, address.components.bus, 0, 1};
+    outd(PCI_CONFIG_ADDRESS, offset_address.address);
+    // const u32 tmp = (ind(PCI_CONFIG_DATA) >> ((offset & 2) * 8)) & 0xFFFF;
+    return ind(PCI_CONFIG_DATA);
+}
+
+u32 PCIDevice::config_write_register(const u8 offset, const u32 data) const
+{
+    const PCI_Address_t offset_address = {
+        offset,
+        address.components.function,
+        address.components.slot,
+        address.components.bus,
+        0,
+        1
+    };
+
+    // set the data
+    outd(PCI_CONFIG_ADDRESS, offset_address.address);
+    outd(PCI_CONFIG_DATA, data);
+    // read it back
     outd(PCI_CONFIG_ADDRESS, offset_address.address);
     // const u32 tmp = (ind(PCI_CONFIG_DATA) >> ((offset & 2) * 8)) & 0xFFFF;
     return ind(PCI_CONFIG_DATA);
 }
 
 
-void PCI_list()
+void PCI_populate_list()
 {
     for (u8 slot = 0; slot < 31; slot++)
     {
         {
             for (u8 func = 0; func < 7; func++)
             {
-                if (auto dev = PCIDevice(0, slot, func); dev.vendor_id() != 0xffff)
+                if (auto dev = PCIDevice(0, slot, func); dev.vendor_id() != 0xFFFF)
                 {
+                    device_list[pci_device_count++] = dev;
                     dev.log_format();
                 }
             }
         }
     }
+}
+
+PCIDevice* PCI_get_IDE_controller()
+{
+    if (pci_device_count == 0) PCI_populate_list();
+    for (size_t i = 0; i < pci_device_count; i++)
+    {
+        if (device_list[i].class_code() == 1 && device_list[i].sub_class() == 1) return &device_list[i];
+    }
+    LOG("No IDE controller detected.");
+    return nullptr;
 }
 
 // template<typename T>

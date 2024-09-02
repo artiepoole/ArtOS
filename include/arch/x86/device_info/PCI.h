@@ -15,12 +15,12 @@ struct PCI_Address_t
     {
         struct
         {
-            u8 offset : 8;
-            u8 function : 3;
-            u8 slot : 5;
-            u8 bus : 8;
-            u8 reserved : 7;
-            u8 enabled : 1;
+            u32 offset : 8;
+            u32 function : 3;
+            u32 slot : 5;
+            u32 bus : 8;
+            u32 reserved : 7;
+            u32 enabled : 1;
         } components;
 
         u32 address;
@@ -90,12 +90,13 @@ struct PCI_header_t
         u32 reg3;
     };
 
-    u32 reg4;
-    u32 reg5;
-    u32 reg6;
-    u32 reg7;
-    u32 reg8;
-    u32 reg9;
+    // If header type 0:
+    u32 reg4; // BAR 0
+    u32 reg5; // BAR 1
+    u32 reg6; // BAR 2
+    u32 reg7; // BAR 3
+    u32 reg8; // BAR 4
+    u32 reg9; // BAR 5
     u32 regA;
     u32 regB;
     u32 regC;
@@ -137,16 +138,20 @@ struct PCI_header_t
 class PCIDevice
 {
 public:
+    PCIDevice();
     PCIDevice(u8 bus, u8 slot, u8 func);
 
 
     PCI_Address_t address{};
+
     u16 vendor;
     // Generic header values
     u16 vendor_id() const;
     u16 device_id() const;
-    u16 command() const;
-    u16 status() const;
+    u16 get_command();
+    u16 set_command_bit(u8 bit, bool value);
+    u16 get_status();
+    u16 set_status_bit(u8 bit, bool value);
     u8 rev_id() const;
     u8 prog_if() const;
     u8 sub_class() const;
@@ -213,9 +218,11 @@ private:
     u8 config_readb(u8 offset);
     u16 config_readw(u8 offset);
     u32 config_read_register(u8 offset) const;
+    u32 config_write_register(u8 offset, u32 data) const;
 };
 
-void PCI_list();
+void PCI_populate_list();
+PCIDevice* PCI_get_IDE_controller();
 
 #include "types.h"
 

@@ -11,7 +11,7 @@ u32 rate = 0;
 volatile u32 timer_ticks = 0;
 
 
-void configurePit(const u32 hz)
+void configure_pit(const u32 hz)
 {
 
     LOG("Initialising PIT");

@@ -26,6 +26,7 @@ void exception_handler(const cpu_registers_t* r);
 extern "C"
 void irq_handler(const cpu_registers_t* r);
 
-
+extern volatile bool ATA_transfer_in_progress;
+extern volatile bool BM_transfer_in_progress;
 
 #endif //IDT_H

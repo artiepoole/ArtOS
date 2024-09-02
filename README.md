@@ -59,9 +59,10 @@ Hello World:
 - [ ] DOOM: run in user space
 - [ ] DOOM: add sound
 - [ ] DOOM: add save games
-- [ ] DOOM: add loading from CDROM instead of from memory
+- [ ] DOOM: add loading from CD ROM instead of from memory
 - [ ] User IO - mouse
-- [ ] Read from CDRom
+- [x] Read data from CD ROM using PCI IDE DMA BusMastering
+- [ ] Use data from CD ROM i.e. parse .iso file system
 - [ ] Attach a RW storage device in Qemu
 - [ ] Implement a filesystem
 - [ ] Detect and mount/unmount storage devices on real hardware

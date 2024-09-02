@@ -78,39 +78,7 @@ The rest of the CMOS memory is used to handle system state stuff like maximum ra
 */
 
 
-// ATA ports
-// https://wiki.osdev.org/ATA_PIO_Mode
-// https://wiki.osdev.org/ATAPI
-#define ATA_PRIMARY_DATA 0x1F0  // 16 bit param size
-#define ATA_PRIMARY_ERROR 0x1F1  // 8 bit param sizes
-#define ATA_PRIMARY_FEATURES 0x1F1
-#define ATA_PRIMARY_SECTOR_COUNT 0x1F2
-#define ATA_PRIMARY_LBA_LO 0x1F3
-#define ATA_PRIMARY_LBA_MID 0x1F4
-#define ATA_PRIMARY_LBA_HI 0x1F5
-#define ATA_PRIMARY_DRIVE_SELECT 0x1F6
-#define ATA_PRIMARY_STATUS_COMMAND 0x1F7
 
-#define ATA_SECONDARY_DATA 0x170 // 16 bit param size
-#define ATA_SECONDARY_ERROR 0x171
-#define ATA_SECONDARY_FEATURES 0x171
-#define ATA_SECONDARY_SECTOR_COUNT 0x172
-#define ATA_SECONDARY_LBA_LO 0x173
-#define ATA_SECONDARY_LBA_MID 0x174
-#define ATA_SECONDARY_LBA_HI 0x175
-#define ATA_SECONDARY_DRIVE_SELECT 0x176
-#define ATA_SECONDARY_STATUS_COMMAND 0x177
-
-#define ATA_PRIMARY_CONTROL_STATUS 0x3F6
-#define ATA_SECONDARY_CONTROL_STATUS 0x376
-
-// ATA commands
-// https://wiki.osdev.org/ATAPI
-// https://wiki.osdev.org/ATA_Command_Matrix
-#define ATA_PACKET_COMMAND 0xA0
-#define ATA_TARGET_MAIN 0xA0
-#define ATA_TARGET_SECONDARY 0xB0
-#define ATA_INDENTIFY_COMMAND 0xEC
 
 // PCI ports
 #define PCI_CONFIG_ADDRESS 0xCF8
