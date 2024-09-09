@@ -181,6 +181,12 @@ _start:
 	   non-maskable interrupt occurring or due to system management mode.
 	*/
 	cli
+	subl $4, %esp
+    movl $0, %esp
+
+    call __cxa_finalize
+
+    addl $4, %esp
 
 loop:
     hlt

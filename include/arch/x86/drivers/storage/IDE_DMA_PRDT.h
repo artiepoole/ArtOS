@@ -9,6 +9,22 @@
 #include "ATA.h"
 #include "types.h"
 
+
+#define PRIMARY_CMD_OFFSET 0x00
+#define PRIMARY_STATUS_OFFSET 0x02
+#define PRIMARY_PRDT_START_OFFSET  0x04
+
+#define SECONDARY_CMD_OFFSET 0x08
+#define SECONDARY_STATUS_OFFSET 0x0A
+#define SECONDARY_PRDT_START_OFFSET 0x0C
+
+//command settings
+
+#define DEV_TO_MEM 0x01;
+#define MEM_TO_DEV 0x00;
+#define DMA_MODE 0x08;
+
+
 // Physical Region Descriptor Table
 struct PRD_t
 {
@@ -29,6 +45,7 @@ struct PRD_t
 struct PRDT_t
 {
     PRD_t descriptor;
+
 }__attribute__((aligned(4)));
 
 
@@ -68,9 +85,11 @@ struct BM_status_t
 };
 
 // Have only made it possible to have one PRD for each device. Therefore End of Table is always 1.
-int init_busmaster_device(u16 base_port, IDE_drive_t& drive);
+u8 * DMA_init_PRDT(u16 base_port);
 u8* DMA_assign_prdt(u16 base_addr, u16 size);
 void DMA_free_prdt(u16 base_addr);
 void DMA_read(u8* dest, size_t n_bytes);
-void IDE_handler(bool is_primary);
+// void IDE_handler(bool is_primary);
+
+
 #endif //IDE_H

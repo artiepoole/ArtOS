@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-GRUB_SRC="../include/grub.cfg"
+GRUB_SRC="../grub.cfg"
 DOOMWAD_SRC="../res/doomwad/doom1.wad"
 
 if grub-file --is-x86-multiboot2 ArtOS.bin; then
@@ -12,7 +12,7 @@ if grub-file --is-x86-multiboot2 ArtOS.bin; then
     cp $GRUB_SRC isodir/boot/grub/grub.cfg
     cp $DOOMWAD_SRC isodir/fs/doom1.wad
     grub-mkrescue -o ArtOS.iso isodir
-    rm -rf isodir
+#    rm -rf isodir
   else
     echo could not find grub config
     exit 1

@@ -2,7 +2,7 @@
 // Created by artypoole on 30/07/24.
 //
 
-#include "PCI.h"
+#include "PCIDevice.h"
 
 #include "logging.h"
 
@@ -284,22 +284,6 @@ u16 PCIDevice::subsystem_vendor_id() const
         return 0;
     }
 }
-
-// u8 PCIDevice::config_readb(const u8 offset)
-// {
-//     const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
-//     outd(PCI_CONFIG_ADDRESS, offset_address.address);
-//
-//     return static_cast<u8>(ind(PCI_CONFIG_DATA));
-// }
-//
-// u16 PCIDevice::config_readw(const u8 offset)
-// {
-//     const PCI_Address_t offset_address = {static_cast<u8>(offset), address.components.function, address.components.slot, address.components.bus, 0, 1};
-//     outd(PCI_CONFIG_ADDRESS, offset_address.address);
-//
-//     return static_cast<u16>(ind(PCI_CONFIG_DATA));
-// }
 
 u32 PCIDevice::config_read_register(const u8 offset) const
 {

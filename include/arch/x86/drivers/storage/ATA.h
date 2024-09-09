@@ -4,63 +4,43 @@
 
 #ifndef ATA_H
 #define ATA_H
+#include "ATAPIDrive.h"
+#include "ATA_types.h"
 #include "types.h"
 
-struct IDE_drive_t
-{
-    bool present;
-    bool controller_id;
-    bool drive_id;
-    bool atapi_capable;
-    bool dma_capable;
-};
-
-union ATA_status_t
-{
-    struct
-    {
-        u8 error : 1;
-        u8 index : 1;
-        u8 corrected : 1;
-        u8 data_request : 1;
-        u8 seek_complete : 1;
-        u8 device_fault : 1;
-        u8 ready : 1;
-        u8 busy : 1;
-    };
-
-    u8 raw;
-};
-
-
-union ATA_error_t
-{
-    struct
-    {
-        u8 address_mark_not_found : 1;
-        u8 track_zero_not_found : 1;
-        u8 aborted_command : 1;
-        u8 media_change_request : 1;
-        u8 ID_not_found : 1;
-        u8 media_changed : 1;
-        u8 uncorrectable_data_error : 1;
-        u8 bad_block_detected : 1;
-    };
-
-    u8 raw;
-};
 
 inline size_t sector_size = 2048;
 
+// Must be passed a list of IDE_drive_t[4].
+int populate_drives_list(ATAPIDrive*& atapi_drives);
 
-IDE_drive_t find_drive();
-int ATAPI_init(IDE_drive_t& drive);
-int ATA_test_if_ATAPI();
-u32 ATAPI_get_capacity();
-int ATAPI_start_DMA_read(u16 n_sectors);
-u8 get_ata_interrupt_reason();
-ATA_status_t get_ata_device_status();
-ATA_error_t get_ata_device_error();
+ATA_status_t ATA_get_status(IDE_drive_info_t* drive_info);
+
+ATA_status_t ATA_get_alt_status(IDE_drive_info_t* drive_info);
+
+ATA_error_t ATA_get_error(IDE_drive_info_t* drive_info);
+
+u8 ATA_get_interrupt_reason(IDE_drive_info_t* drive_info);
+
+u16 ATA_get_n_bytes_to_read(IDE_drive_info_t* drive_info);
+
+void ATA_select_drive(IDE_drive_info_t* drive_info);
+
+void ATA_reset_device(IDE_drive_info_t* drive_info);
+
+void ATA_poll_busy(IDE_drive_info_t* drive_info);
+
+void ATA_poll_until_DRQ(IDE_drive_info_t* drive_info);
+
+int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data);
+
+int ATA_ident(IDE_drive_info_t* drive_info, u16* identity_data);
+
+int ATA_is_packet_device(IDE_drive_info_t* drive_info);
+
+int ATAPI_set_max_dma_mode(bool udma, IDE_drive_info_t* drive_info);
+
+void ATAPI_send_packet_DMA(IDE_drive_info_t* drive_info, ATAPI_packet_t& packet);
 
 
 #endif //ATA_H

@@ -13,14 +13,14 @@
 #include "Terminal.h"
 // #include "stdlib.h"
 // #include "malloc.c"
-
-#include <drivers/storage/IDE.h>
+#include "CPPMemory.h"
+#include "icxxabi.h"
 
 #include "LocalAPIC.h"
 #include "IOAPIC.h"
 
 #include "ACPI.h"
-#include "PCI.h"
+#include "PCIDevice.h"
 #include "multiboot2.h"
 #include "stdio.h"
 #include "Files.h"
@@ -32,7 +32,12 @@
 #include "EventQueue.h"
 #include "ports.h"
 #include "string.h"
-#include "drivers/storage/ATA.h"
+#include "IDEStorageContainer.h"
+#include "IDE_DMA_PRDT.h"
+#include "ATA.h"
+#include "ATAPIDrive.h"
+#include "PCIDevice.h"
+#include "BusMasterController.h"
 
 extern "C" {
 #include "doomgeneric/doomgeneric.h"
@@ -53,6 +58,9 @@ extern "C" {
 
 // VideoGraphicsArray* vgap;
 u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
+ATAPIDrive* atapi_drives = nullptr;
+uintptr_t BM_controller_base_port;
+
 
 void process_cmd(char* buf, size_t len)
 {
@@ -71,90 +79,7 @@ void process_cmd(char* buf, size_t len)
 }
 
 
-void Start_IDE()
-{
-    [[maybe_unused]] auto PCI_IDE_controller = PCI_get_IDE_controller();
-    if (PCI_IDE_controller->prog_if() == 0x80)
-    {
-        LOG("IDE controller supports bus mastering.");
-    }
-    else
-    {
-        LOG("IDE controller doesn't support bus mastering. Aborting.");
-        return;
-    }
 
-    uintptr_t IDE_base_port = PCI_IDE_controller->bar(4);
-    if (IDE_base_port & 0x1)
-    {
-        LOG("Using port access not memory mapped io for configuration");
-        IDE_base_port -= 1; // remove the last bit which was set
-    }
-    else
-    {
-        LOG("base port is memory address. Not implemented.");
-        return;
-    }
-
-    LOG("IDE base port raw: ", IDE_base_port);
-
-    // enable busmastering in control register
-    u16 command = PCI_IDE_controller->set_command_bit(2, true);
-
-    if ((command & 0x1 << 2) > 0)
-    {
-        LOG("IDE busmastering enabled");
-    }
-    else
-    {
-        LOG("IDE busmastering not enabled. Aborting");
-        return;
-    }
-
-    // PREPARE CD ROM
-    // Could be more legible by returning a struct or list of devices
-    IDE_drive_t drive = find_drive();
-    if (drive.present)
-    {
-        LOG("Drive found. Primary controller: ", !drive.controller_id, ". Main drive: ", !drive.drive_id);
-    }
-    else
-    {
-        LOG("Drive not found. Aborting");
-        return;
-    }
-
-    if (init_busmaster_device(IDE_base_port, drive))
-    {
-        LOG("Bustmaster dma not initialised. Aborting.");
-        return;
-    }
-
-    if (ATAPI_init(drive))
-    {
-        LOG("ATAPI device not initialised. Aborting.");
-        return;
-    }
-    u32 capacity = ATAPI_get_capacity();
-    if (capacity>0)
-    {
-        LOG("Total blocks in disc: ", capacity);
-    }
-    else
-    {
-        LOG("Getting capacity failed. Aborting");
-        return;
-    }
-
-
-    // //todo : https://forum.osdev.org/viewtopic.php?t=19056
-    // // Assign 1K PRDT
-    const size_t buf_size = 1024*64;
-    u8 buffer[buf_size];
-    DMA_read(buffer, buf_size);
-    LOG("First data: ", buffer[0]);
-    LOG("READ 64k");
-}
 
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
@@ -234,10 +159,48 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // TODO: Draw splash should programmatically draw using the logo from the middle as a texture.
     PCI_populate_list();
-    Start_IDE();
+    [[maybe_unused]] auto PCI_IDE_controller = PCI_get_IDE_controller();
+    if (PCI_IDE_controller->prog_if() == 0x80)
+    {
+        LOG("IDE controller supports bus mastering.");
+    }
+    else
+    {
+        LOG("IDE controller doesn't support bus mastering. Aborting.");
+        return;
+    }
 
+    BM_controller_base_port = PCI_IDE_controller->bar(4);
+    if (BM_controller_base_port & 0x1)
+    {
+        LOG("Using port access not memory mapped io for configuration");
+        BM_controller_base_port -= 1; // remove the last bit which was set
+    }
+    else
+    {
+        LOG("base port is memory address. Not implemented.");
+        return;
+    }
 
-    // PREPARE CD ROM
+    LOG("IDE base port raw: ", BM_controller_base_port);
+    int n_drives = populate_drives_list(atapi_drives);
+
+    if (n_drives <0)
+    {
+        LOG("No drives found.");
+        return;
+    }
+
+    auto bus_master = BusMasterController(BM_controller_base_port, atapi_drives[0].drive_info);
+    auto CD_ROM = IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &bus_master);
+
+    // testing read.
+    constexpr size_t buf_size = 1024 * 64;
+    u8 buffer[buf_size];
+    CD_ROM.read(buffer, buf_size);
+    LOG("First data: ", buffer[0]);
+    LOG("READ 64k");
+
 
 
 #if ENABLE_SERIAL_LOGGING

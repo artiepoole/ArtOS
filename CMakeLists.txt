@@ -22,6 +22,9 @@ file(GLOB INCLUDE
         "include/arch/x86/timers/*.cpp"
         "include/arch/x86/device_info/*.h"
         "include/arch/x86/device_info/*.cpp"
+        "include/arch/x86/device_info/*.h"
+        "include/arch/x86/drivers/storage/*.cpp"
+        "include/arch/x86/drivers/storage/*.h"
         "include/constants/*.h"
         "include/constants/*.cpp"
 )
@@ -35,15 +38,7 @@ file(GLOB KERNEL
 add_subdirectory(pdclib)
 add_subdirectory(doom)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} src/boot.S src/main.cpp ${INCLUDE} ${KERNEL}
-        src/sys/logging.h
-        include/arch/x86/drivers/storage/IDE.cpp
-        include/arch/x86/drivers/storage/IDE.h
-        include/arch/x86/drivers/storage/BusMaster.cpp
-        include/arch/x86/drivers/storage/BusMaster.h
-        include/arch/x86/drivers/storage/ATA.cpp
-        include/arch/x86/drivers/storage/ATA.h
-        include/constants/Errors.h)
+add_executable(${KERNEL_BIN} src/boot.S src/main.cpp ${INCLUDE} ${KERNEL})
 
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
@@ -51,6 +46,7 @@ target_include_directories(
         include/arch/x86/
         include/arch/x86/timers
         include/arch/x86/device_info/
+        include/arch/x86/drivers/storage
         include/constants
         src
         src/sys

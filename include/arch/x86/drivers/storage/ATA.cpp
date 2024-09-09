@@ -4,6 +4,10 @@
 
 #include "ATA.h"
 
+#include <APIC.h>
+#include <IDE_handler.h>
+#include <stdlib.h>
+
 #include "Errors.h"
 #include "IDT.h"
 #include "logging.h"
@@ -50,10 +54,10 @@
 
 // ATA and ATAPI commands
 #define READ_SECTORS_CMD 0x20
+#define DEV_CONFIG_IDENT_CMD 0xC2
 
 // ATAPI packet opcodes
 // #define ATAPI_READ_CD 0x80
-#define ATAPI_INQUIRY_CMD 0x12
 // #define READ_10_CMD 0x28
 
 
@@ -98,420 +102,325 @@
 #define SECONDARY_BASE_PORT 0x170
 
 #define PRIMARY_ALT_STATUS_PORT 0x3F6
+#define PRIMARY_CONTROL_PORT 0x3F6
 #define PRIMARY_DRIVE_ADDR_PORT 0x3F7
 
 #define SECONDARY_ALT_STATUS_PORT 0x376
-#define SECONADARY_DRIVE_ADDR_PORT 0x377
+#define SECONDARY_CONTROL_PORT 0x376
+#define SECONDARY_DRIVE_ADDR_PORT 0x377
 
+#define RESET_CONTROL 0x04
 
-struct ATAPI_inquiry_data_t
+IDE_drive_info_t* last_drive_info;
+
+ATA_status_t ATA_get_status(IDE_drive_info_t* drive_info)
 {
-    u8 peripheral_type;
-    u8 RMB;
-    u8 version;
-    u8 response_data_format;
-    u8 addnl_length; ///< n - 4, Numbers of bytes following this one.
-    u8 reserved_5;
-    u8 reserved_6;
-    u8 reserved_7;
-    u8 vendor_info[8];
-    u8 product_id[16];
-    u8 product_revision_level[4];
-};
-
-
-union ATAPI_packet_t
-{
-    struct
+    if (last_drive_info != drive_info)
     {
-        u8 opcode;
-        u8 device;
-        u8 lba_high;
-        u8 lba_mid;
-        u8 lba_low;
-        u8 sector_count;
-        u8 control;
-        u8 res1[5];
-    };
-
-    u16 words[6];
-};
-
-struct ATAPI_ext_packet_t
-{
-    u8 opcode;
-    u8 feature;
-    u8 sector_count;
-    u8 lba_low;
-    u8 lba_mid;
-    u8 lba_high;
-    u8 drive_sel;
-    u8 res0;
-    u8 control;
-    u8 res1[3];
-    u8 additional[4];
-};
-
-u16 ata_base_port;
-u16 is_primary_ATA;
-u16 is_main_ATA;
-volatile bool ATA_transfer_in_progress = false;
-
-
-/* To test if atapi supported:
- * set DRIVE_SEL
- * wait til not busy
- * write 0xA1 (ident) to CMD
- * read STATUS (bit 3 : rdy but not Bit 0: err)
- * if true, read 512 bytes and inspect it.
- */
-
-
-ATA_status_t get_ata_device_status()
-{
-    ATA_status_t status;
-    status.raw = inb(ata_base_port + STATUS_OFFSET);
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
+    }
+    ATA_status_t status{};
+    status.raw = inb(drive_info->base_port + STATUS_OFFSET);
     return status;
 }
 
-ATA_status_t get_ata_alt_status()
+ATA_status_t ATA_get_alt_status(IDE_drive_info_t* drive_info)
 {
-    ATA_status_t status;
-    if (is_primary_ATA)
+    if (last_drive_info != drive_info)
     {
-        status.raw = inb(PRIMARY_ALT_STATUS_PORT);
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
     }
-    else
+    ATA_status_t status{};
+    if (drive_info->controller_id)
     {
         status.raw = inb(SECONDARY_ALT_STATUS_PORT);
     }
+    else
+    {
+        status.raw = inb(PRIMARY_ALT_STATUS_PORT);
+    }
     return status;
 }
 
 
-ATA_error_t get_ata_device_error()
+ATA_error_t ATA_get_error(IDE_drive_info_t* drive_info)
 {
-    ATA_error_t error;
-    error.raw = inb(ata_base_port + ERROR_OFFSET);
+    if (last_drive_info != drive_info)
+    {
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
+    }
+    ATA_error_t error{};
+    error.raw = inb(drive_info->base_port + ERROR_OFFSET);
     return error;
 }
 
-u8 get_ata_interrupt_reason()
+u8 ATA_get_interrupt_reason(IDE_drive_info_t* drive_info)
 {
-    return inb(ata_base_port + INTERRUPT_REASON_OFFSET);
+    if (last_drive_info != drive_info)
+    {
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
+    }
+    return inb(drive_info->base_port + INTERRUPT_REASON_OFFSET);
 }
 
-u16 get_n_bytes_to_read()
+u16 ATA_get_n_bytes_to_read(IDE_drive_info_t* drive_info)
 {
-    u16 port;
-    if (is_primary_ATA) port = PRIMARY_BASE_PORT;
-    else port = SECONDARY_BASE_PORT;
-
-    return inb(port + LBA_MID_OFFSET) | inb(port + LBA_HIGH_OFFSET) << 8;
+    if (last_drive_info != drive_info)
+    {
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
+    }
+    return inb(drive_info->base_port + LBA_MID_OFFSET) | inb(drive_info->base_port + LBA_HIGH_OFFSET) << 8;
 }
 
-void poll_busy()
+void ATA_select_drive(IDE_drive_info_t* drive_info)
 {
-    ATA_status_t status = get_ata_alt_status();
-    while (status.busy & !status.error)
-    {
-        status = get_ata_alt_status();
-    }
+    outb(drive_info->base_port + DRIVE_SEL_OFFSET, drive_info->drive_data);
+    last_drive_info = drive_info;
+    sleep(1);
 }
 
-void poll_until_DRQ()
+void ATA_reset_device(IDE_drive_info_t* drive_info)
 {
-    ATA_status_t status = get_ata_alt_status();
-    while (!status.data_request & !status.error)
+    if (last_drive_info != drive_info)
     {
-        status = get_ata_alt_status();
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
     }
-}
-
-/* Finds first drive
- * return:
- * if val = 0xFF, no device detected
- * bit 0: primary if set, secondary if not.
- * bit 1: main drive if set, alt drive if not
- * bits 2-31, not used
- * val <0: error
- */
-IDE_drive_t find_drive()
-{
-    u16 ports[2] = {PRIMARY_BASE_PORT, SECONDARY_BASE_PORT};
-    u16 drives[2] = {MAIN_DRIVE_SEL_CMD, ALT_DRIVE_SEL_CMD};
-    for (u8 port = 0; port < 2; port++)
+    if (drive_info->controller_id)
     {
-        for (u8 drive = 0; drive < 2; drive++)
-        {
-            outb(ports[port] + DRIVE_SEL_OFFSET, drives[drive]);
-
-            // Wait 400ns for the drive to switch (reading status 4 times is a common way)
-            sleep(1);
-
-            outb(port + CMD_OFFSET, ATA_IDENT_CMD);
-            while (inb(ports[port] + STATUS_OFFSET) & STATUS_BSY)
-            {
-            }
-
-            ATA_status_t status{};
-            status.raw = inb(ports[port] + STATUS_OFFSET);
-
-            if (status.ready)
-            {
-                return IDE_drive_t{
-                    true,
-                    static_cast<bool>(port),
-                    static_cast<bool>(drive),
-                    false,
-                    false
-                };
-            }
-            if (status.error)
-            {
-                LOG("Device ERROR detected. Primary IDE:", port == 1, " Main drive: ", drive == 1);
-            }
-        }
-    }
-    return IDE_drive_t{}; // no drives
-}
-
-/* only sends packet, doesn't send the interpret packet command */
-int send_packet_exepct_PIO(const ATAPI_packet_t& packet)
-{
-    poll_busy();
-
-    // Transfer waits for irq. IRQ just resets transfer in progress
-    ATA_transfer_in_progress = true;
-    LOG("Sending PACKET command for PIO");
-    outb(ata_base_port + CMD_OFFSET, PROCESS_PACKET_CMD);
-    // wait for ready
-    poll_busy();
-    poll_until_DRQ();
-    LOG("Sending packet data");
-    // send data
-    for (int i = 0; i < 6; i++)
-    {
-        outw(ata_base_port + DATA_OFFSET, packet.words[i]);
-    }
-    LOG("Packet data sent. Is in progress:", ATA_transfer_in_progress);
-    // poll_busy();
-
-    // wait for done before reading.
-    ATA_status_t status = get_ata_alt_status();
-    if (status.data_request)
-    {
-        LOG("DEVICE STILL EXPECTING DATA?");
-        // while (status.data_request)
-        // {
-        //     outw(ata_base_port + DATA_OFFSET, 0);
-        //     status = get_ata_alt_status();
-        // }
-    }
-    while (ATA_transfer_in_progress & !status.error & !status.device_fault)
-    {
-        status = get_ata_alt_status();
-    }
-
-    if (ATA_transfer_in_progress)
-    {
-        ATA_error_t error = get_ata_device_error();
-        LOG("Error enabling DMA. Raw error", error.raw);
-        ATA_transfer_in_progress = false;
-        return -DEVICE_ERROR;
-    }
-    return 0;
-}
-
-int send_packet_for_DMA(const ATAPI_packet_t& packet)
-{
-    LOG("Sending DMA read request PACKET command");
-    poll_busy();
-    outb(ata_base_port + CMD_OFFSET, PROCESS_PACKET_CMD);
-    // wait for ready
-    poll_busy();
-    poll_until_DRQ();
-    LOG("Sending DMA packet DATA");
-    // send data
-    for (int i = 0; i < 6; i++)
-    {
-        outw(ata_base_port + DATA_OFFSET, packet.words[i]);
-    }
-
-    // wait for busy and not errors before continuing.
-    ATA_status_t status = get_ata_alt_status();
-    while (!(status.error | status.device_fault | status.busy))
-    {
-        status = get_ata_alt_status();
-    }
-    if (status.error | status.device_fault)
-    {
-        LOG("Error requesting DMA");
-        return -DEVICE_ERROR;
-    }
-    return 0;
-}
-
-
-/* Returns 1 if ATAPI, 0 if ATA, < 0 for errors */
-int ATA_test_if_ATAPI()
-{
-    // send request
-    outb(ata_base_port + CMD_OFFSET, ATAPI_IDENT_CMD);
-    poll_busy();
-    poll_until_DRQ();
-
-    ATA_status_t status = get_ata_device_status();
-    if (status.data_request and ~(status.error)) // data request is true and error is false
-    {
-        //todo: test whether you can skip reading all we don't use
-        u16 identity_data[256];
-        for (unsigned short& i : identity_data)
-        {
-            i = inw(ata_base_port + DATA_OFFSET);
-        }
-
-        if (identity_data[0] == 0x848A or identity_data[0] == 0xC800)
-        {
-            LOG("ATAPI DEVICE CONFIRMED");
-            return true;
-        }
-        if (identity_data[0] == 0x848A or identity_data[0] == 0xC800)
-        {
-            LOG("ATAPI DEVICE CONFIRMED");
-            return true;
-        }
-        if (identity_data[0] == 0x85c0)
-        {
-            /* raw binary gives
-             * 10 == atapi confirmed
-             * 0 - res
-             * 00101 - command packet set supported by device >> 0x5 means CD rom set
-             * 1 - removable
-             * 10 == accelerated DRQ
-             * 000 // res
-             * 00 == 12 byte cmd packet
-             */
-            LOG("ATAPI DEVICE CONFIRMED. 12 byte cmd packets.");
-            LOG(identity_data[62]);
-
-            return true;
-        }
-        return -DEVICE_ERROR;
-    }
-
-    ATA_error_t error = get_ata_device_error();
-    LOG("ERROR:", error.raw);
-
-    return -DEVICE_ERROR;
-}
-
-
-int ATAPI_init(IDE_drive_t& drive)
-{
-    LOG("Initialising ATAPI device.");
-
-    is_primary_ATA = !drive.controller_id;
-    is_main_ATA = !drive.drive_id;
-    if (is_primary_ATA)
-    {
-        ata_base_port = PRIMARY_BASE_PORT;
+        outb(SECONDARY_CONTROL_PORT, RESET_CONTROL);
     }
     else
     {
-        ata_base_port = SECONDARY_BASE_PORT;
+        outb(PRIMARY_CONTROL_PORT, RESET_CONTROL);
     }
-    // select drive
-    //  http://users.utcluj.ro/~baruch/media/siee/labor/ATA-Interface.pdf
-    u8 drive_data;
-    if (is_main_ATA) drive_data = MAIN_DRIVE_SEL_CMD;
-    else drive_data = ALT_DRIVE_SEL_CMD;
-
-    outb(ata_base_port + DRIVE_SEL_OFFSET, drive_data);
-    poll_busy();
-
-    outb(ata_base_port + CONTROL_OFFSET, 0x00);
-    poll_busy();
-
-    // enable DMA mode
-    // Set Features to enable DMA mode
-    outb(ata_base_port + FEATURES_OFFSET, TRANSFER_MODE); // Subcommand to set transfer mode
-    outb(ata_base_port + SECTOR_COUNT_OFFSET, 0x03); // Set DMA mode 1 (or use 0x20, 0xC5, etc. for other modes)
-    outb(ata_base_port + CMD_OFFSET, SET_FEATURES_CMD); // Send the Set Features command
-    if (ATA_status_t status = get_ata_alt_status(); status.error)
+    sleep(10);
+    if (drive_info->controller_id)
     {
-        ATA_error_t error = get_ata_device_error();
-        LOG("Error enabling DMA. Raw error", error.raw);
-        return -DEVICE_ERROR;
+        outb(SECONDARY_CONTROL_PORT, 0x00);
     }
-    drive.dma_capable = true;
-
-    if (ATA_test_if_ATAPI() > 0)
+    else
     {
-        drive.atapi_capable = true;
+        outb(PRIMARY_CONTROL_PORT, 0x00);
+    }
+}
+
+void ATA_poll_busy(IDE_drive_info_t* drive_info)
+{
+    if (last_drive_info != drive_info)
+    {
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
+    }
+    ATA_status_t status = ATA_get_alt_status(drive_info);
+    while (status.busy & !status.error)
+    {
+        status = ATA_get_alt_status(drive_info);
+    }
+}
+
+void ATA_poll_until_DRQ(IDE_drive_info_t* drive_info)
+{
+    if (last_drive_info != drive_info)
+    {
+        ATA_select_drive(drive_info);
+        last_drive_info = drive_info;
+    }
+    ATA_status_t status = ATA_get_alt_status(drive_info);
+    while (!status.data_request & !status.error)
+    {
+        status = ATA_get_alt_status(drive_info);
+    }
+}
+
+int ATAPI_ident(IDE_drive_info_t* drive, u16* identity_data)
+{
+    ATA_select_drive(drive);
+
+    LOG("TEST");
+    outb(drive->base_port + CMD_OFFSET, ATAPI_IDENT_CMD);
+    ATA_poll_busy(drive);
+    ATA_poll_until_DRQ(drive);
+    //todo: test whether you can skip reading all we don't use
+    if (const ATA_status_t status = ATA_get_alt_status(drive); status.data_request and !status.error) // data request is true and error is false
+    {
+        for (size_t i = 0; i < 256; i++)
+        {
+            identity_data[i] = inw(drive->base_port + DATA_OFFSET);
+        }
+        if (identity_data[0] >> 14 == 0x2)
+        {
+            LOG("ATAPI device confirmed.");
+            drive->packet_device = true;
+            switch (identity_data[0] & 0b11)
+            {
+            case 0:
+                {
+                    LOG("ATAPI packet size: 12 bytes");
+                    drive->packet_size = 12;
+                    break;
+                }
+            case 1:
+                {
+                    LOG("ATAPI packet size: 16 bytes");
+                    drive->packet_size = 16;
+                    break;
+                }
+            default:
+                {
+                    LOG("Unexpected ATAPI packet size.");
+                    break;
+                }
+            }
+        }
+        else
+        {
+            LOG("Device not ATAPI?");
+            return -DEVICE_ERROR;
+        }
+        if (identity_data[63] != 0)
+        {
+            LOG("MW DMA modes detected.");
+            drive->MW_DMA_modes = identity_data[63];
+            drive->DMA_device = true;
+        }
+        if (identity_data[88] != 0)
+        {
+            LOG("UDMA modes detected.");
+            drive->UDMA_modes = identity_data[88];
+            drive->DMA_device = true;
+        }
         return 0;
     }
     return -DEVICE_ERROR;
 }
 
-
-int ATAPI_start_DMA_read(const u16 n_sectors)
+int ATA_ident(IDE_drive_info_t* drive, u16* identity_data)
 {
-    // create SCSI packet
-    ATAPI_packet_t packet = {};
-    packet.opcode = 0x28;
-    packet.words[4] = n_sectors & 0xFFFF;
+    ATA_select_drive(drive);
+    // TODO: Not implemented yet
+    return -NOT_IMPLEMENTED;
+}
+
+int ATA_is_packet_device(IDE_drive_info_t* drive)
+{
+    ATA_reset_device(drive);
 
 
-    // Flush buffers and set features to request DMA transfer for read data
-    outb(ata_base_port + FEATURES_OFFSET, 0x01); // Set DMA mode for packet transfer
-    outb(ata_base_port + LBA_LOW_OFFSET, 0);
-    outb(ata_base_port + LBA_MID_OFFSET, 0);
-    outb(ata_base_port + LBA_HIGH_OFFSET, 0);
-    outb(ata_base_port + DRIVE_SEL_OFFSET, 0); // main drive
-    outb(ata_base_port + SECTOR_COUNT_OFFSET, 0);
+    u8 signatures[4] = {0};
+    signatures[0] = inb(drive->base_port + SECTOR_COUNT_OFFSET);
+    signatures[1] = inb(drive->base_port + LBA_LOW_OFFSET);
+    signatures[2] = inb(drive->base_port + LBA_MID_OFFSET);
+    signatures[3] = inb(drive->base_port + LBA_HIGH_OFFSET);
 
-    // Send the packet
-    if (send_packet_for_DMA(packet) != 0)
+    if (!signatures[0] == 0x1 | !signatures[1] == 0x1)
     {
-        LOG("Error reading using DMA");
+        LOG("Drive signature not present");
+        return -DEVICE_ERROR;
+    }
+    if (signatures[2] == 0 && signatures[3] == 0)
+    {
+        LOG("Drive is ATA device, no packet support.");
+        return 0;
+    }
+    if (signatures[2] == 0x14 && signatures[3] == 0xEB)
+    {
+        LOG("Drive is ATAPI device. Packets supported.");
+        drive->packet_device = true;
+        return 1;
+    }
+    LOG("Unexpcected device signature.");
+    return -DEVICE_ERROR;
+}
+
+int ATAPI_set_max_dma_mode(const bool udma, IDE_drive_info_t* drive)
+{
+    ATA_select_drive(drive);
+    u8 dma_mode = 0;
+
+    if (udma)
+    {
+        while (drive->UDMA_modes & 0x1 << dma_mode) { dma_mode++; }
+        dma_mode += 0x20;
+    }
+    else
+    {
+        while (drive->MW_DMA_modes & 0x1 << dma_mode) { dma_mode++; }
+    }
+    LOG("Setting DMA mode: ", dma_mode);
+
+    outb(drive->base_port + FEATURES_OFFSET, TRANSFER_MODE); // Subcommand to set transfer mode
+    outb(drive->base_port + SECTOR_COUNT_OFFSET, dma_mode); // Set DMA mode 1 (or use 0x20, 0xC5, etc. for other modes)
+    outb(drive->base_port + CMD_OFFSET, SET_FEATURES_CMD); // Send the Set Features command
+
+    if (ATA_status_t status = ATA_get_alt_status(drive); status.error)
+    {
+        ATA_error_t error = ATA_get_error(drive);
+        LOG("Error enabling DMA. Raw error", error.raw);
         return -DEVICE_ERROR;
     }
 
-    return 0;
+    // todo: Test if the mode was set using the identify command?
+    return dma_mode;
 }
 
 
-u32 ATAPI_get_capacity()
+/* Finds all drives
+ */
+// Must be passed a list of IDE_drive_info_t[4].
+int populate_drives_list(ATAPIDrive*& atapi_drives)
 {
-    ATAPI_packet_t packet = {0};
-    packet.opcode = ATAPI_GET_CAPACITY_CMD;
+    IDE_drive_info_t* found_drives[4] = {};
+    int n_found_drives = 0;
+    constexpr bool are_secondary_controllers[4] = {false, false, true, true};
+    constexpr u16 base_ports[4] = {PRIMARY_BASE_PORT,PRIMARY_BASE_PORT, SECONDARY_BASE_PORT, SECONDARY_BASE_PORT};
 
-    // "FLUSH" buffers.
-    outb(ata_base_port + FEATURES_OFFSET, 0); // don't use DMA for this
-    outb(ata_base_port + LBA_LOW_OFFSET, 0); // Byte count request.
-    outb(ata_base_port + LBA_MID_OFFSET, 12);
-    outb(ata_base_port + LBA_HIGH_OFFSET, 0);
+    constexpr bool are_secondary_drives[4] = {false, true, false, true};
+    constexpr u8 drive_sel_vals[4] = {MAIN_DRIVE_SEL_CMD, ALT_DRIVE_SEL_CMD, MAIN_DRIVE_SEL_CMD, ALT_DRIVE_SEL_CMD};
 
-    // Send the packet.
-    send_packet_exepct_PIO(packet);
-
-    if (ATA_status_t status = get_ata_alt_status(); status.error)
+    // Find all connected drives
+    for (int i = 0; i < 4; i++)
     {
-        ATA_error_t error = get_ata_device_error();
-        LOG("Error getting capacity. Raw error: ", error.raw);
-        return 0;
+        // IDE_drive_info_t* drive =  &drives[i];
+        auto drive_info = new IDE_drive_info_t();
+        drive_info->base_port = base_ports[i];
+        drive_info->drive_data = drive_sel_vals[i];
+        drive_info->drive_id = are_secondary_drives[i];
+        drive_info->controller_id = are_secondary_controllers[i];
+
+        // select drive
+        ATA_select_drive(drive_info);
+
+        ATA_status_t status{};
+        status.raw = inb(drive_info->base_port + STATUS_OFFSET);
+
+        if (status.ready)
+        {
+            drive_info->present = true;
+            found_drives[n_found_drives] = drive_info;
+            n_found_drives++;
+            LOG("Device detected. IDE", static_cast<int>(drive_info->controller_id), " drive", static_cast<int>(drive_info->drive_id));
+            continue;
+        }
+        if (status.error)
+        {
+            LOG("Device ERROR detected. IDE", drive_info->controller_id, " drive", drive_info->drive_id);
+            drive_info->present = false;
+        }
+        drive_info->present = false;
+        free(drive_info);
     }
-
-    u16 n_bytes = get_n_bytes_to_read();
-
-    u16 data[n_bytes / 2] = {0};
-    for (u16& i : data)
+    // Create drive object for each drive.
+    // TODO: this should only be base classes, ATAPIDrive should inherit from IDEDrive or something to support ATADrives as well.
+    atapi_drives = new ATAPIDrive[n_found_drives];
+    for (size_t i = 0; i < n_found_drives; i++)
     {
-        i = inw(ata_base_port + DATA_OFFSET);
+        atapi_drives[i].populate_data(found_drives[i]);
     }
-    // big endian
-    u32 max_lba = data[0] << 16 | data[1];
-    u32 block_size = data[2] << 16 | data[3];
-    return max_lba;
+    return n_found_drives;
 }

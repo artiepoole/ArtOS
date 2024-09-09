@@ -95,7 +95,7 @@ size_t hex_from_int(int_like1 val, char* out_str, int_like2 n_bytes)
 template <typename int_like>
 int log2(int_like val)
 {
-    // todo: decide if rounding down or up is more useful.
+    // todo: decide if rounding down or up is more useful. Perhaps round to nearest?
     if (val < 0) val = -val;
     int i = 0;
     while ((val /= 2) > 0)
