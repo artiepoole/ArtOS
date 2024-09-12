@@ -144,18 +144,16 @@ void IDEStorageContainer::start_DMA_transfer()
 {
     LOG("Starting DMA transfer.");
     BM_cmd_t bm_cmd = bm_dev->get_cmd();
-    LOG("BM cmd raw: ",  bm_cmd.raw);
     bm_cmd.start_stop = 1;
 
     BM_waiting_for_transfer = true;
     bm_dev->set_cmd(bm_cmd);
 
-    LOG("DMA transfer started.");
 }
 
 int IDEStorageContainer::stop_DMA_read()
 {
-    LOG("Resetting BM start/stop bit");
+    LOG("Transfer complete. Resetting BM start/stop bit");
     BM_cmd_t bm_cmd = bm_dev->get_cmd();
     bm_cmd.start_stop = 0;
     bm_dev->set_cmd(bm_cmd);
@@ -180,6 +178,5 @@ int IDEStorageContainer::wait_for_DMA_transfer() const
         LOG("BM transfer complete didn't send interrupt?");
         return -DEVICE_ERROR;
     }
-    LOG("Transfer complete?");
     return 0;
 }

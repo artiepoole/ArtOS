@@ -6,6 +6,7 @@
 
 #include <APIC.h>
 #include <IDE_handler.h>
+#include <kernel.h>
 #include <stdlib.h>
 
 #include "Errors.h"
@@ -181,7 +182,10 @@ void ATA_select_drive(IDE_drive_info_t* drive_info)
 {
     outb(drive_info->base_port + DRIVE_SEL_OFFSET, drive_info->drive_data);
     last_drive_info = drive_info;
-    sleep(1);
+    // sleep(1);
+    u64 start = get_tick_ns();
+    while (get_tick_ns() - start < 500){}// wait at least 500ns
+
 }
 
 void ATA_reset_device(IDE_drive_info_t* drive_info)

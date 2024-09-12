@@ -185,11 +185,10 @@ u32 ATAPIDrive::get_capacity()
 
     u16 n_bytes = ATA_get_n_bytes_to_read(drive_info);
 
-    u16 data[(n_bytes+1) / 2] = {0};
+    u16 data[(n_bytes + 1) / 2] = {0};
     for (u16& i : data)
     {
         i = inw(drive_info->base_port + DATA_OFFSET);
-        LOG("pio word read", i);
     }
 
     // big endian
@@ -249,15 +248,11 @@ int ATAPIDrive::send_packet_DMA(const ATAPI_packet_t& packet)
     for (unsigned short word : packet.words)
     {
         outw(drive_info->base_port + DATA_OFFSET, word);
-        LOG("DMA packet data out word: ", word);
     }
     // wait for busy and not errors before continuing.
     ATA_status_t status = get_alt_status();
-    LOG("Pre post packet status loop. drq:", static_cast<bool>(status.data_request), " bsy:", static_cast<bool>(status.busy), " dev_fault:", static_cast<bool>(status.device_fault), " error:", static_cast<bool>(status.error));
-
     while (!(status.error | status.device_fault | status.data_request))
     {
-        LOG("In post packet status loop. drq:", static_cast<bool>(status.data_request), " bsy:", static_cast<bool>(status.busy), " dev_fault:", static_cast<bool>(status.device_fault), " error:", static_cast<bool>(status.error));
         status = get_alt_status();
     }
     if (status.error | status.device_fault)
