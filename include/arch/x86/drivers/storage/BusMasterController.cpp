@@ -16,21 +16,6 @@ u32 prd_size = 65536;
 
 BusMasterController::BusMasterController(u16 new_base_port, IDE_drive_info_t* drive)
 {
-
-    // u16 command = PCI_IDE_controller->set_command_bit(2, true);
-    //
-    // if ((command & 0x1 << 2) > 0)
-    // {
-    //     LOG("IDE busmastering enabled");
-    // }
-    // else
-    // {
-    //     LOG("IDE busmastering not enabled. Aborting");
-    //     return;
-    // }
-
-
-
     if (drive->controller_id)
     {
         base_port = new_base_port + 0x08;
@@ -55,7 +40,7 @@ BusMasterController::BusMasterController(u16 new_base_port, IDE_drive_info_t* dr
      // TODO: handle init errors
     }
     physical_region = DMA_init_PRDT(base_port);
-
+    LOG("Initialising busmaster done.");
 }
 
 BM_cmd_t BusMasterController::set_cmd(const BM_cmd_t cmd) const

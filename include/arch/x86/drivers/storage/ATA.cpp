@@ -242,17 +242,18 @@ int ATAPI_ident(IDE_drive_info_t* drive, u16* identity_data)
 {
     ATA_select_drive(drive);
 
-    LOG("TEST");
     outb(drive->base_port + CMD_OFFSET, ATAPI_IDENT_CMD);
     ATA_poll_busy(drive);
     ATA_poll_until_DRQ(drive);
     //todo: test whether you can skip reading all we don't use
-    if (const ATA_status_t status = ATA_get_alt_status(drive); status.data_request and !status.error) // data request is true and error is false
+    if (ATA_status_t status = ATA_get_alt_status(drive); status.data_request and !status.error) // data request is true and error is false
     {
         for (size_t i = 0; i < 256; i++)
         {
             identity_data[i] = inw(drive->base_port + DATA_OFFSET);
         }
+        status = ATA_get_alt_status(drive);
+        if (status.data_request) { LOG("Read 256 words but drq still set?"); };
         if (identity_data[0] >> 14 == 0x2)
         {
             LOG("ATAPI device confirmed.");
@@ -420,7 +421,13 @@ int populate_drives_list(ATAPIDrive*& atapi_drives)
     atapi_drives = new ATAPIDrive[n_found_drives];
     for (size_t i = 0; i < n_found_drives; i++)
     {
-        atapi_drives[i].populate_data(found_drives[i]);
+        int result = atapi_drives[i].populate_data(found_drives[i]);
+        if (result < 0)
+        {
+            LOG("Error initiating ATAPI drive. Result: ", result);
+            atapi_drives[i].drive_info = NULL;
+            return result;
+        }
     }
     return n_found_drives;
 }

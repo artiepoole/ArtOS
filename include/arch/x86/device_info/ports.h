@@ -78,56 +78,45 @@ The rest of the CMOS memory is used to handle system state stuff like maximum ra
 */
 
 
-
-
 // PCI ports
 #define PCI_CONFIG_ADDRESS 0xCF8
 #define PCI_CONFIG_DATA 0xCFC
 
 
-
-
+// Assembly wrapper to write one byte to the specified port
 // extern "C"
 inline void outb(u16 port, u8 val)
 {
-    // Assembly wrapper to write one byte to the specified port
     __asm__ volatile ( "outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
 }
 
+// Assembly wrapper to read one byte from the specified port
 // extern "C"
 inline u8 inb(u16 port)
 {
-    // Assembly wrapper to read one byte from the specified port
     u8 ret;
-    __asm__ volatile ( "inb %w1, %b0"
-                   : "=a"(ret)
-                   : "Nd"(port)
-                   : "memory");
+    __asm__ volatile ( "inb %w1, %b0" : "=a"(ret) : "Nd"(port) : "memory");
     return ret;
 }
 
-
+// Assembly wrapper to write one word (16 bits) to the specified port
 inline void outw(u16 port, u16 val)
 {
-    // Assembly wrapper to write one word (16 bits) to the specified port
     __asm__ volatile ( "outw %w0, %w1" : : "a"(val), "Nd"(port) : "memory");
 }
 
-
+// Assembly wrapper to read one word (16 bits) from the specified port
 inline u16 inw(u16 port)
 {
-    // Assembly wrapper to read one word (16 bits) from the specified port
     u16 ret;
-    __asm__ volatile ( "inw %w1, %w0"
-                   : "=a"(ret)
-                   : "Nd"(port)
-                   : "memory");
+    __asm__ volatile ( "inw %w1, %w0" : "=a"(ret) : "Nd"(port) : "memory");
     return ret;
 }
 
+// Assembly wrapper to write one double (32 bits) to the specified port
 inline void outd(u16 port, u32 val)
 {
-    // Assembly wrapper to write one double (32 bits) to the specified port
+
     __asm__ volatile ( "outl %d0, %w1" : : "a"(val), "Nd"(port) : "memory");
 }
 
@@ -137,9 +126,9 @@ inline u32 ind(u16 port)
     // Assembly wrapper to read one double (32 bits) from the specified port
     u32 ret;
     __asm__ volatile ( "inl %w1, %d0"
-                   : "=a"(ret)
-                   : "Nd"(port)
-                   : "memory");
+        : "=a"(ret)
+        : "Nd"(port)
+        : "memory");
     return ret;
 }
 

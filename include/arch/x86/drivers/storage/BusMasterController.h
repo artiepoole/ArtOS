@@ -21,8 +21,6 @@ public:
     BM_cmd_t get_cmd() const;
     BM_cmd_t set_cmd(BM_cmd_t cmd) const;
     u8* physical_region;
-
-private:
     u16 base_port;
 
 };

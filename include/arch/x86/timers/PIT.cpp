@@ -42,5 +42,5 @@ void pit_handler()
 {
     // Check if sleep is still active.
     if (timer_ticks == 0) return;
-    timer_ticks = timer_ticks - 1;
+    timer_ticks -= 1;
 }

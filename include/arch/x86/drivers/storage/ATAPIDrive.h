@@ -8,7 +8,7 @@
 #include "ATA_types.h"
 #include "types.h"
 #include "IDE_notifiable.h"
-#include "icxxabi.h"
+
 
 class ATAPIDrive : public IDE_notifiable
 {
@@ -26,6 +26,7 @@ public:
     [[nodiscard]] ATA_status_t get_status();
     [[nodiscard]] ATA_status_t get_alt_status();
     [[nodiscard]] ATA_error_t get_error();
+    [[nodiscard]] u8 get_interrupt_reason();
     int set_regs(const ATAPI_cmd_regs& regs);
     int populate_capabilities();
     u32 get_capacity();

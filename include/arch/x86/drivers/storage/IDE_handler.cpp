@@ -20,10 +20,8 @@ void IDE_handler(bool from_primary)
     IDE_handler_node* current = ide_handler_list.first_node;
     while (current)
     {
-        LOG("Handling via Handler");
         current->notifiable->notify();
         current = current->next;
-
     }
 }
 

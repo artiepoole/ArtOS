@@ -79,8 +79,6 @@ void process_cmd(char* buf, size_t len)
 }
 
 
-
-
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 {
@@ -185,14 +183,18 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("IDE base port raw: ", BM_controller_base_port);
     int n_drives = populate_drives_list(atapi_drives);
 
-    if (n_drives <0)
+    if (n_drives == 0)
     {
         LOG("No drives found.");
         return;
     }
-
-    auto bus_master = BusMasterController(BM_controller_base_port, atapi_drives[0].drive_info);
-    auto CD_ROM = IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &bus_master);
+    else if (n_drives < 0)
+    {
+        LOG("Error initialising drives.");
+    }
+    // TODO: Possibly set up the ATAPIDrive inside the IDEStorageContainer to avoid the need for a IDE_notifiable class etc.
+    auto secondary_bus_master = BusMasterController(BM_controller_base_port, atapi_drives[0].drive_info);
+    auto CD_ROM = IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master);
 
     // testing read.
     constexpr size_t buf_size = 1024 * 64;
@@ -200,8 +202,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     CD_ROM.read(buffer, buf_size);
     LOG("First data: ", buffer[0]);
     LOG("READ 64k");
-
-
 
 #if ENABLE_SERIAL_LOGGING
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);

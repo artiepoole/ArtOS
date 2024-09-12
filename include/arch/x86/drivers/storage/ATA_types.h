@@ -29,7 +29,7 @@ union ATA_status_t
     struct
     {
         u8 error : 1;
-        u8 index : 1;
+        u8 index : 1; // also sense data available bit.
         u8 corrected : 1;
         u8 data_request : 1;
         u8 seek_complete : 1;
