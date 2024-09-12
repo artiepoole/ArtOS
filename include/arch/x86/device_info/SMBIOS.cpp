@@ -14,7 +14,8 @@
 
 smbios_t* smbios = nullptr;
 smbios_processor_info_t* cpu_info = nullptr;
-u64 clock_rate = 0;
+u64 clock_rate_hz = 0;
+u64 clock_rate_mhz = 0;
 
 
 smbios_t search_for_SMBIOS()
@@ -94,15 +95,27 @@ void SMBIOS_populate_cpu_info()
 
 u64 SMBIOS_get_CPU_clock_rate_hz()
 {
-    if (clock_rate!=0) return clock_rate;
+    if (clock_rate_hz!=0) return clock_rate_hz;
     if (cpu_info == NULL)
     {
         SMBIOS_populate_cpu_info();
     }
-    clock_rate = static_cast<u64>(cpu_info->current_speed) * 1000000;
-    return clock_rate;
+    clock_rate_mhz = static_cast<u64>(cpu_info->current_speed);
+    clock_rate_hz = clock_rate_mhz * 1000000;
+    return clock_rate_hz;
 }
 
+u64 SMBIOS_get_CPU_clock_rate_mhz()
+{
+    if (clock_rate_mhz!=0) return clock_rate_mhz;
+    if (cpu_info == NULL)
+    {
+        SMBIOS_populate_cpu_info();
+    }
+    clock_rate_mhz = static_cast<u64>(cpu_info->current_speed);
+    clock_rate_hz = clock_rate_mhz * 1000000;
+    return clock_rate_mhz;
+}
 
 
 

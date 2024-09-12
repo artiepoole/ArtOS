@@ -62,5 +62,7 @@ void SMBIOS_populate_cpu_info();
 
 u64 SMBIOS_get_CPU_clock_rate_hz();
 
+u64 SMBIOS_get_CPU_clock_rate_mhz();
+
 
 #endif //SMBIOS_H

@@ -56,7 +56,10 @@ time_t get_epoch_time();
 
 u64 get_clock_rate_hz();
 u64 get_current_clock();
+uint32_t get_tick_s();
 uint32_t get_tick_ms();
+uint32_t get_tick_us();
+uint32_t get_tick_ns();
 void sleep_ms(u32 ms);
 void get_clock_ms();
 
