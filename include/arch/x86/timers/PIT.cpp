@@ -25,12 +25,12 @@ void configure_pit(const u32 hz)
 }
 
 
-void sleep(const u32 ms)
+void PIT_sleep_ms(const u32 ms)
 {
 
     if (rate == 0)
     {
-        LOG("Tried to sleep when timer is not initiated.");
+        LOG("Tried to PIT_sleep_ms when timer is not initiated.");
         return;
     }
     timer_ticks = ms * rate / 1000; // rate is in hz, time is in ms
@@ -40,7 +40,7 @@ void sleep(const u32 ms)
 
 void pit_handler()
 {
-    // Check if sleep is still active.
+    // Check if PIT_sleep_ms is still active.
     if (timer_ticks == 0) return;
     timer_ticks -= 1;
 }

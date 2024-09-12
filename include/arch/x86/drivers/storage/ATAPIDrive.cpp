@@ -4,8 +4,7 @@
 
 #include "ATAPIDrive.h"
 
-#include <IDE_handler.h>
-#include <PIT.h>
+#include "IDE_handler.h"
 
 #include "Errors.h"
 #include "logging.h"
@@ -132,7 +131,7 @@ int ATAPIDrive::set_regs(const ATAPI_cmd_regs& regs)
     {
         outb(drive_info->base_port + FEATURES_OFFSET + i, regs.bytes[i]);
     }
-    sleep(1);
+
     ATA_poll_busy(drive_info);
     if (const ATA_status_t status = get_alt_status(); status.error or status.device_fault)
     {

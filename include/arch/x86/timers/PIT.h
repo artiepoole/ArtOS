@@ -10,7 +10,7 @@
 void configure_pit(u32 hz);
 
 
-void sleep(u32 ms);
+void PIT_sleep_ms(u32 ms);
 
 
 void pit_handler();

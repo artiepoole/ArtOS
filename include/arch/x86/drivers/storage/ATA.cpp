@@ -4,30 +4,13 @@
 
 #include "ATA.h"
 
-#include <APIC.h>
 #include <IDE_handler.h>
 #include <kernel.h>
 #include <stdlib.h>
 
 #include "Errors.h"
-#include "IDT.h"
 #include "logging.h"
-#include "PIT.h"
 #include "ports.h"
-
-// ATA ports
-// https://wiki.osdev.org/ATA_PIO_Mode
-// https://wiki.osdev.org/ATAPI
-
-
-// ATA commands
-// https://wiki.osdev.org/ATAPI
-// https://wiki.osdev.org/ATA_Command_Matrix
-
-
-// ATAPI reference:
-// http://web.archive.org/web/20221119212108/https://node1.123dok.com/dt01pdf/123dok_us/001/139/1139315.pdf.pdf?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=7PKKQ3DUV8RG19BL%2F20221119%2F%2Fs3%2Faws4_request&X-Amz-Date=20221119T211954Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Signature=c4154afd7a42db51d05db14370b8e885c3354c14cb66986bffcfd1a9a0869ee2
-
 
 #define STATUS_ERR 0x01
 #define STATUS_DRQ 0x08
@@ -182,9 +165,7 @@ void ATA_select_drive(IDE_drive_info_t* drive_info)
 {
     outb(drive_info->base_port + DRIVE_SEL_OFFSET, drive_info->drive_data);
     last_drive_info = drive_info;
-    // sleep(1);
-    u64 start = get_tick_ns();
-    while (get_tick_ns() - start < 500){}// wait at least 500ns
+    sleep_ns(500);
 
 }
 
@@ -203,7 +184,7 @@ void ATA_reset_device(IDE_drive_info_t* drive_info)
     {
         outb(PRIMARY_CONTROL_PORT, RESET_CONTROL);
     }
-    sleep(10);
+    sleep_ns(500); // wait after issuing reset then clear reset command.
     if (drive_info->controller_id)
     {
         outb(SECONDARY_CONTROL_PORT, 0x00);
@@ -212,6 +193,7 @@ void ATA_reset_device(IDE_drive_info_t* drive_info)
     {
         outb(PRIMARY_CONTROL_PORT, 0x00);
     }
+    ATA_poll_busy(drive_info); // wait for busy to be complete.
 }
 
 void ATA_poll_busy(IDE_drive_info_t* drive_info)

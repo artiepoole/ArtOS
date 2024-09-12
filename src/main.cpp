@@ -412,7 +412,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
             }
         }
         // else
-        sleep(1);
+        PIT_sleep_ms(1);
     }
     WRITE("ERROR: Left main loop.");
     asm("hlt");
