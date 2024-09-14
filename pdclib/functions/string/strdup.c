@@ -22,6 +22,6 @@ char * strndup (const char *s, const size_t n)
 
     if (new == NULL)
         return NULL;
-    new[n-1] = '\0';
+    new[n] = '\0';
     return memcpy (new, s, n);
 }

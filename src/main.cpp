@@ -225,8 +225,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     }
 
     // populate entries
+    // TODO: the first entry loads the root dir and so the directory names in lowercase capable format are stored here!
     iso_path_table_entry path_table[n_dirs];
-    iso_path_table_entry* fs_dir_entry = {};
+    iso_path_table_entry* fs_dir_entry = nullptr;
     offset = 0;
     for (size_t entry = 0; entry < n_dirs; entry++)
     {
@@ -249,8 +250,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         }
     }
     // Check if FS was detected. Just a test.
-    if (fs_dir_entry->dir_name == nullptr) { LOG("User filesystem directory not found."); }
+    if (fs_dir_entry == nullptr) { LOG("User filesystem directory not found."); }
 
+    // Load all file names and print em.
     for (size_t entry = 0; entry < n_dirs; entry++)
     {
         offset = 0;
@@ -266,21 +268,22 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         }
         char full_data[full_size];
         CD_ROM.read(&full_data, root_dir_header.extent_loc_LE, full_size);
-        // This scans the directory until the file name is found.
-        // bool finished = false;
+
         while (offset < full_size)
         {
+            size_t start_offset = offset;
             iso_directory_record_header file_header = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
-            if (file_header.record_length == 0)
+            if (file_header.record_length == 0) // entries will not cross a sector boundary.
             {
-                offset = offset + (2048-(offset%2048));
-                if (offset >= full_size )
+                offset = offset + (2048 - (offset % 2048)); // moves to start of next sector
+                if (offset >= full_size)
                 {
-                    break;
+                    break; // if out of limits, move to next dir.
                 }
+                // otherwise continue from next entry
+                start_offset = offset;
                 file_header = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
             }
-
             offset += sizeof(iso_directory_record_header); // skip header to name
             char* filename = strndup(&full_data[offset], file_header.file_name_length);
             if (strncmp(filename, "", file_header.file_name_length) == 0)
@@ -293,45 +296,46 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
                 free(filename);
                 filename = strdup("..");
             }
+            offset += file_header.file_name_length;
+            offset += offset % 2;
+            size_t extension_pos = 0;
+            while (extension_pos < start_offset + file_header.record_length)
+            {
+                auto [tag, len] = *reinterpret_cast<file_id_ext_header*>(&full_data[offset + extension_pos]);
+                if (strncmp(tag, "NM", 2) == 0)
+                {
+                    free(filename);
+                    filename = strndup(&full_data[offset + extension_pos + 5], len - 5);
+                    break;
+                }
+                else if (len > 0)
+                {
+                    extension_pos += len;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            // Have to convert from packed to not. can't implicitly do so for some reason.
             u32 len = file_header.data_length_LE;
             u8 flags = file_header.flags;
             LOG("Directory: ", path_table[entry].dir_name, " name: ", filename, " data length: ", len, " flags raw: ", flags, " is directory: ", flags & 0x02);
-            // if (data[offset] == 'D')
-            // {
-            //     offset -= sizeof(iso_directory_record_header);
-            //     break;
-            // }
-            offset += file_header.record_length - sizeof(iso_directory_record_header); // skip filename (the last value is name length)
+
+            offset = start_offset + file_header.record_length;
+            // offset += offset%2;
+            // skip the rest of the data (PX extensions etc)
+            //todo: parse extension info: replace file names with lowercase capable and longer strings
             free(filename);
             if (flags & 0x80) { LOG("Didn't read all extents for the previous file"); }
         }
     }
-    // iso_directory_record doom_directory = {};
-    // doom_directory.header = *reinterpret_cast<iso_directory_record_header*>(&data[offset]);
-    // offset += sizeof(iso_directory_record_header);
-    // auto filename = static_cast<char*>(malloc(doom_directory.header.file_name_length+1));
-    // for (int i = 0; i < doom_directory.header.file_name_length; i++)
-    // {
-    //     filename[i] = data[i + offset];
-    // }
-    // filename[doom_directory.header.file_name_length] = '\0';
-    // doom_directory.filename = filename;
-
-    // // Load the first 64k of doomwad
-    // u8 buffer[1024*64];
-    // CD_ROM.read(&buffer, doom_directory.header.extent_loc_LE, 1024*64);
 
     /* TODO: in order to implement the read/seek/loadfile/whatever else,
      *I need to know how to handle loading in "pages" of data and reading
      * within those or create a massive buffer and copy the whole file to memory.
      */
-    // auto ident = static_cast<char*>(malloc(5));
-    // for (int i = 0; i <4; i++)
-    // {
-    //     ident[i] = buffer[i];
-    // }
-    // ident[4] = '\0';
-    // LOG("DOOMWAD type: ", ident);
+
 
 #if ENABLE_SERIAL_LOGGING
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);

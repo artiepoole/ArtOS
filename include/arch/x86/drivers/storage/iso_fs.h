@@ -100,5 +100,11 @@ struct iso_primary_volume_descriptor_t
     u8 res4[653];
 };
 
+struct file_id_ext_header
+{
+    char tag[2];
+    u8 len;
+
+};
 
 #endif //ISO_FS_H

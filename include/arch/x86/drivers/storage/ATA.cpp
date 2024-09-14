@@ -12,6 +12,8 @@
 #include "logging.h"
 #include "ports.h"
 
+
+// TODO: consider enums for all of these constants, in all files using them.
 #define STATUS_ERR 0x01
 #define STATUS_DRQ 0x08
 #define STATUS_RDY 0x40
