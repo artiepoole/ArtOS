@@ -54,7 +54,7 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
 int IDEStorageContainer::read(void* dest, const u32 lba_offset, const u32 n_bytes)
 {
     if (n_bytes == 0) return -1;
-    if (n_bytes > 1024*32) return -1;
+    if (n_bytes > 2048*32) return -1;
 
     u16 n_sectors = (n_bytes + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size; // round up division
     // u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;

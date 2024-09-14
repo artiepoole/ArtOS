@@ -122,6 +122,9 @@ _PDCLIB_PUBLIC int strcasecmp(const char* s1, const char* s2);
 /* Duplicate S, returning an identical malloc'd string.  */
 _PDCLIB_PUBLIC char * strdup (const char *s);
 
+/* Duplicate S for specified number of bytes, returning an identical malloc'd string.   */
+_PDCLIB_PUBLIC char * strndup (const char *s, size_t n);
+
 /* Transform the character array s2 as appropriate for the LC_COLLATE setting of
 the current locale. If length of resulting string is less than n, store it in
 the character array pointed to by s1. Return the length of the resulting

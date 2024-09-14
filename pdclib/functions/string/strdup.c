@@ -15,3 +15,13 @@ char * strdup (const char *s)
 
     return (char *) memcpy (new, s, len);
 }
+
+char * strndup (const char *s, const size_t n)
+{
+    char *new = malloc (n+1);
+
+    if (new == NULL)
+        return NULL;
+    new[n-1] = '\0';
+    return memcpy (new, s, n);
+}

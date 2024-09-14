@@ -197,7 +197,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     auto secondary_bus_master = BusMasterController(BM_controller_base_port, atapi_drives[0].drive_info);
     auto CD_ROM = IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master);
 
-    // testing read.
+    // TODO: This should be moved to a mount function or something similar. The following populates a directory tree.
     constexpr size_t buf_size = sizeof(iso_primary_volume_descriptor_t);
     iso_primary_volume_descriptor_t volume_descriptor{};
     u32 data_start = 16; // in LBA
@@ -209,84 +209,129 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("Block size: ", volume_descriptor.logical_block_size_LE);
     LOG("Path table size: ", volume_descriptor.path_table_size_LE);
 
-    u8 path_table[volume_descriptor.path_table_size_LE];
-    CD_ROM.read(path_table, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE);
+    // Load the path table
+    char path_table_data[volume_descriptor.path_table_size_LE];
+    CD_ROM.read(path_table_data, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE);
+    // Count entries
     size_t offset = 0;
-    iso_path_table_entry fs_dir_entry = {};
+    size_t n_dirs = 0;
     while (offset < volume_descriptor.path_table_size_LE)
     {
-        fs_dir_entry.header = *reinterpret_cast<iso_path_table_entry_header*>(path_table + offset);
-        offset += sizeof(iso_path_table_entry_header);
-
-        char* filename = static_cast<char*>(malloc(fs_dir_entry.header.name_length+1));
-        for (int i = 0; i < fs_dir_entry.header.name_length; i++)
-        {
-            filename[i] = path_table[i + offset];
-        }
-        filename[fs_dir_entry.header.name_length] = '\0';
-
-
-        offset += fs_dir_entry.header.name_length;
+        iso_path_table_entry dir_entry = {};
+        dir_entry.header = *reinterpret_cast<iso_path_table_entry_header*>(path_table_data + offset);
+        offset += sizeof(iso_path_table_entry_header) + dir_entry.header.name_length;
         if (offset % 2) { offset += 1; }
-        LOG("Directory found. Name: ", filename);
-        if (strncmp(filename, "FS", 2) == 0)
-        {
-            fs_dir_entry.filename = &filename;
-            break;
-        }
-        free(filename);
-        fs_dir_entry.filename = nullptr;
+        n_dirs++;
     }
-    if (fs_dir_entry.filename == nullptr) { LOG("User filesystem directory not found."); }
-    char data[2048];
 
-    CD_ROM.read(&data, fs_dir_entry.header.extent_loc, 2048);
-    // This scans the directory until the file name is found.
+    // populate entries
+    iso_path_table_entry path_table[n_dirs];
+    iso_path_table_entry* fs_dir_entry = {};
     offset = 0;
-    while (offset < 2048)
+    for (size_t entry = 0; entry < n_dirs; entry++)
     {
-        size_t entry_len = data[offset];
-        offset += sizeof(iso_directory_record_header); // skip header to name
-        if (data[offset] == 'D')
-        {
-            offset -= sizeof(iso_directory_record_header);
-            break;
-        }
-        offset += entry_len - sizeof(iso_directory_record_header); // skip filename (the last value is name length)
-        // while (
-        //     strncmp(&data[offset], "PX", 2) == 0 or
-        //     strncmp(&data[offset], "TF", 2) == 0
-        //     )
-        // {
-        //     offset += data[offset+2]; // read length of PX/TF entry and skip over it;
-        // }
-    }
-    iso_directory_record doom_directory = {};
-    doom_directory.header = *reinterpret_cast<iso_directory_record_header*>(&data[offset]);
-    offset += sizeof(iso_directory_record_header);
-    auto filename = static_cast<char*>(malloc(doom_directory.header.file_name_length+1));
-    for (int i = 0; i < doom_directory.header.file_name_length; i++)
-    {
-        filename[i] = data[i + offset];
-    }
-    filename[doom_directory.header.file_name_length] = '\0';
-    doom_directory.filename = &filename;
+        path_table[entry].header = *reinterpret_cast<iso_path_table_entry_header*>(path_table_data + offset);
+        offset += sizeof(iso_path_table_entry_header);
+        char* dir_name = strndup(&path_table_data[offset], path_table[entry].header.name_length);
+        // char* filename = static_cast<char*>(malloc(path_table[entry].header.name_length+1));
 
-    // Load the first 64k of doomwad
-    u8 buffer[1024*64];
-    CD_ROM.read(&buffer, doom_directory.header.extent_loc_LE, 1024*64);
+        // filename[path_table[entry].header.name_length] = '\0';
+        path_table[entry].dir_name = dir_name;
+
+        offset += path_table[entry].header.name_length;
+        if (offset % 2) { offset += 1; }
+        u16 id = path_table[entry].header.parent_dir_id;
+        u32 loc = path_table[entry].header.extent_loc;
+        LOG("Directory found. Name: ", dir_name, " Directory ID: ", id, " Directory LBA: ", loc);
+        if (strncmp(dir_name, "FS", 2) == 0)
+        {
+            fs_dir_entry = &path_table[entry];
+        }
+    }
+    // Check if FS was detected. Just a test.
+    if (fs_dir_entry->dir_name == nullptr) { LOG("User filesystem directory not found."); }
+
+    for (size_t entry = 0; entry < n_dirs; entry++)
+    {
+        offset = 0;
+
+        char first_sector_data[2048];
+        CD_ROM.read(&first_sector_data, path_table[entry].header.extent_loc, 2048);
+        iso_directory_record_header root_dir_header = *reinterpret_cast<iso_directory_record_header*>(&first_sector_data[offset]);
+        size_t full_size = root_dir_header.data_length_LE;
+        if (full_size > 1024 * 64)
+        {
+            LOG("Cannot load full data without implementing larger physical region for DMA or handling partial transfers. Reading first 64k of data.");
+            full_size = 1024 * 64;
+        }
+        char full_data[full_size];
+        CD_ROM.read(&full_data, root_dir_header.extent_loc_LE, full_size);
+        // This scans the directory until the file name is found.
+        // bool finished = false;
+        while (offset < full_size)
+        {
+            iso_directory_record_header file_header = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
+            if (file_header.record_length == 0)
+            {
+                offset = offset + (2048-(offset%2048));
+                if (offset >= full_size )
+                {
+                    break;
+                }
+                file_header = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
+            }
+
+            offset += sizeof(iso_directory_record_header); // skip header to name
+            char* filename = strndup(&full_data[offset], file_header.file_name_length);
+            if (strncmp(filename, "", file_header.file_name_length) == 0)
+            {
+                free(filename);
+                filename = strdup(".");
+            }
+            if (strncmp(filename, "\1", file_header.file_name_length) == 0)
+            {
+                free(filename);
+                filename = strdup("..");
+            }
+            u32 len = file_header.data_length_LE;
+            u8 flags = file_header.flags;
+            LOG("Directory: ", path_table[entry].dir_name, " name: ", filename, " data length: ", len, " flags raw: ", flags, " is directory: ", flags & 0x02);
+            // if (data[offset] == 'D')
+            // {
+            //     offset -= sizeof(iso_directory_record_header);
+            //     break;
+            // }
+            offset += file_header.record_length - sizeof(iso_directory_record_header); // skip filename (the last value is name length)
+            free(filename);
+            if (flags & 0x80) { LOG("Didn't read all extents for the previous file"); }
+        }
+    }
+    // iso_directory_record doom_directory = {};
+    // doom_directory.header = *reinterpret_cast<iso_directory_record_header*>(&data[offset]);
+    // offset += sizeof(iso_directory_record_header);
+    // auto filename = static_cast<char*>(malloc(doom_directory.header.file_name_length+1));
+    // for (int i = 0; i < doom_directory.header.file_name_length; i++)
+    // {
+    //     filename[i] = data[i + offset];
+    // }
+    // filename[doom_directory.header.file_name_length] = '\0';
+    // doom_directory.filename = filename;
+
+    // // Load the first 64k of doomwad
+    // u8 buffer[1024*64];
+    // CD_ROM.read(&buffer, doom_directory.header.extent_loc_LE, 1024*64);
 
     /* TODO: in order to implement the read/seek/loadfile/whatever else,
      *I need to know how to handle loading in "pages" of data and reading
      * within those or create a massive buffer and copy the whole file to memory.
      */
-    auto ident = static_cast<char*>(malloc(5));
-    for (int i = 0; i <4; i++)
-    {
-        ident[i] = buffer[i];
-    }
-    ident[4] = '\0';
-    LOG("DOOMWAD type: ", ident);
+    // auto ident = static_cast<char*>(malloc(5));
+    // for (int i = 0; i <4; i++)
+    // {
+    //     ident[i] = buffer[i];
+    // }
+    // ident[4] = '\0';
+    // LOG("DOOMWAD type: ", ident);
 
 #if ENABLE_SERIAL_LOGGING
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
