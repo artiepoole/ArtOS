@@ -4,7 +4,7 @@
 
 #include "SMBIOS.h"
 #include "string.h"
-// #include "Serial.h"
+
 
 #include "logging.h"
 #define LENGTH = 5;
@@ -44,7 +44,6 @@ smbios_t search_for_SMBIOS()
         eps += 16;
     }
 
-    // LOG(reinterpret_cast<u32>(eps));
     smbios = reinterpret_cast<smbios_t*>(eps);
     return *smbios; // return a copy
 }

@@ -3,7 +3,7 @@
 //
 
 #include "ACPI.h"
-// #include "Serial.h"
+
 
 #include "logging.h"
 
@@ -57,8 +57,6 @@ full_madt_t* populate_madt(const uintptr_t madt_location)
         }
         current_address += tag->length;
     }
-
-    // madt = reinterpret_cast<full_madt*>(reinterpret_cast<u8*>(madt_location));
     return &madt;
     LOG("MADT popualted");
 }

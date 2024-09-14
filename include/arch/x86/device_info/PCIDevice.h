@@ -17,11 +17,7 @@ class PCIDevice
 public:
     PCIDevice();
     PCIDevice(u8 bus, u8 slot, u8 func);
-
-
-    PCI_Address_t address{};
-
-    u16 vendor;
+    PCI_Address_t get_address();
     // Generic header values
     u16 vendor_id() const;
     u16 device_id() const;
@@ -48,48 +44,17 @@ public:
     u16 subsystem_vendor_id() const;
     u16 subsystem_id() const;
 
-
-    // Header type 1 (PCI-PCI bridge)
-    //
-    // Primary Bus Number
-    // secondary Bus Number
-    // Subordinate Bus Number
-    // Secondary Latency Timer
-    // I/O Base
-    // I/O Limit
-    // Secondary Status
-    // Memory Base
-    // Memory Limit
-    // Prefetchable Memory Base
-    // Prefetchable Memory Limit
-    // Prefetchable Base Upper 32 Bits
-    // Prefetchable Limit Upper 32 Bits
-    // I/O Base Upper 16 Bits
-    // I/O Limit Upper 16 Bits
-    // Bridge Control
-
-    // Header type 2 (PCI-to-CardBus bridge)
-    //
-    // CardBus Socket/ExCa base address
-    // Offset of capabilities list
-    // Secondary status
-    // CardBus latency timer
-    // PCI bus number
-    // CardBus bus number
-    // Memory Base Address N
-    // Memory Limit N
-    // I/O Base Address N
-    // I/O Limit N
-    // 16-bit PC Card legacy mode base address
-
-
     u8 min_grant() const;
     u8 max_latency() const;
-
 
     void log_format();
 
 private:
+
+
+    PCI_Address_t address{};
+
+    u16 vendor;
     PCI_header_t header{};
     PCI_header_t populate_values() const;
     u8 config_readb(u8 offset);
@@ -104,3 +69,37 @@ PCIDevice* PCI_get_IDE_controller();
 #include "types.h"
 
 #endif //PCI_H
+
+
+// Header type 1 (PCI-PCI bridge)
+//
+// Primary Bus Number
+// secondary Bus Number
+// Subordinate Bus Number
+// Secondary Latency Timer
+// I/O Base
+// I/O Limit
+// Secondary Status
+// Memory Base
+// Memory Limit
+// Prefetchable Memory Base
+// Prefetchable Memory Limit
+// Prefetchable Base Upper 32 Bits
+// Prefetchable Limit Upper 32 Bits
+// I/O Base Upper 16 Bits
+// I/O Limit Upper 16 Bits
+// Bridge Control
+
+// Header type 2 (PCI-to-CardBus bridge)
+//
+// CardBus Socket/ExCa base address
+// Offset of capabilities list
+// Secondary status
+// CardBus latency timer
+// PCI bus number
+// CardBus bus number
+// Memory Base Address N
+// Memory Limit N
+// I/O Base Address N
+// I/O Limit N
+// 16-bit PC Card legacy mode base address

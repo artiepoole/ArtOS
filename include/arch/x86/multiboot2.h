@@ -302,14 +302,14 @@ struct multiboot2_tag_framebuffer_common
 
 struct multiboot2_tag_framebuffer
 {
-    struct multiboot2_tag_framebuffer_common common;
+    multiboot2_tag_framebuffer_common common;
 
     union
     {
         struct
         {
             multiboot2_uint16_t framebuffer_palette_num_colors;
-            struct multiboot2_color* framebuffer_palette;
+            multiboot2_color* framebuffer_palette;
         };
 
         struct
@@ -400,21 +400,21 @@ struct multiboot2_tag_old_acpi
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
     RSDP_v1 rsdp;
-};
+} __attribute__ ((packed));;
 
 struct multiboot2_tag_new_acpi
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
     RSDP_v2 rsdp;
-};
+} __attribute__ ((packed));;
 
 struct multiboot2_tag_network
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
     multiboot2_uint32_t* dhcpack;
-};
+} __attribute__ ((packed));;
 
 struct multiboot2_tag_efi_mmap
 {
@@ -423,28 +423,28 @@ struct multiboot2_tag_efi_mmap
     multiboot2_uint32_t descr_size;
     multiboot2_uint32_t descr_vers;
     multiboot2_uint32_t* efi_mmap;
-};
+} __attribute__ ((packed));;
 
 struct multiboot2_tag_efi32_ih
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
     multiboot2_uint32_t* pointer;
-};
+} __attribute__ ((packed));;
 
 struct multiboot2_tag_efi64_ih
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
     multiboot2_uint64_t pointer;
-};
+} __attribute__ ((packed));;
 
 struct multiboot2_tag_load_base_addr
 {
     multiboot2_uint32_t type;
     multiboot2_uint32_t size;
     multiboot2_uint32_t load_base_addr;
-};
+} __attribute__ ((packed));;
 
 struct multiboot2_tag_info_cmd_line
 {
@@ -452,7 +452,7 @@ struct multiboot2_tag_info_cmd_line
     multiboot2_uint32_t size;
     multiboot2_uint8_t load_base_addr;
 
-};
+} __attribute__ ((packed));;
 
 
 struct artos_boot_header

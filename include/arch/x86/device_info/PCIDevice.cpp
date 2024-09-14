@@ -68,6 +68,12 @@ PCIDevice::PCIDevice(const u8 bus, const u8 slot, const u8 func)
     vendor = vendor_id();
 }
 
+PCI_Address_t PCIDevice::get_address()
+{
+    return address;
+}
+
+
 PCI_header_t PCIDevice::populate_values() const
 {
     PCI_header_t local_header{};
@@ -127,7 +133,7 @@ u8 PCIDevice::header_type() const
 
 u32 PCIDevice::bar(u8 n) const
 {
-    if ((header_type() == 1 and n > 1) or (header_type() == 2))
+    if ((header_type() == 1 && n > 1) || (header_type() == 2))
     {
         LOG("Tried to access BAR outside of valid range for this header type. There are 6 BARs for type_0, 2 for type_1 and 0 for type_2.");
         return 0;
@@ -159,8 +165,23 @@ u16 PCIDevice::subsystem_id() const
     {
         return static_cast<u16>(header.regB >> 16);
     }
-    else return 0;
+    return 0;
 }
+
+u8 PCIDevice::min_grant() const
+{
+    // todo: check if this is a good error value
+    if (header_type() != 0) return 0xFF;
+    return header.regF >> 16 & 0xFF;
+}
+
+u8 PCIDevice::max_latency() const
+{
+    // todo: check if this is a good error value
+    if (header_type() != 0) return 0xFF;
+    return header.regF >> 24 & 0xFF;
+}
+
 
 u32 PCIDevice::expansion_RBA() const
 {
@@ -309,7 +330,6 @@ u32 PCIDevice::config_write_register(const u8 offset, const u32 data) const
     outd(PCI_CONFIG_DATA, data);
     // read it back
     outd(PCI_CONFIG_ADDRESS, offset_address.address);
-    // const u32 tmp = (ind(PCI_CONFIG_DATA) >> ((offset & 2) * 8)) & 0xFFFF;
     return ind(PCI_CONFIG_DATA);
 }
 
@@ -318,14 +338,12 @@ void PCI_populate_list()
 {
     for (u8 slot = 0; slot < 31; slot++)
     {
+        for (u8 func = 0; func < 7; func++)
         {
-            for (u8 func = 0; func < 7; func++)
+            if (auto dev = PCIDevice(0, slot, func); dev.vendor_id() != 0xFFFF)
             {
-                if (auto dev = PCIDevice(0, slot, func); dev.vendor_id() != 0xFFFF)
-                {
-                    device_list[pci_device_count++] = dev;
-                    dev.log_format();
-                }
+                device_list[pci_device_count++] = dev;
+                dev.log_format();
             }
         }
     }
@@ -341,30 +359,3 @@ PCIDevice* PCI_get_IDE_controller()
     LOG("No IDE controller detected.");
     return nullptr;
 }
-
-// template<typename T>
-// T PCI_read_config(T return_type, u8 offset)
-// {
-//
-//     const PCI_Address_t address = {offset, func, slot, bus, 0, 1};
-//     outd(PCI_CONFIG_ADDRESS, )
-//     switch( size_of(return_type))
-//     {
-//     case 1:
-//         {
-//
-//         }
-//     }
-// }
-
-// pub inline fn config_read(self: PciDevice, comptime size: type, comptime offset: u8) size {
-//     // ask for access before reading config
-//     x86.outd(PCI_CONFIG_ADDRESS, @bitCast(self.address(offset)));
-//     switch (size) {
-//         // read the correct size
-//         u8 => return x86.inb(PCI_CONFIG_DATA),
-//         u16 => return x86.inw(PCI_CONFIG_DATA),
-//         u32 => return x86.ind(PCI_CONFIG_DATA),
-//         else => @compileError("pci only support reading up to 32 bits"),
-//     }
-// }

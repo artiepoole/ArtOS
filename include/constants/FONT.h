@@ -8,7 +8,7 @@
 #include "types.h"
 
 
-extern u64 FONT[256];
+extern const u64 FONT[256];
 
 
 

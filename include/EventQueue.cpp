@@ -14,7 +14,7 @@ static EventQueue* instance{nullptr};
 *  used to layout a standard US keyboard. I have left some
 *  comments in to give you an idea of what key is what, even
 *  though I set it's array index to 0. */
-char key_map[128] =
+const char key_map[128] =
 {
     0, 27, '1', '2', '3', '4', '5', '6', '7', '8', /* 9 */
     '9', '0', '-', '=', '\b', /* Backspace */
@@ -53,7 +53,7 @@ char key_map[128] =
     0, /* F12 Key */
     0, /* All other keys are undefined */
 };
-char shift_map[128] =
+const char shift_map[128] =
 {
     0, 27, '!', '"', '#', '$', '%', '^', '&', '*', /* 9 */
     '(', ')', '_', '+', '\b', /* Backspace */
@@ -144,18 +144,6 @@ EventQueue& EventQueue::getInstance()
 
 void EventQueue::addEvent(const event_t& event)
 {
-
-
-
-    // WRITE("Adding event.\n");
-    // WRITE("type: ");
-    // WRITE(static_cast<int>(event.type));
-    // WRITE(" lower: ");
-    // WRITE(event.data.lower_data true);
-    // WRITE(" upper: ");
-    // WRITE(event.data.upper_data, true);
-    // log.newLine();
-
     _event_queue[_write_index] = event;
     _write_index = (_write_index+1)%max_len;
     _unread_counter++;

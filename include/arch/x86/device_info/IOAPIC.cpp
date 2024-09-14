@@ -39,10 +39,12 @@ IOAPIC::IOAPIC(uintptr_t io_apic_physical_address)
 
 void IOAPIC::pause()
 {
+    // TODO: Not implemented
 }
 
 void IOAPIC::resume()
 {
+    // TODO: Not implemented
 }
 
 // Also un masks

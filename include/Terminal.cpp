@@ -41,8 +41,8 @@ terminal_char_t terminal_queue[queue_size];
 Terminal::Terminal(u32 width, u32 height)
 {
     screen_region = {0, 0, width, height, width, height};
-    buffer_width = screen_region.w / (scaled_char_dim);
-    buffer_height = screen_region.h / (scaled_char_dim);
+    buffer_width = screen_region.w / scaled_char_dim;
+    buffer_height = screen_region.h / scaled_char_dim;
     term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
     terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
     rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
@@ -57,7 +57,6 @@ Terminal::Terminal(u32 width, u32 height)
     }
 
     _render_queue(terminal_queue, queue_pos);
-    // delete terminal_queue;
 }
 
 Terminal::~Terminal()
@@ -82,25 +81,18 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
     const u64 bCh = FONT[static_cast<size_t>(ch.letter)];
 
     // test if the charactor will be clipped (will it be fully in the screen_region or partially)
-    if (origin_x + (scaled_char_dim) < screen_region.x2 && origin_y + (scaled_char_dim) < screen_region.y2)
+    if (origin_x + scaled_char_dim < screen_region.x2 && origin_y + scaled_char_dim < screen_region.y2)
     {
         // fully in the screen_region
         size_t i = origin_x + screen_region.w * origin_y; // linear index
         const size_t line_step_amount = screen_region.w - scaled_char_dim; // amount to step to start next lin of character
-        for (size_t y = 0; y < (scaled_char_dim); y++)
+        for (size_t y = 0; y < scaled_char_dim; y++)
         {
-            for (size_t x = 0; x < (scaled_char_dim); x++)
+            for (size_t x = 0; x < scaled_char_dim; x++)
             {
                 px = 8 * (y / font_scale) + (x / font_scale);
 
-                if ((bCh >> (px)) & 1)
-                {
-                    term_screen_buffer[i++] = ch.colour;
-                }
-                else
-                {
-                    term_screen_buffer[i++] = colour_bkgd;
-                }
+                term_screen_buffer[i++] = bCh >> px & 1 ? ch.colour : colour_bkgd;
             }
             i += line_step_amount;
         }
@@ -117,14 +109,7 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
             {
                 px = 8 * (y / font_scale) + (x / font_scale);
 
-                if ((bCh >> (px)) & 1)
-                {
-                    term_screen_buffer[i++] = ch.colour;
-                }
-                else
-                {
-                    term_screen_buffer[i++] = colour_bkgd;
-                }
+                term_screen_buffer[i++] = bCh >> px & 1 ? ch.colour : colour_bkgd;
             }
             i += line_step_amount;
         }
@@ -146,8 +131,8 @@ void Terminal::setScale(u32 new_scale)
         terminal_row = 0;
         terminal_column = 1;
 
-        buffer_width = screen_region.w / (scaled_char_dim);
-        buffer_height = screen_region.h / (scaled_char_dim);
+        buffer_width = screen_region.w / scaled_char_dim;
+        buffer_height = screen_region.h / scaled_char_dim;
         free(terminal_buffer);
         free(rendered_buffer);
 
@@ -188,9 +173,8 @@ void Terminal::_draw_changes()
         for (size_t col = 0; col < buffer_width; col++)
         {
             const terminal_char_t c_to_draw = terminal_buffer[i];
-            const terminal_char_t c_drawn = rendered_buffer[i];
 
-            if (c_to_draw.letter != c_drawn.letter)
+            if (const auto [letter, colour] = rendered_buffer[i]; c_to_draw.letter != letter)
             {
                 _putChar(c_to_draw, col * scaled_char_dim, row * scaled_char_dim);
                 rendered_buffer[i] = c_to_draw;
@@ -220,8 +204,7 @@ void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE
     }
     for (size_t i = 0; i < count; i++)
     {
-        const char c = data[i];
-        switch (c)
+        switch (const char c = data[i])
         {
         case '\t':
             {
@@ -236,7 +219,7 @@ void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE
             }
         default:
             {
-                terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, colour};;
+                terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, colour};
 
                 if (terminal_column >= buffer_width) newLine();
             }
@@ -343,7 +326,7 @@ void Terminal::backspace()
     if (!instance) return;
     if (terminal_column > 1)
     {
-        terminal_buffer[terminal_row * buffer_width + (terminal_column - 1)] = terminal_char_t{' ', colour_bkgd};;
+        terminal_buffer[terminal_row * buffer_width + (terminal_column - 1)] = terminal_char_t{' ', colour_bkgd};
         --terminal_column;
     }
     _draw_changes();

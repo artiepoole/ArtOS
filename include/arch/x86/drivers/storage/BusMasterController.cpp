@@ -12,7 +12,7 @@
 #define CMD_OFFSET PRIMARY_CMD_OFFSET
 #define PRD_OFFSET PRIMARY_PRD_OFFSET
 
-u32 prd_size = 65536;
+const u32 max_prd_size = 65536;
 
 BusMasterController::BusMasterController(u16 new_base_port, IDE_drive_info_t* drive)
 {

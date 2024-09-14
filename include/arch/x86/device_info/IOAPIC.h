@@ -8,25 +8,24 @@
 #include "types.h"
 #include "APIC.h"
 
-struct io_redirect_entry
-{
-    union
-    {
-        struct
-        {
-            LVT_entry lvt;
-            u32 reserved : 24;
-            u32 destination_lapic_addr : 4;
-            u32 destination_cluster_addr : 4;
-        };
 
-        struct
-        {
-            u32 lower;
-            u32 upper;
-        };
+union io_redirect_entry
+{
+    struct
+    {
+        LVT_entry lvt;
+        u32 reserved : 24;
+        u32 destination_lapic_addr : 4;
+        u32 destination_cluster_addr : 4;
+    };
+
+    struct
+    {
+        u32 lower;
+        u32 upper;
     };
 };
+
 
 class IOAPIC
 {

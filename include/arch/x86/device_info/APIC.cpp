@@ -8,8 +8,8 @@
 #include "CPU.h"
 
 
-#define IA32_APIC_BASE_MSR 0x1B
-#define IA32_APIC_BASE_MSR_ENABLE 0x800
+constexpr u32 IA32_APIC_BASE_MSR = 0x1B;
+constexpr u32 IA32_APIC_BASE_MSR_ENABLE = 0x800;
 
 
 uintptr_t get_local_apic_base_addr()
@@ -17,7 +17,7 @@ uintptr_t get_local_apic_base_addr()
     u32 eax;
     u32 edx;
     cpu_get_MSR(IA32_APIC_BASE_MSR, &eax, &edx);
-    return (static_cast<uintptr_t>(eax) & 0xfffff000);
+    return eax & 0xfffff000;
 }
 
 void set_local_apic_base_addr(const uintptr_t local_apic_base_addr)

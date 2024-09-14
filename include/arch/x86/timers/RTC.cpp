@@ -128,7 +128,7 @@ tm RTC::read()
     {
         yearday += days_in_months[yearday];
     }
-    if ((month >= 2) and (year % 4 == 0)) // leap year and after feb
+    if ((month >= 2) && (year % 4 == 0)) // leap year and after feb
     {
         yearday += 1;
     }

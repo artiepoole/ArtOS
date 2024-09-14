@@ -24,41 +24,34 @@ uintptr_t* eoi_addr;
 #define DFR_OFFSET 0xE0
 #define ID_OFFSET 0x20
 
-struct destination_format_register
+union destination_format_register
 {
-    union
+    struct
     {
-        struct
-        {
-
-            u32 pad0 : 28;
-            u32 model:4;
-        };
-
-        u32 raw;
+        u32 pad0 : 28;
+        u32 model : 4;
     };
+
+    u32 raw;
 };
-struct local_destination_register
+
+
+union local_destination_register
 {
-    union
+    struct
     {
-        struct
-        {
-
-            u32 pad0 : 8;
-            u32 pad1: 16;
-            u32 lapic_addr: 4;
-            u32 cluster_addr: 4;
-        };
-
-        u32 raw;
+        u32 pad0 : 8;
+        u32 pad1 : 16;
+        u32 lapic_addr : 4;
+        u32 cluster_addr : 4;
     };
+
+    u32 raw;
 };
 
 
 LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 {
-
     base = local_apic_physical_address;
     TIMESTAMP();
     WRITE("LAPIC base addr: ");
@@ -96,14 +89,14 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 
     local_destination_register local_ldr = {0};
     auto ldr_addr = reinterpret_cast<u32*>(base + LDR_OFFSET);
-    local_ldr.lapic_addr= 0;
+    local_ldr.lapic_addr = 0;
     local_ldr.cluster_addr = 1;
     *ldr_addr = local_ldr.raw;
-    auto volatile * ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
+    auto volatile* ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
     LOG(
         "LAPIC LDR cluster address set: ",
         static_cast<u8>(ldr->cluster_addr)
-        );
+    );
 }
 
 void LocalAPIC::configure_timer(const u32 hz)

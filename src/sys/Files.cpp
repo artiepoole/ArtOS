@@ -10,13 +10,14 @@
 #include "string.h"
 #include "stdlib.h"
 
-#define MAX_HANDLES 500
+constexpr size_t MAX_HANDLES = 500;
 
-#define ERR_TOO_MANY_FILES -1
-#define ERR_HANDLE_TAKEN -2
-#define ERR_NOT_FOUND -3
+constexpr int ERR_TOO_MANY_FILES = -1;
+constexpr int ERR_HANDLE_TAKEN = -2;
+constexpr int ERR_NOT_FOUND = -3;
 
-static FileHandle* handles[MAX_HANDLES] = {0};
+// TODO: replace with linked list?
+static FileHandle* handles[MAX_HANDLES] = {nullptr};
 
 FileHandle* get_file_handle(int fd)
 {
@@ -42,10 +43,11 @@ u32 register_file_handle(const int fd, const char* path, ReadFunc* read, WriteFu
         return ERR_HANDLE_TAKEN;
     }
 
-    handles[fd] = static_cast<FileHandle*>(malloc(sizeof(FileHandle)));
+    handles[fd] = new FileHandle;
     handles[fd]->read = read;
     handles[fd]->write = write;
 
+    // TODO: use string functions here
     handles[fd]->info.path = static_cast<char*>(malloc(sizeof(char) * strlen(path) + 1));
     strcpy(handles[fd]->info.path, path);
     return 0;
@@ -53,7 +55,7 @@ u32 register_file_handle(const int fd, const char* path, ReadFunc* read, WriteFu
 
 void close_file_handle(int fd)
 {
-    free(handles[fd]);
+    delete handles[fd];
     handles[fd] = NULL;
 }
 
@@ -111,25 +113,10 @@ u32 doomwad_read(char* dest, u32 count)
 extern "C"
 u32 doomwad_write(const char* data, u32 count)
 {
+    // TODO: not enable writing
     return -1;
     // Should not do this
 }
-
-
-// struct doomheader
-// {
-//     char name[4];
-//     i32 n_entries;
-//     i32 dir_loc;
-// };
-//
-// struct dir_entry
-// {
-//     i32 loc;
-//     i32 size;
-//     char name[8];
-// };
-// dir_entry * entries;
 
 
 extern "C"
@@ -141,8 +128,7 @@ int open(const char* filename, unsigned int mode)
     if (strcmp("/dev/com1", filename) == 0)
     {
         int fd = find_free_handle();
-        int err = register_file_handle(fd, filename, Serial::com_read, Serial::com_write);
-        if (err != 0)
+        if (int err = register_file_handle(fd, filename, Serial::com_read, Serial::com_write); err != 0)
         {
             return err;
         }
@@ -161,8 +147,7 @@ int open(const char* filename, unsigned int mode)
         WRITE(doomwad_size, true);
         NEWLINE();
         int fd = find_free_handle();
-        int err = register_file_handle(fd, filename, doomwad_read, doomwad_write);
-        if (err != 0)
+        if (int err = register_file_handle(fd, filename, doomwad_read, doomwad_write); err != 0)
         {
             return err;
         }

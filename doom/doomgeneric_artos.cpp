@@ -57,6 +57,7 @@ u8 doom_key_map[128] =
 extern "C"
 void DG_Init()
 {
+    // Nothing to do here but maybe this should prep the FS if not init.
 
 }
 
@@ -91,9 +92,8 @@ int DG_GetKey(int* pressed, unsigned char* key)
     auto& queue = EventQueue::getInstance();
     if (!queue.pendingEvents()) return 0; // no events
 
-    auto latest = queue.getEvent();
 
-    switch (latest.type)
+    switch (const auto latest = queue.getEvent(); latest.type)
     {
     case KEY_DOWN:
         *pressed = 1;
@@ -103,13 +103,15 @@ int DG_GetKey(int* pressed, unsigned char* key)
         *pressed = 0;
         *key = doom_key_map[latest.data.lower_data];
         break;
+    default: break;
     }
     return 1;
 }
 
 extern "C"
-void DG_SetWindowTitle(const char* title)
+void DG_SetWindowTitle(const char*)
 {
+    // No window to set title on.
 }
 
 extern "C"

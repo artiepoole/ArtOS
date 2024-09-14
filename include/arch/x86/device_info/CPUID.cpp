@@ -10,7 +10,7 @@
 #include "logging.h"
 
 u8 binaryNum[32];
-u8 decimal[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+const u8 decimal[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 
 cpuid_manufacturer_info_t cpu_manufacturer_info;
@@ -54,27 +54,27 @@ cpuid_ext_manufacturer_info_t* cpuid_print_ext_manufacturer_info()
 
     // brand string
     // todo: replace with other getter/setter methods.
-    if (cpu_ext_manufacturer_info.max_ext_param - 0x80000000 >= 4)
+    if (!cpu_ext_manufacturer_info.max_ext_param - 0x80000000 >= 4){return nullptr;}
+
+    u32 parts[12];
+    asm volatile("mov $0x80000002, %eax");
+    asm volatile("cpuid":"=a"(parts[0]), "=b" (parts[1]), "=c" (parts[2]), "=d" (parts[3]));
+    asm volatile("mov $0x80000003, %eax");
+    asm volatile("cpuid":"=a"(parts[4]), "=b" (parts[5]), "=c" (parts[6]), "=d" (parts[7]));
+    asm volatile("mov $0x80000004, %eax");
+    asm volatile("cpuid":"=a"(parts[8]), "=b" (parts[9]), "=c" (parts[10]), "=d" (parts[11]));
+    WRITE("Brand string: ");
+    for (unsigned long part : parts)
     {
-        u32 parts[12];
-        asm volatile("mov $0x80000002, %eax");
-        asm volatile("cpuid":"=a"(parts[0]), "=b" (parts[1]), "=c" (parts[2]), "=d" (parts[3]));
-        asm volatile("mov $0x80000003, %eax");
-        asm volatile("cpuid":"=a"(parts[4]), "=b" (parts[5]), "=c" (parts[6]), "=d" (parts[7]));
-        asm volatile("mov $0x80000004, %eax");
-        asm volatile("cpuid":"=a"(parts[8]), "=b" (parts[9]), "=c" (parts[10]), "=d" (parts[11]));
-        WRITE("Brand string: ");
-        for (size_t i = 0; i < 12; i++)
+        for (size_t c = 0; c < 32 / 8; c++)
         {
-            for (size_t c = 0; c < 32 / 8; c++)
-            {
-                char letter = static_cast<char>(parts[i] >> (c * 8));
-                if (letter == 0) { break; }
-                WRITE(letter);
-            }
+            auto letter = static_cast<char>(part >> (c * 8));
+            if (letter == 0) { break; }
+            WRITE(letter);
         }
-        NEWLINE();
     }
+    NEWLINE();
+
 
 
     return &cpu_ext_manufacturer_info;
@@ -91,9 +91,9 @@ void cpuid_print_feature_info()
     {
         decToBinary(info[i]);
         LOG("Feature info ", i, ": ");
-        for (size_t c = 0; c < 32; c++)
+        for (unsigned char c : binaryNum)
         {
-            WRITE(decimal[binaryNum[c]]);
+            WRITE(decimal[c]);
         }
         NEWLINE();
     }
@@ -105,7 +105,7 @@ cpuid_core_frequency_info_t* cpuid_get_frequency_info()
     if (cpu_manufacturer_info.max_param < 0x15)
     {
         LOG("ERROR: Cannot get timing info. CPUID feature not supported.");
-        return 0;
+        return nullptr;
     }
     asm volatile ("mov $0x15 , %eax");
     asm volatile("cpuid":"=a"(cpu_frequency_info.tsc_ratio_denom), "=b" (cpu_frequency_info.tsc_ratio_numer), "=c" (cpu_frequency_info.core_clock_freq_hz));

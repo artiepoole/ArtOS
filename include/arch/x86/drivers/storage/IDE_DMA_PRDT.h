@@ -20,9 +20,9 @@
 
 //command settings
 
-#define DEV_TO_MEM 0x01;
-#define MEM_TO_DEV 0x00;
-#define DMA_MODE 0x08;
+#define DEV_TO_MEM 0x01
+#define MEM_TO_DEV 0x00
+#define DMA_MODE 0x08
 
 
 // Physical Region Descriptor Table

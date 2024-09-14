@@ -42,7 +42,6 @@ u32* buffer;
 
 VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info)
 {
-    // LOG("Initialising VGA.");
     instance = this;
     width = framebuffer_info->framebuffer_width;
     height = framebuffer_info->framebuffer_height;

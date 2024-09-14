@@ -99,12 +99,16 @@
 
 
 // Devide ID codes:
-#define DIRECT_ACCESS_DEVICE 0x00
-#define SEQUENTIAL_ACCESS_DEVICE 0x01
-#define PRINTER_DEVICE 0x02
-#define PROCESSOR_DEVICE 0x03
-#define WRITE_ONCE_DEVICE 0x04
-#define CD_ROM_DEVICE 0x05
+enum class ATA_DEVICE_TYPES
+{
+    DIRECT_ACCESS_DEVICE = 0x00,
+    SEQUENTIAL_ACCESS_DEVICE = 0x01,
+    PRINTER_DEVICE = 0x02,
+    PROCESSOR_DEVICE = 0x03,
+    WRITE_ONCE_DEVICE = 0x04,
+    CD_ROM_DEVICE = 0x05,
+};
+
 /* scanner
  * optical memory
  * medium changer
@@ -190,7 +194,6 @@ void ATA_select_drive(IDE_drive_info_t* drive_info)
     outb(drive_info->base_port + DRIVE_SEL_OFFSET, drive_info->drive_data);
     last_drive_info = drive_info;
     sleep_ns(500);
-
 }
 
 void ATA_reset_device(IDE_drive_info_t* drive_info)
@@ -228,7 +231,7 @@ void ATA_poll_busy(IDE_drive_info_t* drive_info)
         last_drive_info = drive_info;
     }
     ATA_status_t status = ATA_get_alt_status(drive_info);
-    while (status.busy & !status.error)
+    while (!status.error && status.busy)
     {
         status = ATA_get_alt_status(drive_info);
     }
@@ -242,7 +245,7 @@ void ATA_poll_until_DRQ(IDE_drive_info_t* drive_info)
         last_drive_info = drive_info;
     }
     ATA_status_t status = ATA_get_alt_status(drive_info);
-    while (!status.data_request & !status.error)
+    while (!status.data_request && !status.error)
     {
         status = ATA_get_alt_status(drive_info);
     }
@@ -258,7 +261,7 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
     auto n_bytes = ATA_get_n_bytes_to_read(drive_info);
     LOG("n bytes: ", n_bytes);
     //todo: test whether you can skip reading all we don't use
-    if (ATA_status_t status = ATA_get_alt_status(drive_info); status.data_request and !status.error) // data request is true and error is false
+    if (ATA_status_t status = ATA_get_alt_status(drive_info); status.data_request && !status.error) // data request is true and error is false
     {
         for (size_t i = 0; i < 256; i++)
         {
@@ -290,16 +293,16 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
                     break;
                 }
             }
-            switch ((identity_data[0] & 0x1F00)>>8)
+            switch ((identity_data[0] & 0x1F00) >> 8)
             {
-            case CD_ROM_DEVICE:
+            case static_cast<u32>(ATA_DEVICE_TYPES::CD_ROM_DEVICE):
                 {
                     LOG("Identified CD ROM device.");
                     drive_info->block_size = 2048;
                     drive_info->sector_size = 2048;
                     break;
                 }
-                default:
+            default:
                 {
                     LOG("Unhandled device class. Using default sector and block sizes.");
                     drive_info->block_size = 512;
@@ -322,13 +325,13 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
         if (identity_data[63] != 0)
         {
             LOG("MW DMA modes detected.");
-            drive_info->MW_DMA_modes = identity_data[63];
+            drive_info->MW_DMA_modes = identity_data[63] & 0xFF ;
             drive_info->DMA_device = true;
         }
         if (identity_data[88] != 0)
         {
             LOG("UDMA modes detected.");
-            drive_info->UDMA_modes = identity_data[88];
+            drive_info->UDMA_modes = identity_data[88] & 0xFF;
             drive_info->DMA_device = true;
         }
         return 0;

@@ -48,7 +48,6 @@ int ATAPIDrive::populate_data(IDE_drive_info_t* new_drive_info)
     this->drive_info = new_drive_info;
     IDE_add_device(this);
     waiting_for_transfer = true;
-    // ATAPI_ident(drive, identity_data);
     LOG("Initialising drive");
     if (populate_capabilities() < 0)
     {
@@ -72,8 +71,7 @@ int ATAPIDrive::populate_capabilities()
         }
     case 1:
         {
-            int res = ATAPI_ident(drive_info, identity_data);
-            if (res < 0) return -DEVICE_ERROR;
+            if (const int res = ATAPI_ident(drive_info, identity_data); res < 0) return -DEVICE_ERROR;
             // Choose DMA capabilities
             if (drive_info->DMA_device)
             {
@@ -87,10 +85,10 @@ int ATAPIDrive::populate_capabilities()
                 }
             }
             ATA_status_t status = get_status();
-            if (status.error or status.device_fault) return -DEVICE_ERROR;
+            if (status.error || status.device_fault) return -DEVICE_ERROR;
             drive_info->capacity_in_LBA = get_last_lba();
             status = get_status();
-            if (status.error or status.device_fault)
+            if (status.error || status.device_fault)
             {
                 LOG("Error getting capacity. raw error: ", get_error().raw);
                 return -DEVICE_ERROR;
@@ -137,7 +135,7 @@ int ATAPIDrive::set_regs(const ATAPI_cmd_regs& regs)
     }
 
     ATA_poll_busy(drive_info);
-    if (const ATA_status_t status = get_alt_status(); status.error or status.device_fault)
+    if (const ATA_status_t status = get_alt_status(); status.error || status.device_fault)
     {
         return -DEVICE_ERROR;
     }
@@ -221,7 +219,7 @@ int ATAPIDrive::send_packet_PIO(const ATAPI_packet_t& packet)
 
     // wait for done before reading.
     ATA_status_t status = get_alt_status();
-    while (waiting_for_transfer & !status.error & !status.device_fault)
+    while (waiting_for_transfer && !status.error && !status.device_fault)
     {
         status = get_alt_status();
     }

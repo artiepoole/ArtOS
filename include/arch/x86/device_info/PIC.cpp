@@ -3,7 +3,6 @@
 //
 
 #include "PIC.h"
-// #include "Serial.h"
 #include "logging.h"
 #include "ports.h"
 
@@ -32,8 +31,6 @@ PIC::PIC()
     *  Interrupt Controller (PICs - also called the 8259's) in
     *  order to make IRQ0 to 15 be remapped to IDT entries 32 to
     *  47 */
-    // mask1 = inb(PIC1_DATA); // save masks
-    // mask2 = inb(PIC2_DATA);
 
     outb(PIC1, 0x11); // initialisation sequence
     outb(PIC2, 0x11);

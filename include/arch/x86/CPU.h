@@ -16,66 +16,62 @@ struct cpu_registers_t
     u32 eip, cs, eflags, useresp, ss; /* pushed by the processor automatically */
 }__attribute__((packed));
 
-struct eflags_t
-{
-    union
-    {
-        struct
-        {
-            u32 CF : 1;
-            u32 res0 : 1;
-            u32 PF : 1;
-            u32 res1 : 1;
-            u32 AF : 1;
-            u32 res2 : 1;
-            u32 ZF : 1;
-            u32 SF : 1;
-            u32 TF : 1;
-            u32 IF : 1;
-            u32 DF : 1;
-            u32 OF : 1;
-            u32 IOPL : 2;
-            u32 NT : 1;
-            u32 MD : 1;
-            u32 RF : 1;
-            u32 VM : 1;
-            u32 AC : 1;
-            u32 VIF : 1;
-            u32 VIP : 1;
-            u32 ID : 1;
-            u32 res3 : 8;
-            u32 AES : 1;
-            u32 AI : 1;
-        };
 
-        u32 flag_double;
+union eflags_t
+{
+    struct
+    {
+        u32 CF : 1;
+        u32 res0 : 1;
+        u32 PF : 1;
+        u32 res1 : 1;
+        u32 AF : 1;
+        u32 res2 : 1;
+        u32 ZF : 1;
+        u32 SF : 1;
+        u32 TF : 1;
+        u32 IF : 1;
+        u32 DF : 1;
+        u32 OF : 1;
+        u32 IOPL : 2;
+        u32 NT : 1;
+        u32 MD : 1;
+        u32 RF : 1;
+        u32 VM : 1;
+        u32 AC : 1;
+        u32 VIF : 1;
+        u32 VIP : 1;
+        u32 ID : 1;
+        u32 res3 : 8;
+        u32 AES : 1;
+        u32 AI : 1;
     };
+
+    u32 flag_double;
 };
 
-struct cr0_t
-{
-    union
-    {
-        struct
-        {
-            u32 PE : 1; // 0
-            u32 MP : 1; // 1
-            u32 EM : 1; // 2
-            u32 TS : 1; // 3
-            u32 ET : 1; // 4
-            u32 NE : 1; // 5
-            u32 res0 : 10;// up to bit 15
-            u32 WP : 1; // 16
-            u32 res1 : 1; // 17
-            u32 AM : 1; // 18
-            u32 res2 : 10;// up to 28
-            u32 NW : 1;  // 29
-            u32 CD : 1;  // 30
-            u32 PG : 1; // 31
-        };
 
-        u32 raw;
+union cr0_t
+{
+    struct
+    {
+        u32 PE : 1; // 0
+        u32 MP : 1; // 1
+        u32 EM : 1; // 2
+        u32 TS : 1; // 3
+        u32 ET : 1; // 4
+        u32 NE : 1; // 5
+        u32 res0 : 10; // up to bit 15
+        u32 WP : 1; // 16
+        u32 res1 : 1; // 17
+        u32 AM : 1; // 18
+        u32 res2 : 10; // up to 28
+        u32 NW : 1; // 29
+        u32 CD : 1; // 30
+        u32 PG : 1; // 31
     };
+
+    u32 raw;
 };
 
 eflags_t get_eflags();

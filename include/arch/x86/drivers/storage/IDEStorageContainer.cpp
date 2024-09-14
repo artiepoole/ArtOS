@@ -36,7 +36,7 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
     bm_status.error = 1;
     bm_status.interrupt = 1; //  writing 1 clears the bit
     bm_status = bm_dev->set_status(bm_status);
-    if (bm_status.error ==1 or bm_status.interrupt ==1)
+    if (bm_status.error == 1 || bm_status.interrupt == 1)
     {
         LOG("Resetting BM status didn't work.");
         return;
@@ -54,7 +54,7 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
 int IDEStorageContainer::read(void* dest, const u32 lba_offset, const u32 n_bytes)
 {
     if (n_bytes == 0) return -1;
-    if (n_bytes > 2048*32) return -1;
+    if (n_bytes > 2048 * 32) return -1;
 
     u16 n_sectors = (n_bytes + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size; // round up division
     // u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
@@ -65,7 +65,7 @@ int IDEStorageContainer::read(void* dest, const u32 lba_offset, const u32 n_byte
     ret_val = wait_for_DMA_transfer(); // should poll/wait/check status of each device.
     if (ret_val != 0) { return ret_val; }
     ret_val = stop_DMA_read(); // should just reset BM start_stop
-    if (ret_val != 0) { return ret_val;}
+    if (ret_val != 0) { return ret_val; }
     memcpy(dest, bm_dev->physical_region, n_bytes);
     return 0;
 }
@@ -74,7 +74,7 @@ void IDEStorageContainer::notify()
 {
     // LOG("IDEStorageContainer notified.");
     // Should just check if this controller/drive_dev was to be handled or not.
-    if (!(BM_waiting_for_transfer | drive_dev->waiting_for_transfer)) return;
+    if (!(BM_waiting_for_transfer || drive_dev->waiting_for_transfer)) return;
 
     BM_status_t bm_status = bm_dev->get_status();
     ATA_status_t ata_status = drive_dev->get_status();
@@ -124,13 +124,11 @@ void IDEStorageContainer::notify()
         bm_status.interrupt = true;
         bm_status = bm_dev->set_status(bm_status);
     }
-
 }
 
 int IDEStorageContainer::prep_DMA_read(u32 lba_offset, size_t n_sectors)
 {
-    int res = drive_dev->start_DMA_read(lba_offset, n_sectors);
-    if (res != 0)
+    if (const int res = drive_dev->start_DMA_read(lba_offset, n_sectors); res != 0)
     {
         LOG("Error telling drive to prep for a DMA read");
         return res;
@@ -150,7 +148,6 @@ void IDEStorageContainer::start_DMA_transfer()
 
     BM_waiting_for_transfer = true;
     bm_dev->set_cmd(bm_cmd);
-
 }
 
 int IDEStorageContainer::stop_DMA_read()
@@ -171,7 +168,7 @@ int IDEStorageContainer::wait_for_DMA_transfer() const
     LOG("Waiting for DMA transfer.");
     // TODO: This is not working properly when running full speed.
     BM_status_t bm_status = bm_dev->get_status();
-    while (BM_waiting_for_transfer & bm_status.IDE_active & !bm_status.error)
+    while (BM_waiting_for_transfer && bm_status.IDE_active && !bm_status.error)
     {
         bm_status = bm_dev->get_status();
     }

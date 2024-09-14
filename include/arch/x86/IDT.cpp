@@ -41,7 +41,7 @@ u16 KERNEL_CS;
 u16 KERNEL_DS;
 
 
-inline char exception_messages[][40] =
+inline constexpr char exception_messages[][40] =
 {
     "div by zero", // 0
     "debug exception", // 1
@@ -79,7 +79,6 @@ inline char exception_messages[][40] =
 
 void log_registers(const cpu_registers_t* r)
 {
-    // auto &log = Serial::get();
     WRITE("int_no, err_code: ");
     NEWLINE();
     WRITE(r->int_no, true);
@@ -111,10 +110,7 @@ void log_registers(const cpu_registers_t* r)
     WRITE(r->ebx, true);
     WRITE(", ");
     WRITE(r->edx, true);
-    // WRITE(", ");
-    // log.write_hex(r->ecx, true);
-    // WRITE(", ");
-    // WRITE(r->eax, true);
+
     NEWLINE();
 
     WRITE("eip, cs, eflags, useresp, ss;");
@@ -144,8 +140,7 @@ void exception_handler(const cpu_registers_t* r)
     log_registers(r);
 
     WRITE("Exception: ");
-    // log.write_hex(r->int_no, 4);
-    // log.new_line();
+
 
     if (r->int_no < 32)
     {
@@ -157,7 +152,6 @@ void exception_handler(const cpu_registers_t* r)
         switch (r->int_no)
         {
         case 0:
-            // handle_div_by_zero(r);
             return;
         default:
             WRITE("Unhandled exception. System Halted!");
@@ -190,9 +184,7 @@ void irq_handler(const cpu_registers_t* r)
     */
 
 
-    const auto int_no = r->int_no;
-
-    if (int_no >= 32)
+    if (const auto int_no = r->int_no; int_no >= 32)
     {
 
         switch (int_no - 32)
@@ -223,17 +215,6 @@ void irq_handler(const cpu_registers_t* r)
         }
     }
 
-    // /* If the IDT entry that was invoked was greater than 40
-    // *  (meaning IRQ8 - 15), then we need to send an EOI to
-    // *  the slave controller */
-    // if (int_no >= 40)
-    // {
-    //     outb(PIC2_COMMAND, PIC_EOI);
-    // }
-    //
-    // /* In either case, we need to send an EOI to the master
-    // *  interrupt controller too */
-    // outb(PIC1_COMMAND, PIC_EOI);
     LAPIC_EOI();
 }
 

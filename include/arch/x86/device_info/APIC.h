@@ -7,61 +7,55 @@
 #include "types.h"
 
 
-struct LVT_timer_entry
+union LVT_timer_entry
 {
-    union
+    struct
     {
-        struct
-        {
-            u32 interrupt_vector : 8;
-            u32 pad0 : 4;
-            u32 delivery_status : 1; // 12
-            u32 pad1 : 3;
-            u32 interrupt_mask : 1;
-            u32 timer_mode : 2;
-            u32 pad : 13;
-        } parts;
+        u32 interrupt_vector : 8;
+        u32 pad0 : 4;
+        u32 delivery_status : 1; // 12
+        u32 pad1 : 3;
+        u32 interrupt_mask : 1;
+        u32 timer_mode : 2;
+        u32 pad : 13;
+    } parts;
 
-        u32 entry;
-    };
+    u32 entry;
 };
 
-struct LVT_entry
-{
-    union
-    {
-        struct
-        {
-            u32 interrupt_vector : 8;
-            u32 delivery_mode : 3;
-            u32 destination_mode : 1;
-            u32 delivery_status : 1;
-            u32 pin_polarity : 1;
-            u32 remote_IRR : 1;
-            u32 trigger_mode : 1;
-            u32 interrupt_mask : 1;
-            u32 pad : 15;
-        };
 
-        u32 entry;
+union LVT_entry
+{
+    struct
+    {
+        u32 interrupt_vector : 8;
+        u32 delivery_mode : 3;
+        u32 destination_mode : 1;
+        u32 delivery_status : 1;
+        u32 pin_polarity : 1;
+        u32 remote_IRR : 1;
+        u32 trigger_mode : 1;
+        u32 interrupt_mask : 1;
+        u32 pad : 15;
     };
+
+    u32 entry;
 };
 
-struct LVT_spurious_vector
-{
-    union
-    {
-        struct
-        {
-            u32 spurious_vector : 8;
-            u32 software_enable : 1;
-            u32 focus_checking : 1;
-            u32 reserved : 22;
-        };
 
-        u32 raw;
+union LVT_spurious_vector
+{
+    struct
+    {
+        u32 spurious_vector : 8;
+        u32 software_enable : 1;
+        u32 focus_checking : 1;
+        u32 reserved : 22;
     };
+
+    u32 raw;
 };
+
 
 struct LVT
 {
