@@ -9,7 +9,7 @@
 #include "types.h"
 
 
-inline size_t sector_size = 2048;
+
 
 // Must be passed a list of IDE_drive_t[4].
 int populate_drives_list(ATAPIDrive*& atapi_drives);
@@ -38,7 +38,7 @@ int ATA_ident(IDE_drive_info_t* drive_info, u16* identity_data);
 
 int ATA_is_packet_device(IDE_drive_info_t* drive_info);
 
-int ATAPI_set_max_dma_mode(bool udma, IDE_drive_info_t* drive_info);
+int ATAPI_set_max_dma_mode(bool supports_udma, IDE_drive_info_t* drive_info);
 
 void ATAPI_send_packet_DMA(IDE_drive_info_t* drive_info, ATAPI_packet_t& packet);
 

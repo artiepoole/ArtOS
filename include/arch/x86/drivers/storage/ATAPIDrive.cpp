@@ -88,7 +88,7 @@ int ATAPIDrive::populate_capabilities()
             }
             ATA_status_t status = get_status();
             if (status.error or status.device_fault) return -DEVICE_ERROR;
-            drive_info->capacity_in_LBA = get_capacity();
+            drive_info->capacity_in_LBA = get_last_lba();
             status = get_status();
             if (status.error or status.device_fault)
             {
@@ -102,11 +102,15 @@ int ATAPIDrive::populate_capabilities()
     }
 }
 
-int ATAPIDrive::start_DMA_read(const size_t n_sectors)
+int ATAPIDrive::start_DMA_read(u32 lba_offset, const size_t n_sectors)
 {
     // create SCSI packet
     ATAPI_packet_t packet = {};
     packet.bytes[0] = READ_10_CMD;
+    packet.bytes[2] = lba_offset >> 24 & 0xFF;
+    packet.bytes[3] = lba_offset >> 16 & 0xFF;
+    packet.bytes[4] = lba_offset >> 8 & 0xFF;
+    packet.bytes[5] = lba_offset & 0xFF;
     packet.bytes[8] = n_sectors & 0xFF;
     packet.bytes[7] = n_sectors >> 8 & 0xFF;
 
@@ -160,7 +164,7 @@ u8 ATAPIDrive::get_interrupt_reason()
     return ATA_get_interrupt_reason(drive_info);
 }
 
-u32 ATAPIDrive::get_capacity()
+u32 ATAPIDrive::get_last_lba()
 {
     ATA_select_drive(drive_info);
     ATAPI_packet_t packet = {0};

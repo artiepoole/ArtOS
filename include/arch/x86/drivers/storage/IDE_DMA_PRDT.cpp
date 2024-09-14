@@ -21,7 +21,7 @@
 
 #define PRDT_SIZE 65536
 
-u8 IDE_DMA_physica_region[PRDT_SIZE] __attribute__((aligned(1024 * 64)));
+u8 IDE_DMA_physical_region[PRDT_SIZE] __attribute__((aligned(1024 * 64))) = {};
 PRDT_t IDE_DMA_prd_table{};
 
 
@@ -31,7 +31,7 @@ u8 last_atapi_status;
 //  https://forum.osdev.org/viewtopic.php?t=19056
 u8* DMA_init_PRDT(u16 base_port)
 {
-    IDE_DMA_prd_table.descriptor.base_addr = reinterpret_cast<u32>(IDE_DMA_physica_region) & 0xFFFFFFFE;// last bit reserved
+    IDE_DMA_prd_table.descriptor.base_addr = reinterpret_cast<u32>(IDE_DMA_physical_region) & 0xFFFFFFFE; // last bit reserved
     IDE_DMA_prd_table.descriptor.length_in_b = 0;
     IDE_DMA_prd_table.descriptor.end_of_table = 1;
 
@@ -46,7 +46,7 @@ u8* DMA_init_PRDT(u16 base_port)
         LOG("Error setting physical region");
         return nullptr;
     }
-    return IDE_DMA_physica_region;
+    return IDE_DMA_physical_region;
 }
 
 
@@ -54,5 +54,5 @@ void DMA_free_prdt()
 {
     // todo: remove prdt and prd.
 
-    free(IDE_DMA_physica_region);
+    free(IDE_DMA_physical_region);
 }

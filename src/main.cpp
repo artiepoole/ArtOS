@@ -38,6 +38,7 @@
 #include "ATAPIDrive.h"
 #include "PCIDevice.h"
 #include "BusMasterController.h"
+#include "iso_fs.h"
 
 extern "C" {
 #include "doomgeneric/doomgeneric.h"
@@ -197,11 +198,95 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     auto CD_ROM = IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master);
 
     // testing read.
-    constexpr size_t buf_size = 1024 * 64;
-    u8 buffer[buf_size];
-    CD_ROM.read(buffer, buf_size);
-    LOG("First data: ", buffer[0]);
-    LOG("READ 64k");
+    constexpr size_t buf_size = sizeof(iso_primary_volume_descriptor_t);
+    iso_primary_volume_descriptor_t volume_descriptor{};
+    u32 data_start = 16; // in LBA
+    CD_ROM.read(reinterpret_cast<u8*>(&volume_descriptor), data_start, buf_size);
+    // LOG("First data: ", buffer[0]);
+    LOG("Volume Descriptor type: ", volume_descriptor.descriptor_type);
+    LOG("Ident: ", volume_descriptor.identifier);
+    if (strncmp(volume_descriptor.identifier, "CD001", 5) != 0) { LOG("Did not detect volume descriptor."); }
+    LOG("Block size: ", volume_descriptor.logical_block_size_LE);
+    LOG("Path table size: ", volume_descriptor.path_table_size_LE);
+
+    u8 path_table[volume_descriptor.path_table_size_LE];
+    CD_ROM.read(path_table, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE);
+    size_t offset = 0;
+    iso_path_table_entry fs_dir_entry = {};
+    while (offset < volume_descriptor.path_table_size_LE)
+    {
+        fs_dir_entry.header = *reinterpret_cast<iso_path_table_entry_header*>(path_table + offset);
+        offset += sizeof(iso_path_table_entry_header);
+
+        char* filename = static_cast<char*>(malloc(fs_dir_entry.header.name_length+1));
+        for (int i = 0; i < fs_dir_entry.header.name_length; i++)
+        {
+            filename[i] = path_table[i + offset];
+        }
+        filename[fs_dir_entry.header.name_length] = '\0';
+
+
+        offset += fs_dir_entry.header.name_length;
+        if (offset % 2) { offset += 1; }
+        LOG("Directory found. Name: ", filename);
+        if (strncmp(filename, "FS", 2) == 0)
+        {
+            fs_dir_entry.filename = &filename;
+            break;
+        }
+        free(filename);
+        fs_dir_entry.filename = nullptr;
+    }
+    if (fs_dir_entry.filename == nullptr) { LOG("User filesystem directory not found."); }
+    char data[2048];
+
+    CD_ROM.read(&data, fs_dir_entry.header.extent_loc, 2048);
+    // This scans the directory until the file name is found.
+    offset = 0;
+    while (offset < 2048)
+    {
+        size_t entry_len = data[offset];
+        offset += sizeof(iso_directory_record_header); // skip header to name
+        if (data[offset] == 'D')
+        {
+            offset -= sizeof(iso_directory_record_header);
+            break;
+        }
+        offset += entry_len - sizeof(iso_directory_record_header); // skip filename (the last value is name length)
+        // while (
+        //     strncmp(&data[offset], "PX", 2) == 0 or
+        //     strncmp(&data[offset], "TF", 2) == 0
+        //     )
+        // {
+        //     offset += data[offset+2]; // read length of PX/TF entry and skip over it;
+        // }
+    }
+    iso_directory_record doom_directory = {};
+    doom_directory.header = *reinterpret_cast<iso_directory_record_header*>(&data[offset]);
+    offset += sizeof(iso_directory_record_header);
+    auto filename = static_cast<char*>(malloc(doom_directory.header.file_name_length+1));
+    for (int i = 0; i < doom_directory.header.file_name_length; i++)
+    {
+        filename[i] = data[i + offset];
+    }
+    filename[doom_directory.header.file_name_length] = '\0';
+    doom_directory.filename = &filename;
+
+    // Load the first 64k of doomwad
+    u8 buffer[1024*64];
+    CD_ROM.read(&buffer, doom_directory.header.extent_loc_LE, 1024*64);
+
+    /* TODO: in order to implement the read/seek/loadfile/whatever else,
+     *I need to know how to handle loading in "pages" of data and reading
+     * within those or create a massive buffer and copy the whole file to memory.
+     */
+    auto ident = static_cast<char*>(malloc(5));
+    for (int i = 0; i <4; i++)
+    {
+        ident[i] = buffer[i];
+    }
+    ident[4] = '\0';
+    LOG("DOOMWAD type: ", ident);
 
 #if ENABLE_SERIAL_LOGGING
     register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);

@@ -95,6 +95,28 @@
 
 #define RESET_CONTROL 0x04
 
+
+// Devide ID codes:
+#define DIRECT_ACCESS_DEVICE 0x00
+#define SEQUENTIAL_ACCESS_DEVICE 0x01
+#define PRINTER_DEVICE 0x02
+#define PROCESSOR_DEVICE 0x03
+#define WRITE_ONCE_DEVICE 0x04
+#define CD_ROM_DEVICE 0x05
+/* scanner
+ * optical memory
+ * medium changer
+ * comms dev
+ * res ACS IT8
+ * res ACT IT8
+ * Array controller
+ * enclosure services
+ * reduced block command
+ * optical card reader/writer
+ * res up to
+ * 0x1F - unknown or unspecified
+ */
+
 IDE_drive_info_t* last_drive_info;
 
 ATA_status_t ATA_get_status(IDE_drive_info_t* drive_info)
@@ -224,43 +246,62 @@ void ATA_poll_until_DRQ(IDE_drive_info_t* drive_info)
     }
 }
 
-int ATAPI_ident(IDE_drive_info_t* drive, u16* identity_data)
+int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
 {
-    ATA_select_drive(drive);
-
-    outb(drive->base_port + CMD_OFFSET, ATAPI_IDENT_CMD);
-    ATA_poll_busy(drive);
-    ATA_poll_until_DRQ(drive);
+    ATA_select_drive(drive_info);
+    LOG("Sending ATAPI IDENTIFY command.");
+    outb(drive_info->base_port + CMD_OFFSET, ATAPI_IDENT_CMD);
+    ATA_poll_busy(drive_info);
+    ATA_poll_until_DRQ(drive_info);
+    auto n_bytes = ATA_get_n_bytes_to_read(drive_info);
+    LOG("n bytes: ", n_bytes);
     //todo: test whether you can skip reading all we don't use
-    if (ATA_status_t status = ATA_get_alt_status(drive); status.data_request and !status.error) // data request is true and error is false
+    if (ATA_status_t status = ATA_get_alt_status(drive_info); status.data_request and !status.error) // data request is true and error is false
     {
         for (size_t i = 0; i < 256; i++)
         {
-            identity_data[i] = inw(drive->base_port + DATA_OFFSET);
+            identity_data[i] = inw(drive_info->base_port + DATA_OFFSET);
         }
-        status = ATA_get_alt_status(drive);
+        status = ATA_get_alt_status(drive_info);
         if (status.data_request) { LOG("Read 256 words but drq still set?"); };
         if (identity_data[0] >> 14 == 0x2)
         {
             LOG("ATAPI device confirmed.");
-            drive->packet_device = true;
+            drive_info->packet_device = true;
             switch (identity_data[0] & 0b11)
             {
             case 0:
                 {
                     LOG("ATAPI packet size: 12 bytes");
-                    drive->packet_size = 12;
+                    drive_info->packet_size = 12;
                     break;
                 }
             case 1:
                 {
                     LOG("ATAPI packet size: 16 bytes");
-                    drive->packet_size = 16;
+                    drive_info->packet_size = 16;
                     break;
                 }
             default:
                 {
                     LOG("Unexpected ATAPI packet size.");
+                    break;
+                }
+            }
+            switch ((identity_data[0] & 0x1F00)>>8)
+            {
+            case CD_ROM_DEVICE:
+                {
+                    LOG("Identified CD ROM device.");
+                    drive_info->block_size = 2048;
+                    drive_info->sector_size = 2048;
+                    break;
+                }
+                default:
+                {
+                    LOG("Unhandled device class. Using default sector and block sizes.");
+                    drive_info->block_size = 512;
+                    drive_info->sector_size = 512;
                     break;
                 }
             }
@@ -270,40 +311,46 @@ int ATAPI_ident(IDE_drive_info_t* drive, u16* identity_data)
             LOG("Device not ATAPI?");
             return -DEVICE_ERROR;
         }
+        // serial number: words 10-19
+        // firmware number: 23-26
+        // model nmber: 27-46
+        // 53 specifies whether other fields are valid or not including UDMA data
+        // 80 says maximum ATAPI revision support
+
         if (identity_data[63] != 0)
         {
             LOG("MW DMA modes detected.");
-            drive->MW_DMA_modes = identity_data[63];
-            drive->DMA_device = true;
+            drive_info->MW_DMA_modes = identity_data[63];
+            drive_info->DMA_device = true;
         }
         if (identity_data[88] != 0)
         {
             LOG("UDMA modes detected.");
-            drive->UDMA_modes = identity_data[88];
-            drive->DMA_device = true;
+            drive_info->UDMA_modes = identity_data[88];
+            drive_info->DMA_device = true;
         }
         return 0;
     }
     return -DEVICE_ERROR;
 }
 
-int ATA_ident(IDE_drive_info_t* drive, u16* identity_data)
+int ATA_ident(IDE_drive_info_t* drive_info, u16* identity_data)
 {
-    ATA_select_drive(drive);
+    ATA_select_drive(drive_info);
     // TODO: Not implemented yet
     return -NOT_IMPLEMENTED;
 }
 
-int ATA_is_packet_device(IDE_drive_info_t* drive)
+int ATA_is_packet_device(IDE_drive_info_t* drive_info)
 {
-    ATA_reset_device(drive);
+    ATA_reset_device(drive_info);
 
 
     u8 signatures[4] = {0};
-    signatures[0] = inb(drive->base_port + SECTOR_COUNT_OFFSET);
-    signatures[1] = inb(drive->base_port + LBA_LOW_OFFSET);
-    signatures[2] = inb(drive->base_port + LBA_MID_OFFSET);
-    signatures[3] = inb(drive->base_port + LBA_HIGH_OFFSET);
+    signatures[0] = inb(drive_info->base_port + SECTOR_COUNT_OFFSET);
+    signatures[1] = inb(drive_info->base_port + LBA_LOW_OFFSET);
+    signatures[2] = inb(drive_info->base_port + LBA_MID_OFFSET);
+    signatures[3] = inb(drive_info->base_port + LBA_HIGH_OFFSET);
 
     if (!signatures[0] == 0x1 | !signatures[1] == 0x1)
     {
@@ -318,36 +365,36 @@ int ATA_is_packet_device(IDE_drive_info_t* drive)
     if (signatures[2] == 0x14 && signatures[3] == 0xEB)
     {
         LOG("Drive is ATAPI device. Packets supported.");
-        drive->packet_device = true;
+        drive_info->packet_device = true;
         return 1;
     }
     LOG("Unexpcected device signature.");
     return -DEVICE_ERROR;
 }
 
-int ATAPI_set_max_dma_mode(const bool udma, IDE_drive_info_t* drive)
+int ATAPI_set_max_dma_mode(const bool supports_udma, IDE_drive_info_t* drive_info)
 {
-    ATA_select_drive(drive);
+    ATA_select_drive(drive_info);
     u8 dma_mode = 0;
 
-    if (udma)
+    if (supports_udma)
     {
-        while (drive->UDMA_modes & 0x1 << dma_mode) { dma_mode++; }
+        while (drive_info->UDMA_modes & 0x1 << dma_mode) { dma_mode++; }
         dma_mode += 0x20;
     }
     else
     {
-        while (drive->MW_DMA_modes & 0x1 << dma_mode) { dma_mode++; }
+        while (drive_info->MW_DMA_modes & 0x1 << dma_mode) { dma_mode++; }
     }
     LOG("Setting DMA mode: ", dma_mode);
 
-    outb(drive->base_port + FEATURES_OFFSET, TRANSFER_MODE); // Subcommand to set transfer mode
-    outb(drive->base_port + SECTOR_COUNT_OFFSET, dma_mode); // Set DMA mode 1 (or use 0x20, 0xC5, etc. for other modes)
-    outb(drive->base_port + CMD_OFFSET, SET_FEATURES_CMD); // Send the Set Features command
+    outb(drive_info->base_port + FEATURES_OFFSET, TRANSFER_MODE); // Subcommand to set transfer mode
+    outb(drive_info->base_port + SECTOR_COUNT_OFFSET, dma_mode); // Set DMA mode 1 (or use 0x20, 0xC5, etc. for other modes)
+    outb(drive_info->base_port + CMD_OFFSET, SET_FEATURES_CMD); // Send the Set Features command
 
-    if (ATA_status_t status = ATA_get_alt_status(drive); status.error)
+    if (ATA_status_t status = ATA_get_alt_status(drive_info); status.error)
     {
-        ATA_error_t error = ATA_get_error(drive);
+        ATA_error_t error = ATA_get_error(drive_info);
         LOG("Error enabling DMA. Raw error", error.raw);
         return -DEVICE_ERROR;
     }

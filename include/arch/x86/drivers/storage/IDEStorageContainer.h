@@ -22,13 +22,13 @@ class IDEStorageContainer: public IDE_notifiable
 public:
     IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev);
     ~IDEStorageContainer() override = default; // TODO: remove PRDT?
-    int read(u8* dest, u32 n_bytes);
+    int read(void* dest, u32 lba_offset, u32 n_bytes);
     // void write(u8* src, u32 n_bytes);
     // int go_to_LBA(u32 LBA);
     u32 current_lba = 0;
     int load_file(char* filename);
     void notify() override;
-    int prep_DMA_read(size_t n_sectors);
+    int prep_DMA_read(u32 lba, size_t n_sectors);
     // int prep_DMA_write();
     void start_DMA_transfer();
     int wait_for_DMA_transfer() const;

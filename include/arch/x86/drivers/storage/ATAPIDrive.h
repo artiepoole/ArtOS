@@ -20,16 +20,16 @@ public:
     ~ATAPIDrive() override = default;
     int populate_data(IDE_drive_info_t* drive);
 
-    int start_DMA_read(size_t n_sectors);
+    int start_DMA_read(u32 lba, size_t n_sectors);
     int seek(size_t LBA);
-    int start_DMA_write(size_t n_sectors);
+    int start_DMA_write(u32 lba, size_t n_sectors);
     [[nodiscard]] ATA_status_t get_status();
     [[nodiscard]] ATA_status_t get_alt_status();
     [[nodiscard]] ATA_error_t get_error();
     [[nodiscard]] u8 get_interrupt_reason();
     int set_regs(const ATAPI_cmd_regs& regs);
     int populate_capabilities();
-    u32 get_capacity();
+    u32 get_last_lba();
 
 
     int send_packet_PIO(const ATAPI_packet_t& packet);
