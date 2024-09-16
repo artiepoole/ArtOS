@@ -55,16 +55,19 @@ Hello World:
 - [x] Initialise frame buffer etc using the multiboot2 data instead of hard coded
 - [x] Implement c standard library for kernel space
 - [x] Play DOOM for ArtOS!
-- [x] Boot ArtOS on real hardware 
+- [x] Play DOOM for ArtOS on real hardware
+- [x] Read data from CD ROM using PCI IDE DMA BusMastering
+- [x] Use data from CD ROM i.e. parse .iso file system
+- [x] Create a directory tree from iso fs data
+- [x] Implement a rudimentary filesystem
+- [x] Load a file using pdclib
+- [ ] DOOM: add loading from CD ROM instead of from memory
 - [ ] DOOM: run in user space
 - [ ] DOOM: add sound
-- [ ] DOOM: add save games
-- [ ] DOOM: add loading from CD ROM instead of from memory
-- [ ] User IO - mouse
-- [x] Read data from CD ROM using PCI IDE DMA BusMastering
-- [ ] Use data from CD ROM i.e. parse .iso file system
 - [ ] Attach a RW storage device in Qemu
-- [ ] Implement a filesystem
+- [ ] DOOM: add save games
+- [ ] User IO - mouse
+- [ ] implement proper pdclib compliant filehandling
 - [ ] Detect and mount/unmount storage devices on real hardware
 - [ ] Replace PIT with HPET
 - [ ] Proper handling of a scheduler to allow for sleeping of a task
@@ -72,7 +75,6 @@ Hello World:
 - [ ] Implement a standard library for user space
 - [ ] Run an executable
 - [ ] Self hosting compiler
-
 
 ## Tools
 - i686-elf gcc cross-compiler
