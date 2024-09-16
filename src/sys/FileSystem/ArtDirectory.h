@@ -27,6 +27,8 @@ public:
 
     ArtFile* search(const char* filename);
     ArtFile* search_recurse(char* filename);
+    ArtDirectory* get_parent();
+    char* get_name();
 
 private:
 

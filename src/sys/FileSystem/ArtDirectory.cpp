@@ -11,7 +11,7 @@ ArtDirectory::ArtDirectory(ArtDirectory* parent, const DirectoryData& data): par
 {
 }
 
-ArtDirectory::~ArtDirectory() = default;// TODO: remove this and free the dir name etc.
+ArtDirectory::~ArtDirectory() = default; // TODO: remove this and free the dir name etc.
 
 /* returns 0 on success, <0 on error */
 int ArtDirectory::add_file(const FileData& data)
@@ -30,7 +30,7 @@ int ArtDirectory::add_subdir(ArtDirectory* parent, const DirectoryData& data)
 /* Returns pointer to file if found in this directory or nullptr */
 ArtFile* ArtDirectory::search(const char* filename)
 {
-    return files.find_if([filename](ArtFile f){ return f.get_name() == filename; });
+    return files.find_if([filename](ArtFile f) { return f.get_name() == filename; });
 }
 
 /* Returns pointer to file if found in this directory or any of its subdirs searched recursively, or nullptr */
@@ -38,4 +38,14 @@ ArtFile* ArtDirectory::search_recurse(char* filename)
 {
     // TODO: implement the recusrive search.
     return nullptr;
+}
+
+ArtDirectory* ArtDirectory::get_parent()
+{
+    return parent_directory;
+}
+
+char* ArtDirectory::get_name()
+{
+    return directory_data.directory_name;
 }

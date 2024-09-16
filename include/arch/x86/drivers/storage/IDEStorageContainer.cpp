@@ -7,8 +7,10 @@
 #include <ATAPIDrive.h>
 #include <Errors.h>
 #include <IDE_DMA_PRDT.h>
+#include <iso_fs.h>
 #include <PIT.h>
 #include <ports.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "IDE_handler.h"
@@ -51,13 +53,9 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
 //     // TODO: remove PRDT?
 // }
 
-int IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t n_bytes)
+int IDEStorageContainer::read_lba(void* dest, size_t lba_offset, size_t n_bytes)
 {
-    if (n_bytes == 0) return -1;
-    if (n_bytes > 2048 * 32) return -1;
-
     const u16 n_sectors = (n_bytes + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size; // round up division
-    const u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
     int ret_val = 0;
     ret_val = prep_DMA_read(lba_offset, n_sectors); // should set up ATA stuff and then set up BM stuff
     if (ret_val != 0) { return ret_val; }
@@ -68,6 +66,14 @@ int IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t
     if (ret_val != 0) { return ret_val; }
     memcpy(dest, bm_dev->physical_region, n_bytes);
     return 0;
+}
+
+int IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t n_bytes)
+{
+    if (n_bytes == 0) return -1;
+    if (n_bytes > 2048 * 32) return -1;
+    const u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
+    return read_lba(dest, lba_offset, n_bytes);
 }
 
 void IDEStorageContainer::notify()
@@ -162,6 +168,7 @@ int IDEStorageContainer::stop_DMA_read()
     }
     return 0;
 }
+
 
 int IDEStorageContainer::wait_for_DMA_transfer() const
 {

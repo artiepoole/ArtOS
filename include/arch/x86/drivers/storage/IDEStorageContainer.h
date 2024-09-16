@@ -24,6 +24,7 @@ class IDEStorageContainer: public IDE_notifiable, public StorageDevice
 {
 public:
     IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev);
+    int read_lba(void* dest, size_t lba_offset, size_t n_bytes);
     ~IDEStorageContainer() override = default; // TODO: remove PRDT?
 
     int read(void* dest, size_t byte_offset, size_t n_bytes) override;
