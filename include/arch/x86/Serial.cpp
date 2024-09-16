@@ -1,9 +1,13 @@
 #include "Serial.h"
+
+#include <ArtFile.h>
+
 #include "ports.h"
 #include "RTC.h"
 #include "logging.h"
 
 static Serial *instance{ nullptr };
+static ArtFile *file_wrapper{ nullptr };
 
 #define RECEIVE_OFFSET 0x0
 #define SEND_OFFSET 0x0
@@ -42,7 +46,8 @@ Serial::Serial()
     connected = true;
 
     WRITE("DAY MON DD HH:MM:SS YYYY\tSerial connected\n");
-
+    char name[] = "/dev/com1";
+    file_wrapper = new ArtFile{this, name};
 }
 
 
@@ -54,6 +59,9 @@ Serial &Serial::get(){
     return *instance;
 }
 
+ArtFile*& Serial::get_file(){
+    return file_wrapper;
+}
 
 
 void Serial::write(const char c)

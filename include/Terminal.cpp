@@ -1,5 +1,6 @@
 #include "Terminal.h"
 
+#include <ArtFile.h>
 #include <RTC.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,11 +20,13 @@
 
 
 static Terminal* instance{nullptr};
+static TermFileWrapper* stdout_wrapper{nullptr};
+static TermFileWrapper* stderr_wrapper{nullptr};
 
 window_t screen_region = {0, 0, 1024, 768, 1024, 768};
 u32 char_dim = 8;
 u32 font_scale = DEFAULT_SCALE;
-u32 scaled_char_dim = DEFAULT_SCALE*8;
+u32 scaled_char_dim = DEFAULT_SCALE * 8;
 size_t terminal_row = 0;
 size_t terminal_column = 1;
 u32 buffer_width;
@@ -57,6 +60,10 @@ Terminal::Terminal(u32 width, u32 height)
     }
 
     _render_queue(terminal_queue, queue_pos);
+
+    stdout_wrapper = new TermFileWrapper{false};
+
+    stderr_wrapper = new TermFileWrapper{true};
 }
 
 Terminal::~Terminal()
@@ -67,6 +74,16 @@ Terminal::~Terminal()
 Terminal& Terminal::get()
 {
     return *instance;
+}
+
+ ArtFile  * Terminal::get_stdout_file()
+{
+    return stdout_wrapper->get_file();
+}
+
+ArtFile  * Terminal::get_stderr_file()
+{
+    return stderr_wrapper->get_file();
 }
 
 size_t min(size_t a, size_t b)
@@ -174,7 +191,7 @@ void Terminal::_draw_changes()
         {
             const terminal_char_t c_to_draw = terminal_buffer[i];
 
-            if (const auto [letter, colour] = rendered_buffer[i]; c_to_draw.letter != letter)
+            if (const auto [letter, colour] = rendered_buffer[i]; c_to_draw.letter != letter || c_to_draw.colour != colour)
             {
                 _putChar(c_to_draw, col * scaled_char_dim, row * scaled_char_dim);
                 rendered_buffer[i] = c_to_draw;
@@ -239,7 +256,7 @@ u32 Terminal::user_write(const char* data, u32 count)
 
 u32 Terminal::user_err(const char* data, u32 count)
 {
-    PALETTE_t colour = colour_frgd;
+    PALETTE_t colour = colour_error;
     _write_to_screen(data, count, colour);
     return count;
 }
@@ -253,7 +270,6 @@ u32 Terminal::write(bool b)
     }
     _write_to_screen("False", 5, colour_value);
     return 5;
-
 }
 
 u32 Terminal::write(const char* data, PALETTE_t colour)
@@ -320,6 +336,7 @@ void Terminal::_render_queue(const terminal_char_t* data, size_t len)
     }
     _draw_changes();
 }
+
 
 void Terminal::backspace()
 {
@@ -391,4 +408,40 @@ void Terminal::_scroll()
         terminal_buffer[(buffer_height - 1) * buffer_width + x] = terminal_char_t{' ', colour_bkgd};
     }
     terminal_row -= 1;
+}
+
+
+TermFileWrapper::TermFileWrapper(const bool stderr): is_stderr(stderr)
+{
+    if (is_stderr)
+    {
+        char name[] = "stderr";
+        file = new ArtFile{this, name};
+        return;
+    }
+
+    char name[] = "stdout";
+    file = new ArtFile{this, name};
+}
+
+ArtFile * TermFileWrapper::get_file() const
+{
+    return file;
+}
+
+size_t TermFileWrapper::write(const char* data, size_t , size_t byte_count)
+{
+    if (is_stderr) return Terminal::user_err(data, byte_count);
+    return Terminal::user_write(data, byte_count);
+}
+
+ArtFile* TermFileWrapper::find_file(const char* filename)
+{
+
+    if (is_stderr)
+    {
+        if (constexpr char this_name[7] = "stderr"; strcmp(filename, this_name) == 0) return file;
+    }
+    if (constexpr char this_name[7] = "stdout"; strcmp(filename, this_name) == 0) return file;
+    return nullptr;
 }

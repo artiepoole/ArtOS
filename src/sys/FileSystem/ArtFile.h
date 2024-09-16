@@ -13,18 +13,29 @@ class ArtDirectory;
 
 class ArtFile {
 public:
-    explicit ArtFile(const FileData& data) : file_data(data){};
+    ArtFile(ArtDirectory* parent, const FileData& data); // real file on device
+    ArtFile(StorageDevice* dev, char* tmp_filename); // virtual device
+    ArtFile() = default;
     ~ArtFile() = default;
 
 
-    int read(void* dest, size_t byte_count, size_t byte_offset);
+    size_t read(char* dest, size_t byte_count) const;
     int seek(size_t byte_offset, int whence);
-    int write(void* src, size_t byte_count, size_t byte_offset);
+    int write(const char* src, size_t byte_count) const;
     const char* get_name();
 
 private:
-    FileData file_data;
+    ArtDirectory* parent_directory;
+    StorageDevice* device = nullptr;
+    size_t first_byte = 0;
+    size_t size = 0; // bytes
+    tm datetime{};
+    size_t file_name_length = 0;
+    // u64 permissions;
+    char* filename = nullptr;
+
     ArtFile* next_file = nullptr;
+    size_t seek_pos = 0;
 };
 
 

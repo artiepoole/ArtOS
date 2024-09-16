@@ -54,12 +54,27 @@ int IDEStorageContainer::mount()
 }
 
 // Read from byte offset. Useful for use with files.
-int IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t n_bytes)
+size_t IDEStorageContainer::read(char* dest, const size_t byte_offset, const size_t n_bytes)
 {
     if (n_bytes == 0) return -1;
-    if (n_bytes > 2048 * 32) return -1;
+    if (n_bytes > 2048 * 32) return -1; // TODO: handle looping reads to fill buffer etc.
     const u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
     return read_lba(dest, lba_offset, n_bytes);
+}
+
+size_t IDEStorageContainer::get_block_size()
+{
+    return drive_dev->drive_info->block_size;
+}
+
+size_t IDEStorageContainer::get_block_count()
+{
+    return drive_dev->drive_info->capacity_in_LBA;
+}
+
+size_t IDEStorageContainer::get_sector_size()
+{
+    return drive_dev->drive_info->sector_size;
 }
 
 
@@ -142,7 +157,7 @@ void IDEStorageContainer::notify()
 
     BM_status_t bm_status = bm_dev->get_status();
     ATA_status_t ata_status = drive_dev->get_status();
-    u8 ata_interrupt_reason = drive_dev->get_interrupt_reason();
+    [[maybe_unused]]u8 ata_interrupt_reason = drive_dev->get_interrupt_reason();
 #ifndef NDEBUG
     switch (ata_interrupt_reason)
     {
@@ -188,6 +203,11 @@ void IDEStorageContainer::notify()
         bm_status.interrupt = true;
         bm_status = bm_dev->set_status(bm_status);
     }
+}
+
+ArtFile* IDEStorageContainer::find_file(const char* filename)
+{
+    return root_directory->search_recurse(filename);
 }
 
 /* convert an iso_directory_record_header into DirectoryData for use with ArtDirectory entries.*/
@@ -324,13 +344,20 @@ int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
     size_t offset = 0;
     while (offset < buffer_size)
     {
-        size_t start_offset = offset;
-        auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
-        if (dir_record.record_length == 0) // entries will not cross a sector boundary.
+        const size_t start_offset = offset;
+        /*
+         *  If there are more entries after this one but which start on the next sector, the sector will be padded with zeros.
+         *  If the first value (record length) is zero, we skip to the first byte of the next sector. If this is out of bounds,
+         *  the loop ends, otherwise the reading continues.
+         */
+        if (full_data[offset] == 0)
         {
             offset = offset + (2048 - (offset % 2048)); // skips remaining bytes to start of next sector
             continue;
         }
+        auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
+
+
         offset += sizeof(iso_directory_record_header); // skip header to names
         char* filename;
         dir_record.file_name_length = populate_filename(
@@ -344,7 +371,7 @@ int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
             offset = start_offset + dir_record.record_length;
             continue;
         } // is either current or parent dir's entry or broken.;
-        u32 data_len = dir_record.data_length_LE;
+        [[maybe_unused]]u32 data_len = dir_record.data_length_LE;
         u8 flags = dir_record.flags;
         LOG("Directory: ", target_dir->get_name(), " name: ", filename, " data length: ", data_len, " flags raw: ", flags, " is directory: ", bool(flags & 0x02));
 

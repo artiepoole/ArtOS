@@ -15,10 +15,12 @@
 #ifndef __STDC_NO_THREADS__
 #include <threads.h>
 #endif
-extern int read( int fd, char* buf, const size_t count);
+extern size_t read(int fd, char* buf, const size_t count);
 
 size_t fread( void * _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PDCLIB_file_t * _PDCLIB_restrict stream )
 {
+    // TODO: proper implementation of this stream handling stuff,
+
     //
     // char * dest = ( char * )ptr;
     // size_t nmemb_i = 0;

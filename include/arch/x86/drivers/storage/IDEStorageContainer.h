@@ -29,11 +29,15 @@ public:
     IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev);
     ~IDEStorageContainer() override = default; // TODO: remove PRDT?
 
-    int mount();
+    int mount() override;
 
-    int read(void* dest, size_t byte_offset, size_t n_bytes) override;
+    size_t read(char* dest, size_t byte_offset, size_t n_bytes) override;
     int seek([[maybe_unused]] size_t offset, [[maybe_unused]] int whence) override { return -NOT_IMPLEMENTED; }
-    int write([[maybe_unused]] void* src, [[maybe_unused]] size_t byte_count, [[maybe_unused]] size_t byte_offset) override { return -NOT_IMPLEMENTED; }
+    size_t write([[maybe_unused]] const char* src, [[maybe_unused]] size_t byte_count, [[maybe_unused]] size_t byte_offset) override { return -NOT_IMPLEMENTED; }
+
+    size_t get_block_size() override;
+    size_t get_block_count() override;
+    size_t get_sector_size() override;
 
     int prep_DMA_read(size_t lba, size_t n_sectors);
     void start_DMA_transfer();
@@ -44,7 +48,7 @@ public:
 
     void notify() override;
 
-    int load_file(char* filename);
+    ArtFile* find_file(const char* filename) override;
 
 private:
     // priavte member functions

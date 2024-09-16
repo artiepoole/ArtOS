@@ -30,7 +30,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
         {
         case MULTIBOOT2_TAG_TYPE_BOOT_LOADER_NAME:
             {
-                char buffer[tag->size - 4];
+                [[maybe_unused]]char buffer[tag->size - 4];
                 for (size_t i = 8; i < tag->size; i++)
                 {
                     buffer[i - 8] = *reinterpret_cast<char*>(target_addr + i);

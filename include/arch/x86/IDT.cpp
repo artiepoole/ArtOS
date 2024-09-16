@@ -77,7 +77,7 @@ inline constexpr char exception_messages[][40] =
     "reserved exceptions", // 31
 };
 
-void log_registers(const cpu_registers_t* r)
+void log_registers([[maybe_unused]]const cpu_registers_t* r)
 {
     WRITE("int_no, err_code: ");
     NEWLINE();

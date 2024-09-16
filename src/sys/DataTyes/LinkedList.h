@@ -36,6 +36,7 @@ public:
         return true;
     };
 
+
     bool remove(T data)
     {
         if (head == nullptr) return false;
@@ -74,6 +75,21 @@ public:
             pred(&n->data);
             n = n->next;
         }
+    }
+
+    template <typename result, typename predicate>
+    result find_first(predicate pred)
+    {
+        LinkedListNode* curr = head;
+        while (curr != nullptr)
+        {
+            if (result res = pred(curr->data); res)
+            {
+                return res;
+            }
+            curr = curr->next;
+        }
+        return 0;
     }
 
     template <typename predicate>

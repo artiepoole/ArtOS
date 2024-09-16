@@ -9,13 +9,13 @@
 
 IDE_handler_list ide_handler_list{};
 
-void IDE_handler(bool from_primary)
+void IDE_handler([[maybe_unused]] bool from_primary)
 {
     //    // set command start/stop bit correctly
-    if (from_primary)
-        LOG("IRQ 14 FIRED");
-    else
-        LOG("IRQ 15 FIRED");
+    // if (from_primary)
+    //     LOG("IRQ 14 FIRED");
+    // else
+    //     LOG("IRQ 15 FIRED");
     // For each
     IDE_handler_node* current = ide_handler_list.first_node;
     while (current)
@@ -50,7 +50,6 @@ bool IDE_add_device(IDE_notifiable* notifiable)
 
 bool IDE_remove_device(IDE_notifiable* notifiable)
 {
-
     IDE_handler_node* current = ide_handler_list.first_node;
     IDE_handler_node* prev = NULL;
     while (current)

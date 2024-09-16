@@ -59,7 +59,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     NEWLINE();
     eoi_addr = reinterpret_cast<uintptr_t*>(base + EOI_OFFSET);
     auto spv_addr = reinterpret_cast<u32*>(base + SPURIOUS_OFFSET_VECTOR);
-    u32 id = *reinterpret_cast<u32*>(base + ID_OFFSET);
+    [[maybe_unused]]auto id = *reinterpret_cast<u32*>(base + ID_OFFSET);
     LOG("LAPIC id: ", id);
     // Writing to registers must be done using a 32-bit write. This means that you cannot vary the members using a pointer obj
     // We take a copy, edit the copy and write the entire 32-bit copy to the original address and store the new register.
@@ -84,7 +84,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 
     auto volatile model = reinterpret_cast<u32*>(base + DFR_OFFSET);
     *model = 0xFFFFFFFF;
-    auto dfr = reinterpret_cast<destination_format_register*>(base + DFR_OFFSET);
+    [[maybe_unused]]auto dfr = reinterpret_cast<destination_format_register*>(base + DFR_OFFSET);
     LOG("LAPIC DFR mode: ", static_cast<u8>(dfr->model));
 
     local_destination_register local_ldr{};
@@ -92,7 +92,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     local_ldr.lapic_addr = 0;
     local_ldr.cluster_addr = 1;
     *ldr_addr = local_ldr.raw;
-    auto volatile* ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
+    [[maybe_unused]]auto volatile* ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
     LOG(
         "LAPIC LDR cluster address set: ",
         static_cast<u8>(ldr->cluster_addr)

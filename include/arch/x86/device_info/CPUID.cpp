@@ -91,7 +91,7 @@ void cpuid_print_feature_info()
     {
         decToBinary(info[i]);
         LOG("Feature info ", i, ": ");
-        for (unsigned char c : binaryNum)
+        for ([[maybe_unused]]unsigned char c : binaryNum)
         {
             WRITE(decimal[c]);
         }

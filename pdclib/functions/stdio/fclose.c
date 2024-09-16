@@ -20,6 +20,7 @@ extern struct _PDCLIB_file_t * _PDCLIB_filelist;
 
 int fclose( struct _PDCLIB_file_t * stream )
 {
+    // TODO: proper implementation of this stream handling stuff,
     _PDCLIB_LOCK( _PDCLIB_filelist_mtx );
     _PDCLIB_LOCK( stream->mtx );
 
@@ -52,16 +53,16 @@ int fclose( struct _PDCLIB_file_t * stream )
         _PDCLIB_remove( stream->filename );
     }
 
-    /* Free buffer */
-    if ( stream->status & _PDCLIB_FREEBUFFER )
-    {
-        free( stream->buffer );
-    }
+    // /* Free buffer */
+    // if ( stream->status & _PDCLIB_FREEBUFFER )
+    // {
+    //     free( stream->buffer );
+    // }
 
     /* Free filename (standard streams do not have one, but free( NULL )
        is a valid no-op)
     */
-    free( stream->filename );
+    // free( stream->filename );
 
     _PDCLIB_UNLOCK( stream->mtx );
 

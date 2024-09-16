@@ -22,6 +22,8 @@ extern struct _PDCLIB_file_t * _PDCLIB_filelist;
 
 struct _PDCLIB_file_t * fopen( const char * _PDCLIB_restrict filename, const char * _PDCLIB_restrict mode )
 {
+    // TODO: proper implementation of this stream handling stuff,
+
     struct _PDCLIB_file_t * rc;
     unsigned int filemode = _PDCLIB_filemode( mode );
 

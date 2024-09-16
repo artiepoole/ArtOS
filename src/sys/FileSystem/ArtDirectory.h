@@ -26,7 +26,7 @@ public:
     //todo: remove dir and remove file
 
     ArtFile* search(const char* filename);
-    ArtFile* search_recurse(char* filename);
+    ArtFile* search_recurse(const char* filename);
     ArtDirectory* get_parent();
     char* get_name();
     size_t get_lba();
@@ -37,7 +37,13 @@ public:
 private:
 
     ArtDirectory* parent_directory;
-    DirectoryData directory_data;
+    StorageDevice* device = nullptr;
+    size_t descriptor_loc_bytes = 0;
+    size_t descriptor_length = 0; // bytes
+    tm datetime = {};
+    size_t dir_name_length = 0;
+    // u64 permissions;
+    char* directory_name = nullptr;
     LinkedList<ArtDirectory> directories={};
     LinkedList<ArtFile> files = {};
 };

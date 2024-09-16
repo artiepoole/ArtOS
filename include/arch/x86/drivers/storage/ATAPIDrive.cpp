@@ -179,7 +179,7 @@ u32 ATAPIDrive::get_last_lba()
     }
     if (ATA_status_t status = get_alt_status(); status.error)
     {
-        ATA_error_t error = get_error();
+        [[maybe_unused]]ATA_error_t error = get_error();
         LOG("Error getting capacity. Raw error: ", error.raw);
         return 0;
     }
@@ -226,7 +226,7 @@ int ATAPIDrive::send_packet_PIO(const ATAPI_packet_t& packet)
 
     if (waiting_for_transfer)
     {
-        ATA_error_t error = get_error();
+        [[maybe_unused]]ATA_error_t error = get_error();
         LOG("Error sending packet using PIO. Raw error", error.raw);
         waiting_for_transfer = false;
         return -DEVICE_ERROR;
@@ -268,8 +268,9 @@ void ATAPIDrive::notify()
 {
     // TODO: Expand this to handle all the interrupt types by adding "waiting for" flags for ATA drives.
     if (!waiting_for_transfer) { return; }
-    ATA_status_t ata_status = get_status();
-    u8 ata_interrupt_reason = get_interrupt_reason();
+    // must be read to ackknowledge interrupt
+    [[maybe_unused]]ATA_status_t ata_status = get_status();
+    [[maybe_unused]]u8 ata_interrupt_reason = get_interrupt_reason();
 #ifndef NDEBUG
     switch (ata_interrupt_reason)
     {

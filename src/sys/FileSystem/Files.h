@@ -5,6 +5,7 @@
 #ifndef FILES_H
 #define FILES_H
 
+class ArtFile;
 class StorageDevice;
 
 #include "time.h"
@@ -12,20 +13,15 @@ class StorageDevice;
 #include "types.h"
 
 
-typedef u32 (ReadFunc)(char* dest, u32 count);
-typedef u32 (WriteFunc)(const char* data, u32 count);
+using ReadFunc = size_t (char* data, size_t count);
+using WriteFunc = size_t(const char* data, size_t count);
 
 struct FileInfo
 {
     char* path;
 };
 
-struct FileHandle
-{
-    FileInfo info;
-    ReadFunc* read;
-    WriteFunc* write;
-};
+
 
 // TODO: should this replace FileInfo? I don't construct a path.
 struct FileData{
@@ -49,14 +45,19 @@ struct DirectoryData{
 };
 
 
-FileHandle* get_file_handle(int fd);
-u32 register_file_handle(int fd, const char* path, ReadFunc* read, WriteFunc* write);
-void close_file_handle(int fd);
+ArtFile* get_file_handle(size_t fd);
+int register_file_handle(size_t fd,  ArtFile  * file);
+
+void close_file_handle(size_t fd);
 extern "C"
 int open(const char* filename, unsigned int mode);
 extern "C"
-int write(int fd, const char* buf, unsigned long count);
+size_t write(int fd, const char* buf, unsigned long count);
 extern "C"
-int read( int fd, char* buf, const size_t count);
+size_t read( int fd, char* buf, size_t count);
+
+void register_storage_device(StorageDevice* dev);
+void deregister_storage_device(StorageDevice* dev);
+
 
 #endif //FILES_H

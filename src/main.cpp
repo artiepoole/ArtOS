@@ -13,6 +13,7 @@
 #include "Terminal.h"
 // #include "stdlib.h"
 // #include "malloc.c"
+
 #include "CPPMemory.h"
 #include "icxxabi.h"
 
@@ -158,6 +159,22 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("Singletons loaded.");
 
+#if ENABLE_SERIAL_LOGGING
+    register_file_handle(0, Serial::get_file()); // stdin
+    register_file_handle(1, Serial::get_file()); // stdout
+    register_file_handle(2, Serial::get_file()); // stderr
+    FILE* com = fopen("/dev/com1", "w");
+    fprintf(com, "%s\n", "This should print to com0 via fprintf");
+    printf("This should print to com0 via printf\n");
+#elif ENABLE_TERMINAL_LOGGING
+    // TODO: handle terminal file wrapper also.
+    register_file_handle(0, nullptr); // stdin
+    register_file_handle(1, Terminal::get_stdout_file()); // stdout
+    register_file_handle(2, Terminal::get_stderr_file()); // stderr
+    printf("This should print out to terminal via printf\n");
+    fprintf(stderr, "%s\n", "This should print error to screen via fprintf");
+    fprintf(stdout, "%s\n", "This should print out to screen via fprintf");
+#endif
     // TODO: Draw splash should programmatically draw using the logo from the middle as a texture.
     PCI_populate_list();
     [[maybe_unused]] auto PCI_IDE_controller = PCI_get_IDE_controller();
@@ -197,10 +214,27 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     }
     // TODO: Possibly set up the ATAPIDrive inside the IDEStorageContainer to avoid the need for a IDE_notifiable class etc.
     auto secondary_bus_master = BusMasterController(BM_controller_base_port, atapi_drives[0].drive_info);
-    auto CD_ROM = IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master);
 
-    CD_ROM.mount();
+    [[maybe_unused]] auto CD_ROM = new IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master);
+    CD_ROM->mount();
+    register_storage_device(CD_ROM);
 
+
+    char filename[] = "doom1.wad";
+    [[maybe_unused]] auto file = fopen(filename, "rb");
+    char* dest[2048];
+    fread(dest, 1, 2048, file);
+    fclose(file);
+
+    // ArtFile* doomfile = CD_ROM->find_file(filename);
+    // if (doomfile)
+    // {
+    //     char doom_data[1024 * 64];
+    //     doomfile->read(doom_data, 1024 * 64);
+    //     char* ident = strndup(doom_data, 4);
+    //     LOG("Doom file ident: ", ident);
+    //     free(ident);
+    // }
 
 
     /* TODO: in order to implement the read/seek/loadfile/whatever else,
@@ -209,19 +243,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
      */
 
 
-#if ENABLE_SERIAL_LOGGING
-    register_file_handle(0, "/dev/stdin", NULL, Serial::com_write);
-    register_file_handle(1, "/dev/stdout", NULL, Serial::com_write);
-    register_file_handle(2, "/dev/stderr", NULL, Serial::com_write);
-    FILE* com = fopen("/dev/com1", "w");
-    fprintf(com, "%s\n", "This should print to com0 via fprintf");
-    printf("This should print to com0 via printf\n");
-#elif ENABLE_TERMINAL_LOGGING
-    register_file_handle(0, "/dev/stdin", NULL, NULL);
-    register_file_handle(1, "/dev/stdout", NULL, Terminal::user_write);
-    register_file_handle(2, "/dev/stderr", NULL, Terminal::user_err);
-    printf("This should print to terminal via printf\n");
-#endif
 
 
     // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.

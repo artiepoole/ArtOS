@@ -1,12 +1,14 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
+// #include "ArtFile.h"
+#include "StorageDevice.h"
+
 #include "types.h"
 #include "colours.h"
 #include "mystring.h"
 
-
-
+class ArtFile;
 struct terminal_char_t
 {
     char letter;
@@ -36,6 +38,8 @@ public:
     Terminal(u32 width, u32 height);
     ~Terminal();
     static Terminal& get();
+    static ArtFile * get_stdout_file();
+    static ArtFile * get_stderr_file();
 
     // remove copy functionality
     Terminal(Terminal const& other) = delete;
@@ -50,6 +54,7 @@ public:
     // for use with stdout/stderr
     static u32 user_write(const char* data, u32 count);
     static u32 user_err(const char* data, u32 count);
+
 
     // for normal use/logging.
     static u32 write(bool b);
@@ -103,6 +108,29 @@ public:
         (write(args), ...);
         newLine();
     }
+};
+
+class TermFileWrapper:StorageDevice
+{
+    public:
+    explicit TermFileWrapper(bool stderr);
+
+
+     ArtFile * get_file() const;
+    size_t read(char* , size_t , size_t ) override { return 0; }
+    size_t write(const char* data, size_t , size_t byte_count) override;
+
+    int seek(size_t , int ) {return 0;}
+    int mount() { return 0; }
+    ArtFile* find_file([[maybe_unused]] const char* filename) override;
+    size_t get_block_size() override { return 1; }
+    size_t get_block_count() override { return -1; }
+    size_t get_sector_size() override { return 1; }
+
+
+    private:
+    bool is_stderr = false;
+    ArtFile * file{};
 };
 
 

@@ -3,12 +3,19 @@
 //
 
 #include "Files.h"
+
+
+#include "ArtFile.h"
+#include "LinkedList.h"
+
 #include "Serial.h"
 #include "logging.h"
 #include <stdio.h>
+#include "StorageDevice.h"
 
 #include "string.h"
 #include "stdlib.h"
+
 
 constexpr size_t MAX_HANDLES = 500;
 
@@ -17,9 +24,21 @@ constexpr int ERR_HANDLE_TAKEN = -2;
 constexpr int ERR_NOT_FOUND = -3;
 
 // TODO: replace with linked list?
-static FileHandle* handles[MAX_HANDLES] = {nullptr};
+static ArtFile* handles[MAX_HANDLES] = {nullptr};
 
-FileHandle* get_file_handle(int fd)
+LinkedList<StorageDevice*> devices;
+
+void register_storage_device(StorageDevice* dev)
+{
+    devices.append(dev);
+}
+
+void deregister_storage_device(StorageDevice* dev)
+{
+    devices.remove(dev);
+}
+
+const ArtFile* get_file_handle(int fd)
 {
     return handles[fd];
 }
@@ -36,22 +55,6 @@ int find_free_handle()
     return ERR_TOO_MANY_FILES;
 }
 
-u32 register_file_handle(const int fd, const char* path, ReadFunc* read, WriteFunc* write)
-{
-    if (handles[fd] != NULL)
-    {
-        return ERR_HANDLE_TAKEN;
-    }
-
-    handles[fd] = new FileHandle;
-    handles[fd]->read = read;
-    handles[fd]->write = write;
-
-    // TODO: use string functions here
-    handles[fd]->info.path = static_cast<char*>(malloc(sizeof(char) * strlen(path) + 1));
-    strcpy(handles[fd]->info.path, path);
-    return 0;
-}
 
 void close_file_handle(int fd)
 {
@@ -111,6 +114,16 @@ u32 doomwad_read(char* dest, u32 count)
 }
 
 
+int register_file_handle(size_t file_id, ArtFile* file)
+{
+    if (handles[file_id] != NULL)
+    {
+        return ERR_HANDLE_TAKEN;
+    }
+
+    handles[file_id] = file;
+    return 0;
+}
 
 
 extern "C"
@@ -122,39 +135,41 @@ int open(const char* filename, [[maybe_unused]] unsigned int mode)
     if (strcmp("/dev/com1", filename) == 0)
     {
         int fd = find_free_handle();
-        if (int err = register_file_handle(fd, filename, Serial::com_read, Serial::com_write); err != 0)
+        if (int err = register_file_handle(fd, Serial::get_file()); err != 0)
         {
             return err;
         }
         return fd;
     }
 
-    if (strcmp("doom1.wad", filename) == 0)
+    if (auto* file = devices.find_first<ArtFile*>([filename](StorageDevice* dev) { return dev->find_file(filename); }))
     {
-        doomwad_size = reinterpret_cast<u32>(&doom_wad_file_end) - reinterpret_cast<u32>(&doom_wad_file);
-        TIMESTAMP();
-        WRITE("doomwad loc: ");
-        WRITE(reinterpret_cast<u32>(&doom_wad_file), true);
-        WRITE(" doomwad end: ");
-        WRITE(reinterpret_cast<u32>(&doom_wad_file_end), true);
-        WRITE(" doomwad len: ");
-        WRITE(doomwad_size, true);
-        NEWLINE();
-        int fd = find_free_handle();
-        if (int err = register_file_handle(fd, filename, doomwad_read, NULL); err != 0)
+        int file_id = find_free_handle();
+        if (const int err = register_file_handle(file_id, file); err != 0)
         {
             return err;
         }
-        return fd;
+        return file_id;
+    }
+
+    return ERR_NOT_FOUND;
+}
+
+extern "C"
+int close(size_t file_id)
+{
+    if (handles[file_id] != NULL)
+    {
+        return 0;
     }
     return ERR_NOT_FOUND;
 }
 
 
 extern "C"
-int write(const int fd, const char* buf, const unsigned long count)
+size_t write(const int fd, const char* buf, const unsigned long count)
 {
-    const FileHandle* h = get_file_handle(fd);
+    const ArtFile* h = get_file_handle(fd);
     if (h == NULL)
     {
         // unknown FD
@@ -164,9 +179,9 @@ int write(const int fd, const char* buf, const unsigned long count)
 }
 
 extern "C"
-int read(const int fd, char* buf, const size_t count)
+size_t read(const int file_id, char* buf, const size_t count)
 {
-    const FileHandle* h = get_file_handle(fd);
+    const ArtFile* h = get_file_handle(file_id);
     if (h == NULL)
     {
         // unknown FD
@@ -176,9 +191,11 @@ int read(const int fd, char* buf, const size_t count)
 }
 
 extern "C"
-int seek(struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence)
+int seek(_PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence)
 {
-    if (strcmp(handles[stream->handle]->info.path, "doom1.wad") == 0)
+    //TODO: implement device seek_pos changes.
+
+    if (strcmp(handles[stream->handle]->get_name(), "doom1.wad") == 0)
     {
         return doom_seek(stream, offset, whence);
     }

@@ -258,8 +258,6 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
     outb(drive_info->base_port + CMD_OFFSET, ATAPI_IDENT_CMD);
     ATA_poll_busy(drive_info);
     ATA_poll_until_DRQ(drive_info);
-    auto n_bytes = ATA_get_n_bytes_to_read(drive_info);
-    LOG("n bytes: ", n_bytes);
     //todo: test whether you can skip reading all we don't use
     if (ATA_status_t status = ATA_get_alt_status(drive_info); status.data_request && !status.error) // data request is true and error is false
     {
@@ -399,7 +397,7 @@ int ATAPI_set_max_dma_mode(const bool supports_udma, IDE_drive_info_t* drive_inf
 
     if (ATA_status_t status = ATA_get_alt_status(drive_info); status.error)
     {
-        ATA_error_t error = ATA_get_error(drive_info);
+        [[maybe_unused]]ATA_error_t error = ATA_get_error(drive_info);
         LOG("Error enabling DMA. Raw error", error.raw);
         return -DEVICE_ERROR;
     }

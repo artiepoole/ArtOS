@@ -18,12 +18,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-    int close( int fd ) {
-        // TODO not implemented
-        printf("ERROR: Close %d: not implemented", fd);
-        exit(1);
-    }
+extern int close(size_t fd);
 
 #ifdef __cplusplus
 }
