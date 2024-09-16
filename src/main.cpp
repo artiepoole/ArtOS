@@ -24,6 +24,8 @@
 #include "multiboot2.h"
 #include "stdio.h"
 #include "Files.h"
+#include "ArtDirectory.h"
+#include "ArtFile.h"
 #include "CPUID.h"
 #include "RTC.h"
 #include "PIT.h"
@@ -198,10 +200,11 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     auto CD_ROM = IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master);
 
     // TODO: This should be moved to a mount function or something similar. The following populates a directory tree.
+    // TODO: when constructing the tree, the filedata should contain starting offset IN BYTES
     constexpr size_t buf_size = sizeof(iso_primary_volume_descriptor_t);
     iso_primary_volume_descriptor_t volume_descriptor{};
-    u32 data_start = 16; // in LBA
-    CD_ROM.read(reinterpret_cast<u8*>(&volume_descriptor), data_start, buf_size);
+    u32 data_start = 16*2048; // in LBA
+    CD_ROM.read((&volume_descriptor), data_start, buf_size);
     // LOG("First data: ", buffer[0]);
     LOG("Volume Descriptor type: ", volume_descriptor.descriptor_type);
     LOG("Ident: ", volume_descriptor.identifier);
@@ -211,7 +214,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Load the path table
     char path_table_data[volume_descriptor.path_table_size_LE];
-    CD_ROM.read(path_table_data, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE);
+    CD_ROM.read(path_table_data, volume_descriptor.path_l_table_loc_lba*2048, volume_descriptor.path_table_size_LE);
     // Count entries
     size_t offset = 0;
     size_t n_dirs = 0;
@@ -258,7 +261,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         offset = 0;
 
         char first_sector_data[2048];
-        CD_ROM.read(&first_sector_data, path_table[entry].header.extent_loc, 2048);
+        CD_ROM.read(&first_sector_data, path_table[entry].header.extent_loc*2048, 2048);
         iso_directory_record_header root_dir_header = *reinterpret_cast<iso_directory_record_header*>(&first_sector_data[offset]);
         size_t full_size = root_dir_header.data_length_LE;
         if (full_size > 1024 * 64)
@@ -267,7 +270,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
             full_size = 1024 * 64;
         }
         char full_data[full_size];
-        CD_ROM.read(&full_data, root_dir_header.extent_loc_LE, full_size);
+        CD_ROM.read(&full_data, root_dir_header.extent_loc_LE*2048, full_size);
 
         while (offset < full_size)
         {

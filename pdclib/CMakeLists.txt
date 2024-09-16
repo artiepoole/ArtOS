@@ -279,6 +279,10 @@ file(GLOB KERNEL
         "../include/arch/x86/timers/*.h"
         "../src/sys/*.h"
         "../src/sys/*.cpp"
+        "src/sys/FileSystem/*.h"
+        "src/sys/FileSystem/*.cpp"
+        "src/sys/Storage/*.cpp"
+        "src/sys/Storage/*.h"
 )
 
 set( PDCLIB_PRIVATE_HEADERS
@@ -328,6 +332,8 @@ target_include_directories(pdclib PUBLIC
 
         ../src
         ../src/sys
+        ../src/sys/FileSystem
+        ../src/sys/Storage
         ../include
         ../include/arch/x86/
         ../include/arch/x86/timers

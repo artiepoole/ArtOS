@@ -33,15 +33,13 @@ void write_error(const char* buffer, unsigned long len)
 
 tm* get_time()
 {
-    auto& rtc = RTC::get();
-    return rtc.getTime();
+    return RTC::get().getTime();
 }
 
 
 time_t get_epoch_time()
 {
-    auto& rtc = RTC::get();
-    return rtc.epochTime();
+    return RTC::get().epochTime();
 }
 
 extern "C"

@@ -32,6 +32,12 @@ file(GLOB INCLUDE
 file(GLOB KERNEL
         "src/sys/*.h"
         "src/sys/*.cpp"
+        "src/sys/FileSystem/*.h"
+        "src/sys/FileSystem/*.cpp"
+        "src/sys/Storage/*.h"
+        "src/sys/Storage/*.cpp"
+        "src/sys/DataTyes/*.h"
+        "src/sys/DataTyes/*.cpp"
 )
 
 
@@ -50,6 +56,9 @@ target_include_directories(
         include/constants
         src
         src/sys
+        src/sys/FileSystem
+        src/sys/Storage
+        src/sys/DataTyes
         )
 
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")

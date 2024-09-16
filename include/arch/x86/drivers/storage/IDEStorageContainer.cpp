@@ -51,13 +51,13 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
 //     // TODO: remove PRDT?
 // }
 
-int IDEStorageContainer::read(void* dest, const u32 lba_offset, const u32 n_bytes)
+int IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t n_bytes)
 {
     if (n_bytes == 0) return -1;
     if (n_bytes > 2048 * 32) return -1;
 
-    u16 n_sectors = (n_bytes + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size; // round up division
-    // u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
+    const u16 n_sectors = (n_bytes + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size; // round up division
+    const u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
     int ret_val = 0;
     ret_val = prep_DMA_read(lba_offset, n_sectors); // should set up ATA stuff and then set up BM stuff
     if (ret_val != 0) { return ret_val; }
@@ -126,7 +126,7 @@ void IDEStorageContainer::notify()
     }
 }
 
-int IDEStorageContainer::prep_DMA_read(u32 lba_offset, size_t n_sectors)
+int IDEStorageContainer::prep_DMA_read(size_t lba_offset, size_t n_sectors)
 {
     if (const int res = drive_dev->start_DMA_read(lba_offset, n_sectors); res != 0)
     {

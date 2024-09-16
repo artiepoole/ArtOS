@@ -160,30 +160,28 @@ void exception_handler(const cpu_registers_t* r)
     }
 }
 
+/*
+    0 	Programmable Interrupt Timer Interrupt
+    1 	Keyboard Interrupt
+    2 	Cascade (used internally by the two PICs. never raised) or timer redirect in APIC
+    3 	COM2 (if enabled)
+    4 	COM1 (if enabled)
+    5 	LPT2 (if enabled)
+    6 	Floppy Disk
+    7 	LPT1 / Unreliable "spurious" interrupt (usually)
+    8 	CMOS real-time clock (if enabled)
+    9 	Free for peripherals / legacy SCSI / NIC
+    10 	Free for peripherals / SCSI / NIC
+    11 	Free for peripherals / SCSI / NIC
+    12 	PS2 Mouse
+    13 	FPU / Coprocessor / Inter-processor
+    14 	Primary ATA Bus
+    15 	Secondary ATA Bus
+    240-32  Spurious APIC
+*/
 extern "C"
 void irq_handler(const cpu_registers_t* r)
 {
-    /*
-        0 	Programmable Interrupt Timer Interrupt
-        1 	Keyboard Interrupt
-        2 	Cascade (used internally by the two PICs. never raised) or timer redirect in APIC
-        3 	COM2 (if enabled)
-        4 	COM1 (if enabled)
-        5 	LPT2 (if enabled)
-        6 	Floppy Disk
-        7 	LPT1 / Unreliable "spurious" interrupt (usually)
-        8 	CMOS real-time clock (if enabled)
-        9 	Free for peripherals / legacy SCSI / NIC
-        10 	Free for peripherals / SCSI / NIC
-        11 	Free for peripherals / SCSI / NIC
-        12 	PS2 Mouse
-        13 	FPU / Coprocessor / Inter-processor
-        14 	Primary ATA Bus
-        15 	Secondary ATA Bus
-        240-32  Spurious APIC
-    */
-
-
     if (const auto int_no = r->int_no; int_no >= 32)
     {
 
@@ -214,7 +212,7 @@ void irq_handler(const cpu_registers_t* r)
             break;
         }
     }
-
+    // Send end of interrupt.
     LAPIC_EOI();
 }
 
