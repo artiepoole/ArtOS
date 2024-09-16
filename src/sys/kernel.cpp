@@ -12,16 +12,12 @@
 
 // u64 clock_rate = 0;
 
-void write_standard(const char* buffer, unsigned long len)
+void write_standard([[maybe_unused]] const char* buffer, [[maybe_unused]] unsigned long len)
 {
-    // auto& term = Terminal::get();
-    // term.write(buffer, len);
-
-
     WRITE(buffer, len);
 }
 
-void write_error(const char* buffer, unsigned long len)
+void write_error([[maybe_unused]] const char* buffer, [[maybe_unused]] unsigned long len)
 {
     // // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
     // auto& term = Terminal::get();
@@ -43,9 +39,8 @@ time_t get_epoch_time()
 }
 
 extern "C"
-void _exit(int status)
+void _exit([[maybe_unused]] int status)
 {
-
     LOG("Exit status: ", status);
 }
 

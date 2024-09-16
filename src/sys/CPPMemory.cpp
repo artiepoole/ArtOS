@@ -37,3 +37,8 @@ void operator delete[](void* p) throw()
 {
     if (p) free(p);
 }
+
+void operator delete[](void* p, size_t) throw()
+{
+    if (p) free(p);
+}

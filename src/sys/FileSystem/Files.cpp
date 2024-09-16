@@ -26,7 +26,7 @@ FileHandle* get_file_handle(int fd)
 
 int find_free_handle()
 {
-    for (int i = 0; i < MAX_HANDLES; i++)
+    for (size_t i = 0; i < MAX_HANDLES; i++)
     {
         if (handles[i] == NULL)
         {
@@ -110,17 +110,11 @@ u32 doomwad_read(char* dest, u32 count)
     return i;
 }
 
-extern "C"
-u32 doomwad_write(const char* data, u32 count)
-{
-    // TODO: not enable writing
-    return -1;
-    // Should not do this
-}
+
 
 
 extern "C"
-int open(const char* filename, unsigned int mode)
+int open(const char* filename, [[maybe_unused]] unsigned int mode)
 {
     // TODO this is a stub. We probably want some kind of dispatch to filesystems/mounts so we can mount com0 to
     //  be opened here.
@@ -147,7 +141,7 @@ int open(const char* filename, unsigned int mode)
         WRITE(doomwad_size, true);
         NEWLINE();
         int fd = find_free_handle();
-        if (int err = register_file_handle(fd, filename, doomwad_read, doomwad_write); err != 0)
+        if (int err = register_file_handle(fd, filename, doomwad_read, NULL); err != 0)
         {
             return err;
         }

@@ -27,7 +27,7 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
     if (!(pci_dev->get_command() & 0x4))
     {
         LOG("Setting PCI command bit 2 to true.");
-        u16 res = pci_dev->set_command_bit(2, true); // enable busmastering
+        pci_dev->set_command_bit(2, true); // enable busmastering
         if (!(pci_dev->get_command() & 0x4))
         {
             LOG("Error enabling busmastering on PCI device.");

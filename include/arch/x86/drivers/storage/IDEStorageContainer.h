@@ -23,15 +23,15 @@ typedef int (*readFunc)();
 typedef int (*seekFunc)();
 typedef int (*writeFunc)();
 
-class IDEStorageContainer: public IDE_notifiable, public StorageDevice
+class IDEStorageContainer : public IDE_notifiable, public StorageDevice
 {
 public:
     IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev);
     int read_lba(void* dest, size_t lba_offset, size_t n_bytes);
     ~IDEStorageContainer() override = default; // TODO: remove PRDT?
     int read(void* dest, size_t byte_offset, size_t n_bytes) override;
-    int seek(size_t offset, int whence) override {return -NOT_IMPLEMENTED;}
-    int write(void* src, size_t byte_count, size_t byte_offset) override {return -NOT_IMPLEMENTED;}
+    int seek([[maybe_unused]] size_t offset, [[maybe_unused]] int whence) override { return -NOT_IMPLEMENTED; }
+    int write([[maybe_unused]] void* src, [[maybe_unused]] size_t byte_count, [[maybe_unused]] size_t byte_offset) override { return -NOT_IMPLEMENTED; }
     int mount();
 
 
@@ -54,7 +54,6 @@ public:
     int populate_file_tree();
     volatile bool BM_waiting_for_transfer = false;
 
-
 private:
     ATAPIDrive* drive_dev;
     PCIDevice* pci_dev;
@@ -62,8 +61,6 @@ private:
     u32 current_lba = 0;
     ArtDirectory* root_directory = nullptr;
     iso_path_table_entry_header path_table_root;
-
-
 };
 
 #endif //IDE_DEVICE_H

@@ -339,7 +339,7 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
     return -DEVICE_ERROR;
 }
 
-int ATA_ident(IDE_drive_info_t* drive_info, u16* identity_data)
+int ATA_ident(IDE_drive_info_t* drive_info, [[maybe_unused]] u16* identity_data)
 {
     ATA_select_drive(drive_info);
     // TODO: Not implemented yet
@@ -357,7 +357,7 @@ int ATA_is_packet_device(IDE_drive_info_t* drive_info)
     signatures[2] = inb(drive_info->base_port + LBA_MID_OFFSET);
     signatures[3] = inb(drive_info->base_port + LBA_HIGH_OFFSET);
 
-    if (!signatures[0] == 0x1 | !signatures[1] == 0x1)
+    if ((!signatures[0]) == 0x1 || (!signatures[1]) == 0x1)
     {
         LOG("Drive signature not present");
         return -DEVICE_ERROR;
@@ -457,7 +457,7 @@ int populate_drives_list(ATAPIDrive*& atapi_drives)
     // Create drive object for each drive.
     // TODO: this should only be base classes, ATAPIDrive should inherit from IDEDrive or something to support ATADrives as well.
     atapi_drives = new ATAPIDrive[n_found_drives];
-    for (size_t i = 0; i < n_found_drives; i++)
+    for (int i = 0; i < n_found_drives; i++)
     {
         int result = atapi_drives[i].populate_data(found_drives[i]);
         if (result < 0)

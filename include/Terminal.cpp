@@ -189,7 +189,7 @@ void Terminal::_draw_changes()
 
 void Terminal::_append_to_queue(const char* data, const u32 count, const PALETTE_t colour)
 {
-    for (int i = 0; i < count; i++)
+    for (size_t i = 0; i < count; i++)
     {
         terminal_queue[queue_pos++ % queue_size] = terminal_char_t{data[i], colour};
     }

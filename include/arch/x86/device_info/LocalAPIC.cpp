@@ -87,7 +87,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     auto dfr = reinterpret_cast<destination_format_register*>(base + DFR_OFFSET);
     LOG("LAPIC DFR mode: ", static_cast<u8>(dfr->model));
 
-    local_destination_register local_ldr = {0};
+    local_destination_register local_ldr{};
     auto ldr_addr = reinterpret_cast<u32*>(base + LDR_OFFSET);
     local_ldr.lapic_addr = 0;
     local_ldr.cluster_addr = 1;
@@ -99,7 +99,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     );
 }
 
-void LocalAPIC::configure_timer(const u32 hz)
+void LocalAPIC::configure_timer([[maybe_unused]] const u32 hz)
 {
     //TODO: implement https://github.com/dreamportdev/Osdev-Notes/blob/master/02_Architecture/08_Timers.md
 }

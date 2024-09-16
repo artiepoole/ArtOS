@@ -50,7 +50,7 @@ void IOAPIC::resume()
 // Also un masks
 void IOAPIC::remap_IRQ(const u8 irq_before, const u8 irq_after)
 {
-    io_redirect_entry data = {0};
+    io_redirect_entry data{};
     // load the previous entry, ensuring it is populated.
     *base_addr = (IOREDTBL_START + irq_before * 2);
     data.lower = *data_addr;

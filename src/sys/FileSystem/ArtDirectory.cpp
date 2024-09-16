@@ -34,7 +34,7 @@ ArtFile* ArtDirectory::search(const char* filename)
 }
 
 /* Returns pointer to file if found in this directory or any of its subdirs searched recursively, or nullptr */
-ArtFile* ArtDirectory::search_recurse(char* filename)
+ArtFile* ArtDirectory::search_recurse([[maybe_unused]] char* filename)
 {
     // TODO: implement the recusrive search.
     return nullptr;
