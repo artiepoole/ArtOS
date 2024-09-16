@@ -9,7 +9,6 @@
 template <typename T>
 class LinkedList
 {
-
     struct LinkedListNode
     {
         T data;
@@ -20,7 +19,6 @@ class LinkedList
     LinkedListNode* tail = nullptr;
 
 public:
-
     bool append(T data)
     {
         auto* newNode = new LinkedListNode{data, nullptr};
@@ -65,6 +63,19 @@ public:
         return false;
     }
 
+
+    template <typename predicate>
+    void iterate(predicate pred) const
+    {
+        if (!head) { return; }
+        LinkedListNode* n = head;
+        while (n != nullptr)
+        {
+            pred(&n->data);
+            n = n->next;
+        }
+    }
+
     template <typename predicate>
     T* find_if(predicate pred)
     {
@@ -81,7 +92,6 @@ public:
     }
 
     // TODO: figure out how to actually use this when using a directory tree.
-
 };
 
 //TODO: doubly linked list

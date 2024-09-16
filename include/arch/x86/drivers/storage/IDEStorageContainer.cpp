@@ -45,6 +45,7 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
     }
     IDE_add_device(this); // add interrupt handling
     IDE_remove_device(this->drive_dev); // Stop interrupts from going directly to the contained device.
+
 }
 
 // IDEStorageContainer::~IDEStorageContainer()
@@ -74,6 +75,11 @@ int IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t
     if (n_bytes > 2048 * 32) return -1;
     const u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
     return read_lba(dest, lba_offset, n_bytes);
+}
+
+int IDEStorageContainer::mount()
+{
+    return populate_file_tree();
 }
 
 void IDEStorageContainer::notify()
@@ -109,24 +115,24 @@ void IDEStorageContainer::notify()
     }
     if (ata_status.error)
     {
-        LOG("ATA device errored");
+        // LOG("ATA device errored");
         drive_dev->waiting_for_transfer = false;
     }
 #endif
     if (ata_status.data_request)
     {
-        LOG("ATA sent command");
+        // LOG("ATA sent command");
         drive_dev->waiting_for_transfer = false;
     }
     else
     {
-        LOG("ATA probably didn't send command");
+        // LOG("ATA probably didn't send command");
         BM_waiting_for_transfer = false;
     }
 
     if (bm_status.interrupt)
     {
-        LOG("BM interrupt raised.");
+        // LOG("BM interrupt raised.");
         bm_status.interrupt = true;
         bm_status = bm_dev->set_status(bm_status);
     }
@@ -169,6 +175,200 @@ int IDEStorageContainer::stop_DMA_read()
     return 0;
 }
 
+DirectoryData IDEStorageContainer::dir_record_to_directory(iso_directory_record_header& info, char*& name)
+{
+    return
+        DirectoryData{
+            this,
+            info.extent_loc_LE,
+            info.data_length_LE,
+            tm{
+                info.datetime.second,
+                info.datetime.minute,
+                info.datetime.hour,
+                info.datetime.monthday,
+                info.datetime.month,
+                info.datetime.years_since_1900 + 1900,
+                0,
+                0,
+                0
+            },
+            1,
+            name
+        };
+}
+
+FileData IDEStorageContainer::dir_record_to_file(const iso_directory_record_header& info, char*& name)
+{
+    return FileData{
+        this,
+        info.extent_loc_LE,
+        info.data_length_LE,
+        tm{
+            info.datetime.second,
+            info.datetime.minute,
+            info.datetime.hour,
+            info.datetime.monthday,
+            info.datetime.month,
+            info.datetime.years_since_1900 + 1900,
+            0,
+            0,
+            0
+        },
+        1,
+        name
+    };
+}
+
+iso_primary_volume_descriptor_t IDEStorageContainer::get_primary_volume_descriptor()
+{
+    iso_primary_volume_descriptor_t vd{};
+    constexpr size_t buf_size = sizeof(iso_primary_volume_descriptor_t);
+    constexpr u32 data_start_lba = 16; // in LBA#
+    read_lba(&vd, data_start_lba, buf_size);
+    // TODO: ensure that the gotten vd is the primary vol desc.
+    return vd;
+}
+
+
+iso_path_table_entry_header IDEStorageContainer::get_path_table_root_dir()
+{
+    // Load primary volume descriptor
+    const iso_primary_volume_descriptor_t volume_descriptor = get_primary_volume_descriptor();
+
+    // Load the path table
+    char path_table_data[volume_descriptor.path_table_size_LE];
+    read_lba(&path_table_data, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE);
+
+    // get first dir entry. Ignore name because it is blank anyway.
+    return *reinterpret_cast<iso_path_table_entry_header*>(path_table_data);
+}
+
+size_t IDEStorageContainer::get_dir_entry_size(size_t start_lba)
+{
+    constexpr size_t one_sector_size = 2048;
+    char first_sector_data[one_sector_size];
+    read_lba(&first_sector_data, start_lba, one_sector_size);
+    return *reinterpret_cast<size_t*>(&first_sector_data[10]);
+}
+
+int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
+{
+    size_t buffer_size = get_dir_entry_size(target_dir->get_lba());
+    if (buffer_size > 1024 * 64)
+    {
+        LOG("Cannot load full data without implementing larger physical region for DMA or handling partial transfers. Reading first 64k of data.");
+        buffer_size = 1024 * 64;
+    }
+    char full_data[buffer_size];
+    read_lba(&full_data, target_dir->get_lba(), buffer_size);
+    size_t offset = 0;
+    while (offset < buffer_size)
+    {
+        size_t start_offset = offset;
+        auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
+        if (dir_record.record_length == 0) // entries will not cross a sector boundary.
+        {
+            offset = offset + (2048 - (offset % 2048)); // moves to start of next sector
+            if (offset >= buffer_size)
+            {
+                break; // if out of limits, move to next dir.
+            }
+            // otherwise continue from next entry
+            start_offset = offset;
+            dir_record = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
+        }
+        offset += sizeof(iso_directory_record_header); // skip header to name
+        char* filename = strndup(&full_data[offset], dir_record.file_name_length);
+        if (strncmp(filename, "", dir_record.file_name_length) == 0)
+        {
+            offset = start_offset + dir_record.record_length;
+            continue;
+            free(filename);
+            filename = strdup(".");
+        }
+        if (strncmp(filename, "\1", dir_record.file_name_length) == 0)
+        {
+            offset = start_offset + dir_record.record_length;
+            continue;
+            free(filename);
+            filename = strdup("..");
+        }
+        offset += dir_record.file_name_length;
+        offset += offset % 2;
+        size_t extension_pos = 0;
+        while (extension_pos < start_offset + dir_record.record_length)
+        {
+            auto [tag, len] = *reinterpret_cast<file_id_ext_header*>(&full_data[offset + extension_pos]);
+            if (strncmp(tag, "NM", 2) == 0)
+            {
+                free(filename);
+                filename = strndup(&full_data[offset + extension_pos + 5], len - 5);
+                dir_record.file_name_length = len;
+                break;
+            }
+            if (len > 0)
+            {
+                extension_pos += len;
+            }
+            else
+            {
+                break;
+            }
+            // Have to convert from packed to not. can't implicitly do so for some reason.
+        }
+        u32 data_len = dir_record.data_length_LE;
+        u8 flags = dir_record.flags;
+        LOG("Directory: ", target_dir->get_name(), " name: ", filename, " data length: ", data_len, " flags raw: ", flags, " is directory: ", bool(flags & 0x02));
+
+        if (flags & 0x2)
+        {
+            target_dir->add_subdir(target_dir, dir_record_to_directory(dir_record, filename));
+        }
+        else
+        {
+            target_dir->add_file(dir_record_to_file(dir_record, filename));
+        }
+
+        offset = start_offset + dir_record.record_length;
+
+        //todo: parse other extended file info tags.
+        if (flags & 0x80) { LOG("Didn't read all extents for the previous file"); }
+    }
+    // todo: Error handling.
+    return 0;
+}
+
+ArtDirectory* IDEStorageContainer::make_root_directory(const iso_path_table_entry_header& path_table_root)
+{
+    char first_sector_data[2048];
+    read_lba(&first_sector_data, path_table_root.extent_loc, 2048);
+    char* root_dir_name = strdup("/");
+    auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&first_sector_data[0]);
+    return new ArtDirectory{
+        nullptr,
+        dir_record_to_directory(dir_record, root_dir_name),
+    };
+}
+
+int IDEStorageContainer::populate_directory_recursive(ArtDirectory* target_dir)
+{
+    populate_directory(target_dir);
+    auto device = this;
+    target_dir->get_dirs()->iterate([device](ArtDirectory* dir){device->populate_directory_recursive(dir);});
+    // todo: Error handling.
+    return 0;
+}
+
+int IDEStorageContainer::populate_file_tree()
+{
+    // todo refactor into void function?
+    path_table_root = get_path_table_root_dir();
+    root_directory = make_root_directory(path_table_root);
+    populate_directory_recursive(root_directory);
+    LOG("Root directory populated.");
+    return 0;
+}
 
 int IDEStorageContainer::wait_for_DMA_transfer() const
 {

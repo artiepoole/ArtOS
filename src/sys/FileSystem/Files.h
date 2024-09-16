@@ -30,8 +30,8 @@ struct FileHandle
 // TODO: should this replace FileInfo? I don't construct a path.
 struct FileData{
     StorageDevice* device = nullptr;
-    u32 LBA_address = 0;
-    u32 data_length_LE = 0; // bytes
+    size_t LBA_address = 0;
+    size_t data_length_LE = 0; // bytes
     tm datetime{};
     size_t file_name_length = 0;
     // u64 permissions;
@@ -40,8 +40,8 @@ struct FileData{
 
 struct DirectoryData{
     StorageDevice* device = nullptr;
-    u32 descriptor_LBA = 0;
-    u32 descriptor_length = 0; // bytes
+    size_t descriptor_LBA = 0;
+    size_t descriptor_length = 0; // bytes
     tm datetime = {};
     size_t dir_name_length = 0;
     // u64 permissions;

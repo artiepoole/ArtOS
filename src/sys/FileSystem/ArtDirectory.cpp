@@ -49,3 +49,18 @@ char* ArtDirectory::get_name()
 {
     return directory_data.directory_name;
 }
+
+size_t ArtDirectory::get_lba()
+{
+    return directory_data.descriptor_LBA;
+}
+
+LinkedList<ArtDirectory> const* ArtDirectory::get_dirs() const
+{
+    return &directories;
+}
+
+LinkedList<ArtFile> const* ArtDirectory::get_files() const
+{
+    return &files;
+}

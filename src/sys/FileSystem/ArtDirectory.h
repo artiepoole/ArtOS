@@ -29,6 +29,10 @@ public:
     ArtFile* search_recurse(char* filename);
     ArtDirectory* get_parent();
     char* get_name();
+    size_t get_lba();
+    LinkedList<ArtDirectory> const *get_dirs() const;
+    LinkedList<ArtFile> const *get_files() const;
+
 
 private:
 
