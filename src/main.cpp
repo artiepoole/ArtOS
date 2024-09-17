@@ -138,9 +138,12 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("LAPIC count: ", full_madt->LAPIC_count);
     [[maybe_unused]] LocalAPIC local_apic(get_local_apic_base_addr());
     [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
-
-    // then load the rest of the singleton classes.
+#if ENABLE_SERIAL_LOGGING
     serial.register_device();
+#endif
+    // then load the rest of the singleton classes.
+
+
     Terminal terminal(frame_info->framebuffer_width, frame_info->framebuffer_height);
     EventQueue events;
 
@@ -161,6 +164,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("Singletons loaded.");
 
 #if ENABLE_SERIAL_LOGGING
+    // TODO: register_file_handle does not instantiate an fstream properly. Only fopen does.
+    // This means that these should not be registered directly and instead should use filenames.
+    // These filenames are already in place.
     register_file_handle(0, Serial::get_file()); // stdin
     register_file_handle(1, Serial::get_file()); // stdout
     register_file_handle(2, Serial::get_file()); // stderr
@@ -169,13 +175,12 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     printf("This should print to com0 via printf\n");
 #elif ENABLE_TERMINAL_LOGGING
     // TODO: handle terminal file wrapper also.
-
     register_file_handle(0, nullptr); // stdin
     register_file_handle(1, Terminal::get_stdout_file()); // stdout
     register_file_handle(2, Terminal::get_stderr_file()); // stderr
     printf("This should print out to terminal via printf\n");
-    fprintf(stderr, "%s\n", "This should print error to screen via fprintf");
-    fprintf(stdout, "%s\n", "This should print out to screen via fprintf");
+    fprintf(stderr, "This should print error to screen via fprintf\n");
+    fprintf(stdout, "This should print out to screen via fprintf\n");
 #endif
     // TODO: Draw splash should programmatically draw using the logo from the middle as a texture.
     PCI_populate_list();

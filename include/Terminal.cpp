@@ -190,9 +190,7 @@ void Terminal::_draw_changes()
     {
         for (size_t col = 0; col < buffer_width; col++)
         {
-            const terminal_char_t c_to_draw = terminal_buffer[i];
-
-            if (const auto [letter, colour] = rendered_buffer[i]; c_to_draw.letter != letter || c_to_draw.colour != colour)
+            if (terminal_char_t c_to_draw = terminal_buffer[i]; *reinterpret_cast<u64*>(&rendered_buffer[i])!= *reinterpret_cast<u64*>(&c_to_draw))
             {
                 _putChar(c_to_draw, col * scaled_char_dim, row * scaled_char_dim);
                 rendered_buffer[i] = c_to_draw;
