@@ -61,7 +61,7 @@ Hello World:
 - [x] Create a directory tree from iso fs data
 - [x] Implement a rudimentary filesystem
 - [x] Load a file using pdclib
-- [ ] DOOM: add loading from CD ROM instead of from memory
+- [x] DOOM: Loading from CD ROM instead of baked into the binary
 - [ ] DOOM: run in user space
 - [ ] DOOM: add sound
 - [ ] Attach a RW storage device in Qemu
