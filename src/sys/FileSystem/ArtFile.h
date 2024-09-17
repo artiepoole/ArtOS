@@ -5,11 +5,12 @@
 #ifndef ARTFILE_H
 #define ARTFILE_H
 
-#include "ArtDirectory.h"
-#include "Files.h"
-
+#include "time.h"
 
 class ArtDirectory;
+class StorageDevice;
+
+struct FileData;
 
 class ArtFile {
 public:
@@ -29,7 +30,7 @@ private:
     StorageDevice* device = nullptr;
     size_t first_byte = 0;
     size_t size = 0; // bytes
-    tm datetime{};
+    tm datetime;
     size_t file_name_length = 0;
     // u64 permissions;
     char* filename = nullptr;

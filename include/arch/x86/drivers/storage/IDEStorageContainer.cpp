@@ -15,6 +15,7 @@
 
 #include "IDE_handler.h"
 #include "logging.h"
+#include "Files.h"
 
 IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev)
 {

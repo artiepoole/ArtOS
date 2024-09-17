@@ -416,17 +416,17 @@ TermFileWrapper::TermFileWrapper(const bool stderr): is_stderr(stderr)
     if (is_stderr)
     {
         char name[] = "stderr";
-        file = new ArtFile{this, name};
+        file = ArtFile{this, name};
         return;
     }
 
     char name[] = "stdout";
-    file = new ArtFile{this, name};
+    file = ArtFile{this, name};
 }
 
-ArtFile * TermFileWrapper::get_file() const
+ArtFile* TermFileWrapper::get_file()
 {
-    return file;
+    return &file;
 }
 
 size_t TermFileWrapper::write(const char* data, size_t , size_t byte_count)
@@ -440,8 +440,8 @@ ArtFile* TermFileWrapper::find_file(const char* filename)
 
     if (is_stderr)
     {
-        if (constexpr char this_name[7] = "stderr"; strcmp(filename, this_name) == 0) return file;
+        if (constexpr char this_name[7] = "stderr"; strcmp(filename, this_name) == 0) return &file;
     }
-    if (constexpr char this_name[7] = "stdout"; strcmp(filename, this_name) == 0) return file;
+    if (constexpr char this_name[7] = "stdout"; strcmp(filename, this_name) == 0) return &file;
     return nullptr;
 }

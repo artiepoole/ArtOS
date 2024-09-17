@@ -6,6 +6,7 @@
 #include "StorageDevice.h"
 #include "string.h"
 
+#include "Files.h"
 #include "ArtFile.h"
 
 ArtDirectory::ArtDirectory(ArtDirectory* parent, const DirectoryData& data): parent_directory(parent)

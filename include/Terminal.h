@@ -1,14 +1,13 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
-// #include "ArtFile.h"
+#include "ArtFile.h"
 #include "StorageDevice.h"
 
 #include "types.h"
 #include "colours.h"
 #include "mystring.h"
 
-class ArtFile;
 struct terminal_char_t
 {
     char letter;
@@ -31,15 +30,13 @@ inline PALETTE_t colour_error = COLOR_RED;
  */
 class Terminal
 {
-
-
 public:
     // Single instance.
     Terminal(u32 width, u32 height);
     ~Terminal();
     static Terminal& get();
-    static ArtFile * get_stdout_file();
-    static ArtFile * get_stderr_file();
+    static ArtFile* get_stdout_file();
+    static ArtFile* get_stderr_file();
 
     // remove copy functionality
     Terminal(Terminal const& other) = delete;
@@ -62,7 +59,7 @@ public:
     static u32 write(const char* data, PALETTE_t colour = COLOR_BASE0); // buffer without known length also with colour
     static u32 write(char c, PALETTE_t colour = COLOR_BASE0); // single char
 
-    static void setChar(size_t x,size_t y, char c, PALETTE_t colour);
+    static void setChar(size_t x, size_t y, char c, PALETTE_t colour);
 
     static void time_stamp();
     static void backspace();
@@ -110,29 +107,27 @@ public:
     }
 };
 
-class TermFileWrapper:StorageDevice
+class TermFileWrapper : StorageDevice
 {
-    public:
+public:
     explicit TermFileWrapper(bool stderr);
 
 
-     ArtFile * get_file() const;
-    size_t read(char* , size_t , size_t ) override { return 0; }
-    size_t write(const char* data, size_t , size_t byte_count) override;
+    ArtFile* get_file();
+    size_t read(char*, size_t, size_t) override { return 0; }
+    size_t write(const char* data, size_t, size_t byte_count) override;
 
-    int seek(size_t , int ) {return 0;}
+    int seek(size_t, int) { return 0; }
     int mount() { return 0; }
     ArtFile* find_file([[maybe_unused]] const char* filename) override;
     size_t get_block_size() override { return 1; }
     size_t get_block_count() override { return -1; }
     size_t get_sector_size() override { return 1; }
 
-
-    private:
+private:
     bool is_stderr = false;
-    ArtFile * file{};
+    ArtFile file{};
 };
-
 
 
 #endif //TERMINAL_H

@@ -221,7 +221,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
 
     char filename[] = "doom1.wad";
-    [[maybe_unused]] auto file = fopen(filename, "rb");
+    auto file = fopen(filename, "rb");
     char* dest[2048];
     fread(dest, 1, 2048, file);
     fclose(file);

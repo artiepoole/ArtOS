@@ -6,12 +6,13 @@
 #define ARTDIRECTORY_H
 
 
-
-#include "Files.h"
+#include "StorageDevice.h"
 #include "LinkedList.h"
-
+#include "time.h"
 
 class ArtFile;
+struct DirectoryData;
+struct FileData;
 
 class ArtDirectory
 {
