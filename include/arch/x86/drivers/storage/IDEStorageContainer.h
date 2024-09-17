@@ -26,14 +26,15 @@ typedef int (*writeFunc)();
 class IDEStorageContainer : public IDE_notifiable, public StorageDevice
 {
 public:
-    IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev);
+    IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name);
     ~IDEStorageContainer() override = default; // TODO: remove PRDT?
 
     int mount() override;
 
-    size_t read(char* dest, size_t byte_offset, size_t n_bytes) override;
-    int seek([[maybe_unused]] size_t offset, [[maybe_unused]] int whence) override { return -NOT_IMPLEMENTED; }
-    size_t write([[maybe_unused]] const char* src, [[maybe_unused]] size_t byte_count, [[maybe_unused]] size_t byte_offset) override { return -NOT_IMPLEMENTED; }
+    i64 read(char* dest, size_t byte_offset, size_t n_bytes) override;
+    i64 seek([[maybe_unused]] u64 offset, [[maybe_unused]] int whence) override { return -NOT_IMPLEMENTED; }
+    i64 write([[maybe_unused]] const char* src, [[maybe_unused]] size_t byte_count, [[maybe_unused]] size_t byte_offset) override { return -NOT_IMPLEMENTED; }
+    char* get_name() override {return name;}
 
     size_t get_block_size() override;
     size_t get_block_count() override;
@@ -43,7 +44,7 @@ public:
     void start_DMA_transfer();
     int wait_for_DMA_transfer() const;
     int stop_DMA_read();
-    int read_lba(void* dest, size_t lba_offset, size_t n_bytes);
+    i64 read_lba(void* dest, size_t lba_offset, size_t n_bytes, size_t sector_offset);
 
 
     void notify() override;
@@ -52,26 +53,25 @@ public:
 
 private:
     // priavte member functions
-    DirectoryData dir_record_to_directory(iso_directory_record_header& info, char*& name);
+    DirectoryData dir_record_to_directory(const iso_directory_record_header& info, char*& name);
     FileData dir_record_to_file(const iso_directory_record_header& info, char*& name);
 
     iso_path_table_entry_header get_path_table_root_dir();
     iso_primary_volume_descriptor_t get_primary_volume_descriptor();
-    ArtDirectory* make_root_directory(const iso_path_table_entry_header& path_table_root);
+    ArtDirectory* make_root_directory(const iso_path_table_entry_header& p_t_r);
 
     size_t get_dir_entry_size(ArtDirectory*& target_dir);
-    u8 populate_filename(char* sub_data, u8 expected_name_length, size_t ext_length, char*& filename);
+    u8 populate_filename(char* sub_data, u8 expected_name_length, size_t ext_length, char*& filename) const;
     int populate_directory(ArtDirectory*& target_dir);
     int populate_directory_recursive(ArtDirectory* target_dir);
     int populate_file_tree();
 
     // members
+    char *name;
     ATAPIDrive* drive_dev;
     PCIDevice* pci_dev;
     BusMasterController* bm_dev;
-    u32 current_lba = 0;
     ArtDirectory* root_directory = nullptr;
-    iso_path_table_entry_header path_table_root;
     volatile bool BM_waiting_for_transfer = false; // todo private member
 };
 

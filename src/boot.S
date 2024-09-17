@@ -201,10 +201,3 @@ This is useful when debugging or when you implement call tracing.
 */
 .size _start, . - _start
 .size start, . - start
-
-.section .doom_blob
-.align  16
-.globl  doom_wad_file, doom_wad_file_end
-doom_wad_file:
-.incbin "/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad"
-doom_wad_file_end:

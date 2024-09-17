@@ -107,7 +107,6 @@ public:
         return nullptr;
     }
 
-    // TODO: figure out how to actually use this when using a directory tree.
 };
 
 //TODO: doubly linked list

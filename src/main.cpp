@@ -103,7 +103,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 #endif
 
     // We want timestamping to work asap.
-    WRITE("DAY MON DD HH:MM:SS YYYY\tLoading singletons...\n");
+    WRITE("Sun Jan  0 00:00:00 1900\tLoading singletons...\n");
     RTC rtc;
 
     // Then load all the boot information into a usable format.
@@ -140,6 +140,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
 
     // then load the rest of the singleton classes.
+    serial.register_device();
     Terminal terminal(frame_info->framebuffer_width, frame_info->framebuffer_height);
     EventQueue events;
 
@@ -168,6 +169,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     printf("This should print to com0 via printf\n");
 #elif ENABLE_TERMINAL_LOGGING
     // TODO: handle terminal file wrapper also.
+
     register_file_handle(0, nullptr); // stdin
     register_file_handle(1, Terminal::get_stdout_file()); // stdout
     register_file_handle(2, Terminal::get_stderr_file()); // stderr
@@ -214,17 +216,16 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     }
     // TODO: Possibly set up the ATAPIDrive inside the IDEStorageContainer to avoid the need for a IDE_notifiable class etc.
     auto secondary_bus_master = BusMasterController(BM_controller_base_port, atapi_drives[0].drive_info);
-
-    [[maybe_unused]] auto CD_ROM = new IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master);
+    char dev_name[] = "/dev/cdrom0";
+    [[maybe_unused]] auto CD_ROM = new IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master, dev_name);
     CD_ROM->mount();
-    register_storage_device(CD_ROM);
 
 
-    char filename[] = "doom1.wad";
-    auto file = fopen(filename, "rb");
-    char* dest[2048];
-    fread(dest, 1, 2048, file);
-    fclose(file);
+    // char filename[] = "doom1.wad";
+    // auto file = fopen(filename, "rb");
+    // char* dest[2048];
+    // fread(dest, 1, 2048, file);
+    // fclose(file);
 
     // ArtFile* doomfile = CD_ROM->find_file(filename);
     // if (doomfile)

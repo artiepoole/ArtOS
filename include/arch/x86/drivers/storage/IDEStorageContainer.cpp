@@ -17,8 +17,14 @@
 #include "logging.h"
 #include "Files.h"
 
-IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev)
+constexpr size_t region_size = 65536;
+#define one_sector_size this->drive_dev->drive_info->sector_size
+
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+
+IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name): name(strdup(new_name))
 {
+    LOG("Initializing IDEStorageContainer");
     this->drive_dev = drive;
     this->pci_dev = pci_dev;
     this->bm_dev = bm_dev;
@@ -46,6 +52,9 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
     }
     IDE_add_device(this); // add interrupt handling
     IDE_remove_device(this->drive_dev); // Stop interrupts from going directly to the contained device.
+    register_storage_device(this);
+    LOG("IDEStorageContainer initialised.");
+
 }
 
 // Populates directory tree.
@@ -55,12 +64,23 @@ int IDEStorageContainer::mount()
 }
 
 // Read from byte offset. Useful for use with files.
-size_t IDEStorageContainer::read(char* dest, const size_t byte_offset, const size_t n_bytes)
+i64 IDEStorageContainer::read(char* dest, const size_t byte_offset, size_t n_bytes)
 {
-    if (n_bytes == 0) return -1;
-    if (n_bytes > 2048 * 32) return -1; // TODO: handle looping reads to fill buffer etc.
-    const u32 lba_offset = byte_offset / drive_dev->drive_info->block_size;
-    return read_lba(dest, lba_offset, n_bytes);
+    if (n_bytes == 0) return 0;
+    i64 n_read = 0;
+    while (n_read < n_bytes)
+    {
+        // n_read has to be able to be neg but also up to max(u32) so use an i64. n_read >0 here due to program flow.
+        size_t bytes_to_read = n_bytes - static_cast<u32>(n_read);
+        if (bytes_to_read > region_size) { bytes_to_read = region_size; }
+        const size_t lba_offset = (byte_offset + n_read) / drive_dev->drive_info->block_size;
+        const size_t sector_offset = (byte_offset + n_read) % drive_dev->drive_info->block_size;
+        const i64 res = read_lba(&dest[n_read], lba_offset, bytes_to_read, sector_offset);
+        if (res == 0) { break; }
+        if (res < 0) { return res; }
+        n_read += res;
+    }
+    return n_read;
 }
 
 size_t IDEStorageContainer::get_block_size()
@@ -86,7 +106,6 @@ int IDEStorageContainer::prep_DMA_read(size_t lba_offset, size_t n_sectors)
         LOG("Error telling drive to prep for a DMA read");
         return res;
     }
-    LOG("Drive ready for DMA read. Setting BM data flow direction.");
     auto cmd = bm_dev->get_cmd();
     cmd.rw_ctrl = DEV_TO_MEM;
     cmd = bm_dev->set_cmd(cmd); // apparently you set this then enable in separate writes.
@@ -95,7 +114,6 @@ int IDEStorageContainer::prep_DMA_read(size_t lba_offset, size_t n_sectors)
 
 void IDEStorageContainer::start_DMA_transfer()
 {
-    LOG("Starting DMA transfer.");
     BM_cmd_t bm_cmd = bm_dev->get_cmd();
     bm_cmd.start_stop = 1;
 
@@ -105,7 +123,6 @@ void IDEStorageContainer::start_DMA_transfer()
 
 int IDEStorageContainer::wait_for_DMA_transfer() const
 {
-    LOG("Waiting for DMA transfer.");
     // TODO: This is not working properly when running full speed.
     BM_status_t bm_status = bm_dev->get_status();
     while (BM_waiting_for_transfer && bm_status.IDE_active && !bm_status.error)
@@ -122,7 +139,6 @@ int IDEStorageContainer::wait_for_DMA_transfer() const
 
 int IDEStorageContainer::stop_DMA_read()
 {
-    LOG("Transfer complete. Resetting BM start/stop bit");
     BM_cmd_t bm_cmd = bm_dev->get_cmd();
     bm_cmd.start_stop = 0;
     bm_dev->set_cmd(bm_cmd);
@@ -134,9 +150,13 @@ int IDEStorageContainer::stop_DMA_read()
 }
 
 // Read from specified lba. useful internally. Might move to private
-int IDEStorageContainer::read_lba(void* dest, size_t lba_offset, size_t n_bytes)
+auto IDEStorageContainer::read_lba(void* dest, size_t lba_offset, const size_t n_bytes, const size_t sector_offset) -> i64
 {
-    const u16 n_sectors = (n_bytes + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size; // round up division
+    // trim oversize reads
+    u16 n_sectors = ((n_bytes + sector_offset) + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size & 0xffff; // round up division
+    if (n_sectors > 32) { n_sectors = 32; }
+
+    // put data in physical reagion
     int ret_val = 0;
     ret_val = prep_DMA_read(lba_offset, n_sectors); // should set up ATA stuff and then set up BM stuff
     if (ret_val != 0) { return ret_val; }
@@ -145,8 +165,10 @@ int IDEStorageContainer::read_lba(void* dest, size_t lba_offset, size_t n_bytes)
     if (ret_val != 0) { return ret_val; }
     ret_val = stop_DMA_read(); // should just reset BM start_stop
     if (ret_val != 0) { return ret_val; }
-    memcpy(dest, bm_dev->physical_region, n_bytes);
-    return 0;
+    // handle copy
+    const i64 actual_bytes = MIN(n_bytes, n_sectors*one_sector_size - sector_offset);
+    memcpy(dest, &bm_dev->physical_region[sector_offset], static_cast<size_t>(actual_bytes));
+    return actual_bytes;
 }
 
 // Called by interrupt handler.
@@ -157,10 +179,9 @@ void IDEStorageContainer::notify()
     if (!(BM_waiting_for_transfer || drive_dev->waiting_for_transfer)) return;
 
     BM_status_t bm_status = bm_dev->get_status();
-    ATA_status_t ata_status = drive_dev->get_status();
-    [[maybe_unused]]u8 ata_interrupt_reason = drive_dev->get_interrupt_reason();
+    const ATA_status_t ata_status = drive_dev->get_status();
 #ifndef NDEBUG
-    switch (ata_interrupt_reason)
+    switch (const u8 ata_interrupt_reason = drive_dev->get_interrupt_reason(); ata_interrupt_reason)
     {
     case 0:
         {
@@ -212,7 +233,7 @@ ArtFile* IDEStorageContainer::find_file(const char* filename)
 }
 
 /* convert an iso_directory_record_header into DirectoryData for use with ArtDirectory entries.*/
-DirectoryData IDEStorageContainer::dir_record_to_directory(iso_directory_record_header& info, char*& name)
+DirectoryData IDEStorageContainer::dir_record_to_directory(const iso_directory_record_header& info, char*& name)
 {
     return
         DirectoryData{
@@ -264,7 +285,7 @@ iso_primary_volume_descriptor_t IDEStorageContainer::get_primary_volume_descript
     iso_primary_volume_descriptor_t vd{};
     constexpr size_t buf_size = sizeof(iso_primary_volume_descriptor_t);
     constexpr u32 data_start_lba = 16; // in LBA#
-    read_lba(&vd, data_start_lba, buf_size);
+    read_lba(&vd, data_start_lba, buf_size, 0);
     // TODO: ensure that the gotten vd is the primary vol desc.
     return vd;
 }
@@ -280,7 +301,7 @@ iso_path_table_entry_header IDEStorageContainer::get_path_table_root_dir()
 
     // Load the path table
     char path_table_data[volume_descriptor.path_table_size_LE];
-    read_lba(&path_table_data, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE);
+    read_lba(&path_table_data, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE, 0);
 
     // get first dir entry. Ignore name because it is blank anyway.
     return *reinterpret_cast<iso_path_table_entry_header*>(path_table_data);
@@ -291,13 +312,12 @@ iso_path_table_entry_header IDEStorageContainer::get_path_table_root_dir()
  */
 size_t IDEStorageContainer::get_dir_entry_size(ArtDirectory*& target_dir)
 {
-    constexpr size_t one_sector_size = 2048;
-    char first_sector_data[one_sector_size];
-    read_lba(&first_sector_data, target_dir->get_lba(), one_sector_size);
+    char first_sector_data[this->drive_dev->drive_info->sector_size];
+    read_lba(&first_sector_data, target_dir->get_lba(), one_sector_size, 0);
     return *reinterpret_cast<size_t*>(&first_sector_data[10]);
 }
 
-u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name_length, const size_t ext_length, char*& filename)
+u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name_length, const size_t ext_length, char*& filename) const
 {
     filename = strndup(sub_data, expected_name_length);
     if (strncmp(filename, "", expected_name_length) == 0 || strncmp(filename, "\1", expected_name_length) == 0)
@@ -335,13 +355,13 @@ u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name
 int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
 {
     size_t buffer_size = get_dir_entry_size(target_dir);
-    if (buffer_size > 1024 * 64)
+    if (buffer_size > region_size)
     {
         LOG("Cannot load full data without implementing larger physical region for DMA or handling partial transfers. Reading first 64k of data.");
-        buffer_size = 1024 * 64;
+        buffer_size = region_size;
     }
     char full_data[buffer_size];
-    read_lba(&full_data, target_dir->get_lba(), buffer_size);
+    read_lba(&full_data, target_dir->get_lba(), buffer_size, 0);
     size_t offset = 0;
     while (offset < buffer_size)
     {
@@ -353,7 +373,7 @@ int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
          */
         if (full_data[offset] == 0)
         {
-            offset = offset + (2048 - (offset % 2048)); // skips remaining bytes to start of next sector
+            offset = offset + (one_sector_size - (offset % one_sector_size)); // skips remaining bytes to start of next sector
             continue;
         }
         auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&full_data[offset]);
@@ -372,9 +392,8 @@ int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
             offset = start_offset + dir_record.record_length;
             continue;
         } // is either current or parent dir's entry or broken.;
-        [[maybe_unused]]u32 data_len = dir_record.data_length_LE;
+        [[maybe_unused]] u32 data_len = dir_record.data_length_LE;
         u8 flags = dir_record.flags;
-        LOG("Directory: ", target_dir->get_name(), " name: ", filename, " data length: ", data_len, " flags raw: ", flags, " is directory: ", bool(flags & 0x02));
 
         if (flags & 0x2)
         {
@@ -394,12 +413,12 @@ int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
     return 0;
 }
 
-ArtDirectory* IDEStorageContainer::make_root_directory(const iso_path_table_entry_header& path_table_root)
+ArtDirectory* IDEStorageContainer::make_root_directory(const iso_path_table_entry_header& p_t_r)
 {
-    char first_sector_data[2048];
-    read_lba(&first_sector_data, path_table_root.extent_loc, 2048);
+    char first_sector_data[one_sector_size];
+    read_lba(&first_sector_data, p_t_r.extent_loc, one_sector_size, 0);
     char* root_dir_name = strdup("/");
-    auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&first_sector_data[0]);
+    const auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&first_sector_data[0]);
     return new ArtDirectory{
         nullptr,
         dir_record_to_directory(dir_record, root_dir_name),
@@ -418,7 +437,8 @@ int IDEStorageContainer::populate_directory_recursive(ArtDirectory* target_dir)
 int IDEStorageContainer::populate_file_tree()
 {
     // todo refactor into void function?
-    path_table_root = get_path_table_root_dir();
+    LOG("Constructing CD ROM directory tree");
+    const auto path_table_root = get_path_table_root_dir();
     root_directory = make_root_directory(path_table_root);
     populate_directory_recursive(root_directory);
     LOG("Directory Tree constructed.");

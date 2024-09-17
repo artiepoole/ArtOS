@@ -1,6 +1,7 @@
 #include "Terminal.h"
 
 #include <ArtFile.h>
+#include <Files.h>
 #include <RTC.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,12 +77,12 @@ Terminal& Terminal::get()
     return *instance;
 }
 
- ArtFile  * Terminal::get_stdout_file()
+ArtFile* Terminal::get_stdout_file()
 {
     return stdout_wrapper->get_file();
 }
 
-ArtFile  * Terminal::get_stderr_file()
+ArtFile* Terminal::get_stderr_file()
 {
     return stderr_wrapper->get_file();
 }
@@ -415,13 +416,15 @@ TermFileWrapper::TermFileWrapper(const bool stderr): is_stderr(stderr)
 {
     if (is_stderr)
     {
-        char name[] = "stderr";
-        file = ArtFile{this, name};
-        return;
+        strcpy(name, "stderr");
+    }
+    else
+    {
+        strcpy(name, "stdout");
     }
 
-    char name[] = "stdout";
     file = ArtFile{this, name};
+    register_storage_device(this);
 }
 
 ArtFile* TermFileWrapper::get_file()
@@ -429,7 +432,7 @@ ArtFile* TermFileWrapper::get_file()
     return &file;
 }
 
-size_t TermFileWrapper::write(const char* data, size_t , size_t byte_count)
+i64 TermFileWrapper::write(const char* data, size_t, size_t byte_count)
 {
     if (is_stderr) return Terminal::user_err(data, byte_count);
     return Terminal::user_write(data, byte_count);
@@ -437,11 +440,15 @@ size_t TermFileWrapper::write(const char* data, size_t , size_t byte_count)
 
 ArtFile* TermFileWrapper::find_file(const char* filename)
 {
-
     if (is_stderr)
     {
         if (constexpr char this_name[7] = "stderr"; strcmp(filename, this_name) == 0) return &file;
     }
     if (constexpr char this_name[7] = "stdout"; strcmp(filename, this_name) == 0) return &file;
     return nullptr;
+}
+
+char* TermFileWrapper::get_name()
+{
+    return name;
 }

@@ -114,18 +114,20 @@ public:
 
 
     ArtFile* get_file();
-    size_t read(char*, size_t, size_t) override { return 0; }
-    size_t write(const char* data, size_t, size_t byte_count) override;
+    i64 read(char*, size_t, size_t) override { return 0; }
+    i64 write(const char* data, size_t, size_t byte_count) override;
 
-    int seek(size_t, int) { return 0; }
-    int mount() { return 0; }
+    i64 seek(u64, int) override { return 0; }
+    int mount() override { return 0; }
     ArtFile* find_file([[maybe_unused]] const char* filename) override;
+    char* get_name() override;
     size_t get_block_size() override { return 1; }
     size_t get_block_count() override { return -1; }
     size_t get_sector_size() override { return 1; }
 
 private:
     bool is_stderr = false;
+    char name[7];
     ArtFile file{};
 };
 

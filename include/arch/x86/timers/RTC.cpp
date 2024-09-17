@@ -18,8 +18,8 @@ u32 seconds_since_start = 0;
 
 RTC::RTC()
 {
-    WRITE("DAY MON DD HH:MM:SS YYYY\tInitialising RTC\n");
     instance = this;
+    LOG("Initialising RTC");
     u8 flag = readRegister(CMOS_STATUS_B);
     // Set the clock to binary mode (more efficient) and 24 hour mode.
     // Bit 2 - Data Mode - 0: BCD, 1: Binary
@@ -212,9 +212,6 @@ u32 RTC::setDivider(u8 divider)
     if (interrupts_enabled) enable_interrupts();
     return hz;
 }
-
-
-
 
 
 void RTC::toString(char* out_str) const

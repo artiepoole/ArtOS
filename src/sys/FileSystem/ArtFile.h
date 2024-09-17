@@ -6,6 +6,7 @@
 #define ARTFILE_H
 
 #include "time.h"
+#include "types.h"
 
 class ArtDirectory;
 class StorageDevice;
@@ -20,23 +21,23 @@ public:
     ~ArtFile() = default;
 
 
-    size_t read(char* dest, size_t byte_count) const;
-    int seek(size_t byte_offset, int whence);
-    int write(const char* src, size_t byte_count) const;
+    size_t read(char* dest, size_t byte_count);
+    _PDCLIB_int_least64_t seek(u64 byte_offset, int whence);
+    int write(const char* src, size_t byte_count);
     const char* get_name();
 
 private:
     ArtDirectory* parent_directory;
     StorageDevice* device = nullptr;
-    size_t first_byte = 0;
-    size_t size = 0; // bytes
+    u64 first_byte = 0;
+    u64 size = 0; // bytes
     tm datetime;
     size_t file_name_length = 0;
     // u64 permissions;
     char* filename = nullptr;
 
     ArtFile* next_file = nullptr;
-    size_t seek_pos = 0;
+    u64 seek_pos = 0;
 };
 
 

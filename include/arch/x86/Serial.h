@@ -23,6 +23,7 @@ private:
     static int _get_read_ready_status();
     static int _get_transmit_empty();
     static void _write_buffer(const char* data, size_t size);
+    char name[11] = "/dev/com1";
 
 public:
     Serial();
@@ -30,12 +31,13 @@ public:
 
     static Serial& get();
     static ArtFile*& get_file();
+
     // remove copy functionality
     Serial(Serial const& other) = delete;
     Serial& operator=(Serial const& other) = delete;
 
     bool connected;
-
+    void register_device();
     void newLine();
     void write(bool b);
     // void write(unsigned char c);
@@ -45,15 +47,20 @@ public:
     static u32 com_read(char* dest, u32 count);
     static u32 com_write(const char* data, u32 count);
 
-    size_t read(char* dest,[[maybe_unused]] size_t byte_offset, size_t byte_count) override { return com_read(dest, byte_count); }
-    size_t write(const char* data,[[maybe_unused]] size_t byte_offset, size_t byte_count) override { return com_write(data, byte_count); }
-
-    int seek([[maybe_unused]] size_t byte_offset, [[maybe_unused]] int whence)override {return 0;}
+    i64 read(char* dest, [[maybe_unused]] size_t byte_offset, size_t byte_count) override { return com_read(dest, byte_count); }
+    i64 write(const char* data, [[maybe_unused]] size_t byte_offset, size_t byte_count) override { return com_write(data, byte_count); }
+    i64 seek([[maybe_unused]] u64 byte_offset, [[maybe_unused]] int whence) override { return 0; }
+    char* get_name() override { return name; }
 
 
     int mount() { return 0; }
 
-    ArtFile* find_file([[maybe_unused]] const char* filename) override { if (strcmp(filename, "/dev/com1") == 0 ) return get_file(); else return nullptr; }
+    ArtFile* find_file([[maybe_unused]] const char* filename) override
+    {
+        if (strcmp(filename, "/dev/com1") == 0) return get_file();
+        else return nullptr;
+    }
+
     size_t get_block_size() override { return 1; }
 
     size_t get_block_count() override { return -1; }

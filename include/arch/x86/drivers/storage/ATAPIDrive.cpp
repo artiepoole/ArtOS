@@ -113,7 +113,6 @@ int ATAPIDrive::start_DMA_read(u32 lba_offset, const size_t n_sectors)
     packet.bytes[7] = n_sectors >> 8 & 0xFF;
 
     // Flush buffers and set features to request DMA transfer for read data
-    LOG("Setting registers for DMA read cmd");
     set_regs(init_dma_cmd_regs);
 
     // Send the packet
@@ -205,12 +204,10 @@ int ATAPIDrive::send_packet_PIO(const ATAPI_packet_t& packet)
 
     // Transfer waits for irq. IRQ just resets transfer in progress
     waiting_for_transfer = true;
-    LOG("Sending PACKET command for PIO");
     outb(drive_info->base_port + CMD_OFFSET, PROCESS_PACKET_CMD);
     // wait for ready
     ATA_poll_busy(drive_info);
     ATA_poll_until_DRQ(drive_info);
-    LOG("Sending packet data");
     // send data
     for (unsigned short word : packet.words)
     {
@@ -239,12 +236,10 @@ int ATAPIDrive::send_packet_DMA(const ATAPI_packet_t& packet)
 {
     ATA_select_drive(drive_info);
     ATA_poll_busy(drive_info);
-    LOG("Sending DMA packet command");
     outb(drive_info->base_port + CMD_OFFSET, PROCESS_PACKET_CMD);
     // waiting_for_transfer = true;
     ATA_poll_busy(drive_info);
     ATA_poll_until_DRQ(drive_info);
-    LOG("Sending DMA packet data");
     // send data
     for (unsigned short word : packet.words)
     {

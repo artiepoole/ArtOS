@@ -1,6 +1,7 @@
 #include "Serial.h"
 
 #include <ArtFile.h>
+#include <Files.h>
 
 #include "ports.h"
 #include "RTC.h"
@@ -45,7 +46,7 @@ Serial::Serial()
     outb(PORT + MODEM_CONTROL_OFFSET, 0x0F);
     connected = true;
 
-    WRITE("DAY MON DD HH:MM:SS YYYY\tSerial connected\n");
+    WRITE("Sun Jan  0 00:00:00 1900\tSerial connected\n");
     char name[] = "/dev/com1";
     file_wrapper = new ArtFile{this, name};
 }
@@ -63,6 +64,11 @@ ArtFile*& Serial::get_file(){
     return file_wrapper;
 }
 
+
+void Serial::register_device()
+{
+    register_storage_device(this);
+}
 
 void Serial::write(const char c)
 {

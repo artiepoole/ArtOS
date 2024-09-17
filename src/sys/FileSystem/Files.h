@@ -55,6 +55,8 @@ extern "C"
 size_t write(int fd, const char* buf, unsigned long count);
 extern "C"
 size_t read( int fd, char* buf, size_t count);
+extern "C"
+_PDCLIB_int_least64_t seek(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence) ;
 
 void register_storage_device(StorageDevice* dev);
 void deregister_storage_device(StorageDevice* dev);

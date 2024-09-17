@@ -30,6 +30,7 @@ LinkedList<StorageDevice*> devices;
 
 void register_storage_device(StorageDevice* dev)
 {
+    LOG("Storage device registered: ", dev->get_name());
     devices.append(dev);
 }
 
@@ -38,7 +39,7 @@ void deregister_storage_device(StorageDevice* dev)
     devices.remove(dev);
 }
 
-const ArtFile* get_file_handle(int fd)
+ArtFile* get_file_handle(int fd)
 {
     return handles[fd];
 }
@@ -62,58 +63,6 @@ void close_file_handle(int fd)
     handles[fd] = NULL;
 }
 
-u32 doomwad_seek_pos;
-extern char doom_wad_file[];
-extern char doom_wad_file_end[];
-u32 doomwad_size;
-
-extern "C"
-u32 doom_seek(_PDCLIB_file_t* stream, u32 offset, int whence)
-{
-    if (offset > doomwad_size)
-    {
-        return EOF;
-    }
-
-    switch (whence)
-    {
-    case SEEK_SET:
-        {
-            doomwad_seek_pos = offset;
-            stream->pos.offset = offset;
-            return 0;
-        }
-    case SEEK_CUR:
-        {
-            doomwad_seek_pos += offset;
-            stream->pos.offset += offset;
-            return 9;
-        }
-    case SEEK_END:
-        {
-            doomwad_seek_pos = doomwad_size - offset - 1;
-            stream->pos.offset = doomwad_size - offset - 1;
-            return 0;
-        }
-    default: return -1;
-    }
-}
-
-
-extern "C"
-u32 doomwad_read(char* dest, u32 count)
-{
-    size_t i = 0;
-    while (i < doomwad_size && i < count)
-    {
-        dest[i] = doom_wad_file[i + doomwad_seek_pos];
-        i++;
-    }
-    doomwad_seek_pos += i;
-    return i;
-}
-
-
 int register_file_handle(size_t file_id, ArtFile* file)
 {
     if (handles[file_id] != NULL)
@@ -125,12 +74,10 @@ int register_file_handle(size_t file_id, ArtFile* file)
     return 0;
 }
 
-
 extern "C"
 int open(const char* filename, [[maybe_unused]] unsigned int mode)
 {
-    // TODO this is a stub. We probably want some kind of dispatch to filesystems/mounts so we can mount com0 to
-    //  be opened here.
+    // TODO this is unfinished. This should take a path or a working dir
 
     if (strcmp("/dev/com1", filename) == 0)
     {
@@ -169,7 +116,7 @@ int close(size_t file_id)
 extern "C"
 size_t write(const int fd, const char* buf, const unsigned long count)
 {
-    const ArtFile* h = get_file_handle(fd);
+    ArtFile* h = get_file_handle(fd);
     if (h == NULL)
     {
         // unknown FD
@@ -181,7 +128,7 @@ size_t write(const int fd, const char* buf, const unsigned long count)
 extern "C"
 size_t read(const int file_id, char* buf, const size_t count)
 {
-    const ArtFile* h = get_file_handle(file_id);
+    ArtFile* h = get_file_handle(file_id);
     if (h == NULL)
     {
         // unknown FD
@@ -191,13 +138,16 @@ size_t read(const int file_id, char* buf, const size_t count)
 }
 
 extern "C"
-int seek(_PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence)
+i64 seek(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, const int whence)
 {
     //TODO: implement device seek_pos changes.
-
-    if (strcmp(handles[stream->handle]->get_name(), "doom1.wad") == 0)
+    if (ArtFile* h = handles[stream->handle])
     {
-        return doom_seek(stream, offset, whence);
+        return h->seek(offset, whence);
     }
+    // if (strcmp(->get_name(), "doom1.wad") == 0)
+    // {
+    //     return doom_seek(stream, offset, whence);
+    // }
     return ERR_NOT_FOUND;
 }
