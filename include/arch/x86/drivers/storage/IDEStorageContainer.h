@@ -32,6 +32,8 @@ public:
     int mount() override;
 
     i64 read(char* dest, size_t byte_offset, size_t n_bytes) override;
+    i64 read(void* dest, size_t byte_offset, size_t n_bytes);
+    i64 read_lba(void* dest, size_t lba_offset, size_t n_bytes);
     i64 seek([[maybe_unused]] u64 offset, [[maybe_unused]] int whence) override { return -NOT_IMPLEMENTED; }
     i64 write([[maybe_unused]] const char* src, [[maybe_unused]] size_t byte_count, [[maybe_unused]] size_t byte_offset) override { return -NOT_IMPLEMENTED; }
     char* get_name() override {return name;}
@@ -42,9 +44,9 @@ public:
 
     int prep_DMA_read(size_t lba, size_t n_sectors);
     void start_DMA_transfer();
-    int wait_for_DMA_transfer() const;
+    [[nodiscard]] int wait_for_DMA_transfer() const;
     int stop_DMA_read();
-    i64 read_lba(void* dest, size_t lba_offset, size_t n_bytes, size_t sector_offset);
+    int read_into_region_from_lba(size_t lba_offset);
 
 
     void notify() override;
@@ -73,6 +75,7 @@ private:
     BusMasterController* bm_dev;
     ArtDirectory* root_directory = nullptr;
     volatile bool BM_waiting_for_transfer = false; // todo private member
+    i64 stored_buffer_start = -1;
 };
 
 #endif //IDE_DEVICE_H

@@ -19,6 +19,7 @@
 
 constexpr size_t region_size = 65536;
 #define one_sector_size this->drive_dev->drive_info->sector_size
+#define one_block_size this->drive_dev->drive_info->block_size
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 
@@ -54,7 +55,6 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
     IDE_remove_device(this->drive_dev); // Stop interrupts from going directly to the contained device.
     register_storage_device(this);
     LOG("IDEStorageContainer initialised.");
-
 }
 
 // Populates directory tree.
@@ -64,23 +64,38 @@ int IDEStorageContainer::mount()
 }
 
 // Read from byte offset. Useful for use with files.
-i64 IDEStorageContainer::read(char* dest, const size_t byte_offset, size_t n_bytes)
+i64 IDEStorageContainer::read(char* dest, const size_t byte_offset, const size_t n_bytes)
 {
-    if (n_bytes == 0) return 0;
-    i64 n_read = 0;
+    i64 n_read = 0; // has to be able to be neg but also up to U32_MAX so use an i64. n_read >0 here due to program flow.
+    i64 real_offset = byte_offset; // position within disk in bytes
     while (n_read < n_bytes)
     {
-        // n_read has to be able to be neg but also up to max(u32) so use an i64. n_read >0 here due to program flow.
-        size_t bytes_to_read = n_bytes - static_cast<u32>(n_read);
-        if (bytes_to_read > region_size) { bytes_to_read = region_size; }
-        const size_t lba_offset = (byte_offset + n_read) / drive_dev->drive_info->block_size;
-        const size_t sector_offset = (byte_offset + n_read) % drive_dev->drive_info->block_size;
-        const i64 res = read_lba(&dest[n_read], lba_offset, bytes_to_read, sector_offset);
-        if (res == 0) { break; }
-        if (res < 0) { return res; }
-        n_read += res;
+        // Only load new physical region if necessary
+        if (real_offset >= (stored_buffer_start + region_size) || real_offset < stored_buffer_start || stored_buffer_start < 0)
+        {
+            // rounds down. First sector conaining missing data.
+            const size_t start_lba = static_cast<u16>((real_offset) / static_cast<i64>(one_block_size));
+            if (const int res = read_into_region_from_lba(start_lba); res < 0) { return res; }
+        }
+
+        const size_t offset_in_store = real_offset - stored_buffer_start; // should calculate the offset from physical region start.
+        const i64 available_bytes = MIN(n_bytes - n_read, region_size - offset_in_store); // either all remaining bytes or from first byte to end of region
+        memcpy(&dest[n_read], &bm_dev->physical_region[offset_in_store], static_cast<size_t>(available_bytes));
+        n_read += available_bytes;
+        real_offset = byte_offset + n_read;
     }
     return n_read;
+}
+
+i64 IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t n_bytes)
+{
+    return read(static_cast<char*>(dest), byte_offset, n_bytes);
+}
+
+i64 IDEStorageContainer::read_lba(void* dest, const size_t lba_offset, const size_t n_bytes)
+{
+    const i64 byte_offset = lba_offset * one_block_size;
+    return read(static_cast<char*>(dest), byte_offset, n_bytes);
 }
 
 size_t IDEStorageContainer::get_block_size()
@@ -149,14 +164,15 @@ int IDEStorageContainer::stop_DMA_read()
     return 0;
 }
 
-// Read from specified lba. useful internally. Might move to private
-auto IDEStorageContainer::read_lba(void* dest, size_t lba_offset, const size_t n_bytes, const size_t sector_offset) -> i64
-{
-    // trim oversize reads
-    u16 n_sectors = ((n_bytes + sector_offset) + (drive_dev->drive_info->sector_size - 1)) / drive_dev->drive_info->sector_size & 0xffff; // round up division
-    if (n_sectors > 32) { n_sectors = 32; }
 
-    // put data in physical reagion
+int IDEStorageContainer::read_into_region_from_lba(size_t lba_offset)
+{
+    // TODO: This should always be called to read 64K at a time.
+
+    // trim oversize reads
+    constexpr u16 n_sectors = 32;
+
+    // put data in physical region
     int ret_val = 0;
     ret_val = prep_DMA_read(lba_offset, n_sectors); // should set up ATA stuff and then set up BM stuff
     if (ret_val != 0) { return ret_val; }
@@ -165,10 +181,8 @@ auto IDEStorageContainer::read_lba(void* dest, size_t lba_offset, const size_t n
     if (ret_val != 0) { return ret_val; }
     ret_val = stop_DMA_read(); // should just reset BM start_stop
     if (ret_val != 0) { return ret_val; }
-    // handle copy
-    const i64 actual_bytes = MIN(n_bytes, n_sectors*one_sector_size - sector_offset);
-    memcpy(dest, &bm_dev->physical_region[sector_offset], static_cast<size_t>(actual_bytes));
-    return actual_bytes;
+    stored_buffer_start = lba_offset * one_sector_size;
+    return ret_val;
 }
 
 // Called by interrupt handler.
@@ -285,7 +299,7 @@ iso_primary_volume_descriptor_t IDEStorageContainer::get_primary_volume_descript
     iso_primary_volume_descriptor_t vd{};
     constexpr size_t buf_size = sizeof(iso_primary_volume_descriptor_t);
     constexpr u32 data_start_lba = 16; // in LBA#
-    read_lba(&vd, data_start_lba, buf_size, 0);
+    read_lba(&vd, data_start_lba, buf_size);
     // TODO: ensure that the gotten vd is the primary vol desc.
     return vd;
 }
@@ -301,7 +315,7 @@ iso_path_table_entry_header IDEStorageContainer::get_path_table_root_dir()
 
     // Load the path table
     char path_table_data[volume_descriptor.path_table_size_LE];
-    read_lba(&path_table_data, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE, 0);
+    read_lba(&path_table_data, volume_descriptor.path_l_table_loc_lba, volume_descriptor.path_table_size_LE);
 
     // get first dir entry. Ignore name because it is blank anyway.
     return *reinterpret_cast<iso_path_table_entry_header*>(path_table_data);
@@ -313,7 +327,7 @@ iso_path_table_entry_header IDEStorageContainer::get_path_table_root_dir()
 size_t IDEStorageContainer::get_dir_entry_size(ArtDirectory*& target_dir)
 {
     char first_sector_data[this->drive_dev->drive_info->sector_size];
-    read_lba(&first_sector_data, target_dir->get_lba(), one_sector_size, 0);
+    read_lba(&first_sector_data, target_dir->get_lba(), one_sector_size);
     return *reinterpret_cast<size_t*>(&first_sector_data[10]);
 }
 
@@ -355,13 +369,8 @@ u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name
 int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
 {
     size_t buffer_size = get_dir_entry_size(target_dir);
-    if (buffer_size > region_size)
-    {
-        LOG("Cannot load full data without implementing larger physical region for DMA or handling partial transfers. Reading first 64k of data.");
-        buffer_size = region_size;
-    }
     char full_data[buffer_size];
-    read_lba(&full_data, target_dir->get_lba(), buffer_size, 0);
+    read_lba(&full_data, target_dir->get_lba(), buffer_size);
     size_t offset = 0;
     while (offset < buffer_size)
     {
@@ -416,7 +425,7 @@ int IDEStorageContainer::populate_directory(ArtDirectory*& target_dir)
 ArtDirectory* IDEStorageContainer::make_root_directory(const iso_path_table_entry_header& p_t_r)
 {
     char first_sector_data[one_sector_size];
-    read_lba(&first_sector_data, p_t_r.extent_loc, one_sector_size, 0);
+    read_lba(&first_sector_data, p_t_r.extent_loc, one_sector_size);
     char* root_dir_name = strdup("/");
     const auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&first_sector_data[0]);
     return new ArtDirectory{
