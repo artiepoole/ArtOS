@@ -36,7 +36,7 @@ target_link_libraries(
         string_test
         GTest::gtest_main
 )
-target_include_directories(string_test PRIVATE ../include ../Generic/sys/Constants)
+target_include_directories(string_test PRIVATE ../Generic/sys/HelperFunctions)
 
 include(GoogleTest)
 gtest_discover_tests(string_test)

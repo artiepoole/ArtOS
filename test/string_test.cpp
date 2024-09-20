@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../include/mystring.h"
+#include "mystring.h"
 
 
 // Demonstrate some basic assertions.
