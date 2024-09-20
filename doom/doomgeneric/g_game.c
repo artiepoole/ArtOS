@@ -573,9 +573,9 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
     { 
 	sendsave = false; 
 	cmd->buttons = BT_SPECIAL | BTS_SAVEGAME | (savegameslot<<BTS_SAVESHIFT); 
-    } 
+    }
 
-    // low-res turning
+    // low-external_resources turning
 
     if (lowres_turn)
     {
@@ -2067,7 +2067,7 @@ void G_BeginRecording (void)
 
     longtics = M_CheckParm("-longtics") != 0;
 
-    // If not recording a longtics demo, record in low res
+    // If not recording a longtics demo, record in low external_resources
 
     lowres_turn = !longtics;
     

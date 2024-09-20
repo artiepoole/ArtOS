@@ -66,7 +66,7 @@ int _PDCLIB_changemode( struct _PDCLIB_file_t * stream, unsigned int mode )
 
 int main( void )
 {
-    /* No test drivers. */
+    /* No test Drivers. */
     return TEST_RESULTS;
 }
 

@@ -6,4 +6,4 @@ bin/
 *.iso
 
 /serial.log
-/res/doomwad/*
+/external_resources/doomwad/*

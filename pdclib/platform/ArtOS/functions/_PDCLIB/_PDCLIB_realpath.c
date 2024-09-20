@@ -36,7 +36,7 @@ char * _PDCLIB_realpath( const char * path )
 
 int main( void )
 {
-    /* No test drivers. */
+    /* No test Drivers. */
     return TEST_RESULTS;
 }
 

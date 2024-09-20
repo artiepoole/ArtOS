@@ -131,7 +131,7 @@ void T_MoveCeiling (ceiling_t* ceiling)
 		break;
 	    }
 	}
-	else // ( res != pastdest )
+	else // ( external_resources != pastdest )
 	{
 	    if (res == crushed)
 	    {

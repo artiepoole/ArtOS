@@ -2,15 +2,15 @@
 #include <logging.h>
 #include <ports.h>
 
-#include "doomgeneric/doomkeys.h"
-#include "../include/constants/types.h"
+#include "../doom/doomgeneric/doomkeys.h"
+#include "sys/Constants/types.h"
 
 extern "C" {
-#include "doomgeneric/doomgeneric.h"
+#include "../doom/doomgeneric/doomgeneric.h"
 }
 
 
-#include "../src/sys/kernel.h"
+#include "sys/kernel.h"
 
 
 u8 doom_key_map[128] =

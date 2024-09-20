@@ -12,54 +12,67 @@ set(KERNEL_BIN "ArtOS.bin")
 set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 
 ### Find all source files
-file(GLOB INCLUDE
-        "include/*.h"
-        "include/*.cpp"
-        "include/arch/x86/*.S"
-        "include/arch/x86/*.h"
-        "include/arch/x86/*.cpp"
-        "include/arch/x86/timers/*.h"
-        "include/arch/x86/timers/*.cpp"
-        "include/arch/x86/device_info/*.h"
-        "include/arch/x86/device_info/*.cpp"
-        "include/arch/x86/device_info/*.h"
-        "include/arch/x86/drivers/storage/*.cpp"
-        "include/arch/x86/drivers/storage/*.h"
-        "include/constants/*.h"
-        "include/constants/*.cpp"
+file(GLOB_RECURSE Specific
+        "Specific/Devices/*.cpp"
+        "Specific/Devices/*.h"
+        "Specific/multiboot2/*.cpp"
+        "Specific/multiboot2/*.h"
 )
 
-file(GLOB KERNEL
-        "src/sys/*.h"
-        "src/sys/*.cpp"
-        "src/sys/FileSystem/*.h"
-        "src/sys/FileSystem/*.cpp"
-        "src/sys/Storage/*.h"
-        "src/sys/Storage/*.cpp"
-        "src/sys/DataTyes/*.h"
-        "src/sys/DataTyes/*.cpp"
+file(GLOB_RECURSE ArchitectureSpecific
+        "Specific/x86/*.cpp"
+        "Specific/x86/*.h"
+        "Specific/x86/*.c"
+        "Specific/x86/*.S"
+)
+
+file(GLOB_RECURSE Generic
+        "Generic/*.h"
+        "Generic/*.cpp"
+
 )
 
 
 add_subdirectory(pdclib)
 add_subdirectory(doom)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} src/boot.S src/main.cpp ${INCLUDE} ${KERNEL})
+add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
 
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
-        include
-        include/arch/x86/
-        include/arch/x86/timers
-        include/arch/x86/device_info/
-        include/arch/x86/drivers/storage
-        include/constants
-        src
-        src/sys
-        src/sys/FileSystem
-        src/sys/Storage
-        src/sys/DataTyes
+        Generic/
+        Generic/sys
+        Generic/sys/Communication
+        Generic/sys/Constants
+        Generic/sys/DataTypes
+        Generic/sys/Events
+        Generic/sys/FileSystem
+        Generic/sys/HelperFunctions
+        Generic/sys/Logging
+        Generic/sys/Memory
+        Generic/sys/Storage
+        Generic/sys/Terminal
         )
+
+target_include_directories(
+        ${KERNEL_BIN} PUBLIC
+
+        Specific/multiboot2
+        Specific/Devices/PCI
+        Specific/Devices/Storage
+
+        Specific/x86
+        Specific/x86/BIOS
+        Specific/x86/Display
+        Specific/x86/Drivers/Storage
+        Specific/x86/IO
+        Specific/x86/IO/keymaps
+        Specific/x86/PCI
+        Specific/x86/ProcessInterruptControllers
+        Specific/x86/Timers
+
+
+)
 
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 

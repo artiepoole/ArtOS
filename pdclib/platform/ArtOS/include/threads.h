@@ -196,7 +196,7 @@ _PDCLIB_PUBLIC int thrd_detach( thrd_t thr );
 */
 _PDCLIB_PUBLIC int thrd_equal( thrd_t thr0, thrd_t thr1 );
 
-/* Terminate calling thread, set result code to res.
+/* Terminate calling thread, set result code to external_resources.
    When the last thread of a program terminates the program shall terminate
    normally as if by exit( EXIT_SUCCESS ).
    FIXME: The result code setting is NOT implemented correctly at this point.
@@ -207,7 +207,7 @@ _PDCLIB_PUBLIC _PDCLIB_Noreturn void thrd_exit( int res ) _PDCLIB_NORETURN;
 /* Join the given thread with the calling thread.
    Returns thrd_success if successful, thrd_error if the request could not
    be honored.
-   Function blocks until the given thread terminates. If res is not NULL,
+   Function blocks until the given thread terminates. If external_resources is not NULL,
    the given thread's result code will be stored at that address.
 */
 _PDCLIB_PUBLIC int thrd_join( thrd_t thr, int * res );
