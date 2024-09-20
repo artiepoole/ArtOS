@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 GRUB_SRC="../grub.cfg"
-DOOMWAD_SRC="../res/doomwad/doom1.wad"
+DOOMWAD_SRC="../external_resources/doomwad/doom1.wad"
 
 if grub-file --is-x86-multiboot2 ArtOS.bin; then
   if test -f $GRUB_SRC; then

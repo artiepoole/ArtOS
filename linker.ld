@@ -1,10 +1,5 @@
 /* The bootloader will look at this image and start execution at the symbol
    designated as the entry point. */
-TARGET(binary)
-INPUT(/home/artypoole/CLionProjects/ArtOS/res/doomwad/doom1.wad)
-OUTPUT_FORMAT(default)
-
-
 ENTRY(start)
 
 OUTPUT_FORMAT(elf32-i386)
@@ -49,7 +44,6 @@ SECTIONS
         KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
         end_ctors = .;
         *(.data)
-        *(.doom_blob*)
     }
 
 

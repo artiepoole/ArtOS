@@ -272,18 +272,18 @@ set( PDCLIB_HEADERS
         platform/ArtOS/include/signal.h
 )
 
-file(GLOB KERNEL
-        "../include/*.h"
-        "../include/arch/x86/device_info/*.h"
-        "../include/constants/*.h"
-        "../include/arch/x86/timers/*.h"
-        "../src/sys/*.h"
-        "../src/sys/*.cpp"
-        "src/sys/FileSystem/*.h"
-        "src/sys/FileSystem/*.cpp"
-        "src/sys/Storage/*.cpp"
-        "src/sys/Storage/*.h"
-)
+#file(GLOB KERNEL
+#        "../include/*.h"
+#        "../include/arch/x86/device_info/*.h"
+#        "../include/constants/*.h"
+#        "../include/arch/x86/timers/*.h"
+#        "../src/sys/*.h"
+#        "../src/sys/*.cpp"
+#        "src/sys/FileSystem/*.h"
+#        "src/sys/FileSystem/*.cpp"
+#        "src/sys/Storage/*.cpp"
+#        "src/sys/Storage/*.h"
+#)
 
 set( PDCLIB_PRIVATE_HEADERS
         include/pdclib/_PDCLIB_glue.h
@@ -294,7 +294,7 @@ set( PDCLIB_PRIVATE_HEADERS
 )
 
 #add_library( pdclib  SHARED ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
-add_library(pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS} ${KERNEL})
+add_library(pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS}) #${KERNEL}
 
 #target_include_directories( pdclib  BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include include platform/ArtOS/include ../src ../src/sys ../include)
 target_include_directories( pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include )
@@ -330,15 +330,19 @@ target_include_directories(pdclib PUBLIC
         functions/string
         functions/time
 
-        ../src
-        ../src/sys
-        ../src/sys/FileSystem
-        ../src/sys/Storage
-        ../include
-        ../include/arch/x86/
-        ../include/arch/x86/timers
-        ../include/arch/x86/device_info
-        ../include/constants
+        ../Generic/sys
+        ../Generic/sys/Constants
+        ../Generic/sys/FileSystem
+        ../Generic/sys/HelperFunctions
+        ../Generic/sys/Logging
+        ../Generic/sys/Memory
+        ../Generic/sys/Storage
+        ../Generic/sys/Terminal
+
+        ../Specific/x86/CPU
+        ../Specific/x86/Timers
+
+
 
 )
 

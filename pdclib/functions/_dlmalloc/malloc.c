@@ -280,7 +280,7 @@ int main( void )
 
  -------------------------  Compile-time options ---------------------------
 
-Be careful in setting #define values for numerical constants of type
+Be careful in setting #define values for numerical Constants of type
 size_t. On some systems, literal values are not automatically extended
 to size_t precision unless they are explicitly casted. You can also
 use the symbolic values MAX_SIZE_T, SIZE_T_ONE, etc below.
@@ -1518,10 +1518,10 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #pragma warning( disable : 4146 ) /* no "unsigned" warnings */
 #endif /* _MSC_VER */
 #if !NO_MALLOC_STATS
-#include "../pdclib/include/stdio.h"     /* for printing in malloc_stats */
+#include "stdio.h"     /* for printing in malloc_stats */
 #endif /* NO_MALLOC_STATS */
 #ifndef LACKS_ERRNO_H
-#include "../pdclib/include/errno.h"       /* for MALLOC_FAILURE_ACTION */
+#include "errno.h"       /* for MALLOC_FAILURE_ACTION */
 #endif /* LACKS_ERRNO_H */
 #ifdef DEBUG
 #if ABORT_ON_ASSERT_FAILURE
@@ -1540,10 +1540,10 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #include <time.h>        /* for magic initialization */
 #endif /* WIN32 */
 #ifndef LACKS_STDLIB_H
-#include "../pdclib/include/stdlib.h"     /* for abort() */
+#include "stdlib.h"     /* for abort() */
 #endif /* LACKS_STDLIB_H */
 #ifndef LACKS_STRING_H
-#include "../../include/string.h"    /* for memset etc */
+#include "string.h"    /* for memset etc */
 #endif  /* LACKS_STRING_H */
 #if USE_BUILTIN_FFS
 #ifndef LACKS_STRINGS_H
@@ -1683,7 +1683,7 @@ unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);
 #define SIZE_T_SIZE         (sizeof(size_t))
 #define SIZE_T_BITSIZE      (sizeof(size_t) << 3)
 
-/* Some constants coerced to size_t */
+/* Some Constants coerced to size_t */
 /* Annoying but necessary to avoid errors on some platforms */
 #define SIZE_T_ZERO         ((size_t)0)
 #define SIZE_T_ONE          ((size_t)1)

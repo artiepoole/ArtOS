@@ -4,24 +4,25 @@
 
 #include "IDEStorageContainer.h"
 
-#include <ATAPIDrive.h>
-#include <Errors.h>
-#include <IDE_DMA_PRDT.h>
-#include <iso_fs.h>
-#include <PIT.h>
-#include <ports.h>
-#include <stdlib.h>
-#include <string.h>
+#include "ATAPIDrive.h"
+#include "Errors.h"
+#include "IDE_DMA_PRDT.h"
+#include "iso_fs.h"
+#include "PIT.h"
+#include "ports.h"
+#include "stdlib.h"
+#include "string.h"
 
 #include "IDE_handler.h"
 #include "logging.h"
 #include "Files.h"
+#include "cmp_int.h"
 
 constexpr size_t region_size = 65536;
 #define one_sector_size this->drive_dev->drive_info->sector_size
 #define one_block_size this->drive_dev->drive_info->block_size
 
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+
 
 IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name): name(strdup(new_name))
 {

@@ -13,7 +13,7 @@
 #include "ports.h"
 
 
-// TODO: consider enums for all of these constants, in all files using them.
+// TODO: consider enums for all of these Constants, in all files using them.
 #define STATUS_ERR 0x01
 #define STATUS_DRQ 0x08
 #define STATUS_RDY 0x40
@@ -113,13 +113,13 @@ enum class ATA_DEVICE_TYPES
  * optical memory
  * medium changer
  * comms dev
- * res ACS IT8
- * res ACT IT8
+ * external_resources ACS IT8
+ * external_resources ACT IT8
  * Array controller
  * enclosure services
  * reduced block command
  * optical card reader/writer
- * res up to
+ * external_resources up to
  * 0x1F - unknown or unspecified
  */
 

@@ -168,7 +168,7 @@ void _PDCLIB_print_integer( imaxdiv_t div, struct _PDCLIB_status_t * status )
 
 int main( void )
 {
-    /* Tested by the various *printf() drivers. */
+    /* Tested by the various *printf() Drivers. */
     return TEST_RESULTS;
 }
 

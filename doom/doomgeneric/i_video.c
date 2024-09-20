@@ -106,7 +106,7 @@ boolean screenvisible;
 
 // Mouse acceleration
 //
-// This emulates some of the behavior of DOS mouse drivers by increasing
+// This emulates some of the behavior of DOS mouse Drivers by increasing
 // the speed when the mouse is moved fast.
 //
 // The mouse input values are input directly to the game, but when

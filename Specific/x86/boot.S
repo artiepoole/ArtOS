@@ -1,5 +1,5 @@
 
-/* Declare constants for the multiboot header. */
+/* Declare Constants for the multiboot header. */
 #define ASM_FILE 1
 #include <multiboot2.h>
 

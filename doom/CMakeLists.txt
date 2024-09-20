@@ -7,7 +7,8 @@ file(GLOB SRC
         "doomgeneric/*.c"
 )
 
-add_library(doom STATIC doomgeneric_artos.cpp ${SRC})
+add_library(doom STATIC ${SRC})
+
 target_compile_definitions(doom
         PUBLIC
         FORLAPTOP=$<BOOL:${FORLAPTOP}>

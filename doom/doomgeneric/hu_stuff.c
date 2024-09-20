@@ -42,7 +42,7 @@
 #include "sounds.h"
 
 //
-// Locally used constants, shortcuts.
+// Locally used Constants, shortcuts.
 //
 #define HU_TITLE	(mapnames[(gameepisode-1)*9+gamemap-1])
 #define HU_TITLE2	(mapnames_commercial[gamemap-1])

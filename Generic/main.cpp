@@ -42,12 +42,11 @@
 #include "PCIDevice.h"
 #include "BusMasterController.h"
 #include "iso_fs.h"
+#include "logging.h"
 
 extern "C" {
 #include "doomgeneric/doomgeneric.h"
 }
-
-#include "logging.h"
 
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */

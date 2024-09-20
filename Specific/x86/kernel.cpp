@@ -3,12 +3,13 @@
 //
 
 #include "kernel.h"
+
+#include "SMBIOS.h"
+
 #include "logging.h"
 #include "PIT.h"
 #include "VideoGraphicsArray.h"
 #include "TSC.h"
-#include "SMBIOS.h"
-#include "Serial.h"
 
 // u64 clock_rate = 0;
 

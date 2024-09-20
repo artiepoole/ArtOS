@@ -27,8 +27,8 @@ enable_testing()
 add_executable(
         string_test
         string_test.cpp
-        ../include/mystring.cpp
-        ../include/mystring.h
+        ../Generic/sys/HelperFunctions/mystring.cpp
+        ../Generic/sys/HelperFunctions/mystring.h
 
 )
 
@@ -36,7 +36,7 @@ target_link_libraries(
         string_test
         GTest::gtest_main
 )
-target_include_directories(string_test PRIVATE ../include ../include/constants)
+target_include_directories(string_test PRIVATE ../include ../Generic/sys/Constants)
 
 include(GoogleTest)
 gtest_discover_tests(string_test)
