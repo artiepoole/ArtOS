@@ -5,8 +5,6 @@
 #ifndef IDE_H
 #define IDE_H
 
-
-#include "ATA.h"
 #include "types.h"
 
 
@@ -84,12 +82,10 @@ struct BM_status_t
     };
 };
 
+// TODO: create a PRD object and make it so that there can be 2 PRDTs (one for each DMA controller)
 // Have only made it possible to have one PRD for each device. Therefore End of Table is always 1.
-u8 * DMA_init_PRDT(u16 base_port);
-u8* DMA_assign_prdt(u16 base_addr, u16 size);
+u8* DMA_init_PRDT(bool controller_id, u16 base_port);
 void DMA_free_prdt(u16 base_addr);
-void DMA_read(u8* dest, size_t n_bytes);
-// void IDE_handler(bool is_primary);
 
 
 #endif //IDE_H

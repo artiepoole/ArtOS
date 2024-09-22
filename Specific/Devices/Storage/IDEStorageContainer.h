@@ -10,7 +10,6 @@
 
 #include "Errors.h"
 
-#include "ATAPIDrive.h"
 #include "StorageDevice.h"
 
 #include "types.h"
@@ -18,6 +17,7 @@
 #include "BusMasterController.h"
 #include "PCIDevice.h"
 #include "IDE_notifiable.h"
+#include "IDEDrive.h"
 
 typedef int (*readFunc)();
 typedef int (*seekFunc)();
@@ -26,7 +26,7 @@ typedef int (*writeFunc)();
 class IDEStorageContainer : public IDE_notifiable, public StorageDevice
 {
 public:
-    IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name);
+    IDEStorageContainer(IDE_drive_info_t& drive_info, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name);
     ~IDEStorageContainer() override = default; // TODO: remove PRDT?
 
     int mount() override;
@@ -51,6 +51,7 @@ public:
 
     void notify() override;
 
+
     ArtFile* find_file(const char* filename) override;
 
 private:
@@ -70,7 +71,7 @@ private:
 
     // members
     char *name;
-    ATAPIDrive* drive_dev;
+    IDEDrive* drive_dev;
     PCIDevice* pci_dev;
     BusMasterController* bm_dev;
     ArtDirectory* root_directory = nullptr;

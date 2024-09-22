@@ -4,6 +4,7 @@
 
 #include "ATA.h"
 
+#include <Files.h>
 #include <IDE_handler.h>
 #include <kernel.h>
 #include <stdlib.h>
@@ -348,7 +349,6 @@ int ATA_is_packet_device(IDE_drive_info_t* drive_info)
 {
     ATA_reset_device(drive_info);
 
-
     u8 signatures[4] = {0};
     signatures[0] = inb(drive_info->base_port + SECTOR_COUNT_OFFSET);
     signatures[1] = inb(drive_info->base_port + LBA_LOW_OFFSET);
@@ -371,7 +371,7 @@ int ATA_is_packet_device(IDE_drive_info_t* drive_info)
         drive_info->packet_device = true;
         return 1;
     }
-    LOG("Unexpcected device signature.");
+    LOG("Unexpected device signature.");
     return -DEVICE_ERROR;
 }
 
@@ -410,9 +410,8 @@ int ATAPI_set_max_dma_mode(const bool supports_udma, IDE_drive_info_t* drive_inf
 /* Finds all drives
  */
 // Must be passed a list of IDE_drive_info_t[4].
-int populate_drives_list(ATAPIDrive*& atapi_drives)
+int populate_drives_list(IDE_drive_info_t* drive_list)
 {
-    IDE_drive_info_t* found_drives[4] = {};
     int n_found_drives = 0;
     constexpr bool are_secondary_controllers[4] = {false, false, true, true};
     constexpr u16 base_ports[4] = {PRIMARY_BASE_PORT,PRIMARY_BASE_PORT, SECONDARY_BASE_PORT, SECONDARY_BASE_PORT};
@@ -424,45 +423,31 @@ int populate_drives_list(ATAPIDrive*& atapi_drives)
     for (int i = 0; i < 4; i++)
     {
         // IDE_drive_info_t* drive =  &drives[i];
-        auto drive_info = new IDE_drive_info_t();
-        drive_info->base_port = base_ports[i];
-        drive_info->drive_data = drive_sel_vals[i];
-        drive_info->drive_id = are_secondary_drives[i];
-        drive_info->controller_id = are_secondary_controllers[i];
+        IDE_drive_info_t drive_info{};
+        drive_info.base_port = base_ports[i];
+        drive_info.drive_data = drive_sel_vals[i];
+        drive_info.drive_id = are_secondary_drives[i];
+        drive_info.controller_id = are_secondary_controllers[i];
 
         // select drive
-        ATA_select_drive(drive_info);
+        ATA_select_drive(&drive_info);
 
         ATA_status_t status{};
-        status.raw = inb(drive_info->base_port + STATUS_OFFSET);
-
+        status.raw = inb(drive_info.base_port + STATUS_OFFSET);
+        drive_info.present = false;
         if (status.ready)
         {
-            drive_info->present = true;
-            found_drives[n_found_drives] = drive_info;
+            drive_info.present = true;
             n_found_drives++;
-            LOG("Device detected. IDE", static_cast<int>(drive_info->controller_id), " drive", static_cast<int>(drive_info->drive_id));
+            LOG("Device detected. IDE", static_cast<int>(drive_info.controller_id), " drive", static_cast<int>(drive_info.drive_id));
+            drive_info.packet_device = static_cast<bool>(ATA_is_packet_device(&drive_info));
+            drive_list[n_found_drives] = drive_info;
             continue;
         }
         if (status.error)
         {
-            LOG("Device ERROR detected. IDE", drive_info->controller_id, " drive", drive_info->drive_id);
-            drive_info->present = false;
-        }
-        drive_info->present = false;
-        free(drive_info);
-    }
-    // Create drive object for each drive.
-    // TODO: this should only be base classes, ATAPIDrive should inherit from IDEDrive or something to support ATADrives as well.
-    atapi_drives = new ATAPIDrive[n_found_drives];
-    for (int i = 0; i < n_found_drives; i++)
-    {
-        int result = atapi_drives[i].populate_data(found_drives[i]);
-        if (result < 0)
-        {
-            LOG("Error initiating ATAPI drive. Result: ", result);
-            atapi_drives[i].drive_info = NULL;
-            return result;
+            LOG("Device ERROR detected. IDE", drive_info.controller_id, " drive", drive_info.drive_id);
+            drive_info.present = false;
         }
     }
     return n_found_drives;

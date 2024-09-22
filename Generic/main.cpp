@@ -38,7 +38,7 @@
 #include "IDEStorageContainer.h"
 #include "IDE_DMA_PRDT.h"
 #include "ATA.h"
-#include "ATAPIDrive.h"
+#include "IDEDrive.h"
 #include "PCIDevice.h"
 #include "BusMasterController.h"
 #include "iso_fs.h"
@@ -61,7 +61,7 @@ extern "C" {
 
 // VideoGraphicsArray* vgap;
 u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
-ATAPIDrive* atapi_drives = nullptr;
+IDE_drive_info_t drive_list[4];
 uintptr_t BM_controller_base_port;
 
 
@@ -207,7 +207,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     }
 
     LOG("IDE base port raw: ", BM_controller_base_port);
-    int n_drives = populate_drives_list(atapi_drives);
+    int n_drives = populate_drives_list(drive_list);
 
     if (n_drives == 0)
     {
@@ -218,37 +218,21 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     {
         LOG("Error initialising drives.");
     }
+    int cd_idx = 0;
+    for (; cd_idx < 4; cd_idx++)
+    {
+        if (drive_list[cd_idx].packet_device)
+        {
+            break;
+        }
+    }
     // TODO: Possibly set up the ATAPIDrive inside the IDEStorageContainer to avoid the need for a IDE_notifiable class etc.
-    auto secondary_bus_master = BusMasterController(BM_controller_base_port, atapi_drives[0].drive_info);
+    // TODO: Initialisation of the controller should only happen if the device is DM capable i.e. this should be moved to the
+    //          IDEStorageContainer constructor.
     char dev_name[] = "/dev/cdrom0";
-    [[maybe_unused]] auto CD_ROM = new IDEStorageContainer(&atapi_drives[0], PCI_IDE_controller, &secondary_bus_master, dev_name);
+    auto secondary_bus_master = BusMasterController(BM_controller_base_port, &drive_list[cd_idx]);
+    auto CD_ROM = new IDEStorageContainer(drive_list[cd_idx], PCI_IDE_controller, &secondary_bus_master, dev_name);
     CD_ROM->mount();
-
-
-    // char filename[] = "doom1.wad";
-    // auto file = fopen(filename, "rb");
-    // char* dest[2048];
-    // fread(dest, 1, 2048, file);
-    // fclose(file);
-
-    // ArtFile* doomfile = CD_ROM->find_file(filename);
-    // if (doomfile)
-    // {
-    //     char doom_data[1024 * 64];
-    //     doomfile->read(doom_data, 1024 * 64);
-    //     char* ident = strndup(doom_data, 4);
-    //     LOG("Doom file ident: ", ident);
-    //     free(ident);
-    // }
-
-
-    /* TODO: in order to implement the read/seek/loadfile/whatever else,
-     *I need to know how to handle loading in "pages" of data and reading
-     * within those or create a massive buffer and copy the whole file to memory.
-     */
-
-
-
 
     // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
     constexpr size_t cmd_buffer_size = 1024;

@@ -37,9 +37,9 @@ BusMasterController::BusMasterController(u16 new_base_port, IDE_drive_info_t* dr
     status = set_status(status);
     if (status.error)
     {
-     // TODO: handle init errors
+        // TODO: handle init errors
     }
-    physical_region = DMA_init_PRDT(base_port);
+    physical_region = DMA_init_PRDT(drive->controller_id, base_port);
     LOG("Initialising busmaster done.");
 }
 

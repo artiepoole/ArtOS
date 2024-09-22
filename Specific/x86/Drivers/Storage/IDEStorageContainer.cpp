@@ -5,6 +5,8 @@
 #include "IDEStorageContainer.h"
 
 #include "ATAPIDrive.h"
+#include "ATADrive.h"
+
 #include "Errors.h"
 #include "IDE_DMA_PRDT.h"
 #include "iso_fs.h"
@@ -19,17 +21,27 @@
 #include "cmp_int.h"
 
 constexpr size_t region_size = 65536;
-#define one_sector_size this->drive_dev->drive_info->sector_size
-#define one_block_size this->drive_dev->drive_info->block_size
+#define one_sector_size this->drive_dev->get_drive_info()->sector_size
+#define one_block_size this->drive_dev->get_drive_info()->block_size
 
 
-
-IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name): name(strdup(new_name))
+IDEStorageContainer::IDEStorageContainer(IDE_drive_info_t& drive_info, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name): name(strdup(new_name))
 {
     LOG("Initializing IDEStorageContainer");
-    this->drive_dev = drive;
+    IDE_add_device(this);
+
     this->pci_dev = pci_dev;
     this->bm_dev = bm_dev;
+    if (drive_info.packet_device)
+    {
+        this->drive_dev = new ATAPIDrive(drive_info);
+    }
+    else
+    {
+        this->drive_dev = new ATADrive(drive_info);
+    }
+    this->drive_dev->populate_data();
+
     // Set PCI cmd bit
     // set BM bit
     // clear BM status
@@ -52,8 +64,8 @@ IDEStorageContainer::IDEStorageContainer(ATAPIDrive* drive, PCIDevice* pci_dev, 
         LOG("Resetting BM status didn't work.");
         return;
     }
-    IDE_add_device(this); // add interrupt handling
-    IDE_remove_device(this->drive_dev); // Stop interrupts from going directly to the contained device.
+
+    // add interrupt handling
     register_storage_device(this);
     LOG("IDEStorageContainer initialised.");
 }
@@ -74,7 +86,7 @@ i64 IDEStorageContainer::read(char* dest, const size_t byte_offset, const size_t
         // Only load new physical region if necessary
         if (real_offset >= (stored_buffer_start + region_size) || real_offset < stored_buffer_start || stored_buffer_start < 0)
         {
-            // rounds down. First sector conaining missing data.
+            // rounds down. First sector containing missing data.
             const size_t start_lba = static_cast<u16>((real_offset) / static_cast<i64>(one_block_size));
             if (const int res = read_into_region_from_lba(start_lba); res < 0) { return res; }
         }
@@ -101,17 +113,17 @@ i64 IDEStorageContainer::read_lba(void* dest, const size_t lba_offset, const siz
 
 size_t IDEStorageContainer::get_block_size()
 {
-    return drive_dev->drive_info->block_size;
+    return drive_dev->get_drive_info()->block_size;
 }
 
 size_t IDEStorageContainer::get_block_count()
 {
-    return drive_dev->drive_info->capacity_in_LBA;
+    return drive_dev->get_drive_info()->capacity_in_LBA;
 }
 
 size_t IDEStorageContainer::get_sector_size()
 {
-    return drive_dev->drive_info->sector_size;
+    return drive_dev->get_drive_info()->sector_size;
 }
 
 
@@ -191,7 +203,7 @@ void IDEStorageContainer::notify()
 {
     // LOG("IDEStorageContainer notified.");
     // Should just check if this controller/drive_dev was to be handled or not.
-    if (!(BM_waiting_for_transfer || drive_dev->waiting_for_transfer)) return;
+    if (!(BM_waiting_for_transfer || drive_dev->is_waiting_for_transfer())) return;
 
     BM_status_t bm_status = bm_dev->get_status();
     const ATA_status_t ata_status = drive_dev->get_status();
@@ -220,13 +232,13 @@ void IDEStorageContainer::notify()
     if (ata_status.error)
     {
         // LOG("ATA device errored");
-        drive_dev->waiting_for_transfer = false;
+        drive_dev->set_waiting_for_transfer(false);
     }
 #endif
     if (ata_status.data_request)
     {
         // LOG("ATA sent command");
-        drive_dev->waiting_for_transfer = false;
+        drive_dev->set_waiting_for_transfer(false);
     }
     else
     {
@@ -327,7 +339,7 @@ iso_path_table_entry_header IDEStorageContainer::get_path_table_root_dir()
  */
 size_t IDEStorageContainer::get_dir_entry_size(ArtDirectory*& target_dir)
 {
-    char first_sector_data[this->drive_dev->drive_info->sector_size];
+    char first_sector_data[this->drive_dev->get_drive_info()->sector_size];
     read_lba(&first_sector_data, target_dir->get_lba(), one_sector_size);
     return *reinterpret_cast<size_t*>(&first_sector_data[10]);
 }
