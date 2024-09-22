@@ -5,8 +5,7 @@
 #ifndef BUSMASTER_H
 #define BUSMASTER_H
 #include "IDE_DMA_PRDT.h"
-
-#include "ATA.h"
+#include "ATA_types.h"
 
 // I am only supporting I/O port busmaster devices here.
 class BusMasterController

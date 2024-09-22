@@ -6,8 +6,8 @@
 
 #include "logging.h"
 #include "ports.h"
-
 #include "stdlib.h"
+
 // http://www.osdever.net/downloads/docs/idems100.zip
 #define CMD_OFFSET 0x00
 #define STATUS_OFFSET 0x02

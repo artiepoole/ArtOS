@@ -6,7 +6,7 @@
 #define IDE_H
 
 
-#include "ATA.h"
+
 #include "types.h"
 
 

@@ -4,7 +4,6 @@
 
 #ifndef ATA_H
 #define ATA_H
-#include "ATAPIDrive.h"
 #include "ATA_types.h"
 #include "types.h"
 
@@ -12,7 +11,7 @@
 
 
 // Must be passed a list of IDE_drive_t[4].
-int populate_drives_list(ATAPIDrive*& atapi_drives);
+int populate_drives_list(IDE_drive_info_t* drive_list);
 
 ATA_status_t ATA_get_status(IDE_drive_info_t* drive_info);
 

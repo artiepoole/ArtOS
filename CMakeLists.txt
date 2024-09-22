@@ -60,6 +60,7 @@ target_include_directories(
         Specific/multiboot2
         Specific/Devices/PCI
         Specific/Devices/Storage
+        Specific/Devices/Storage/IDEDrive
 
         Specific/x86
         Specific/x86/BIOS

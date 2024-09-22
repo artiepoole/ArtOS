@@ -4,8 +4,6 @@
 
 #include "ATAPIDrive.h"
 
-#include "IDE_handler.h"
-
 #include "Errors.h"
 #include "logging.h"
 #include "ports.h"
@@ -42,11 +40,16 @@
 ATAPI_cmd_regs get_capacity_cmd_regs{0, 0, 0, 8, 0}; // LBA_low may need to be 12. Not sure if n bytes requested or n bytes sent.
 ATAPI_cmd_regs init_dma_cmd_regs{0x1, 0, 0, 0, 0}; //
 
-
-int ATAPIDrive::populate_data(IDE_drive_info_t* new_drive_info)
+ATAPIDrive::ATAPIDrive(IDE_drive_info_t& drive_info)
 {
-    this->drive_info = new_drive_info;
-    IDE_add_device(this);
+    this->drive_info = &drive_info;
+}
+
+ATAPIDrive::~ATAPIDrive() = default;
+
+int ATAPIDrive::populate_data()
+{
+
     waiting_for_transfer = true;
     LOG("Initialising drive");
     if (populate_capabilities() < 0)
@@ -126,6 +129,16 @@ int ATAPIDrive::start_DMA_read(u32 lba_offset, const size_t n_sectors)
     return 0;
 }
 
+int ATAPIDrive::seek(size_t LBA)
+{
+    return -NOT_IMPLEMENTED;
+}
+
+int ATAPIDrive::start_DMA_write(u32 lba, size_t n_sectors)
+{
+    return -NOT_IMPLEMENTED;
+}
+
 int ATAPIDrive::set_regs(const ATAPI_cmd_regs& regs)
 {
     for (size_t i = 0; i < sizeof(ATAPI_cmd_regs); i++)
@@ -141,25 +154,6 @@ int ATAPIDrive::set_regs(const ATAPI_cmd_regs& regs)
     return 0;
 }
 
-ATA_status_t ATAPIDrive::get_status()
-{
-    return ATA_get_status(drive_info);
-}
-
-ATA_status_t ATAPIDrive::get_alt_status()
-{
-    return ATA_get_alt_status(drive_info);
-}
-
-ATA_error_t ATAPIDrive::get_error()
-{
-    return ATA_get_error(drive_info);
-}
-
-u8 ATAPIDrive::get_interrupt_reason()
-{
-    return ATA_get_interrupt_reason(drive_info);
-}
 
 u32 ATAPIDrive::get_last_lba()
 {
@@ -178,7 +172,7 @@ u32 ATAPIDrive::get_last_lba()
     }
     if (ATA_status_t status = get_alt_status(); status.error)
     {
-        [[maybe_unused]]ATA_error_t error = get_error();
+        [[maybe_unused]] ATA_error_t error = get_error();
         LOG("Error getting capacity. Raw error: ", error.raw);
         return 0;
     }
@@ -223,7 +217,7 @@ int ATAPIDrive::send_packet_PIO(const ATAPI_packet_t& packet)
 
     if (waiting_for_transfer)
     {
-        [[maybe_unused]]ATA_error_t error = get_error();
+        [[maybe_unused]] ATA_error_t error = get_error();
         LOG("Error sending packet using PIO. Raw error", error.raw);
         waiting_for_transfer = false;
         return -DEVICE_ERROR;
@@ -259,52 +253,5 @@ int ATAPIDrive::send_packet_DMA(const ATAPI_packet_t& packet)
     return 0;
 }
 
-void ATAPIDrive::notify()
-{
-    // TODO: Expand this to handle all the interrupt types by adding "waiting for" flags for ATA drives.
-    if (!waiting_for_transfer) { return; }
-    // must be read to ackknowledge interrupt
-    [[maybe_unused]]ATA_status_t ata_status = get_status();
-    [[maybe_unused]]u8 ata_interrupt_reason = get_interrupt_reason();
-#ifndef NDEBUG
-    switch (ata_interrupt_reason)
-    {
-    case 0:
-        {
-            LOG("No IDE interrupt reason set");
-            break;
-        }
-    case 1:
-        {
-            LOG("Command/Data bit set");
-            break;
-        }
-    case 2:
-        {
-            LOG("IO bit set");
-            break;
-        }
-    case 3:
-        {
-            LOG(" Data and IO bits set");
-            break;
-        }
-    default:
-        {
-            LOG("interrupt reason: ", ata_interrupt_reason);
-            break;
-        }
-    }
 
-    if (ata_status.error)
-    {
-        LOG("ATA device errored");
-    }
 
-    if (ata_status.data_request)
-    {
-        LOG("ATA is waiting for data transfer.");
-    }
-#endif
-    waiting_for_transfer = false;
-}
