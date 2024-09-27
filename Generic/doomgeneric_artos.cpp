@@ -70,15 +70,12 @@ void DG_DrawFrame()
 extern "C"
 void DG_SleepMs(const uint32_t ms)
 {
-    // fprintf("DG_SleepMs called: %d\n", ms);
-    LOG("Sleeping for ", ms, " ms");
     sleep_ms(ms);
 }
 
 extern "C"
 uint32_t DG_GetTicksMs()
 {
-    // fprintf("DG_GetTicksMs called: \n");
     return get_tick_ms();
 }
 
