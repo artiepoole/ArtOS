@@ -155,14 +155,6 @@ window_t * VideoGraphicsArray::getScreen()
 
 void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
 {
-    // memcpy(_screen, buffer_to_draw, width * height * sizeof(u32));
-    if (cpu_simd_enabled())
-    {
-        simd_copy(_screen, buffer_to_draw, width * height * sizeof(u32));
-    }
-    else
-    {
-        memcpy(_screen, buffer_to_draw, width * height * sizeof(u32));
-    }
+    memcpy(_screen, buffer_to_draw, width * height * sizeof(u32));
 }
 

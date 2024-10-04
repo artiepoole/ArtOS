@@ -97,6 +97,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         return;
     }
 
+    /* TODO: add support for non-simd CPUs
+     * It is very much non-trivial to compile with simd support and also to only use it for simd supported CPUs
+     */
     cpu_enable_simd();
     // Load serial immediately for logging.
 #if ENABLE_SERIAL_LOGGING
