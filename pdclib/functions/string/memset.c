@@ -4,12 +4,19 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
+#include "SIMD.h"
+
 #include "../../../include/string.h"
 
 #ifndef REGTEST
 
 void * memset( void * s, int c, size_t n )
 {
+    if (simd_enabled())
+    {
+        return simd_set(s, c, n);
+    }
+
     unsigned char * p = ( unsigned char * ) s;
 
     while ( n-- )

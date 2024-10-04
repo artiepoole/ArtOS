@@ -90,13 +90,15 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         return;
     }
 
+    // Enable simd if available
     simd_enable();
-    // Load serial immediately for logging.
+
+    // Load serial early for logging.
 #if ENABLE_SERIAL_LOGGING
     auto serial = Serial();
 #endif
 
-    // We want timestamping to work asap.
+    // We want time-stamping to work asap.
     WRITE("Sun Jan  0 00:00:00 1900\tLoading singletons...\n");
     RTC rtc;
 

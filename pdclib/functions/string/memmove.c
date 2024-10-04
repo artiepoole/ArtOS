@@ -4,12 +4,17 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
+#include "SIMD.h"
 #include <string.h>
 
 #ifndef REGTEST
 
 void * memmove( void * s1, const void * s2, size_t n )
 {
+    if (simd_enabled())
+    {
+        return simd_move(s1, s2, n);
+    }
     char * dest = ( char * ) s1;
     const char * src = ( const char * ) s2;
 

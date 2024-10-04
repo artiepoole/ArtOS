@@ -15,8 +15,9 @@ extern "C" {
 void simd_enable();
 bool simd_enabled();
 
-void simd_copy(void* dest, const void* src, size_t size);
-
+void* simd_copy(void* dest, const void* src, size_t size);
+void* simd_move(void* dest, const void* src, size_t n);
+void* simd_set(void* dest, int value, size_t size);
 
 #ifdef __cplusplus
 }
