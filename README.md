@@ -5,76 +5,107 @@ The aim of this project is simply to learn. If it becomes something I want other
 
 ## Progress markers
 
-Running DOOM (1993):
+**Running DOOM (1993):**
 
 https://github.com/user-attachments/assets/c0464620-f6a0-44e3-b5c9-f59bd1c55018
 
 p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recording and compression makes it look clunky 
 
-Loading Screen and Keyboard:
+**Loading Screen and Keyboard:**
 
 ![keyboard_support](https://github.com/user-attachments/assets/8fea2d96-1281-46d2-94d4-97fe90898c3f)
 
-Splash Screen:
+**Splash Screen:**
 
 ![Splash Screen](https://github.com/user-attachments/assets/7e11bf7d-7b6a-4f3f-b169-63956f5d99e4)
 
 
-Pixel Mode:
+**Pixel Mode:**
 
 ![Pixel Mode Graphics](https://github.com/user-attachments/assets/7409c5e2-a6e2-4e1f-a4d6-326ad56a3bef)
 
 
-Colours:
+**Colours:**
 
 ![VGA Text Mode Colours](https://github.com/user-attachments/assets/185d925c-64bc-4986-af92-3fdbf05f513e)
 
 
-Hello World:
+**Hello World:**
 
 ![Hello World](https://github.com/user-attachments/assets/27ce4931-914b-4c4e-bdbf-f9c89d69ac8a)
 
 ## My Goals
-- [x] Boot into hello world
-- [x] Text mode terminal newline Character
-- [x] Text mode terminal Scrolling
-- [x] Colour Art
-- [x] Serial PORT1 output from kernel
-- [x] Pixel mode text support
-- [x] Draw "art" in pixel mode
-- [x] Interrupt Service Routines (ISR) are targeted on interrupt using a partially filled Interrupt Descriptor Table
-- [x] Interrupt Requests (IRQ) can be handled
-- [x] IRQ0 targets a timer decrementor to allow for scheduling and waiting.
-- [x] Kernel sleep (block until n ticks occur)
-- [x] User IO - keyboard
-- [x] SMBIOS detection
-- [x] PCI device detection
-- [x] Real time clock implemented
-- [x] Use grub2 and multiboot2
-- [x] Replace PIC with APIC
-- [x] Initialise frame buffer etc using the multiboot2 data instead of hard coded
-- [x] Implement c standard library for kernel space
-- [x] Play DOOM for ArtOS!
-- [x] Play DOOM for ArtOS on real hardware
-- [x] Read data from CD ROM using PCI IDE DMA BusMastering
-- [x] Use data from CD ROM i.e. parse .iso file system
-- [x] Create a directory tree from iso fs data
-- [x] Implement a rudimentary filesystem
-- [x] Load a file using pdclib
-- [x] DOOM: Loading from CD ROM instead of baked into the binary
-- [ ] DOOM: run in user space
-- [ ] DOOM: add sound
-- [ ] Attach a RW storage device in Qemu
-- [ ] DOOM: add save games
-- [ ] User IO - mouse
-- [ ] implement proper pdclib compliant filehandling
-- [ ] Detect and mount/unmount storage devices on real hardware
-- [ ] Replace PIT with HPET
-- [ ] Proper handling of a scheduler to allow for sleeping of a task
-- [ ] Detection and selection of video modes i.e. reconfiguring the VGA hardware
-- [ ] Implement a standard library for user space
-- [ ] Run an executable
-- [ ] Self hosting compiler
+- [x] **Basics**
+- - [x] Boot into hello world
+- - [x] Text mode terminal newline Character
+- - [x] Text mode terminal Scrolling
+- - [x] Colour Art
+- - [x] Serial PORT1 output from kernel
+- - [x] Pixel mode text support
+- - [x] Draw "art" in pixel mode    
+- - [x] Replace grub and multiboot with grub2 and multiboot2
+- [ ] **Interrupts and time**
+- - [x] Interrupt Service Routines (ISR) are targeted on interrupt using a partially filled Interrupt Descriptor Table
+- - [x] Interrupt Requests (IRQ) can be handled
+- - [x] IRQ0 targets a timer decrementor to allow for scheduling and waiting.
+- - [x] Kernel sleep (block until n ticks occur)
+- - [x] Replace PIC with APIC
+- - [x] Real time clock implemented
+- - [ ] Replace PIT with HPET
+- [ ] **User IO**
+- - [x] Keyboard
+- - [ ] Mouse
+- - [ ] Shell environment
+- [ ] **Hardware detection and support**
+- - [x] SMBIOS detection
+- - [x] PCI device detection
+- - [x] IDE detection
+- - [ ] IDE initialisation (currently supports CD ROM only, see storage)
+- - [x] Initialise frame buffer etc using the multiboot2 data instead of hard coded
+- - [ ] Detection and selection of video modes i.e. reconfiguring the VGA hardware
+- [ ] **Storage**
+- - [x] Attach a RW storage device in Qemu
+- - [x] Read data from CD ROM using PCI IDE DMA BusMastering
+- - [x] Use data from CD ROM i.e. parse .iso file system
+- - [ ] Support virtual attached RW storage
+- - [ ] Support path strings or similar filename access
+- - [ ] Detect and mount/unmount storage devices on real hardware
+- - [ ] USB storage support
+- [ ] **Filesystem**
+- - [x] Create a directory tree from iso fs data
+- - [x] Implement a rudimentary filesystem
+- - [ ] implement proper pdclib compliant filehandling
+- [ ] **PDCLIB**
+- - [x] Implement C standard library for kernel space
+- - [x] Load a file using pdclib
+- - [ ] User space functionality (e.g. exit, raise, signal)   
+- [ ] **DOOM**
+- - [x] Play DOOM for ArtOS!
+- - [x] Play DOOM for ArtOS on real hardware
+- - [x] Loading from CD ROM instead of baked into the binary
+- - [ ] Loading from boot USB 
+- - [ ] Run in user space
+- - [ ] Add sound
+- - [ ] Add save game support
+- [ ] **Optimisations**
+- - [x] Basic SIMD for memcpy, memmove and memset
+- - [ ] Advanced SIMD usage (string operations and vector maths)
+- - [ ] Ther are many other optimisations to consider
+- [ ] **Path to User Space**
+- - [ ] Proper handling of a scheduler to allow for sleeping of a task
+- - [ ] Implement a standard library for user space
+- - [ ] Run an executable
+- - [ ] Self hosting compiler
+- [ ] **Misc**
+- - [ ] Remove resolution specific baked in splash screen with centered graphic (can be scaled) and programatically drawn borders. Bring back the loading bar? 
+- [ ] **Stretch goals**
+- - [ ] higher half and 64-bit support
+- - [ ] ARM support (raspberry pi zero?)
+- - [ ] Multithreading
+- - [ ] Networking
+- - [ ] USB support
+- - [ ] Window manager and windows
+- - [ ] Graphics driver(s)
 
 ## Tools
 - i686-elf gcc cross-compiler
@@ -84,5 +115,6 @@ Hello World:
 - CMake
 - Jetbrains CLion
 - xorriso
+- ventoy
 - [Public Domain C Library](https://github.com/DevSolar/pdclib)
 - [DOOM Generic](https://github.com/ozkl/doomgeneric)
