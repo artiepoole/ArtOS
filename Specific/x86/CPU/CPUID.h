@@ -4,7 +4,7 @@
 
 #ifndef CPUID_H
 #define CPUID_H
-#include <types.h>
+#include "types.h"
 
 // https://en.wikipedia.org/wiki/CPUID#Calling_CPUID
 
@@ -31,12 +31,17 @@ struct cpuid_ext_manufacturer_info_t
 
 };
 
-struct cpuid_feature_info_t
+union cpuid_feature_info_t
 {
-    u32 eax;
-    u32 ebx;
-    u32 ecx;
-    u32 edx;
+    struct
+    {
+        u32 eax;
+        u32 ebx;
+        u32 ecx;
+        u32 edx;
+    };
+
+    u32 raw[4];
 };
 
 struct cpuid_core_frequency_info_t

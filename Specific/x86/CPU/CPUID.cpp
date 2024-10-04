@@ -16,6 +16,7 @@ const u8 decimal[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 cpuid_manufacturer_info_t cpu_manufacturer_info;
 cpuid_ext_manufacturer_info_t cpu_ext_manufacturer_info;
 cpuid_core_frequency_info_t cpu_frequency_info;
+cpuid_feature_info_t cpu_feature_info;
 
 
 void decToBinary(u32 n)
@@ -81,22 +82,23 @@ cpuid_ext_manufacturer_info_t* cpuid_print_ext_manufacturer_info()
 }
 
 
-void cpuid_print_feature_info()
+cpuid_feature_info_t* cpuid_get_feature_info()
 {
-    u32 info[4]; // family info, addiitonal features, featureflag2, featureflag1
+    ; // family info, aditonal features, featureflag2, featureflag1
     __asm__("mov $0x1 , %eax");
-    asm volatile("cpuid":"=a"(info[0]), "=b" (info[1]), "=c" (info[2]), "=d" (info[3]));
+    asm volatile("cpuid":"=a"(cpu_feature_info.eax), "=b" (cpu_feature_info.ebx), "=c" (cpu_feature_info.ecx), "=d" (cpu_feature_info.edx));
 
-    for (size_t i = 0; i < 4; i++)
-    {
-        decToBinary(info[i]);
-        LOG("Feature info ", i, ": ");
-        for ([[maybe_unused]]unsigned char c : binaryNum)
-        {
-            WRITE(decimal[c]);
-        }
-        NEWLINE();
-    }
+    // for (size_t i = 0; i < 4; i++)
+    // {
+    //     decToBinary(cpu_feature_info.raw[i]);
+    //     LOG("Feature info ", i, ": ");
+    //     for ([[maybe_unused]]unsigned char c : binaryNum)
+    //     {
+    //         WRITE(decimal[c]);
+    //     }
+    //     NEWLINE();
+    // }
+    return &cpu_feature_info;
 }
 
 

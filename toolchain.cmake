@@ -13,8 +13,8 @@ set(CMAKE_VERBOSE_MAKEFILE 1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti ") # -Werror
-set(CMAKE_C_FLAGS "-ffreestanding -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-msse2 -ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti ") # -Werror
+set(CMAKE_C_FLAGS "-msse2 -ffreestanding -Wall -Wextra")
 
 
 

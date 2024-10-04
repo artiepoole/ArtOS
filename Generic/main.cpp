@@ -96,6 +96,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         // misaligned MBI
         return;
     }
+
+    cpu_enable_simd();
     // Load serial immediately for logging.
 #if ENABLE_SERIAL_LOGGING
     auto serial = Serial();

@@ -1,7 +1,9 @@
 #include "CPU.h"
-
-
+#include "CPUID.h"
 #include "logging.h"
+
+bool simd_enabled = false;
+
 eflags_t get_eflags()
 {
     eflags_t flags;
@@ -47,6 +49,36 @@ void cpu_get_MSR(u32 msr, u32* lo, u32* hi)
 void cpu_set_MSR(u32 msr, u32 lo, u32 hi)
 {
     asm volatile("wrmsr" : : "a"(lo), "d"(hi), "c"(msr));
+}
+
+
+static void enable_sse()
+{
+    uint32_t cr4;
+    __asm__ __volatile__ ("mov %%cr4, %0" : "=r" (cr4));
+    // Set OSFXSR (bit 9) and OSXMMEXCPT (bit 10)
+    cr4 |= 3 << 9;
+    __asm__ __volatile__ ("mov %0, %%cr4" : : "r" (cr4));
+}
+
+
+void cpu_enable_simd()
+{
+    cpuid_feature_info_t* info = cpuid_get_feature_info();
+    if (!info->edx & 0x1 << 24)
+    {
+        return;
+    }
+    if (info->edx & 0x1 << 26)
+    {
+        simd_enabled = true;
+        enable_sse();
+    }
+}
+
+bool cpu_simd_enabled()
+{
+    return simd_enabled;
 }
 
 

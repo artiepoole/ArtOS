@@ -85,6 +85,9 @@ u32 read_register(uintptr_t addr);
 void cpu_get_MSR(u32 msr, u32* lo, u32* hi);
 void cpu_set_MSR(u32 msr, u32 lo, u32 hi);
 
+void cpu_enable_simd();
+bool cpu_simd_enabled();
+
 extern u32 DATA_CS;
 extern u32 TEXT_CS;
 void get_GDT();
