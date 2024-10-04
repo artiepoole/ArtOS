@@ -8,30 +8,27 @@
 
 #ifndef REGTEST
 
-/*
- * TODO: add compiler flag for SIMD or on the fly detection support
- */
-#define SIMD_SUPPORT
 
-#ifndef SIMD_SUPPORT
-#else
 #include "SIMD.h"
-#endif
 
 
-void * memcpy( void * _PDCLIB_restrict s1, const void * _PDCLIB_restrict s2, size_t n )
+void* memcpy(void* _PDCLIB_restrict s1, const void* _PDCLIB_restrict s2, size_t n)
 {
-#ifndef SIMD_SUPPORT
-    char * dest = ( char * ) s1;
-    const char * src = ( const char * ) s2;
-
-    while ( n-- )
+    if (simd_enabled())
     {
-        *dest++ = *src++;
+        simd_copy(s1, s2, n);
     }
-#else
-    simd_copy(s1, s2, n);
-#endif
+    else
+    {
+        char* dest = (char*)s1;
+        const char* src = (const char*)s2;
+
+        while (n--)
+        {
+            *dest++ = *src++;
+        }
+    }
+
     return s1;
 }
 

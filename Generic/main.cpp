@@ -14,6 +14,8 @@
 // #include "stdlib.h"
 // #include "malloc.c"
 
+#include "SIMD.h"
+
 #include "CPPMemory.h"
 #include "icxxabi.h"
 
@@ -25,23 +27,14 @@
 #include "multiboot2.h"
 #include "stdio.h"
 #include "Files.h"
-#include "ArtDirectory.h"
 #include "ArtFile.h"
-#include "CPUID.h"
 #include "RTC.h"
 #include "PIT.h"
-#include "TSC.h"
-#include "SMBIOS.h"
 #include "EventQueue.h"
-#include "ports.h"
 #include "string.h"
 #include "IDEStorageContainer.h"
-#include "IDE_DMA_PRDT.h"
 #include "ATA.h"
-#include "IDEDrive.h"
-#include "PCIDevice.h"
 #include "BusMasterController.h"
-#include "iso_fs.h"
 #include "logging.h"
 
 extern "C" {
@@ -97,10 +90,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         return;
     }
 
-    /* TODO: add support for non-simd CPUs
-     * It is very much non-trivial to compile with simd support and also to only use it for simd supported CPUs
-     */
-    cpu_enable_simd();
+    simd_enable();
     // Load serial immediately for logging.
 #if ENABLE_SERIAL_LOGGING
     auto serial = Serial();

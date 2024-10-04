@@ -85,19 +85,6 @@ u32 read_register(uintptr_t addr);
 void cpu_get_MSR(u32 msr, u32* lo, u32* hi);
 void cpu_set_MSR(u32 msr, u32 lo, u32 hi);
 
-static void cpu_enable_simd()
-{
-    uint32_t cr4;
-
-    // Read the current value of CR4
-    __asm__ __volatile__ ("mov %%cr4, %0" : "=r" (cr4));
-
-    // Set OSFXSR (bit 9) and OSXMMEXCPT (bit 10)
-    cr4 |= (1 << 9) | (1 << 10);
-
-    // Write the new value back to CR4
-    __asm__ __volatile__ ("mov %0, %%cr4" : : "r" (cr4));
-}
 
 
 extern u32 DATA_CS;

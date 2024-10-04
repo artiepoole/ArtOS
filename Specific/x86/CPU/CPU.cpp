@@ -102,6 +102,7 @@ u16 get_ds()
     return ds;
 }
 
+
 cr0_t get_cr0()
 {
     cr0_t cr0{};
