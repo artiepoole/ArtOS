@@ -29,7 +29,7 @@ file(GLOB_RECURSE ArchitectureSpecific
 file(GLOB_RECURSE Generic
         "Generic/*.h"
         "Generic/*.cpp"
-
+        "Generic/*.S"
 )
 
 

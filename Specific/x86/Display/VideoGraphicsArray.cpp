@@ -31,6 +31,7 @@ Basic graphics utility methods
 
 #include "splash_screen.h"
 #include "logging.h"
+#include "colours.h"
 
 
 static VideoGraphicsArray* instance{nullptr};
@@ -117,37 +118,59 @@ void VideoGraphicsArray::fillRectangle(const u32 x, const u32 y, const u32 w, co
  */
 void VideoGraphicsArray::draw() const
 {
-
-    for (size_t i = 0; i < width * height; i++)
-    {
-        _screen[i] = _buffer[i];
-
-    }
-
-
+    draw_region(_buffer);
 }
 
 void VideoGraphicsArray::clearBuffer() const
 {
-    for (size_t i = 0; i < width * height; i++)
-    {
-        _buffer[i] = 0;
-    }
+    memset(_buffer, 0, width * height * sizeof(u32));
 }
 
+void copy_region(u32* dest, const u32* src, const size_t start_x, const size_t start_y, const size_t dest_w, const size_t src_w, const size_t src_h)
+{
+    for (size_t line = start_y; line < start_y + src_h; line++)
+    {
+        for (size_t px = start_x; px < start_x + src_w; px++)
+        {
+            if (const u32 logo_pixel = src[(line - start_y) * src_w + (px - start_x)]; logo_pixel != 0)
+            {
+                dest[line * dest_w + px] = logo_pixel;
+            }
+        }
+    }
+}
 
 void VideoGraphicsArray::drawSplash() const
 {
-    for (size_t ij = 0; ij < width * height; ij++)
-    {
-        _buffer[ij] = SPLASH_DATA[ij];
-    }
+    // Step 1: fill the screen with background colour
+    fillRectangle(0, 0, width, height, COLOR_BASE02);
+
+    // Step 2: Draw borders
+    constexpr u32 dark_border_width = 35;
+    constexpr u32 light_border_width = 10;
+    // left and top dark
+    fillRectangle(0, 0, width, dark_border_width, COLOR_BASE03);
+    fillRectangle(0, 0, dark_border_width, height, COLOR_BASE03);
+    // right and bottom dark
+    fillRectangle(0, height - dark_border_width, width, dark_border_width, COLOR_BASE03);
+    fillRectangle(width - dark_border_width, 0, dark_border_width, height, COLOR_BASE03);
+    // left and top light
+    fillRectangle(dark_border_width, dark_border_width, width - dark_border_width * 2, light_border_width, COLOR_CYAN);
+    fillRectangle(dark_border_width, dark_border_width, light_border_width, height - dark_border_width * 2, COLOR_CYAN);
+    // right and bottom light
+    fillRectangle(dark_border_width, height - dark_border_width - light_border_width, width - dark_border_width * 2, light_border_width, COLOR_CYAN);
+    fillRectangle(width - dark_border_width - light_border_width, dark_border_width, light_border_width, height - dark_border_width * 2, COLOR_CYAN);
+
+    // Step 3: copy the splash logo
+    const u32 topleft_x = (width - splash_logo_width) / 2;
+    const u32 topleft_y = (height - splash_logo_height) / 2;
+    copy_region(_buffer, SPLASH_DATA, topleft_x, topleft_y, width, splash_logo_width, splash_logo_height);
 }
 
 
-
-
-window_t * VideoGraphicsArray::getScreen()
+window_t
+*
+VideoGraphicsArray::getScreen()
 {
     return &_screen_region;
 }
@@ -157,4 +180,3 @@ void VideoGraphicsArray::draw_region(const u32* buffer_to_draw) const
 {
     memcpy(_screen, buffer_to_draw, width * height * sizeof(u32));
 }
-

@@ -44,6 +44,7 @@ SECTIONS
         KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
         end_ctors = .;
         *(.data)
+        *(.rawdata*)
     }
 
 

@@ -35,6 +35,7 @@
 #include "IDEStorageContainer.h"
 #include "ATA.h"
 #include "BusMasterController.h"
+#include "kernel.h"
 #include "logging.h"
 
 extern "C" {
@@ -204,9 +205,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     }
 
     LOG("IDE base port raw: ", BM_controller_base_port);
-    int n_drives = populate_drives_list(drive_list);
 
-    if (n_drives == 0)
+    if (int n_drives = populate_drives_list(drive_list); n_drives == 0)
     {
         LOG("No drives found.");
         return;
@@ -236,6 +236,11 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     char cmd_buffer[cmd_buffer_size] = {0};
     size_t cmd_buffer_idx = 0;
     LOG("LOADED OS. Entering event loop.");
+
+    vga.drawSplash();
+    vga.draw();
+
+    sleep_ms(10000);
 
 #if !ENABLE_TERMINAL_LOGGING
     terminal.write("Loading done.\n");
