@@ -114,32 +114,42 @@ void VideoGraphicsArray::fillRectangle(const u32 x, const u32 y, const u32 w, co
 }
 
 /**
- * Copy the screen buffer to the screen
+ * Copy the frame buffer to the screen
  */
 void VideoGraphicsArray::draw() const
 {
     draw_region(_buffer);
 }
 
+/*
+ * Set the frame buffer to all zeros
+ */
 void VideoGraphicsArray::clearBuffer() const
 {
     memset(_buffer, 0, width * height * sizeof(u32));
 }
 
-void copy_region(u32* dest, const u32* src, const size_t start_x, const size_t start_y, const size_t dest_w, const size_t src_w, const size_t src_h)
+/*
+ * Copies a rectangular buffer of shape (w,h) to screen starting with top left position (x,y)
+ */
+void VideoGraphicsArray::copy_region(const u32* src, const size_t x, const size_t y, const size_t w, const size_t h) const
 {
-    for (size_t line = start_y; line < start_y + src_h; line++)
+    for (size_t yy = y; yy < y + h; yy++)
     {
-        for (size_t px = start_x; px < start_x + src_w; px++)
+        for (size_t xx = x; xx < x + w; xx++)
         {
-            if (const u32 logo_pixel = src[(line - start_y) * src_w + (px - start_x)]; logo_pixel != 0)
+            if (const u32 logo_pixel = src[(yy - y) * w + (xx - x)]; logo_pixel != 0)
             {
-                dest[line * dest_w + px] = logo_pixel;
+                _buffer[yy * width + xx] = logo_pixel;
             }
         }
     }
 }
 
+
+/*
+ *  Draw the splash screen.
+ */
 void VideoGraphicsArray::drawSplash() const
 {
     // Step 1: fill the screen with background colour
@@ -164,7 +174,7 @@ void VideoGraphicsArray::drawSplash() const
     // Step 3: copy the splash logo
     const u32 topleft_x = (width - splash_logo_width) / 2;
     const u32 topleft_y = (height - splash_logo_height) / 2;
-    copy_region(_buffer, SPLASH_DATA, topleft_x, topleft_y, width, splash_logo_width, splash_logo_height);
+    copy_region(SPLASH_DATA, topleft_x, topleft_y, splash_logo_width, splash_logo_height);
 }
 
 

@@ -38,6 +38,11 @@
 #include "kernel.h"
 #include "logging.h"
 
+#if FORLAPTOP
+#include "CPUID.h"
+#include "SMBIOS.h"
+#endif
+
 extern "C" {
 #include "doomgeneric/doomgeneric.h"
 }

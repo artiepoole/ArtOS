@@ -60,6 +60,7 @@ public:
     void draw() const;
     void clearWindow() const;
     void clearBuffer() const;
+    void copy_region(const u32* src, size_t x, size_t y, size_t w, size_t h) const;
     void drawSplash() const;
     void draw_region(const u32* buffer_to_draw) const;
     [[nodiscard]] window_t* getScreen();
