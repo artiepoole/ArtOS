@@ -156,7 +156,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         24);
     vga.incrementProgressBarChunk(bar);
     vga.incrementProgressBarChunk(bar);
-    Terminal terminal(45+5, 3 * frame_info->framebuffer_height / 5 + 5, frame_info->framebuffer_width - 100, 2* frame_info->framebuffer_height / 5 - 55);
+    Terminal terminal(45 + 5, 3 * frame_info->framebuffer_height / 5 + 5, frame_info->framebuffer_width - 100, 2 * frame_info->framebuffer_height / 5 - 55);
     vga.incrementProgressBarChunk(bar);
     EventQueue events;
     vga.incrementProgressBarChunk(bar);

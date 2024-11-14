@@ -44,7 +44,7 @@ terminal_char_t terminal_queue[queue_size];
 
 Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
 {
-    screen_region = {x, y, width+x, height+y, width, height};
+    screen_region = {x, y, width + x, height + y, width, height};
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
     term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
@@ -173,12 +173,12 @@ void Terminal::setScale(u32 new_scale)
     }
 }
 
-void Terminal::setRegion(const u32 x,const  u32 y,const  u32 width,const  u32 height)
+void Terminal::setRegion(const u32 x, const u32 y, const u32 width, const u32 height)
 {
     free(terminal_buffer);
     free(rendered_buffer);
     free(term_screen_buffer);
-    screen_region = {x, y, width+x, height+y, width, height};
+    screen_region = {x, y, width + x, height + y, width, height};
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
     term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
@@ -188,7 +188,7 @@ void Terminal::setRegion(const u32 x,const  u32 y,const  u32 width,const  u32 he
     memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
     terminal_row = 0;
     terminal_column = 1;
-    VideoGraphicsArray::get().fillRectangle( screen_region.x1, screen_region.y1, screen_region.w, screen_region.h, colour_bkgd);
+    VideoGraphicsArray::get().fillRectangle(screen_region.x1, screen_region.y1, screen_region.w, screen_region.h, colour_bkgd);
 }
 
 u32 Terminal::getScale()

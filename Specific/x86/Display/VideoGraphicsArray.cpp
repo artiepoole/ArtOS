@@ -173,7 +173,7 @@ void VideoGraphicsArray::drawSplash() const
 
     // Step 3: copy the splash logo
     const u32 topleft_x = (width - splash_logo_width) / 2;
-    const u32 topleft_y = (height - splash_logo_height) / 3 ;
+    const u32 topleft_y = (height - splash_logo_height) / 3;
     copy_region(SPLASH_DATA, topleft_x, topleft_y, splash_logo_width, splash_logo_height);
 }
 
@@ -203,14 +203,14 @@ progress_bar_t VideoGraphicsArray::createProgressBar(u32 x, u32 y, u32 w, u32 h,
 }
 
 
-void VideoGraphicsArray::setProgressBarPercent(progress_bar_t&  bar, float percent)
+void VideoGraphicsArray::setProgressBarPercent(progress_bar_t& bar, float percent)
 {
     // reset whole bar
     fillRectangle(bar.x + bar.border, bar.y + bar.border, bar.w - 2 * bar.border, bar.h - 2 * bar.border, COLOR_BASE03);
     // fill up to percent adding 2px border
     if (percent > 100) percent = 100.;
-    bar.chunk = percent*bar.n_chunks;
-    if( percent==0) return;
+    bar.chunk = percent * bar.n_chunks;
+    if (percent == 0) return;
     fillRectangle(
         bar.x + bar.border + 2,
         bar.y + bar.border + 2,
@@ -219,9 +219,8 @@ void VideoGraphicsArray::setProgressBarPercent(progress_bar_t&  bar, float perce
     draw();
 }
 
-void VideoGraphicsArray::setProgressBarChunk(progress_bar_t&  bar, u32 chunk)
+void VideoGraphicsArray::setProgressBarChunk(progress_bar_t& bar, u32 chunk)
 {
-
     // reset whole bar
     fillRectangle(bar.x + bar.border, bar.y + bar.border, bar.w - 2 * bar.border, bar.h - 2 * bar.border, COLOR_BASE03);
 
@@ -235,10 +234,9 @@ void VideoGraphicsArray::setProgressBarChunk(progress_bar_t&  bar, u32 chunk)
         (bar.w - 2 * bar.border) * (1.f * bar.chunk / bar.n_chunks) - 4,
         bar.h - 2 * bar.border - 4, colour_frgd);
     draw();
-
 }
 
 void VideoGraphicsArray::incrementProgressBarChunk(progress_bar_t& bar)
 {
-    setProgressBarChunk(bar, bar.chunk+1);
+    setProgressBarChunk(bar, bar.chunk + 1);
 }
