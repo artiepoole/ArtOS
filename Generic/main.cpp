@@ -145,23 +145,42 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 #endif
     // then load the rest of the singleton classes.
 
-
-    Terminal terminal(frame_info->framebuffer_width, frame_info->framebuffer_height);
+    vga.drawSplash();
+    vga.draw();
+    auto bar = vga.createProgressBar(
+        (frame_info->framebuffer_width - 540) / 2,
+        47 * frame_info->framebuffer_height / 100,
+        540,
+        80,
+        5,
+        24);
+    vga.incrementProgressBarChunk(bar);
+    vga.incrementProgressBarChunk(bar);
+    Terminal terminal(45+5, 3 * frame_info->framebuffer_height / 5 + 5, frame_info->framebuffer_width - 100, 2* frame_info->framebuffer_height / 5 - 55);
+    vga.incrementProgressBarChunk(bar);
     EventQueue events;
+    vga.incrementProgressBarChunk(bar);
 
 
     // remap IRQs in APIC
     io_apic.remap_IRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
+    vga.incrementProgressBarChunk(bar);
     io_apic.remap_IRQ(1, 33); // Keyboard
+    vga.incrementProgressBarChunk(bar);
     io_apic.remap_IRQ(8, 40); // RTC
+    vga.incrementProgressBarChunk(bar);
     io_apic.remap_IRQ(14, 46); // IDE primary
+    vga.incrementProgressBarChunk(bar);
     io_apic.remap_IRQ(15, 47); // IDE primary
+    vga.incrementProgressBarChunk(bar);
 
     configure_pit(2000);
+    vga.incrementProgressBarChunk(bar);
     // local_apic.configure_timer(1024);
     // todo: configure apic timer.
     // Configure interrupt tables and enable interrupts.
     IDT idt;
+    vga.incrementProgressBarChunk(bar);
 
     LOG("Singletons loaded.");
 
@@ -170,9 +189,13 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // This means that these should not be registered directly and instead should use filenames.
     // These filenames are already in place.
     register_file_handle(0, Serial::get_file()); // stdin
+    vga.incrementProgressBarChunk(bar);
     register_file_handle(1, Serial::get_file()); // stdout
+    vga.incrementProgressBarChunk(bar);
     register_file_handle(2, Serial::get_file()); // stderr
+    vga.incrementProgressBarChunk(bar);
     FILE* com = fopen("/dev/com1", "w");
+    vga.incrementProgressBarChunk(bar);
     fprintf(com, "%s\n", "This should print to com0 via fprintf");
     printf("This should print to com0 via printf\n");
 #elif ENABLE_TERMINAL_LOGGING
@@ -186,6 +209,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 #endif
     // TODO: Draw splash should programmatically draw using the logo from the middle as a texture.
     PCI_populate_list();
+    vga.incrementProgressBarChunk(bar);
     [[maybe_unused]] auto PCI_IDE_controller = PCI_get_IDE_controller();
     if (PCI_IDE_controller->prog_if() == 0x80)
     {
@@ -196,7 +220,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         LOG("IDE controller doesn't support bus mastering. Aborting.");
         return;
     }
-
+    vga.incrementProgressBarChunk(bar);
     BM_controller_base_port = PCI_IDE_controller->bar(4);
     if (BM_controller_base_port & 0x1)
     {
@@ -208,9 +232,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
         LOG("base port is memory address. Not implemented.");
         return;
     }
-
+    vga.incrementProgressBarChunk(bar);
     LOG("IDE base port raw: ", BM_controller_base_port);
-
+    vga.incrementProgressBarChunk(bar);
     if (int n_drives = populate_drives_list(drive_list); n_drives == 0)
     {
         LOG("No drives found.");
@@ -220,6 +244,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     {
         LOG("Error initialising drives.");
     }
+    vga.incrementProgressBarChunk(bar);
     int cd_idx = 0;
     for (; cd_idx < 4; cd_idx++)
     {
@@ -228,24 +253,27 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
             break;
         }
     }
+    vga.incrementProgressBarChunk(bar);
     // TODO: Possibly set up the ATAPIDrive inside the IDEStorageContainer to avoid the need for a IDE_notifiable class etc.
     // TODO: Initialisation of the controller should only happen if the device is DM capable i.e. this should be moved to the
     //          IDEStorageContainer constructor.
     char dev_name[] = "/dev/cdrom0";
     auto secondary_bus_master = BusMasterController(BM_controller_base_port, &drive_list[cd_idx]);
+    vga.incrementProgressBarChunk(bar);
     auto CD_ROM = new IDEStorageContainer(drive_list[cd_idx], PCI_IDE_controller, &secondary_bus_master, dev_name);
+    vga.incrementProgressBarChunk(bar);
     CD_ROM->mount();
+    vga.incrementProgressBarChunk(bar);
 
     // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
     constexpr size_t cmd_buffer_size = 1024;
     char cmd_buffer[cmd_buffer_size] = {0};
     size_t cmd_buffer_idx = 0;
+
+    sleep_s(1);
+    // vga.draw();
+    terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
     LOG("LOADED OS. Entering event loop.");
-
-    vga.drawSplash();
-    vga.draw();
-
-    sleep_ms(10000);
 
 #if !ENABLE_TERMINAL_LOGGING
     terminal.write("Loading done.\n");

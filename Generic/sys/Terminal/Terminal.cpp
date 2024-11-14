@@ -42,9 +42,9 @@ size_t queue_pos = 0;
 terminal_char_t terminal_queue[queue_size];
 
 
-Terminal::Terminal(u32 width, u32 height)
+Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
 {
-    screen_region = {0, 0, width, height, width, height};
+    screen_region = {x, y, width+x, height+y, width, height};
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
     term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
@@ -65,6 +65,7 @@ Terminal::Terminal(u32 width, u32 height)
     stdout_wrapper = new TermFileWrapper{false};
 
     stderr_wrapper = new TermFileWrapper{true};
+
 }
 
 Terminal::~Terminal()
@@ -117,7 +118,7 @@ void Terminal::_putChar(const terminal_char_t ch, const u32 origin_x, const u32 
     }
     else
     {
-        // patially in the screen_region
+        // partially in the screen_region
         size_t i = origin_x + screen_region.w * origin_y; // linear index
         const size_t line_step_amount = screen_region.w - min(screen_region.x2 - origin_x, scaled_char_dim);
 
@@ -172,6 +173,24 @@ void Terminal::setScale(u32 new_scale)
     }
 }
 
+void Terminal::setRegion(const u32 x,const  u32 y,const  u32 width,const  u32 height)
+{
+    free(terminal_buffer);
+    free(rendered_buffer);
+    free(term_screen_buffer);
+    screen_region = {x, y, width+x, height+y, width, height};
+    buffer_width = screen_region.w / scaled_char_dim;
+    buffer_height = screen_region.h / scaled_char_dim;
+    term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
+    terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+    rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+    memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+    memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+    terminal_row = 0;
+    terminal_column = 1;
+    VideoGraphicsArray::get().fillRectangle( screen_region.x1, screen_region.y1, screen_region.w, screen_region.h, colour_bkgd);
+}
+
 u32 Terminal::getScale()
 {
     return font_scale;
@@ -200,7 +219,8 @@ void Terminal::_draw_changes()
         }
     }
     const auto& vga = VideoGraphicsArray::get();
-    vga.draw_region(term_screen_buffer);
+    vga.copy_region(term_screen_buffer, screen_region.x1, screen_region.y1, screen_region.w, screen_region.h);
+    vga.draw();
 }
 
 void Terminal::_append_to_queue(const char* data, const u32 count, const PALETTE_t colour)

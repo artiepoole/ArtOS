@@ -31,6 +31,17 @@ struct window_t
     u32 h;
 };
 
+struct progress_bar_t
+{
+    u32 x;
+    u32 y;
+    u32 w;
+    u32 h;
+    u32 border;
+    u32 n_chunks;
+    u32 chunk;
+};
+
 
 class VideoGraphicsArray
 {
@@ -58,11 +69,14 @@ public:
 
     void fillRectangle(u32 x, u32 y, u32 w, u32 h, u32 color) const;
     void draw() const;
-    void clearWindow() const;
     void clearBuffer() const;
     void copy_region(const u32* src, size_t x, size_t y, size_t w, size_t h) const;
     void drawSplash() const;
-    void draw_region(const u32* buffer_to_draw) const;
+    void drawRegion(const u32* buffer_to_draw) const;
+    progress_bar_t createProgressBar(u32 x, u32 y, u32 w, u32 h, u32 border_width, u32 n_chunks);
+    void setProgressBarPercent(progress_bar_t& bar, float percent);
+    void setProgressBarChunk(progress_bar_t& bar, u32 chunk);
+    void incrementProgressBarChunk(progress_bar_t& bar);
     [[nodiscard]] window_t* getScreen();
 
 

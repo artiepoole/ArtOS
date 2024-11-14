@@ -102,5 +102,5 @@ void sleep_us(const u32 us)
 
 void draw_screen_region(const u32* frame_buffer)
 {
-    VideoGraphicsArray::get().draw_region(frame_buffer);
+    VideoGraphicsArray::get().drawRegion(frame_buffer);
 }

@@ -15,7 +15,7 @@ struct terminal_char_t
 };
 
 
-inline PALETTE_t colour_bkgd = COLOR_BASE02;
+inline PALETTE_t colour_bkgd = COLOR_BASE03;
 inline PALETTE_t colour_frgd = COLOR_BASE0;
 inline PALETTE_t colour_accent = COLOR_CYAN;
 inline PALETTE_t colour_value = COLOR_MAGENTA;
@@ -32,7 +32,7 @@ class Terminal
 {
 public:
     // Single instance.
-    Terminal(u32 width, u32 height);
+    Terminal(u32 x, u32 y, u32 width, u32 height);
     ~Terminal();
     static Terminal& get();
     static ArtFile* get_stdout_file();
@@ -45,6 +45,7 @@ public:
     static void newLine();
     void userLine();
     void setScale(u32 new_scale);
+    void setRegion(u32 x, u32 y, u32 width, u32 height);
     static u32 getScale();
     static void clear();
 
