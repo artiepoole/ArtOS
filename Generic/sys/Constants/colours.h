@@ -23,4 +23,10 @@ enum PALETTE_t
     COLOR_GREEN = 0x859900,
 };
 
+inline PALETTE_t colour_bkgd = COLOR_BASE03;
+inline PALETTE_t colour_frgd = COLOR_BASE0;
+inline PALETTE_t colour_accent = COLOR_CYAN;
+inline PALETTE_t colour_value = COLOR_MAGENTA;
+inline PALETTE_t colour_error = COLOR_RED;
+
 #endif

@@ -15,12 +15,6 @@ struct terminal_char_t
 };
 
 
-inline PALETTE_t colour_bkgd = COLOR_BASE03;
-inline PALETTE_t colour_frgd = COLOR_BASE0;
-inline PALETTE_t colour_accent = COLOR_CYAN;
-inline PALETTE_t colour_value = COLOR_MAGENTA;
-inline PALETTE_t colour_error = COLOR_RED;
-
 /* Terminal class for interacting with text on screen.
  * If not initialised, all writes will append to a queue to be rendered upon initialisation.
  * If initialised, all writes will add text to screen.
