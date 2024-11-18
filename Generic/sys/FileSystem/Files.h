@@ -22,6 +22,24 @@ struct FileInfo
 };
 
 
+/* TODO
+ * The following syscalls should be implemented in this form.
+ * Currently only mount exists and is does not mount to a dir, nor does ArtOS have a concept of a path right now.
+ *
+ *  mount/unmount: mount a device to a directory
+ *  open/close: create and release a file descriptor for a given file
+ *  read/write: read or write data from a file descriptor
+ *  mkdir/rmdir: create and delete directories
+ *  link/unlink: create and delete hard links
+ *  raname: move files and directories
+ *  chmod/chown: change permissions and ownership on files
+ *  stat: gets information about a file
+ *  getdents: gets directory entries
+ *  sync: flush filesystem buffers (should be done by close)
+ *  mknod: creates a filesystem node (file, device, special file, or named pipe)
+ *
+ */
+
 
 // TODO: should this replace FileInfo? I don't construct a path.
 struct FileData{

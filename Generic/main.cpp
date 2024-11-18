@@ -281,7 +281,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
 
     // Event handler loop.
-
     while (true)
     {
         if (events.pendingEvents())
