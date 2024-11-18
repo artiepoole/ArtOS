@@ -279,8 +279,8 @@ struct multiboot2_tag_vbe
     multiboot2_uint16_t vbe_interface_off;
     multiboot2_uint16_t vbe_interface_len;
 
-    struct multiboot2_vbe_info_block vbe_control_info;
-    struct multiboot2_vbe_mode_info_block vbe_mode_info;
+    multiboot2_vbe_info_block vbe_control_info;
+    multiboot2_vbe_mode_info_block vbe_mode_info;
 };
 
 struct multiboot2_tag_framebuffer_common
@@ -474,7 +474,7 @@ struct artos_boot_header
 artos_boot_header* multiboot2_populate(multiboot2_uint32_t boot_info_address);
 multiboot2_uint32_t multiboot2_get_APIC_address();
 multiboot2_uint32_t multiboot2_get_MADT_table_address();
-multiboot2_tag_framebuffer_common* multiboot2_get_framebuffer();
+
 
 #endif /*  ! ASM_FILE */
 

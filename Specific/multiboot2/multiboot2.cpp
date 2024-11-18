@@ -60,6 +60,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
         case MULTIBOOT2_TAG_TYPE_FRAMEBUFFER:
             LOG("Boot info: framebuffer info loaded");
             boot_info.framebuffer_common = *reinterpret_cast<multiboot2_tag_framebuffer_common*>(target_addr);
+            // TODO: populate this. to handle different colour types
             switch (boot_info.framebuffer_common.framebuffer_type)
             {
             case MULTIBOOT2_FRAMEBUFFER_TYPE_INDEXED:

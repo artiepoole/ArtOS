@@ -37,6 +37,7 @@
 #include "BusMasterController.h"
 #include "kernel.h"
 #include "logging.h"
+#include "memory.h"
 
 #if FORLAPTOP
 #include "CPUID.h"
@@ -99,6 +100,10 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // Enable simd if available
     simd_enable();
 
+    // Must populate boot info in order to set up memory handling required to use malloc/new
+    [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
+    mmap_init(&boot_info->mmap);
+
     // Load serial early for logging.
 #if ENABLE_SERIAL_LOGGING
     auto serial = Serial();
@@ -110,8 +115,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Then load all the boot information into a usable format.
     LOG("Populating boot info.");
-    [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
-    multiboot2_tag_framebuffer_common* frame_info = multiboot2_get_framebuffer();
+    multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
+
 
 #if FORLAPTOP
     cpuid_manufacturer_info_t* manu_info= cpuid_get_manufacturer_info();

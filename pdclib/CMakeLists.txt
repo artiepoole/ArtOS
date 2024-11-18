@@ -341,6 +341,7 @@ target_include_directories(pdclib PUBLIC
 
         ../Specific/x86/CPU
         ../Specific/x86/Timers
+        ../Specific/multiboot2
 
 
 
