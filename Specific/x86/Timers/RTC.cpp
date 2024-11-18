@@ -11,6 +11,7 @@ u16 CURRENT_YEAR = 2000;
 RTC* instance = nullptr;
 
 u8 days_in_months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+tm empty_time{0, 0, 0, 0, 0, 0, 0, 0, 0};
 u32 RTC_ticks = 0;
 
 u32 seconds_since_start = 0;
@@ -45,7 +46,12 @@ RTC& RTC::get()
 
 tm* RTC::getTime()
 {
-    return &current_time;
+    if (instance)
+    {
+        return &current_time;
+    }
+
+    return &empty_time;
 }
 
 time_t RTC::epochTime()
