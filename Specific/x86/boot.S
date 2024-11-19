@@ -109,7 +109,7 @@ multiboot_header_end:
 .section .bss
 .align 16
 stack_bottom:
-.skip 256*1024*1024 # 200MiB
+.skip 1024*1024 # 1MB
 stack_top:
 
 .section .text
