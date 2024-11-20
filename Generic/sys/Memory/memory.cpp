@@ -14,7 +14,7 @@ void* sbrk(const long increment)
     kernel_brk = kernel_brk + increment;
     return last_brk;
 
-    // TODO: use mmap or something.
+    // TODO: this does not work with paging. This needs to be replaced.
 }
 
 
