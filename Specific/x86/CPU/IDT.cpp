@@ -50,31 +50,31 @@ inline constexpr char exception_messages[][40] =
     "into detected overflow exception", // 4
     "out of bounds exception", // 5
     "invalid opcode exception", // 6
-    "double fault exception", // 7
-    "coprocessor segment overrun exception", // 8
-    "bad TSS exception", // 9
-    "segment not present exception", // 10
-    "stack fault exception", // 11
-    "general protection fault exception", // 12
-    "page fault exception", // 13
-    "unknown interrupt exception", // 14
-    "coprocessor fault exception", // 15
-    "alignment check exception", // 16
-    "machine check exception", // 17
-    "reserved exceptions", // 18
-    "reserved exceptions", // 19
-    "reserved exceptions", // 20
-    "reserved exceptions", // 21
-    "reserved exceptions", // 22
-    "reserved exceptions", // 23
-    "reserved exceptions", // 24
-    "reserved exceptions", // 25
-    "reserved exceptions", // 26
-    "reserved exceptions", // 27
-    "reserved exceptions", // 28
-    "reserved exceptions", // 29
-    "reserved exceptions", // 30
-    "reserved exceptions", // 31
+    "device not available exception", // 7
+    "double fault exception", // 8
+    "coprocessor segment overrun exception", // 9
+    "bad TSS exception", // 10
+    "segment not present exception", // 11
+    "stack fault exception", // 12
+    "general protection fault exception", // 13
+    "page fault exception", // 14
+    "unknown interrupt exception", // 15
+    "coprocessor fault exception", // 16
+    "alignment check exception", // 17
+    "machine check exception", // 18
+    "SIMD floating point exception", // 19
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
+    "reserved exceptions", //
 };
 
 void log_registers([[maybe_unused]]const cpu_registers_t* r)
