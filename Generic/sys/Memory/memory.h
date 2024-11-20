@@ -6,7 +6,7 @@
 #define MEMORY_H
 
 #pragma once
-#include <stdint.h>
+#include "types.h"
 
 // http://wiki.osdev.org/Memory_Map_(x86)
 // "Use the BIOS function INT 15h, EAX=0xE820 to get a reliable map of Extended Memory."
@@ -23,6 +23,11 @@ void* sbrk(long increment);
 
 // implemented in Specific/<arc>/memory/<paging or similar>.cpp
 void mmap_init(struct multiboot2_tag_mmap* mmap);
+
+void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset);
+int munmap(void* addr, size_t length);
+
+void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);
 
 #ifdef __cplusplus
 }

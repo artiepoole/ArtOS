@@ -10,11 +10,10 @@ unsigned char* kernel_brk = &kernel_end;
 extern "C"
 void* sbrk(const long increment)
 {
-    void* last_brk = kernel_brk;
+    const auto last_brk = reinterpret_cast<uintptr_t>(kernel_brk);
     kernel_brk = kernel_brk + increment;
-    return last_brk;
-
-    // TODO: this does not work with paging. This needs to be replaced.
+    void* retval = mmap(last_brk, increment, false, false, false, 0);
+    return retval;
 }
 
 

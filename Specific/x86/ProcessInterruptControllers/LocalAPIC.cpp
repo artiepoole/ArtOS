@@ -4,6 +4,7 @@
 
 #include "LocalAPIC.h"
 #include "logging.h"
+#include "memory.h"
 uintptr_t* eoi_addr;
 
 // LVT entry offsets
@@ -52,6 +53,7 @@ union local_destination_register
 
 LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 {
+    paging_identity_map(local_apic_physical_address, 0x3f0 , true, false);
     base = local_apic_physical_address;
     TIMESTAMP();
     WRITE("LAPIC base addr: ");

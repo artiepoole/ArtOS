@@ -43,6 +43,17 @@ As the is no memory management the Offscreen buffer is allocated elsewhere and p
 This class could be re-worked as a Canvas with out to many changes */
 
 u32* buffer;
+union virtual_address_t
+{
+    uintptr_t raw;
+
+    struct
+    {
+        uintptr_t page_offset : 12;
+        uintptr_t page_table_index : 10;
+        uintptr_t page_directory_index : 10;
+    };
+};
 
 VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info)
 {

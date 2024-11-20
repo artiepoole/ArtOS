@@ -17,6 +17,7 @@ This program is free software: you can redistribute it and/or modify
 
 #include "stddef.h"
 #include "stdint.h"
+#include "stdbool.h"
 
 /*
   define some specific length types
@@ -32,7 +33,7 @@ typedef int64_t i64;
 
 
 // Helper functions for templating
-
+#ifdef __cplusplus
 template <typename, typename>
 constexpr bool is_same_v = false;
 template <typename T>
@@ -86,7 +87,7 @@ constexpr bool is_int_like_v = is_any_of_v<
 template <class T>
 concept int_like = is_int_like_v<T>;
 
-
+#endif
 
 
 #endif

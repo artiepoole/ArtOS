@@ -30,7 +30,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
         {
         case MULTIBOOT2_TAG_TYPE_BOOT_LOADER_NAME:
             {
-                [[maybe_unused]]char buffer[tag->size - 4];
+                [[maybe_unused]] char buffer[tag->size - 4];
                 for (size_t i = 8; i < tag->size; i++)
                 {
                     buffer[i - 8] = *reinterpret_cast<char*>(target_addr + i);
@@ -60,7 +60,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
         case MULTIBOOT2_TAG_TYPE_FRAMEBUFFER:
             LOG("Boot info: framebuffer info loaded");
             boot_info.framebuffer_common = *reinterpret_cast<multiboot2_tag_framebuffer_common*>(target_addr);
-            // TODO: populate this. to handle different colour types
+        // TODO: populate this. to handle different colour types
             switch (boot_info.framebuffer_common.framebuffer_type)
             {
             case MULTIBOOT2_FRAMEBUFFER_TYPE_INDEXED:
@@ -105,7 +105,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
         case MULTIBOOT2_TAG_TYPE_MMAP:
             LOG("Boot info: memory map info loaded");
             boot_info.mmap = *reinterpret_cast<multiboot2_tag_mmap*>(target_addr);
-            for (size_t i = 0; i < 6; i++)
+            for (size_t i = 0; i < boot_info.mmap.size / boot_info.mmap.entry_size; i++)
             {
                 boot_info.mmap.entries[i] = reinterpret_cast<multiboot2_mmap_entry*>(target_addr + 16 + (i * sizeof(multiboot2_mmap_entry)));
             }

@@ -104,6 +104,10 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     mmap_init(&boot_info->mmap);
 
+    // Then load all the boot information into a usable format.
+    LOG("Populated boot info.");
+
+
     // Load serial early for logging.
 #if ENABLE_SERIAL_LOGGING
     auto serial = Serial();
@@ -112,11 +116,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // We want time-stamping to work asap.
     WRITE("Sun Jan  0 00:00:00 1900\tLoading singletons...\n");
     RTC rtc;
-
-    // Then load all the boot information into a usable format.
-    LOG("Populating boot info.");
-    multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
-
 
 #if FORLAPTOP
     cpuid_manufacturer_info_t* manu_info= cpuid_get_manufacturer_info();
@@ -129,6 +128,10 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("CR0 CACHE DISABLED?: ", static_cast<bool>(get_cr0().CD));
 #endif
+    multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
+
+    size_t framebuffer_size_b = frame_info->framebuffer_width * frame_info->framebuffer_height * frame_info->framebuffer_bpp / 8;
+    paging_identity_map(frame_info->framebuffer_addr, framebuffer_size_b, true, false);
     // And then we want graphics.
     VideoGraphicsArray vga(frame_info);
     vga.draw();
