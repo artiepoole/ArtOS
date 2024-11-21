@@ -13,33 +13,34 @@
 extern "C" {
 #endif
 
-int fork( void ){return 0;}
-int execve( const char * filename, char * const argv[], char * const envp[] ){return 0;}
-int wait( int * status )
+int fork(void) { return 0; }
+int execve(const char* filename, char* const argv[], char* const envp[])
 {
+    // TODO: Read an executable and load into memory and do context switching etc.
     return 0;
 }
-int _PDCLIB_rename( const char * oldpath, const char * newpath ){return 0;}
+int wait(int* status) { return 0; }
+int _PDCLIB_rename(const char* oldpath, const char* newpath) { return 0; }
 #ifdef __cplusplus
 }
 #endif
 
-int system( const char * string )
+int system(const char* string)
 {
-    const char * argv[] = { "sh", "-c", NULL, NULL };
+    const char* argv[] = {"sh", "-c", NULL, NULL};
     argv[2] = string;
 
-    if ( string != NULL )
+    if (string != NULL)
     {
         int pid = fork();
 
-        if ( pid == 0 )
+        if (pid == 0)
         {
-            execve( "/bin/sh", ( char * const *)argv, NULL );
+            execve("/bin/sh", (char* const *)argv, NULL);
         }
-        else if ( pid > 0 )
+        else if (pid > 0)
         {
-            while ( wait( NULL ) != pid )
+            while (wait(NULL) != pid)
             {
                 /* EMPTY */
             }
