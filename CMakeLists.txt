@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 
 
-ENABLE_LANGUAGE(ASM)
+
 option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
 option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 
 project(ArtOS)
+ENABLE_LANGUAGE(ASM)
 
 set(KERNEL_BIN "ArtOS.bin")
 set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
