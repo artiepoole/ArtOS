@@ -5,6 +5,8 @@
 #include "memory.h"
 #include "multiboot2.h"
 #include "logging.h"
+#include "string.h"
+#include "cmp_int.h"
 
 constexpr size_t base_address_shift = 12;
 constexpr size_t page_alignment = 4096;
@@ -123,7 +125,7 @@ uintptr_t page_get_next_virtual_chunk(size_t idx, const size_t n_pages)
 // Should go back to 0 if doesn't find anything.
 uintptr_t page_get_next_virt_addr(const uintptr_t start_addr)
 {
-    size_t idx = start_addr / page_alignment;
+    size_t idx = start_addr >> base_address_shift;
     for (; !page_available_virtual_bitmap[idx] && idx < 0x100000; idx++)
     {
     }
@@ -150,38 +152,32 @@ void assign_page_table_entry(const uintptr_t physical_addr, const virtual_addres
 
     paging_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
 
-    page_available_physical_bitmap[physical_addr / page_alignment] = false;
-    page_available_virtual_bitmap[v_addr.raw / page_alignment] = false;
+    page_available_physical_bitmap[physical_addr >> base_address_shift] = false;
+    page_available_virtual_bitmap[v_addr.raw >> base_address_shift] = false;
 }
 
-// Probably not necessary
-// int unassign_page_directory_entry(size_t dir_idx)
-// {
-//     // Check if the dir is empty and then mark as not present if so?
-//     return -1;
-// }
+// TODO: do we need to unassign directories? Probably not.
 
-int unassign_page_table_entry(const virtual_address_t v_addr)
+int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
 {
-    auto* tab_entry = &paging_tables[v_addr.page_directory_index].table[v_addr.page_table_index];
-    if (page_available_virtual_bitmap[v_addr.page_table_index] || !tab_entry->present) // is not marked as used
+    for (size_t i = start_idx; i < start_idx + n_pages; i++)
     {
-        return -1;
+        auto* tab_entry = &paging_tables[i / 1024].table[i % 1024];
+        if (!tab_entry->present) return -1;
+        const size_t phys_idx = tab_entry->physical_address;
+        page_available_virtual_bitmap[i] = true;
+        page_available_physical_bitmap[phys_idx] = true;
+        tab_entry->rw = 0;
     }
-    page_available_virtual_bitmap[v_addr.page_table_index + page_table_size * v_addr.page_directory_index] = true;
-    page_available_physical_bitmap[tab_entry->physical_address] = true; // <<12/4096 = times by 1
-    tab_entry->raw = 0;
-
     return 0;
 }
 
 
 void paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
 {
-    virtual_address_t virtual_address = {};
-    virtual_address.raw = phys_addr;
+    virtual_address_t virtual_address = {phys_addr};
     size_t dir_idx = -1;
-    const size_t num_pages = (size + page_alignment - 1) / page_alignment;
+    const size_t num_pages = (size + page_alignment - 1) >> base_address_shift;
     for (size_t i = 0; i < num_pages; i++)
     {
         // Every 1024 table entries requires a new dir entry.
@@ -235,7 +231,10 @@ void mmap_init(multiboot2_tag_mmap* mmap)
             // kernel boot sequence i.e. may contain the framebuffer. That's why it is also set to writable.
             //
             // This could also be a second section of free memory and so this approach may be stupid.
-            paging_identity_map(entry->addr, entry->len, true, false);
+            // fill the bios hole
+            extern unsigned char kernel_start;
+            const size_t start = MIN(0, entry->addr);
+            paging_identity_map(start, MAX(entry->len+entry->addr, reinterpret_cast<size_t>(&kernel_start)) - start, true, false);
 
             continue;
         }
@@ -244,7 +243,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         // TODO: these can be local variables/not used at all if sbrk is not used.
         main_region_start = entry->addr;
         main_region_end = entry->addr + entry->len;
-        next_page_start = (brk_loc & 0xFFFFF000) + 0x1000; // 4k aligned. 32 bit max address. As the Kernel expands, this may want to be larger so that kernel stuff can be incremented with sbrk instead
+        next_page_start = (brk_loc & 0xFFFFF000) + 0x1000; // 4k aligned. 32 bit max address.
         kernel_brk = reinterpret_cast<u8*>(next_page_start);
 
         // Protect kernel and init identity map
@@ -253,18 +252,13 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         // set upper limit in bitmap to extents of this memory region.
         for (size_t addr = next_page_start; addr < main_region_end; addr += page_alignment)
         {
-            page_available_physical_bitmap[addr / page_alignment] = true;
+            page_available_physical_bitmap[addr >> base_address_shift] = true;
         }
 
         // manual region
     }
-    // fill the bios hole
-    extern unsigned char kernel_start;
-    paging_identity_map(0, reinterpret_cast<size_t>(&kernel_start), false, false);
 
-    // fill the remaining holes
-
-
+    // TODO: consider a hole filling algorithm to fix the need for manual identity mapping of framebuffer and APIC stuff.
     virtual_address_t virtual_address = {0xFC000000};
     LOG("Paging: memory map processed.");
     enable_paging();
@@ -304,19 +298,8 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
 
 int munmap(void* addr, const size_t length)
 {
-    virtual_address_t working_addr = {reinterpret_cast<uintptr_t>(addr)};
-    const size_t num_pages = (length + page_alignment - 1) / page_alignment;
-    int rval = 0;
-    // TODO: it could be much quicker to access and edit sequential memory in a loop. Do all the checks first, the do all the writing.
-    for (size_t i = 0; i < num_pages; i++)
-    {
-        // TODO: implement.
-        // on changing dir boundary, detect whether the page dir is empty and if so, unassign the dir
-        // Detect whether the memory was assigned and mark the entry as not present in the page table entry and the bitmap
-        // update working addr to repeat.
-        rval = unassign_page_table_entry(working_addr);
-        if (rval != 0) { return rval; }
-        working_addr.raw += page_alignment;
-    }
-    return 0;
+    // TODO: More checks such as "you don't own this memory"
+    return unassign_page_table_entries(
+        reinterpret_cast<uintptr_t>(addr) >> base_address_shift,
+        (length + page_alignment - 1) >> base_address_shift);
 }
