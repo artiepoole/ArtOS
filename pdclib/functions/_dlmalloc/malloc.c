@@ -16,6 +16,7 @@
 #include <stdint.h>
 
 #include "memory.h"
+#include "Files.h"
 
 // extern void* sbrk(long increment);
 
@@ -593,8 +594,9 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define LACKS_TIME_H
 
 // Use sblk to extend the heap to allocate more memory. Modern platforms use mmap but that's more complex.
-#define HAVE_MORECORE 1
-#define HAVE_MMAP 0
+#define HAVE_MORECORE 0
+#define HAVE_MMAP 1
+#define MAP_ANONYMOUS 1
 
 
 /* Version identifier to allow people to support multiple versions */
@@ -1558,7 +1560,8 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #include <sys/mman.h>    /* for mmap */
 #undef __USE_GNU
 #else
-#include <sys/mman.h>    /* for mmap */
+// #include <sys/mman.h>    /* for mmap */
+#define LACKS_FCNTL_H 1
 #endif /* linux */
 #endif /* LACKS_SYS_MMAN_H */
 #ifndef LACKS_FCNTL_H

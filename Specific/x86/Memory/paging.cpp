@@ -4,7 +4,7 @@
 
 #include "memory.h"
 #include "multiboot2.h"
-#include <logging.h>
+#include "logging.h"
 
 constexpr size_t base_address_shift = 12;
 constexpr size_t page_alignment = 4096;
@@ -80,7 +80,7 @@ uintptr_t main_region_start;
 uintptr_t main_region_end;
 uintptr_t next_page_start;
 
-page_directory_4kb_t paging_directory[1024]__attribute__((aligned(page_alignment)));
+page_directory_4kb_t paging_directory[page_table_size]__attribute__((aligned(page_alignment)));
 page_table paging_tables[page_table_size]__attribute__((aligned(page_alignment)));
 
 // bitmaps used to keep track of the next virtual and physical pages available.
@@ -96,6 +96,26 @@ uintptr_t page_get_next_phys_addr()
     size_t idx = 0;
     for (; !page_available_physical_bitmap[idx] && idx < 0x100000; idx++)
     {
+    }
+    return idx * page_alignment;
+}
+
+uintptr_t page_get_next_virtual_chunk(size_t idx, const size_t n_pages)
+{
+    bool looking = true;
+    while (looking)
+    {
+        size_t i = 1;
+        while (!page_available_virtual_bitmap[idx])
+        {
+            idx++;
+        }
+        while (page_available_virtual_bitmap[idx + i] && i < n_pages)
+        {
+            i++;
+        }
+        if (i == n_pages) { looking = false; }
+        else { idx += i; }
     }
     return idx * page_alignment;
 }
@@ -134,6 +154,28 @@ void assign_page_table_entry(const uintptr_t physical_addr, const virtual_addres
     page_available_virtual_bitmap[v_addr.raw / page_alignment] = false;
 }
 
+// Probably not necessary
+// int unassign_page_directory_entry(size_t dir_idx)
+// {
+//     // Check if the dir is empty and then mark as not present if so?
+//     return -1;
+// }
+
+int unassign_page_table_entry(const virtual_address_t v_addr)
+{
+    auto* tab_entry = &paging_tables[v_addr.page_directory_index].table[v_addr.page_table_index];
+    if (page_available_virtual_bitmap[v_addr.page_table_index] || !tab_entry->present) // is not marked as used
+    {
+        return -1;
+    }
+    page_available_virtual_bitmap[v_addr.page_table_index + page_table_size * v_addr.page_directory_index] = true;
+    page_available_physical_bitmap[tab_entry->physical_address] = true; // <<12/4096 = times by 1
+    tab_entry->raw = 0;
+
+    return 0;
+}
+
+
 void paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
 {
     virtual_address_t virtual_address = {};
@@ -171,7 +213,7 @@ void enable_paging()
  */
 void mmap_init(multiboot2_tag_mmap* mmap)
 {
-    memset(page_available_virtual_bitmap, true, sizeof(bool)*0x100000);
+    memset(page_available_virtual_bitmap, true, sizeof(bool) * 0x100000);
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
 
@@ -213,8 +255,14 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         {
             page_available_physical_bitmap[addr / page_alignment] = true;
         }
+
+        // manual region
     }
-    // Need to map the vga framebuffer becuase it's not included in the mmap for some reason.
+    // fill the bios hole
+    extern unsigned char kernel_start;
+    paging_identity_map(0, reinterpret_cast<size_t>(&kernel_start), false, false);
+
+    // fill the remaining holes
 
 
     virtual_address_t virtual_address = {0xFC000000};
@@ -224,11 +272,16 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 }
 
 
-void* mmap(const uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset)
+void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset)
 {
-    const virtual_address_t ret_addr = {page_get_next_virt_addr(addr)};
+    // mmap should return a contiguous chunk of virtual memory, so some checks should be done first.
+    // if (addr < main_region_start) addr = main_region_start;
+
+    size_t first_page = addr >> base_address_shift;
+    const size_t num_pages = (length + page_alignment - 1) >> base_address_shift;
+
+    virtual_address_t ret_addr = {page_get_next_virtual_chunk(first_page, num_pages)};
     virtual_address_t working_addr = ret_addr;
-    const size_t num_pages = (length + page_alignment - 1) / page_alignment;
     for (size_t i = 0; i < num_pages; i++)
     {
         if (!paging_directory[working_addr.page_directory_index].present)
@@ -244,7 +297,26 @@ void* mmap(const uintptr_t addr, size_t length, int prot, int flags, int fd, siz
             false
         );
 
-        working_addr.raw = page_get_next_virt_addr(addr);
+        working_addr.raw += page_alignment;
     }
     return reinterpret_cast<void*>(ret_addr.raw);
+}
+
+int munmap(void* addr, const size_t length)
+{
+    virtual_address_t working_addr = {reinterpret_cast<uintptr_t>(addr)};
+    const size_t num_pages = (length + page_alignment - 1) / page_alignment;
+    int rval = 0;
+    // TODO: it could be much quicker to access and edit sequential memory in a loop. Do all the checks first, the do all the writing.
+    for (size_t i = 0; i < num_pages; i++)
+    {
+        // TODO: implement.
+        // on changing dir boundary, detect whether the page dir is empty and if so, unassign the dir
+        // Detect whether the memory was assigned and mark the entry as not present in the page table entry and the bitmap
+        // update working addr to repeat.
+        rval = unassign_page_table_entry(working_addr);
+        if (rval != 0) { return rval; }
+        working_addr.raw += page_alignment;
+    }
+    return 0;
 }

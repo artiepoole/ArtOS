@@ -23,7 +23,7 @@ SECTIONS
 	   chosen as a safer option than the traditional 1M. */
 	   /* I have since changed this line based on another tutorial and haven't checked this value */
    . = 2M;
-
+   kernel_start = .;
    .mboot ALIGN (4K) : AT(ADDR(.mboot))
    {
        *(.multiboot_header)
