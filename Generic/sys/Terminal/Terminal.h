@@ -21,6 +21,7 @@ union terminal_char_t
 };
 
 
+
 /* Terminal class for interacting with text on screen.
  * If not initialised, all writes will append to a queue to be rendered upon initialisation.
  * If initialised, all writes will add text to screen.
