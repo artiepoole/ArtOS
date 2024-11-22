@@ -50,13 +50,13 @@ void cpu_set_MSR(u32 msr, u32 lo, u32 hi)
     asm volatile("wrmsr" : : "a"(lo), "d"(hi), "c"(msr));
 }
 
-struct gdt_info
+struct gdt_info_t
 {
     u16 limit;
     u32 base;
 }__attribute__((packed));
 
-struct gdt_entry
+struct gdt_entry_t
 {
     u16 limit_low;
     u16 base_low;
@@ -69,7 +69,7 @@ struct gdt_entry
 
 void get_GDT()
 {
-    gdt_info gdt{};
+    gdt_info_t gdt{};
     asm("sgdt %0" : "=m"(gdt));
     WRITE("GDT limit: ");
     WRITE(gdt.limit, true);
