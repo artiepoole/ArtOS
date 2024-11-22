@@ -8,11 +8,18 @@
 #include "colours.h"
 #include "mystring.h"
 
-struct terminal_char_t
+
+union terminal_char_t
 {
-    char letter;
-    PALETTE_t colour;
+    struct
+    {
+        char letter;
+        PALETTE_t colour : 24;
+    };
+
+    u32 raw;
 };
+
 
 
 /* Terminal class for interacting with text on screen.
@@ -67,6 +74,7 @@ private:
     static void _write_to_screen(const char* data, u32 count, PALETTE_t colour); // or append to queue if not init'ed
     static void _append_to_queue(const char* data, u32 count, PALETTE_t colour);
     static void _render_queue(const terminal_char_t* data, size_t len); // used to display data from before init.
+    static void _update_cursor();
 
 public:
     template <typename int_like>
