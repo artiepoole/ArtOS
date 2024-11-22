@@ -30,10 +30,11 @@ u32 font_scale = DEFAULT_SCALE;
 u32 scaled_char_dim = DEFAULT_SCALE * 8;
 size_t terminal_row = 0;
 size_t terminal_column = 1;
+size_t cursor_idx = 1;
 u32 buffer_width;
 u32 buffer_height;
-terminal_char_t* terminal_buffer; // 12288 characters total
-terminal_char_t* rendered_buffer; // 12288 characters total
+terminal_char_t* terminal_buffer;
+terminal_char_t* rendered_buffer;
 
 u32* term_screen_buffer;
 
@@ -48,6 +49,8 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
     term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
+    terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+    free(terminal_buffer);
     terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
     rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
     memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
@@ -201,9 +204,24 @@ void Terminal::refresh()
     _draw_changes();
 }
 
+void Terminal::_update_cursor()
+{
+    size_t new_idx = terminal_row * buffer_width + terminal_column;
+    if (new_idx > buffer_width * buffer_height) new_idx = buffer_width * buffer_height - 1;
+    if (cursor_idx >= new_idx)
+    {
+        // backspace
+        terminal_buffer[cursor_idx] = terminal_char_t{' ', colour_bkgd};
+    }
+    cursor_idx = new_idx;
+    terminal_buffer[cursor_idx] = terminal_char_t{'_', colour_frgd};
+}
+
 void Terminal::_draw_changes()
 {
+
     if (!instance) return;
+    _update_cursor();
     size_t i = 0;
     for (size_t row = 0; row < buffer_height; row++)
     {
@@ -400,6 +418,7 @@ void Terminal::newLine()
         terminal_queue[queue_pos++ % queue_size] = terminal_char_t{'\n', colour_bkgd};
         return;
     }
+    terminal_buffer[terminal_row * buffer_width + terminal_column] = terminal_char_t{' ', colour_bkgd}; // remove cursor
     terminal_column = 1;
     terminal_row++;
     if (terminal_row >= buffer_height)
