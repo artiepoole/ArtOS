@@ -53,6 +53,7 @@ target_include_directories(
         Generic/sys/Memory
         Generic/sys/Storage
         Generic/sys/Terminal
+        Generic/sys/Scheduling
         )
 
 target_include_directories(

@@ -38,6 +38,8 @@
 #include "kernel.h"
 #include "logging.h"
 #include "memory.h"
+#include "Scheduler.h"
+#include "Shell.h"
 
 #if FORLAPTOP
 #include "CPUID.h"
@@ -63,24 +65,6 @@ extern "C" {
 u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 IDE_drive_info_t drive_list[4];
 uintptr_t BM_controller_base_port;
-
-
-void process_cmd(char* buf, size_t len)
-{
-    if (len == 0) return;
-    if (strncasecmp(buf, "play doom", 9) == 0)
-    {
-        run_doom();
-    }
-    else
-    {
-        auto& term = Terminal::get();
-        term.write("Unknown command: ", COLOR_RED);
-        term.write(buf, len, COLOR_MAGENTA);
-        term.newLine();
-    }
-}
-
 
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
@@ -273,10 +257,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     CD_ROM->mount();
     vga.incrementProgressBarChunk(bar);
 
-    // todo: put the handle of this buffer and command calls in a function. This entire loop should probably in a different file.
-    constexpr size_t cmd_buffer_size = 1024;
-    char cmd_buffer[cmd_buffer_size] = {0};
-    size_t cmd_buffer_idx = 0;
 
     sleep_s(1);
     // vga.draw();
@@ -284,194 +264,19 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("LOADED OS. Entering event loop.");
 
 #if !ENABLE_TERMINAL_LOGGING
-    terminal.write("Loading done.\n");
+    Terminal::write("Loading done.\n");
 #endif
 
+    // TODO: create shell class.
+    // Init shell with necessary information
+    // then init the scheduler with the shell run fn and finally
+    // start the scheduler (which will run the shell fn).
+    // The shell will process input and on enter will create a new context in the scheduler (fork?) to e.g. run doom
 
-    // Event handler loop.
-    while (true)
-    {
-        if (events.pendingEvents())
-        {
-            auto [type, data] = events.getEvent();
-            // LOG("Found event. Type: ", static_cast<int>(type), " lower: ", data.lower_data, " upper: ",data.upper_data);
-            switch (type)
-            {
-            case NULL_EVENT:
-                {
-                    WRITE("NULL EVENT\n");
-                    break;
-                }
-            case KEY_UP:
-                {
-                    size_t cin = data.lower_data;
-                    char key = key_map[cin];
+    // Init and load the shell. Shell draws directly to the terminal by using static methods.
+    Shell shell(&events);
+    shell.run();
 
-                    if (key_map[cin] != 0)
-                    {
-                        switch (key)
-                        {
-                        case '*': // shift bit 0
-                            {
-                                keyboard_modifiers &= 0b1110; // not 0100
-                                break;
-                            }
-
-                        case '^': // ctrl bit 1
-                            {
-                                keyboard_modifiers &= 0b1101; // not 0010
-                                break;
-                            }
-                        case '!': // alt bit 2
-                            {
-                                keyboard_modifiers &= 0b1011; // not 0001
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
-                        }
-                    }
-
-                    // todo: Add a line buffer and parsing to inputs on enter.
-                    // todo: Add an key handler which deals with modifier keys
-                    // todo: handle backspace
-                    // todo: write an actual terminal class.
-
-                    // WRITE("Key up event in main loop.\n");
-                    break;
-                }
-            case KEY_DOWN:
-                {
-                    // WRITE("Key down event in main loop: ");
-                    size_t cin = data.lower_data;
-                    char key = key_map[cin];
-                    // WRITE(key);
-                    // NEWLINE();
-                    if (key_map[cin] != 0)
-                    {
-                        switch (key)
-                        {
-                        case '\b': // backspace
-                            {
-                                terminal.backspace();
-                                if (cmd_buffer_idx > 0)
-                                {
-                                    cmd_buffer[--cmd_buffer_idx] = ' ';
-                                }
-                                break;
-                            }
-                        case '\t': // tab
-                            {
-                                terminal.write("    ");
-                                break;
-                            }
-                        case '^': // ctrl bit 1
-                            {
-                                keyboard_modifiers |= 0b0010;
-                                break;
-                            }
-                        case '*': // shift bit 0
-                            {
-                                keyboard_modifiers |= 0b0001;
-                                // print("Shift pressed", keyboard_modifiers);
-                                break;
-                            }
-                        case '!': // alt bit 2
-                            {
-                                keyboard_modifiers |= 0b0100;
-                                break;
-                            }
-                        case 'H': // Home
-                            {
-                                // todo: handle home
-                                break;
-                            }
-                        case 'E': // end
-                            {
-                                // go to end of line
-                                break;
-                            }
-                        case 'U': // up
-                            {
-                                // probably won't handle up
-                                break;
-                            }
-                        case 'D': // down
-                            {
-                                // probably won't handle this
-                                break;
-                            }
-                        case '<': // left
-                            {
-                                // move left
-                                break;
-                            }
-                        case '>': // right
-                            {
-                                // move right
-                                break;
-                            }
-                        case 'C': // capital C meaning caps lock
-                            {
-                                keyboard_modifiers ^= 0b1000;
-                                break;
-                            }
-                        case '\n':
-                            {
-                                terminal.write("\n");
-                                process_cmd(cmd_buffer, cmd_buffer_idx);
-                                memset(cmd_buffer, 0, cmd_buffer_size);
-                                cmd_buffer_idx = 0;
-                                terminal.refresh();
-                                break;
-                            }
-                        default:
-                            {
-                                bool is_alpha = (key >= 97 && key <= 122);
-                                if (keyboard_modifiers & 0b1000) // caps lock enabled
-                                    if (is_alpha) // alphanumeric keys get shifted to caps
-                                    {
-                                        cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                        terminal.write(shift_map[cin]);
-                                        break;
-                                    }
-                                if ((keyboard_modifiers & 0b0001)) // shift is down or capslock is on
-                                {
-                                    cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                    terminal.write(shift_map[cin]);
-                                    break;
-                                }
-                                else
-                                {
-                                    cmd_buffer[cmd_buffer_idx++] = key;
-                                    terminal.write(key);
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-            default:
-                {
-                    WRITE("Unhandled event.\n");
-                    WRITE("Type: ");
-                    WRITE(static_cast<int>(type));
-                    WRITE(" lower: ");
-                    WRITE(data.lower_data, true);
-                    WRITE(" upper: ");
-                    WRITE(data.upper_data, true);
-                    NEWLINE();
-                    break;
-                }
-            }
-        }
-        // else
-        PIT_sleep_ms(1);
-    }
     WRITE("ERROR: Left main loop.");
     asm("hlt");
 

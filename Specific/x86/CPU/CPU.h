@@ -16,6 +16,33 @@ struct cpu_registers_t
     u32 eip, cs, eflags, useresp, ss; /* pushed by the processor automatically */
 }__attribute__((packed));
 
+struct cpu_context_t
+{
+    u32 eax;
+    u32 ebx;
+    u32 ecx;
+    u32 edx;
+    u32 esi;
+    u32 edi;
+    u32 ebp;
+    u32 esp;
+    u32 cs;
+    u32 ds;
+    u32 es;
+    u32 fs;
+    u32 gs;
+    u32 eip;
+    u32 eflags;
+    u32 link;
+    u32 cr3;
+    u32 ldtr;
+    u32 ss0;
+    u32 esp0;
+    u32 ss1;
+    u32 esp1;
+    u32 ss2;
+    u32 esp2;
+};
 
 union eflags_t
 {
