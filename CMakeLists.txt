@@ -66,6 +66,7 @@ target_include_directories(
 
         Specific/x86
         Specific/x86/BIOS
+        Specific/x86/CPU
         Specific/x86/Display
         Specific/x86/Drivers/Storage
         Specific/x86/IO

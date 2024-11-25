@@ -40,6 +40,7 @@
 #include "memory.h"
 #include "Scheduler.h"
 #include "Shell.h"
+#include "GDT.h"
 
 #if FORLAPTOP
 #include "CPUID.h"
@@ -170,6 +171,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
     // local_apic.configure_timer(1024);
     // todo: configure apic timer.
+
+    // TODO: Load the GDT and load kernel CS and DS before calling IDT init (it uses CS and DS)
+    GDT_init();
     // Configure interrupt tables and enable interrupts.
     IDT idt;
     vga.incrementProgressBarChunk(bar);
