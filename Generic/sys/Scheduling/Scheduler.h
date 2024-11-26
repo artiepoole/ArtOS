@@ -8,7 +8,7 @@
 #include  "types.h"
 #include "Process.h"
 
-size_t stack_size = 1024 * 1024; // 1MB stack default. Probably not enough.
+inline size_t stack_size = 1024 * 1024; // 1MB stack default. Probably not enough.
 constexpr size_t max_processes = 255;
 
 #ifdef __cplusplus

@@ -41,6 +41,8 @@
 #include "Scheduler.h"
 #include "Shell.h"
 #include "GDT.h"
+#include "Terminal.h"
+#include "Serial.h"
 
 #if FORLAPTOP
 #include "CPUID.h"
@@ -267,9 +269,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
     LOG("LOADED OS. Entering event loop.");
 
-#if !ENABLE_TERMINAL_LOGGING
+// #if !ENABLE_TERMINAL_LOGGING
     Terminal::write("Loading done.\n");
-#endif
+// #endif
 
     // TODO: create shell class.
     // Init shell with necessary information

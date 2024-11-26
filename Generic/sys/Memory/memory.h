@@ -5,7 +5,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#pragma once
+
 #include "types.h"
 
 // http://wiki.osdev.org/Memory_Map_(x86)

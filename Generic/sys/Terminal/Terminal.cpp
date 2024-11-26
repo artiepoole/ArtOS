@@ -1,11 +1,11 @@
 #include "Terminal.h"
 
-#include <ArtFile.h>
-#include <Files.h>
-#include <RTC.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "ArtFile.h"
+#include "Files.h"
+#include "RTC.h"
+#include "stdlib.h"
+#include "string.h"
+#include "time.h"
 
 
 #include "VideoGraphicsArray.h"
@@ -50,8 +50,6 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
     buffer_height = screen_region.h / scaled_char_dim;
     term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
     terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
-    free(terminal_buffer);
-    terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
     rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
     memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
     memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
@@ -68,7 +66,6 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
     stdout_wrapper = new TermFileWrapper{false};
 
     stderr_wrapper = new TermFileWrapper{true};
-
 }
 
 Terminal::~Terminal()
@@ -189,6 +186,7 @@ void Terminal::setRegion(const u32 x, const u32 y, const u32 width, const u32 he
     rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
     memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
     memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+    memset(term_screen_buffer, 0, screen_region.h * screen_region.w * sizeof(u32));
     terminal_row = 0;
     terminal_column = 1;
     VideoGraphicsArray::get().fillRectangle(screen_region.x1, screen_region.y1, screen_region.w, screen_region.h, colour_bkgd);
@@ -219,7 +217,6 @@ void Terminal::_update_cursor()
 
 void Terminal::_draw_changes()
 {
-
     if (!instance) return;
     _update_cursor();
     size_t i = 0;
@@ -227,7 +224,7 @@ void Terminal::_draw_changes()
     {
         for (size_t col = 0; col < buffer_width; col++)
         {
-            if (terminal_char_t c_to_draw = terminal_buffer[i]; *reinterpret_cast<u64*>(&rendered_buffer[i])!= *reinterpret_cast<u64*>(&c_to_draw))
+            if (terminal_char_t c_to_draw = terminal_buffer[i]; *reinterpret_cast<u64*>(&rendered_buffer[i]) != *reinterpret_cast<u64*>(&c_to_draw))
             {
                 _putChar(c_to_draw, col * scaled_char_dim, row * scaled_char_dim);
                 rendered_buffer[i] = c_to_draw;

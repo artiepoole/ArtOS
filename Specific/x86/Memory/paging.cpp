@@ -70,14 +70,6 @@ struct page_table
     page_table_entry table[page_table_size];
 };
 
-// For now user space memory regions are assumed contiguous, but really this will need to be some kind of map or linked list.
-struct assigned_memory
-{
-    void* owner; // TODO: how to store the parent process
-    uintptr_t start;
-    size_t n_pages;
-};
-
 uintptr_t main_region_start;
 uintptr_t main_region_end;
 uintptr_t next_page_start;
@@ -167,7 +159,7 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
         const size_t phys_idx = tab_entry->physical_address;
         page_available_virtual_bitmap[i] = true;
         page_available_physical_bitmap[phys_idx] = true;
-        tab_entry->rw = 0;
+        tab_entry->raw = 0;
     }
     return 0;
 }
