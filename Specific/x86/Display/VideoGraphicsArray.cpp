@@ -23,6 +23,8 @@ Basic graphics utility methods
 
 #include "VideoGraphicsArray.h"
 
+#include <cmp_int.h>
+
 #include "SIMD.h"
 #include "CPU.h"
 #include <string.h>
@@ -33,6 +35,8 @@ Basic graphics utility methods
 #include "logging.h"
 #include "colours.h"
 
+#include "memory.h"
+
 
 static VideoGraphicsArray* instance{nullptr};
 
@@ -42,25 +46,16 @@ As the is no memory management the Offscreen buffer is allocated elsewhere and p
 
 This class could be re-worked as a Canvas with out to many changes */
 
-u32* buffer;
-union virtual_address_t
-{
-    uintptr_t raw;
-
-    struct
-    {
-        uintptr_t page_offset : 12;
-        uintptr_t page_table_index : 10;
-        uintptr_t page_directory_index : 10;
-    };
-};
+// u32* buffer;
 
 VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* framebuffer_info)
 {
     instance = this;
     width = framebuffer_info->framebuffer_width;
     height = framebuffer_info->framebuffer_height;
+
     _screen = reinterpret_cast<u32*>(framebuffer_info->framebuffer_addr);
+
 
     _buffer = static_cast<u32*>(malloc(width * height * sizeof(u32)));
     memset(_buffer, 0, width * height * sizeof(u32));
@@ -91,19 +86,21 @@ void VideoGraphicsArray::putPixel(const u32 x, const u32 y, const u32 color) con
     _buffer[width * y + x] = color;
 }
 
+// TODO: indexing here is bad
 void VideoGraphicsArray::fillRectangle(const u32 x, const u32 y, const u32 w, const u32 h, const u32 color) const
 {
-    u32 i = width * (y - 1);
+    u32 i=0;
+    if (y>0) i = width * y-1; // initial row
 
     // test if the Rectangle will be clipped (will it be fully in the screen or partially)
-    if (x + w < width && y + h < height)
+    if (x + w <= width && y + h <= height)
     {
         // fully drawn
         i += x + w;
-        for (u32 yy = h; yy > 0; yy--)
+        for (u32 yy = h-1; yy > 0; yy--)
         {
-            i += width - w;
-            for (u32 xx = w; xx > 0; xx--)
+            i += width - w + 1;
+            for (u32 xx = w-1; xx > 0; xx--)
             {
                 _buffer[i++] = color;
             }
