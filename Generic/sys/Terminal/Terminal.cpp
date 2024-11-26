@@ -205,11 +205,11 @@ void Terminal::refresh()
 void Terminal::_update_cursor()
 {
     size_t new_idx = terminal_row * buffer_width + terminal_column;
-    if (new_idx > buffer_width * buffer_height) new_idx = buffer_width * buffer_height - 1;
+    if (new_idx >= buffer_width * buffer_height) new_idx = buffer_width * buffer_height - 1;
     if (cursor_idx >= new_idx)
     {
         // backspace
-        terminal_buffer[cursor_idx] = terminal_char_t{' ', colour_bkgd};
+        terminal_buffer[cursor_idx] = terminal_char_t{' ', colour_frgd};
     }
     cursor_idx = new_idx;
     terminal_buffer[cursor_idx] = terminal_char_t{'_', colour_frgd};
@@ -260,7 +260,9 @@ void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE
         case '\t':
             {
                 _write_to_screen("    ", 4, colour);
+
                 if (terminal_column >= buffer_width) newLine();
+                else cursor_idx += 4;
                 break;
             }
         case '\n':
@@ -273,6 +275,7 @@ void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE
                 terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, colour};
 
                 if (terminal_column >= buffer_width) newLine();
+                else cursor_idx += 1;
             }
         }
 
@@ -350,6 +353,7 @@ void Terminal::_render_queue(const terminal_char_t* data, size_t len)
         case '\t':
             {
                 write("    ", 4, data[i].colour);
+                cursor_idx += 4;
                 break;
             }
         case '\n':
@@ -360,6 +364,7 @@ void Terminal::_render_queue(const terminal_char_t* data, size_t len)
         default:
             {
                 terminal_buffer[terminal_row * buffer_width + terminal_column++] = item;
+                cursor_idx++;
                 break;
             }
         }
@@ -415,7 +420,7 @@ void Terminal::newLine()
         terminal_queue[queue_pos++ % queue_size] = terminal_char_t{'\n', colour_bkgd};
         return;
     }
-    terminal_buffer[terminal_row * buffer_width + terminal_column] = terminal_char_t{' ', colour_bkgd}; // remove cursor
+    terminal_buffer[cursor_idx] = terminal_char_t{' ', colour_bkgd}; // remove cursor
     terminal_column = 1;
     terminal_row++;
     if (terminal_row >= buffer_height)
