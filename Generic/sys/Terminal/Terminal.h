@@ -8,19 +8,11 @@
 #include "colours.h"
 #include "mystring.h"
 
-
-union terminal_char_t
+struct terminal_char_t
 {
-    struct
-    {
-        char letter;
-        PALETTE_t colour : 24;
-    };
-
-    u32 raw;
+    char letter;
+    PALETTE_t colour;
 };
-
-
 
 /* Terminal class for interacting with text on screen.
  * If not initialised, all writes will append to a queue to be rendered upon initialisation.
