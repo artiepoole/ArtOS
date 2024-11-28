@@ -91,7 +91,7 @@ void* simd_copy(void* dest, const void* src, const size_t size)
 
     // Copy in 16-byte chunks
     size_t i = 0;
-    for (; i + sizeof(m128i) <= size; i += sizeof(m128i))
+    for (; i + sizeof(m128i) < size; i += sizeof(m128i))
     {
         const m128i chunk = mm_loadu_si128(reinterpret_cast<const m128i*>(s + i)); // Load 16 bytes
         mm_storeu_si128(reinterpret_cast<m128i*>(d + i), chunk); // Store 16 bytes
@@ -120,7 +120,7 @@ void* simd_move(void* dest, const void* src, const size_t size)
     {
         // Non-overlapping regions, copy forward
         size_t i = 0;
-        for (; i + sizeof(m128i) <= size; i += sizeof(m128i))
+        for (; i + sizeof(m128i) < size; i += sizeof(m128i))
         {
             const m128i chunk = mm_loadu_si128((const m128i*)(s + i)); // Load 16 bytes
             mm_storeu_si128(reinterpret_cast<m128i*>(d + i), chunk); // Store 16 bytes
@@ -155,14 +155,14 @@ void* simd_move(void* dest, const void* src, const size_t size)
 void* simd_set(void* dest, const int value, const size_t size)
 {
     auto* d = static_cast<char*>(dest);
-    auto val = static_cast<const char>(value);
+    const auto val = static_cast<const char>(value);
 
     // Create a 128-bit value that repeats the byte `val`
     const m128i simd_val = mm_set1_epi8(val);
 
     size_t i = 0;
     // Set memory in 16-byte chunks using SIMD
-    for (; i + sizeof(m128i) <= size; i += sizeof(m128i))
+    for (; i + sizeof(m128i) < size; i += sizeof(m128i))
     {
         mm_storeu_si128(reinterpret_cast<m128i*>(d + i), simd_val);
     }
