@@ -46,7 +46,8 @@ ArtFile* get_file_handle(int fd)
 
 int find_free_handle()
 {
-    for (size_t i = 0; i < MAX_HANDLES; i++)
+    // skip stderr, stdin, stdout
+    for (size_t i = 3; i < MAX_HANDLES; i++)
     {
         if (handles[i] == NULL)
         {
