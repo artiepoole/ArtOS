@@ -174,7 +174,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // local_apic.configure_timer(1024);
     // todo: configure apic timer.
 
-    // TODO: Load the GDT and load kernel CS and DS before calling IDT init (it uses CS and DS)
+    // Create a new GDT and load it. Paging is used so this is just redundant
     GDT_init();
     // Configure interrupt tables and enable interrupts.
     IDT idt;
@@ -205,7 +205,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     fprintf(stderr, "This should print error to screen via fprintf\n");
     fprintf(stdout, "This should print out to screen via fprintf\n");
 #endif
-    // TODO: Draw splash should programmatically draw using the logo from the middle as a texture.
     PCI_populate_list();
     vga.incrementProgressBarChunk(bar);
     [[maybe_unused]] auto PCI_IDE_controller = PCI_get_IDE_controller();
@@ -269,15 +268,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
     LOG("LOADED OS. Entering event loop.");
 
-// #if !ENABLE_TERMINAL_LOGGING
+#if !ENABLE_TERMINAL_LOGGING
     Terminal::write("Loading done.\n");
-// #endif
-
-    // TODO: create shell class.
-    // Init shell with necessary information
-    // then init the scheduler with the shell run fn and finally
-    // start the scheduler (which will run the shell fn).
-    // The shell will process input and on enter will create a new context in the scheduler (fork?) to e.g. run doom
+#endif
 
     // Init and load the shell. Shell draws directly to the terminal by using static methods.
     Shell shell(&events);
@@ -286,12 +279,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     WRITE("ERROR: Left main loop.");
     asm("hlt");
 
-
-    // todo: inherit size of _window and colour depth
     // todo: Create string handling to concatenate strings and print them more easily
     // todo: restructure code to have the graphics stuff handled in a different file with only printf handled in
     // main.cpp
-    // todo: add data to the data section containing the splash screen
-    // Todo: implement user typing from keyboard inputs
-    // Todo: automate the build process
 }
