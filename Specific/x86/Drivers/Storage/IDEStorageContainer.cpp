@@ -301,7 +301,7 @@ FileData IDEStorageContainer::dir_record_to_file(const iso_directory_record_head
             0,
             0
         },
-        1,
+        info.file_name_length,
         name
     };
 }

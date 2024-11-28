@@ -213,7 +213,10 @@ int Shell::process_cmd()
     if (cmd_buffer_idx == 0) return -1;
     if (strncasecmp(cmd_buffer, "play doom", 9) == 0)
     {
+        Terminal::stop_drawing();
         run_doom();
+        Terminal::resume_drawing();
+        Terminal::refresh();
     }
     else
     {

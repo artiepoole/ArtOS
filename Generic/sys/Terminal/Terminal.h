@@ -42,6 +42,9 @@ public:
     static u32 getScale();
     static void clear();
 
+    static void stop_drawing();
+    static void resume_drawing();
+
     // for use with stdout/stderr
     static u32 user_write(const char* data, u32 count);
     static u32 user_err(const char* data, u32 count);

@@ -89,21 +89,20 @@ void VideoGraphicsArray::putPixel(const u32 x, const u32 y, const u32 color) con
 // TODO: indexing here is bad
 void VideoGraphicsArray::fillRectangle(const u32 x, const u32 y, const u32 w, const u32 h, const u32 color) const
 {
-    u32 i=0;
-    if (y>0) i = width * y-1; // initial row
+    u32 i = width * y + x; // initial pos
 
     // test if the Rectangle will be clipped (will it be fully in the screen or partially)
     if (x + w <= width && y + h <= height)
     {
         // fully drawn
-        i += x + w;
-        for (u32 yy = h-1; yy > 0; yy--)
+
+        for (u32 yy = h - 1; yy > 0; yy--)
         {
-            i += width - w + 1;
-            for (u32 xx = w-1; xx > 0; xx--)
+            for (u32 xx = w - 1; xx > 0; xx--)
             {
                 _buffer[i++] = color;
             }
+            i += width - w + 1;
         }
     }
     else

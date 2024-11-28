@@ -1,5 +1,6 @@
 #include "Terminal.h"
 
+#include "cmp_int.h"
 #include "ArtFile.h"
 #include "Files.h"
 #include "RTC.h"
@@ -23,6 +24,7 @@
 static Terminal* instance{nullptr};
 static TermFileWrapper* stdout_wrapper{nullptr};
 static TermFileWrapper* stderr_wrapper{nullptr};
+static bool owns_screen = false;
 
 window_t screen_region = {0, 0, 1024, 768, 1024, 768};
 u32 char_dim = 8;
@@ -48,11 +50,12 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
     screen_region = {x, y, width + x, height + y, width, height};
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
+    const size_t n_characters = buffer_width * buffer_height;
     term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
-    terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
-    rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
-    memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
-    memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+    terminal_buffer = static_cast<terminal_char_t*>(malloc(n_characters * sizeof(terminal_char_t)));
+    rendered_buffer = static_cast<terminal_char_t*>(malloc(n_characters * sizeof(terminal_char_t)));
+    memset(terminal_buffer, 0, n_characters * sizeof(terminal_char_t));
+    memset(rendered_buffer, 1, n_characters * sizeof(terminal_char_t));
 
     instance = this;
 
@@ -61,11 +64,12 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
         term_screen_buffer[i] = colour_bkgd;
     }
 
-    _render_queue(terminal_queue, queue_pos);
+    _render_queue(terminal_queue, MIN(queue_pos, n_characters));
 
     stdout_wrapper = new TermFileWrapper{false};
 
     stderr_wrapper = new TermFileWrapper{true};
+    owns_screen = true;
 }
 
 Terminal::~Terminal()
@@ -181,15 +185,17 @@ void Terminal::setRegion(const u32 x, const u32 y, const u32 width, const u32 he
     screen_region = {x, y, width + x, height + y, width, height};
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
-    term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
     terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
     rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+    term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
+    // TODO: these are all being mapped to the same physical memory.
     memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
-    memset(rendered_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
-    memset(term_screen_buffer, 0, screen_region.h * screen_region.w * sizeof(u32));
+    memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t)); // all different
+    memset(term_screen_buffer, 2, screen_region.h * screen_region.w * sizeof(u32));
     terminal_row = 0;
     terminal_column = 1;
     VideoGraphicsArray::get().fillRectangle(screen_region.x1, screen_region.y1, screen_region.w, screen_region.h, colour_bkgd);
+    owns_screen = true;
 }
 
 u32 Terminal::getScale()
@@ -205,8 +211,11 @@ void Terminal::refresh()
 void Terminal::_update_cursor()
 {
     size_t new_idx = terminal_row * buffer_width + terminal_column;
-    if (new_idx >= buffer_width * buffer_height) new_idx = buffer_width * buffer_height - 1;
-    if (cursor_idx >= new_idx)
+    if (new_idx >= buffer_width * buffer_height)
+    {
+        new_idx = buffer_width * buffer_height - 1;
+    }
+    if (cursor_idx >= new_idx && cursor_idx < buffer_width * buffer_height)
     {
         // backspace
         terminal_buffer[cursor_idx] = terminal_char_t{' ', colour_frgd};
@@ -217,7 +226,7 @@ void Terminal::_update_cursor()
 
 void Terminal::_draw_changes()
 {
-    if (!instance) return;
+    if (!instance || !owns_screen) return;
     _update_cursor();
     size_t i = 0;
     for (size_t row = 0; row < buffer_height; row++)
@@ -279,7 +288,10 @@ void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE
             }
         }
 
-        if (terminal_row > buffer_height)_scroll();
+        if (terminal_row > buffer_height)
+        {
+            _scroll();
+        }
     }
     _draw_changes();
 }
@@ -363,6 +375,7 @@ void Terminal::_render_queue(const terminal_char_t* data, size_t len)
             }
         default:
             {
+                //TODO: check on this becuase it goes out of bounds?
                 terminal_buffer[terminal_row * buffer_width + terminal_column++] = item;
                 cursor_idx++;
                 break;
@@ -396,6 +409,16 @@ void Terminal::clear()
     // 1 so that it doesn't match terminal buffer clears and redraws whole screen
     memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t));
     _draw_changes();
+}
+
+void Terminal::stop_drawing()
+{
+    owns_screen = false;
+}
+
+void Terminal::resume_drawing()
+{
+    owns_screen = true;
 }
 
 void Terminal::time_stamp()

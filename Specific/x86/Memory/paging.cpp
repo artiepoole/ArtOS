@@ -2,6 +2,8 @@
 // Created by artypoole on 18/11/24.
 //
 
+#include "errno.h"
+
 #include "memory.h"
 #include "multiboot2.h"
 #include "logging.h"
@@ -10,6 +12,7 @@
 
 constexpr size_t base_address_shift = 12;
 constexpr size_t page_alignment = 4096;
+constexpr size_t max_n_pages = 0x100000;
 
 /// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
 constexpr size_t page_table_size = 1024;
@@ -72,54 +75,72 @@ struct page_table
 
 uintptr_t main_region_start;
 uintptr_t main_region_end;
-uintptr_t next_page_start;
-
+size_t last_physical_idx;
 page_directory_4kb_t paging_directory[page_table_size]__attribute__((aligned(page_alignment)));
 page_table paging_tables[page_table_size]__attribute__((aligned(page_alignment)));
 
 // bitmaps used to keep track of the next virtual and physical pages available.
 // These are the same during identity mapping, but diverge when user space programs make malloc calls
 // 4GB worth of 4096 pages. Set all to false. Processing the multiboot2 memory_map will set the necessary bits.
-bool page_available_physical_bitmap[0x100000] = {false};
-bool page_available_virtual_bitmap[0x100000] = {false};
+bool page_available_physical_bitmap[max_n_pages] = {false};
+bool page_available_virtual_bitmap[max_n_pages] = {false};
 
-// TODO: helper functions like page_alloc, page_free, page_get_next_addr, converters between addresses and page numbers?
+// TODO: helper functions like converters between addresses and page numbers?
 
 uintptr_t page_get_next_phys_addr()
 {
     size_t idx = 0;
-    for (; !page_available_physical_bitmap[idx] && idx < 0x100000; idx++)
+    for (; !page_available_physical_bitmap[idx]; idx++)
     {
     }
-    return idx * page_alignment;
+    if (idx >= last_physical_idx)
+    {
+        return 0;
+    }
+    return idx << base_address_shift;
 }
 
+// TODO: Should go back to 0 if doesn't find anything above start_addr
 uintptr_t page_get_next_virtual_chunk(size_t idx, const size_t n_pages)
 {
     bool looking = true;
     while (looking)
     {
-        size_t i = 1;
+        // First free v_page
         while (!page_available_virtual_bitmap[idx])
         {
             idx++;
         }
+        // see how many pages after it are free or up to n_pages requested
+        size_t i = 1;
         while (page_available_virtual_bitmap[idx + i] && i < n_pages)
         {
             i++;
         }
-        if (i == n_pages) { looking = false; }
-        else { idx += i; }
+        if (i == n_pages)
+        {
+            // done.
+            looking = false;
+        }
+        else
+        {
+            // Not enough contiguous pages free. Start looking for free pages at the first unavailable page found.
+            idx += i;
+        }
     }
-    return idx * page_alignment;
+    return idx << base_address_shift;
 }
 
-// Should go back to 0 if doesn't find anything.
+// TODO: Should go back to 0 if doesn't find anything above start_addr
 uintptr_t page_get_next_virt_addr(const uintptr_t start_addr)
 {
     size_t idx = start_addr >> base_address_shift;
-    for (; !page_available_virtual_bitmap[idx] && idx < 0x100000; idx++)
+    for (; !page_available_virtual_bitmap[idx] && idx < max_n_pages; idx++)
     {
+    }
+    if (idx >= max_n_pages)
+    {
+        return 0;
     }
     return idx * page_alignment;
 }
@@ -155,7 +176,10 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
     for (size_t i = start_idx; i < start_idx + n_pages; i++)
     {
         auto* tab_entry = &paging_tables[i / 1024].table[i % 1024];
-        if (!tab_entry->present) return -1;
+        if (!tab_entry->present)
+        {
+            return -1;
+        }
         const size_t phys_idx = tab_entry->physical_address;
         page_available_virtual_bitmap[i] = true;
         page_available_physical_bitmap[phys_idx] = true;
@@ -167,27 +191,34 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
 
 void paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
 {
-    virtual_address_t virtual_address = {phys_addr};
-    size_t dir_idx = -1;
+    virtual_address_t virtual_address = {.raw = phys_addr};
+
     const size_t num_pages = (size + page_alignment - 1) >> base_address_shift;
     for (size_t i = 0; i < num_pages; i++)
     {
         // Every 1024 table entries requires a new dir entry.
-        if (virtual_address.page_directory_index != dir_idx)
+
+        if (!paging_directory[virtual_address.page_directory_index].present)
         {
             assign_page_directory_entry(virtual_address.page_directory_index, writable, user);
         }
-
-        assign_page_table_entry(phys_addr, virtual_address, writable, user);
+        if (!paging_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
+        {
+            assign_page_table_entry(phys_addr, virtual_address, writable, user);
+        }
 
         phys_addr += page_alignment;
         virtual_address.raw = phys_addr;
+        if (virtual_address.raw >> 12 >= max_n_pages)
+        {
+            return;
+        }
     }
 }
 
 void enable_paging()
 {
-    auto addr = reinterpret_cast<u32>(&paging_directory[0]) | !0x1000;
+    auto addr = reinterpret_cast<u32>(&paging_directory[0]) | 0xFFF;
     __asm__ volatile ("mov %0, %%cr3" : : "r"(addr)); // set the cr3 to the paging_directory physical address
     u32 cr0 = 0;
     __asm__ volatile ("mov %%cr0, %0" : "=r"(cr0));
@@ -201,57 +232,50 @@ void enable_paging()
  */
 void mmap_init(multiboot2_tag_mmap* mmap)
 {
-    memset(page_available_virtual_bitmap, true, sizeof(bool) * 0x100000);
+    memset(page_available_virtual_bitmap, true, sizeof(bool) * max_n_pages);
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
-
+    const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift; // first page after kernel image.
+    uintptr_t last_end = 0;
     // TODO: replace with calls to paging_identity_map(...) to map all already assigned memory
     for (size_t i = 0; i < n_entries; i++)
     {
         multiboot2_mmap_entry const* entry = mmap->entries[i];
-        if (entry->type != 1)
+        if (entry->addr > last_end)
         {
-            // Any type except 1 is reserved memory. If not hardware mapped then set to read only.
-            paging_identity_map(entry->addr, entry->len, false, false);
-            continue;
-        }
-        if (entry->addr + entry->len < brk_loc || entry->addr > brk_loc)
-        {
-            // This region is free memory, but doesn't contain the kernel. Therefore, this is probably the BIOS region.
-            // This needs to be identity mapped, and so I map it with RW and supervisor only.
-            // Technically, this could be made available but some of this memory might be used in the
-            // kernel boot sequence i.e. may contain the framebuffer. That's why it is also set to writable.
-            //
-            // This could also be a second section of free memory and so this approach may be stupid.
-            // fill the bios hole
-            extern unsigned char kernel_start;
-            const size_t start = MIN(0, entry->addr);
-            paging_identity_map(start, MAX(entry->len+entry->addr, reinterpret_cast<size_t>(&kernel_start)) - start, true, false);
-
-            continue;
+            // fill holes
+            paging_identity_map(last_end, entry->addr - last_end, false, false);
         }
 
-        LOG("Paging: found region including kernel");
-        // TODO: these can be local variables/not used at all if sbrk is not used.
-        main_region_start = entry->addr;
-        main_region_end = entry->addr + entry->len;
-        next_page_start = (brk_loc & 0xFFFFF000) + 0x1000; // 4k aligned. 32 bit max address.
-        kernel_brk = reinterpret_cast<u8*>(next_page_start);
-
-        // Protect kernel and init identity map
-        paging_identity_map(main_region_start, next_page_start - main_region_start, true, false);
-
-        // set upper limit in bitmap to extents of this memory region.
-        for (size_t addr = next_page_start; addr < main_region_end; addr += page_alignment)
+        if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc)
         {
-            page_available_physical_bitmap[addr >> base_address_shift] = true;
+            // contains kernel
+            // only map used kernel region.
+            paging_identity_map(entry->addr, brk_loc - entry->addr, entry->type == 1 && entry->addr > 0, false);
+            main_region_start = entry->addr;
+            main_region_end = entry->addr + entry->len;
+            last_physical_idx = main_region_end >> base_address_shift;
+        }
+        else
+        {
+            paging_identity_map(entry->addr, entry->len, entry->type == 1 && entry->addr > 0, false);
         }
 
-        // manual region
+        last_end = entry->addr + entry->len;
+        LOG(last_end);
     }
 
-    // TODO: consider a hole filling algorithm to fix the need for manual identity mapping of framebuffer and APIC stuff.
-    virtual_address_t virtual_address = {0xFC000000};
+    // Protect kernel and init identity map
+    // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
+    paging_identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
+
+    // set upper limit in bitmap to extents of this memory region.
+    for (size_t addr = post_kernel_page; addr < main_region_end; addr += page_alignment)
+    {
+        page_available_physical_bitmap[addr >> base_address_shift] = true;
+    }
+
+
     LOG("Paging: memory map processed.");
     enable_paging();
     LOG("Paging: paging enabled.");
@@ -263,10 +287,10 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
     // mmap should return a contiguous chunk of virtual memory, so some checks should be done first.
     // if (addr < main_region_start) addr = main_region_start;
 
-    size_t first_page = addr >> base_address_shift;
+    const size_t first_page = addr >> base_address_shift;
     const size_t num_pages = (length + page_alignment - 1) >> base_address_shift;
 
-    virtual_address_t ret_addr = {page_get_next_virtual_chunk(first_page, num_pages)};
+    const virtual_address_t ret_addr = {page_get_next_virtual_chunk(first_page, num_pages)};
     virtual_address_t working_addr = ret_addr;
     for (size_t i = 0; i < num_pages; i++)
     {
@@ -276,16 +300,27 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
             assign_page_directory_entry(working_addr.page_directory_index, true, false);
         }
 
-        assign_page_table_entry(
-            page_get_next_phys_addr(),
-            working_addr,
-            true,
-            false
-        );
+
+        if (const auto phys_addr = page_get_next_phys_addr(); phys_addr != 0)
+        {
+            assign_page_table_entry(
+                phys_addr,
+                working_addr,
+                true,
+                false
+            );
+        }
+        else
+        {
+            return nullptr;
+        }
 
         working_addr.raw += page_alignment;
     }
-    return reinterpret_cast<void*>(ret_addr.raw);
+
+    const auto p = reinterpret_cast<void*>(ret_addr.raw);
+    memset(p, 0, length);
+    return p;
 }
 
 int munmap(void* addr, const size_t length)
