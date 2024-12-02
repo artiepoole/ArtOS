@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.16.3)
 
 set(TOOLS /usr)
 set(CMAKE_C_COMPILER ${TOOLS}/bin/gcc)
@@ -6,7 +6,7 @@ set(CMAKE_CXX_COMPILER ${TOOLS}/bin/g++)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
 project(ArtOS_Test)
-
+add_compile_options(-fconcepts)
 # GoogleTest requires at least C++14, Concept requires 20+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,21 +22,22 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-
-
-add_executable(
-        string_test
-        string_test.cpp
-        ../Generic/sys/HelperFunctions/mystring.cpp
-        ../Generic/sys/HelperFunctions/mystring.h
-
-)
-
-target_link_libraries(
-        string_test
-        GTest::gtest_main
-)
-target_include_directories(string_test PRIVATE ../Generic/sys/HelperFunctions)
-
 include(GoogleTest)
+
+add_executable(string_test string_test.cpp ../Generic/sys/Types/mystring.cpp)
+target_link_libraries(string_test GTest::gtest_main)
+target_include_directories(string_test PRIVATE ../Generic/sys/Types)
 gtest_discover_tests(string_test)
+
+
+add_executable(dense_boolean_test DenseBoolean_test.cpp)
+target_link_libraries(dense_boolean_test GTest::gtest_main)
+target_include_directories(dense_boolean_test PRIVATE ../ArtOSTypes/ ../ArtOSTypes/DenseBoolean)
+gtest_discover_tests(dense_boolean_test)
+
+add_executable(dense_boolean_array_test DenseBooleanArray_test.cpp)
+target_link_libraries(dense_boolean_array_test GTest::gtest_main)
+target_include_directories(dense_boolean_array_test PRIVATE ../ArtOSTypes/ ../ArtOSTypes/DenseBoolean)
+gtest_discover_tests(dense_boolean_array_test)
+
+set(CMAKE_CXX_FLAGS "-g")

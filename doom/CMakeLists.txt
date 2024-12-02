@@ -14,5 +14,5 @@ target_compile_definitions(doom
         FORLAPTOP=$<BOOL:${FORLAPTOP}>
 )
 target_include_directories(doom PRIVATE doomgeneric)
-target_include_directories(doom PUBLIC .)
+target_include_directories(doom PUBLIC ./)
 target_link_libraries(doom pdclib)

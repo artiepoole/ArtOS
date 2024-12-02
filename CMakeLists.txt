@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-
-
 option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
 option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
@@ -36,6 +34,7 @@ file(GLOB_RECURSE Generic
 
 add_subdirectory(pdclib)
 add_subdirectory(doom)
+add_subdirectory(ArtOSTypes)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
 
@@ -48,13 +47,14 @@ target_include_directories(
         Generic/sys/DataTypes
         Generic/sys/Events
         Generic/sys/FileSystem
-        Generic/sys/HelperFunctions
+        Generic/sys/Types
         Generic/sys/Logging
         Generic/sys/Memory
         Generic/sys/Storage
         Generic/sys/Terminal
         Generic/sys/Scheduling
         )
+
 
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
@@ -74,8 +74,6 @@ target_include_directories(
         Specific/x86/PCI
         Specific/x86/ProcessInterruptControllers
         Specific/x86/Timers
-
-
 )
 
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
@@ -94,7 +92,7 @@ target_compile_definitions(${KERNEL_BIN}
         FORLAPTOP=$<BOOL:${FORLAPTOP}>
 )
 
-target_link_libraries(${KERNEL_BIN} pdclib doom)
+target_link_libraries(${KERNEL_BIN} pdclib doom ArtOSTypes)
 
 
 ### Generating the ISO file
@@ -105,16 +103,7 @@ add_custom_target(${KERNEL_ISO}
 add_dependencies(ArtOS.iso ArtOS.bin)
 add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/)
+        COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
+)
 
 
-#file(GLOB DOOM_SRC
-#        "doom/doomgeneric/*.h"
-#        "doom/doomgeneric/*.c"
-#)
-#
-#add_executable(doomexec doom/doomgeneric_artos.cpp ${DOOM_SRC} ${KERNEL} ${INCLUDE})
-#target_include_directories(doomexec PUBLIC doomgeneric)
-#target_link_libraries(doomexec pdclib)
-#set_target_properties(doomexec PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
-#
