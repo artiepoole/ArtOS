@@ -6,6 +6,8 @@
 #include "DenseBooleanArray.h"
 #include "types.h"
 
+// todo: test set_data
+
 // // TODO: make more unit like
 TEST(DenseBooleanArrayTest, default_false_basics) {
     DenseBooleanArray<u32> dba(64, false);

@@ -12,6 +12,24 @@ template <typename int_like>
 class DenseBooleanArray
 {
 public:
+    void init(void* initial_array ,const size_t total_bits, bool b)
+    {
+        capacity = total_bits;
+        n_bits = sizeof(int_like) * 8;
+        array_len = (total_bits + (n_bits - 1)) / n_bits;
+        array = static_cast<DenseBoolean<int_like>*>(initial_array);
+        int_like v = get_mask(b);
+        for (size_t i = 0; i < array_len; i++)
+        {
+            array[i].init(v);
+        }
+    }
+
+    explicit DenseBooleanArray()
+    {
+
+    }
+
     explicit DenseBooleanArray(const size_t total_bits)
     {
         capacity = total_bits;
@@ -26,12 +44,7 @@ public:
         n_bits = sizeof(int_like) * 8;
         array_len = (total_bits + (n_bits - 1)) / n_bits;
         array = new DenseBoolean<int_like>[array_len];
-        int_like v = 0;
-        if (def_bool) v = ~0;
-        for (int i = 0; i < array_len; i++)
-        {
-            array[i].set_data(v);
-        }
+        set_all(def_bool);
     }
 
     ~DenseBooleanArray()
@@ -143,6 +156,22 @@ public:
     size_t get_array_len() { return array_len; }
 
     size_t set_range(size_t start, size_t n, bool b) { return DBA_ERR_IDX; }
+
+    int_like get_mask(bool b)
+    {
+        int_like v = 0;
+        if (b) v = ~0;
+        return v;
+    }
+
+    void set_all(bool b)
+    {
+        int_like v = get_mask(b);
+        for (int i = 0; i < array_len; i++)
+        {
+            array[i].set_data(v);
+        }
+    }
 
 private:
     DenseBoolean<int_like>* array;

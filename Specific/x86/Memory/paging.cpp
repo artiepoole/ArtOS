@@ -9,6 +9,8 @@
 #include "logging.h"
 #include "string.h"
 #include "cmp_int.h"
+#include "DenseBoolean.h"
+#include "DenseBooleanArray.h"
 
 constexpr size_t base_address_shift = 12;
 constexpr size_t page_alignment = 4096;
@@ -82,8 +84,16 @@ page_table paging_tables[page_table_size]__attribute__((aligned(page_alignment))
 // bitmaps used to keep track of the next virtual and physical pages available.
 // These are the same during identity mapping, but diverge when user space programs make malloc calls
 // 4GB worth of 4096 pages. Set all to false. Processing the multiboot2 memory_map will set the necessary bits.
-bool page_available_physical_bitmap[max_n_pages] = {false};
-bool page_available_virtual_bitmap[max_n_pages] = {false};
+// TODO: replace with DenseBooleanArray
+constexpr size_t n_DBs = (max_n_pages + (32 - 1)) / 32;
+DenseBoolean<u32> paging_phys_bitmap_array[n_DBs];
+DenseBoolean<u32> paging_virt_bitmap_array[n_DBs];
+
+DenseBooleanArray<u32> page_available_physical_bitmap;
+DenseBooleanArray<u32> page_available_virtual_bitmap;
+//
+// bool page_available_physical_bitmap[max_n_pages] = {false};
+// bool page_available_virtual_bitmap[max_n_pages] = {false};
 
 // TODO: helper functions like converters between addresses and page numbers?
 
@@ -165,8 +175,8 @@ void assign_page_table_entry(const uintptr_t physical_addr, const virtual_addres
 
     paging_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
 
-    page_available_physical_bitmap[physical_addr >> base_address_shift] = false;
-    page_available_virtual_bitmap[v_addr.raw >> base_address_shift] = false;
+    page_available_physical_bitmap.set_bit(physical_addr >> base_address_shift, false);
+    page_available_virtual_bitmap.set_bit(v_addr.raw >> base_address_shift, false);
 }
 
 // TODO: do we need to unassign directories? Probably not.
@@ -181,10 +191,13 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
             return -1;
         }
         const size_t phys_idx = tab_entry->physical_address;
-        page_available_virtual_bitmap[i] = true;
-        page_available_physical_bitmap[phys_idx] = true;
+
+        page_available_physical_bitmap.set_bit(phys_idx, true);
+        page_available_virtual_bitmap.set_bit(i, true);
+
         tab_entry->raw = 0;
     }
+    // TODO: use DBA.set_range once implemented.
     return 0;
 }
 
@@ -232,7 +245,10 @@ void enable_paging()
  */
 void mmap_init(multiboot2_tag_mmap* mmap)
 {
-    memset(page_available_virtual_bitmap, true, sizeof(bool) * max_n_pages);
+    // memset(&page_available_virtual_bitmap, true, sizeof(bool) * max_n_pages);
+
+    page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);
+    page_available_physical_bitmap.init(paging_phys_bitmap_array, max_n_pages, false);
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
     const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift; // first page after kernel image.
@@ -272,7 +288,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
     // set upper limit in bitmap to extents of this memory region.
     for (size_t addr = post_kernel_page; addr < main_region_end; addr += page_alignment)
     {
-        page_available_physical_bitmap[addr >> base_address_shift] = true;
+        page_available_physical_bitmap.set_bit(addr >> base_address_shift, true);
     }
 
 

@@ -23,6 +23,12 @@ public:
         this->raw = 0;
     }
 
+    void init(int_like data)
+    {
+        size_in_bits = sizeof(int_like) * 8;
+        this->raw = data;
+    }
+
     int_like data()
     {
         return this->raw;
