@@ -7,7 +7,7 @@
 #include "DenseBoolean.h"
 #include "types.h"
 
-
+// TODO: test late_init
 TEST(DenseBooleanTest, get)
 {
     constexpr u16 val = 0b1010101010101010;

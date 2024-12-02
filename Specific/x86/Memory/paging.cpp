@@ -145,13 +145,10 @@ uintptr_t page_get_next_virtual_chunk(size_t idx, const size_t n_pages)
 uintptr_t page_get_next_virt_addr(const uintptr_t start_addr)
 {
     size_t idx = start_addr >> base_address_shift;
-    for (; !page_available_virtual_bitmap[idx] && idx < max_n_pages; idx++)
-    {
-    }
-    if (idx >= max_n_pages)
-    {
-        return 0;
-    }
+    for (; !page_available_virtual_bitmap[idx] && idx < max_n_pages; idx++);
+
+    if (idx >= max_n_pages) return 0;
+
     return idx * page_alignment;
 }
 
@@ -186,10 +183,8 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
     for (size_t i = start_idx; i < start_idx + n_pages; i++)
     {
         auto* tab_entry = &paging_tables[i / 1024].table[i % 1024];
-        if (!tab_entry->present)
-        {
-            return -1;
-        }
+        if (!tab_entry->present)return -1;
+
         const size_t phys_idx = tab_entry->physical_address;
 
         page_available_physical_bitmap.set_bit(phys_idx, true);
@@ -222,10 +217,7 @@ void paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writ
 
         phys_addr += page_alignment;
         virtual_address.raw = phys_addr;
-        if (virtual_address.raw >> 12 >= max_n_pages)
-        {
-            return;
-        }
+        if (virtual_address.raw >> 12 >= max_n_pages) return;
     }
 }
 

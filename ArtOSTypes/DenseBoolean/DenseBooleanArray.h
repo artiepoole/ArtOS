@@ -12,22 +12,8 @@ template <typename int_like>
 class DenseBooleanArray
 {
 public:
-    void init(void* initial_array ,const size_t total_bits, bool b)
+    DenseBooleanArray()
     {
-        capacity = total_bits;
-        n_bits = sizeof(int_like) * 8;
-        array_len = (total_bits + (n_bits - 1)) / n_bits;
-        array = static_cast<DenseBoolean<int_like>*>(initial_array);
-        int_like v = get_mask(b);
-        for (size_t i = 0; i < array_len; i++)
-        {
-            array[i].init(v);
-        }
-    }
-
-    explicit DenseBooleanArray()
-    {
-
     }
 
     explicit DenseBooleanArray(const size_t total_bits)
@@ -38,7 +24,7 @@ public:
         array = new DenseBoolean<int_like>[array_len];
     }
 
-    explicit DenseBooleanArray(const size_t total_bits, const bool def_bool)
+    DenseBooleanArray(const size_t total_bits, const bool def_bool)
     {
         capacity = total_bits;
         n_bits = sizeof(int_like) * 8;
@@ -52,6 +38,21 @@ public:
         delete[] array;
     }
 
+
+    // TODO: not a super safe init.
+    /* late init */
+    void init(void* initial_array, const size_t total_bits, bool b)
+    {
+        capacity = total_bits;
+        n_bits = sizeof(int_like) * 8;
+        array_len = (total_bits + (n_bits - 1)) / n_bits;
+        array = static_cast<DenseBoolean<int_like>*>(initial_array);
+        int_like v = get_mask(b);
+        for (size_t i = 0; i < array_len; i++)
+        {
+            array[i].init(v);
+        }
+    }
 
     bool operator [](const size_t bit_idx)
     {
@@ -94,7 +95,6 @@ public:
     }
 
 
-
     size_t get_next_falses(const size_t offset, size_t n)
     {
         size_t start_idx = get_next_false(offset);
@@ -105,7 +105,7 @@ public:
             next_idx = get_next_true(start_idx);
         }
         if (start_idx == DBA_ERR_IDX) return DBA_ERR_IDX; // no trues after offset
-        if (next_idx == DBA_ERR_IDX  && start_idx + n > capacity) return DBA_ERR_IDX; // doesn't fit
+        if (next_idx == DBA_ERR_IDX && start_idx + n > capacity) return DBA_ERR_IDX; // doesn't fit
         return start_idx; // should fit
     }
 
