@@ -6,6 +6,7 @@
 #define DENSEBOOLEANARRAY_H
 #include "DenseBoolean.h"
 
+inline size_t DBA_ERR_IDX = -1;
 
 template <typename int_like>
 class DenseBooleanArray
@@ -54,19 +55,11 @@ public:
         return get_next_false(0);
     }
 
-    template <typename sint_like>
-    int get_next_false(const sint_like offset)
-    {
-        if (offset < 0) return -1;
-        if (offset >= capacity) return -1;
-        return get_next_false(static_cast<size_t>(abs(offset))); // safe cast
-    }
-
     // Exact same logic as get_next_true but all the data is inverted.
-    int get_next_false(const size_t offset)
+    size_t get_next_false(const size_t offset)
     {
-        int array_idx = offset / n_bits;
-        int item_idx = offset % n_bits;
+        size_t array_idx = offset / n_bits;
+        size_t item_idx = offset % n_bits;
         int_like mask = (-1) << item_idx; // returns, e.g. 11111000 if item_idx == 3
         int_like data = ~array[array_idx].data() & mask; // ignores lowest bits
         item_idx = 0;
@@ -83,50 +76,36 @@ public:
         }
 
         item_idx = array_idx * n_bits + item_idx;
-        if (item_idx >= capacity) return -1; // possible if last entry is not full
+        if (item_idx >= capacity) return DBA_ERR_IDX; // possible if last entry is not full
         return item_idx;
     }
 
-    template <typename sint_like>
-    int get_next_falses(const sint_like offset, size_t n)
-    {
-        if (offset < 0) return -1;
-        if (offset >= capacity) return -1;
-        return get_next_falses(static_cast<size_t>(abs(offset)), n); // safe cast
-    }
 
 
-    int get_next_falses(const size_t offset, size_t n)
+    size_t get_next_falses(const size_t offset, size_t n)
     {
-        int start_idx = get_next_false(offset);
-        int next_idx = get_next_true(start_idx + 1);
-        while (next_idx - start_idx < n && start_idx > 0 && next_idx > 0)
+        size_t start_idx = get_next_false(offset);
+        size_t next_idx = get_next_true(start_idx);
+        while (next_idx - start_idx < n && start_idx < DBA_ERR_IDX && next_idx < DBA_ERR_IDX)
         {
             start_idx = get_next_false(next_idx);
-            next_idx = get_next_true(start_idx + 1);
+            next_idx = get_next_true(start_idx);
         }
-        if (start_idx < 0) return -1; // no trues after offset
-        if (next_idx < 0 && start_idx + n > capacity) return -1; // doesn't fit
+        if (start_idx == DBA_ERR_IDX) return DBA_ERR_IDX; // no trues after offset
+        if (next_idx == DBA_ERR_IDX  && start_idx + n > capacity) return DBA_ERR_IDX; // doesn't fit
         return start_idx; // should fit
     }
 
-    int get_next_true()
+    size_t get_next_true()
     {
         return get_next_true(0);
     }
 
-    template <typename sint_like>
-    int get_next_true(const sint_like offset)
-    {
-        if (offset < 0) return -1;
-        if (offset >= capacity) return -1;
-        return get_next_true(static_cast<size_t>(abs(offset))); // safe cast
-    }
 
-    int get_next_true(const size_t offset)
+    size_t get_next_true(const size_t offset)
     {
-        int array_idx = offset / n_bits;
-        int item_idx = offset % n_bits;
+        size_t array_idx = offset / n_bits;
+        size_t item_idx = offset % n_bits;
         int_like mask = (-1) << item_idx;
         int_like data = array[array_idx].data() & mask; // ignores lowest bits
         item_idx = 0;
@@ -142,42 +121,34 @@ public:
         }
 
         item_idx = array_idx * n_bits + item_idx;
-        if (item_idx >= capacity) return -1; // possible if last entry is not full
+        if (item_idx >= capacity) return DBA_ERR_IDX; // possible if last entry is not full
         return item_idx;
     }
 
-    template <typename sint_like>
-    int get_next_trues(const sint_like offset, size_t n)
-    {
-        if (offset < 0) return -1;
-        if (offset >= capacity) return -1;
-        return get_next_trues(static_cast<size_t>(abs(offset)), n); // safe cast
-    }
-
     // gets start idx of a contiguous chunk of trues with length at least as large as n.
-    int get_next_trues(const int offset, size_t n)
+    size_t get_next_trues(const size_t offset, size_t n)
     {
-        int start_idx = get_next_true(offset);
-        int next_idx = get_next_false(start_idx + 1);
-        while (next_idx - start_idx < n && start_idx > 0 && next_idx > 0)
+        size_t start_idx = get_next_true(offset);
+        size_t next_idx = get_next_false(start_idx);
+        while (next_idx - start_idx < n && start_idx < DBA_ERR_IDX && next_idx < DBA_ERR_IDX)
         {
             start_idx = get_next_true(next_idx);
-            next_idx = get_next_false(start_idx + 1);
+            next_idx = get_next_false(start_idx);
         }
-        if (start_idx < 0) return -1; // no trues after offset
-        if (next_idx < 0 && start_idx + n > capacity) return -1; // doesn't fit
+        if (start_idx == DBA_ERR_IDX) return DBA_ERR_IDX; // no trues after offset
+        if (next_idx == DBA_ERR_IDX && start_idx + n > capacity) return DBA_ERR_IDX; // doesn't fit
         return start_idx; // should fit
     }
 
     size_t get_array_len() { return array_len; }
 
-    int set_range(int start, int n, bool b) { return -1; }
+    size_t set_range(size_t start, size_t n, bool b) { return DBA_ERR_IDX; }
 
 private:
     DenseBoolean<int_like>* array;
-    int array_len; // n_items in array
-    int capacity; // bits
-    int n_bits;
+    size_t array_len; // n_items in array
+    size_t capacity; // bits
+    size_t n_bits;
 };
 
 

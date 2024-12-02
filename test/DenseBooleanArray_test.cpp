@@ -18,7 +18,7 @@ TEST(DenseBooleanArrayTest, default_false_basics) {
     ASSERT_FALSE(dba[32]);
     ASSERT_EQ(dba.get_array_len(), 2);
     ASSERT_EQ(dba.get_next_false(), 1);
-    const int next_true = dba.get_next_true(2);
+    const size_t next_true = dba.get_next_true(2);
     ASSERT_EQ(next_true, 33);
     ASSERT_TRUE(dba[next_true]);
     ASSERT_EQ(dba.get_next_true(next_true+1), 34);
@@ -38,7 +38,7 @@ TEST(DenseBooleanArrayTest, default_true_basics) {
     ASSERT_EQ(dba.get_array_len(), 4);
     ASSERT_EQ(dba.get_next_true(), 2);
     ASSERT_TRUE(dba[32]);
-    int next_false = dba.get_next_false(2);
+    size_t next_false = dba.get_next_false(2);
     ASSERT_EQ(next_false, 64);
     ASSERT_EQ(dba.get_next_false(next_false+1), 65);
 }
@@ -50,7 +50,7 @@ TEST(DenseBooleanArrayTest, get_chunk_true) {
     dba.set_bit(1, false);
     dba.set_bit(3, false);
     dba.set_bit(4, false);
-    int start = dba.get_next_trues(0, 5);
+    size_t start = dba.get_next_trues(0, 5);
     ASSERT_EQ(start, 5);
     ASSERT_EQ(dba.get_next_trues(6, 128), -1);
 }
@@ -61,7 +61,7 @@ TEST(DenseBooleanArrayTest, get_chunk_false) {
     dba.set_bit(1, true);
     dba.set_bit(3, true);
     dba.set_bit(4, true);
-    int start = dba.get_next_falses(0, 5);
+    size_t start = dba.get_next_falses(0, 5);
     ASSERT_EQ(start, 5);
     ASSERT_EQ(dba.get_next_falses(6, 128), -1);
 }
