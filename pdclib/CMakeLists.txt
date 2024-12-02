@@ -272,18 +272,6 @@ set( PDCLIB_HEADERS
         platform/ArtOS/include/signal.h
 )
 
-#file(GLOB KERNEL
-#        "../include/*.h"
-#        "../include/arch/x86/device_info/*.h"
-#        "../include/constants/*.h"
-#        "../include/arch/x86/timers/*.h"
-#        "../src/sys/*.h"
-#        "../src/sys/*.cpp"
-#        "src/sys/FileSystem/*.h"
-#        "src/sys/FileSystem/*.cpp"
-#        "src/sys/Storage/*.cpp"
-#        "src/sys/Storage/*.h"
-#)
 
 set( PDCLIB_PRIVATE_HEADERS
         include/pdclib/_PDCLIB_glue.h
