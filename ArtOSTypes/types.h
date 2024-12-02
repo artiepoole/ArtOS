@@ -17,6 +17,7 @@ This program is free software: you can redistribute it and/or modify
 
 #include "stddef.h"
 #include "stdint.h"
+#include "stdbool.h"
 
 /*
   define some specific length types
@@ -83,8 +84,34 @@ constexpr bool is_int_like_v = is_any_of_v<
     unsigned long long
 >;
 
+template<typename Ty>
+constexpr bool is_sint_like_v = is_any_of_v<
+    remove_cv_t<Ty>,
+    signed char,
+    signed short,
+    signed int,
+    signed long,
+    signed long long
+>;
+
+template<typename Ty>
+constexpr bool is_uint_like_v = is_any_of_v<
+    remove_cv_t<Ty>,
+    unsigned char,
+    unsigned short,
+    unsigned int,
+    unsigned long,
+    unsigned long long
+>;
+
 template <class T>
-concept int_like = is_int_like_v<T>;
+concept int_like = is_int_like_v<T>; // either signed or unsigned. no bool?
+
+template <class T>
+concept uint_like = is_uint_like_v<T>;
+
+template <class T>
+concept sint_like = is_sint_like_v<T>;
 
 
 

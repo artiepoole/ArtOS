@@ -333,7 +333,7 @@ target_include_directories(pdclib PUBLIC
         ../Generic/sys
         ../Generic/sys/Constants
         ../Generic/sys/FileSystem
-        ../Generic/sys/HelperFunctions
+        ../Generic/sys/Types
         ../Generic/sys/Logging
         ../Generic/sys/Memory
         ../Generic/sys/Storage
@@ -349,8 +349,10 @@ target_include_directories(pdclib PUBLIC
 
 set_property( TARGET pdclib PROPERTY POSITION_INDEPENDENT_CODE 1 )
 
-set( CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wmissing-declarations -Wredundant-decls -Winline -Wno-long-long -Wuninitialized -fno-builtin -fvisibility=hidden -D_STDC_PREDEF_H -nostdlib " )
+set(pdclib CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wmissing-declarations -Wredundant-decls -Winline -Wno-long-long -Wuninitialized -fno-builtin -fvisibility=hidden -D_STDC_PREDEF_H -nostdlib ")
 
 set_source_files_properties( functions/_dtoa/dtoa.c PROPERTIES COMPILE_OPTIONS -Wno-sign-compare )
 
 set_property( TARGET pdclib APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_STATIC_DEFINE ${FLAGS}" )
+
+target_link_libraries(pdclib ArtOSTypes)

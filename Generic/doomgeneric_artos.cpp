@@ -3,7 +3,7 @@
 #include <ports.h>
 
 #include "../doom/doomgeneric/doomkeys.h"
-#include "sys/Constants/types.h"
+#include "types.h"
 
 extern "C" {
 #include "../doom/doomgeneric/doomgeneric.h"
