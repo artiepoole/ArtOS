@@ -99,57 +99,25 @@ DenseBooleanArray<u32> page_available_virtual_bitmap;
 
 uintptr_t page_get_next_phys_addr()
 {
-    size_t idx = 0;
-    for (; !page_available_physical_bitmap[idx]; idx++)
-    {
-    }
-    if (idx >= last_physical_idx)
-    {
-        return 0;
-    }
+    const size_t idx = page_available_physical_bitmap.get_next_true();
+    if (idx == DBA_ERR_IDX) return 0;
     return idx << base_address_shift;
 }
 
 // TODO: Should go back to 0 if doesn't find anything above start_addr
 uintptr_t page_get_next_virtual_chunk(size_t idx, const size_t n_pages)
 {
-    bool looking = true;
-    while (looking)
-    {
-        // First free v_page
-        while (!page_available_virtual_bitmap[idx])
-        {
-            idx++;
-        }
-        // see how many pages after it are free or up to n_pages requested
-        size_t i = 1;
-        while (page_available_virtual_bitmap[idx + i] && i < n_pages)
-        {
-            i++;
-        }
-        if (i == n_pages)
-        {
-            // done.
-            looking = false;
-        }
-        else
-        {
-            // Not enough contiguous pages free. Start looking for free pages at the first unavailable page found.
-            idx += i;
-        }
-    }
+    idx = page_available_virtual_bitmap.get_next_trues(idx, n_pages);
+    if (idx == DBA_ERR_IDX) return 0;
     return idx << base_address_shift;
 }
 
 // TODO: Should go back to 0 if doesn't find anything above start_addr
 uintptr_t page_get_next_virt_addr(const uintptr_t start_addr)
 {
-    size_t idx = start_addr >> base_address_shift;
-    for (; !page_available_virtual_bitmap[idx] && idx < max_n_pages; idx++);
-
-    if (idx >= max_n_pages) return 0;
-
-    return idx * page_alignment;
+    const size_t idx = page_available_virtual_bitmap.get_next_true(start_addr >> base_address_shift);
+    if (idx == DBA_ERR_IDX) return 0;
+    return idx << base_address_shift;
 }
 
 
@@ -188,11 +156,10 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
         const size_t phys_idx = tab_entry->physical_address;
 
         page_available_physical_bitmap.set_bit(phys_idx, true);
-        page_available_virtual_bitmap.set_bit(i, true);
-
         tab_entry->raw = 0;
     }
-    // TODO: use DBA.set_range once implemented.
+    page_available_virtual_bitmap.set_range(start_idx, n_pages, true);
+
     return 0;
 }
 
@@ -237,15 +204,16 @@ void enable_paging()
  */
 void mmap_init(multiboot2_tag_mmap* mmap)
 {
-    // memset(&page_available_virtual_bitmap, true, sizeof(bool) * max_n_pages);
-
+    // Iniitalise bitmaps
     page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);
     page_available_physical_bitmap.init(paging_phys_bitmap_array, max_n_pages, false);
+
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
     const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift; // first page after kernel image.
     uintptr_t last_end = 0;
-    // TODO: replace with calls to paging_identity_map(...) to map all already assigned memory
+
+    // Loop through all entries and map appropriately
     for (size_t i = 0; i < n_entries; i++)
     {
         multiboot2_mmap_entry const* entry = mmap->entries[i];
@@ -277,11 +245,17 @@ void mmap_init(multiboot2_tag_mmap* mmap)
     // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
     paging_identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
 
-    // set upper limit in bitmap to extents of this memory region.
-    for (size_t addr = post_kernel_page; addr < main_region_end; addr += page_alignment)
-    {
-        page_available_physical_bitmap.set_bit(addr >> base_address_shift, true);
-    }
+    // set upper limit in physical bitmap to extents of the avaialble
+    page_available_physical_bitmap.set_range(
+        post_kernel_page >> base_address_shift,
+        (main_region_end - post_kernel_page) >> base_address_shift,
+        true
+    );
+    // for (size_t addr = post_kernel_page; addr < main_region_end; addr += page_alignment)
+    // {
+    //     page_available_physical_bitmap.set_bit(addr >> base_address_shift, true);
+    //     // TODO: implement and use .set_range(...)
+    // }
 
 
     LOG("Paging: memory map processed.");

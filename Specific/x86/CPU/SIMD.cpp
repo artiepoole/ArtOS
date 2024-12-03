@@ -82,7 +82,7 @@ bool simd_enabled()
     return simd_is_enabled;
 }
 
-
+// TODO: does this start need to be aligned?
 extern "C"
 void* simd_copy(void* dest, const void* src, const size_t size)
 {

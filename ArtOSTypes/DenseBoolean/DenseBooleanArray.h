@@ -155,7 +155,26 @@ public:
 
     size_t get_array_len() { return array_len; }
 
-    size_t set_range(size_t start, size_t n, bool b) { return DBA_ERR_IDX; }
+    // return error or n copied. 
+    size_t set_range(const size_t start, const size_t n, const bool b)
+    {
+        if (start + n > capacity || n == 0 || n >= DBA_ERR_IDX) return DBA_ERR_IDX;
+        const int_like mask = get_mask(b);
+        size_t bit = start;
+        for (; bit % n_bits > 0 && bit < n; bit++) // set bits up to next whole chunk
+        {
+            array[bit / n_bits].set_bit(bit % n_bits, b);
+        }
+        for (; bit + n_bits < n; bit += n_bits) // set all whole chunks
+        {
+            array[bit / n_bits].set_data(mask);
+        }
+        for (; bit < n; bit++) // set remaining bits
+        {
+            array[bit / n_bits].set_bit(bit % n_bits, b);
+        }
+        return n;
+    }
 
     int_like get_mask(bool b)
     {
