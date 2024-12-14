@@ -91,18 +91,57 @@ TEST(DenseBooleanARrayTest, late_inits)
     size_t i = 0;
     for (; i < n_bits; i++)
     {
-        if ((*dba_false)[0])
+        if ((*dba_false)[i])
         {
+            // TODO: look for better solution to report this error
             correct = false;
             break;
         }
         if (!(*dba_true)[i])
         {
+            // TODO: look for better solution to report this error
             correct = false;
             break;
         }
     }
 
+    ASSERT_TRUE(correct);
+    ASSERT_EQ(i, n_bits);
+}
+
+
+TEST(DenseBooleanArrayTest, set_data)
+{
+    constexpr size_t n_DBs = 2;
+    constexpr size_t n_bits = sizeof(u32) * 8 * n_DBs;
+    const auto my_dba_p = new DenseBooleanArray<u32>(64, true);
+    auto my_dba = *my_dba_p;
+    my_dba.set_all(false);
+
+    bool correct = true;
+    size_t i = 0;
+    for (; i < n_bits; i++)
+    {
+        if (my_dba[i])
+        {
+            correct = false;
+            break;
+        }
+    }
+    ASSERT_TRUE(correct);
+    ASSERT_EQ(i, n_bits);
+
+    my_dba.set_range(10, 38, true);
+
+    i = 0;
+    for (; i < n_bits; i++)
+    {
+        if (my_dba[i] != (i >= 10 && i < 38))
+        {
+            correct = false;
+            break;
+        }
+    }
     ASSERT_TRUE(correct);
     ASSERT_EQ(i, n_bits);
 }
