@@ -10,7 +10,8 @@
 // TODO: test late_init
 // TODO: make more unit like
 
-TEST(DenseBooleanArrayTest, default_false_basics) {
+TEST(DenseBooleanArrayTest, default_false_basics)
+{
     DenseBooleanArray<u32> dba(64, false);
     dba.set_bit(0, true);
     dba.set_bit(33, true);
@@ -30,7 +31,8 @@ TEST(DenseBooleanArrayTest, default_false_basics) {
 
 // TODO: make more unit like
 // TODO: should test all bits in an item not just a subset?
-TEST(DenseBooleanArrayTest, default_true_basics) {
+TEST(DenseBooleanArrayTest, default_true_basics)
+{
     DenseBooleanArray<u32> dba(125, true);
     dba.set_bit(0, false);
     dba.set_bit(1, false);
@@ -47,7 +49,8 @@ TEST(DenseBooleanArrayTest, default_true_basics) {
 }
 
 // TODO: this should test finding a good range and handling of: no suitable ranges, start finds an area but doesn't have space for the whole range etc.
-TEST(DenseBooleanArrayTest, get_chunk_true) {
+TEST(DenseBooleanArrayTest, get_chunk_true)
+{
     DenseBooleanArray<u32> dba(125, true);
     dba.set_bit(0, false);
     dba.set_bit(1, false);
@@ -58,7 +61,8 @@ TEST(DenseBooleanArrayTest, get_chunk_true) {
     ASSERT_EQ(dba.get_next_trues(6, 128), -1);
 }
 
-TEST(DenseBooleanArrayTest, get_chunk_false) {
+TEST(DenseBooleanArrayTest, get_chunk_false)
+{
     DenseBooleanArray<u32> dba(125, false);
     dba.set_bit(0, true);
     dba.set_bit(1, true);
@@ -67,4 +71,38 @@ TEST(DenseBooleanArrayTest, get_chunk_false) {
     size_t start = dba.get_next_falses(0, 5);
     ASSERT_EQ(start, 5);
     ASSERT_EQ(dba.get_next_falses(6, 128), -1);
+}
+
+
+TEST(DenseBooleanARrayTest, late_inits)
+{
+    constexpr size_t n_DBs = 5;
+    constexpr size_t n_bits = sizeof(u32) * 8 * n_DBs;
+    const auto dba_true = new DenseBooleanArray<u32>;
+    const auto dba_false = new DenseBooleanArray<u32>;
+
+    const auto array_true = new DenseBoolean<u32>[n_DBs];
+    const auto array_false = new DenseBoolean<u32>[n_DBs];
+
+    dba_true->init(array_true, n_bits, true);
+    dba_false->init(array_false, n_bits, false);
+
+    bool correct = true;
+    size_t i = 0;
+    for (; i < n_bits; i++)
+    {
+        if ((*dba_false)[0])
+        {
+            correct = false;
+            break;
+        }
+        if (!(*dba_true)[i])
+        {
+            correct = false;
+            break;
+        }
+    }
+
+    ASSERT_TRUE(correct);
+    ASSERT_EQ(i, n_bits);
 }
