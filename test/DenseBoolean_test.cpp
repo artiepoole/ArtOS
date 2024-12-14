@@ -7,7 +7,10 @@
 #include "DenseBoolean.h"
 #include "types.h"
 
-// TODO: test late_init
+// TODO: test attemots to write out of bounds
+// TODO: test different types
+
+
 TEST(DenseBooleanTest, get)
 {
     constexpr u16 val = 0b1010101010101010;
@@ -31,5 +34,18 @@ TEST(DenseBooleanTest, set_false)
     denseBoolean.set_bit(3, false);
     ASSERT_FALSE(denseBoolean[3]);
     ASSERT_TRUE(denseBoolean[2]);
+}
+
+TEST(DenseBooleanTest, late_init)
+{
+    constexpr size_t n_bits = sizeof(u32) * 8;
+    const auto array_p = new DenseBoolean<u32>;
+    auto my_array = *array_p;
+    constexpr u32 data = -1; // all true
+    my_array.init(data);
+    for (size_t i = 0; i < n_bits; i++)
+    {
+        ASSERT_TRUE(my_array[i]);
+    }
 }
 

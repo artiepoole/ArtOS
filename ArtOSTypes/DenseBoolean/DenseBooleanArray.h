@@ -9,7 +9,7 @@
 inline size_t DBA_ERR_IDX = -1;
 
 template <typename int_like>
-class DenseBooleanArray
+class __attribute__ ((__packed__)) DenseBooleanArray
 {
 public:
     DenseBooleanArray()

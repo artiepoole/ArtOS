@@ -8,7 +8,7 @@
 #include "types.h"
 
 template <typename int_like>
-class DenseBoolean
+class __attribute__ ((__packed__)) DenseBoolean
 {
 public:
     explicit DenseBoolean(int_like data)

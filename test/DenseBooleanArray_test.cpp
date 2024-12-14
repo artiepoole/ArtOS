@@ -6,9 +6,9 @@
 #include "DenseBooleanArray.h"
 #include "types.h"
 
-// TODO: test set_data
-// TODO: test late_init
 // TODO: make more unit like
+// TODO: test attemots to write out of bounds
+// TODO: test different types and catching of DB/DBA type mismatch
 
 TEST(DenseBooleanArrayTest, default_false_basics)
 {
@@ -74,7 +74,7 @@ TEST(DenseBooleanArrayTest, get_chunk_false)
 }
 
 
-TEST(DenseBooleanARrayTest, late_inits)
+TEST(DenseBooleanArrayTest, late_inits)
 {
     constexpr size_t n_DBs = 5;
     constexpr size_t n_bits = sizeof(u32) * 8 * n_DBs;
@@ -87,26 +87,11 @@ TEST(DenseBooleanARrayTest, late_inits)
     dba_true->init(array_true, n_bits, true);
     dba_false->init(array_false, n_bits, false);
 
-    bool correct = true;
-    size_t i = 0;
-    for (; i < n_bits; i++)
+    for (size_t i = 0; i < n_bits; i++)
     {
-        if ((*dba_false)[i])
-        {
-            // TODO: look for better solution to report this error
-            correct = false;
-            break;
-        }
-        if (!(*dba_true)[i])
-        {
-            // TODO: look for better solution to report this error
-            correct = false;
-            break;
-        }
+        ASSERT_TRUE((*dba_true)[i]);
+        ASSERT_FALSE((*dba_false)[i]);
     }
-
-    ASSERT_TRUE(correct);
-    ASSERT_EQ(i, n_bits);
 }
 
 
@@ -118,30 +103,15 @@ TEST(DenseBooleanArrayTest, set_data)
     auto my_dba = *my_dba_p;
     my_dba.set_all(false);
 
-    bool correct = true;
-    size_t i = 0;
-    for (; i < n_bits; i++)
+    for (size_t i = 0; i < n_bits; i++)
     {
-        if (my_dba[i])
-        {
-            correct = false;
-            break;
-        }
+        ASSERT_FALSE(my_dba[i]);
     }
-    ASSERT_TRUE(correct);
-    ASSERT_EQ(i, n_bits);
 
     my_dba.set_range(10, 38, true);
 
-    i = 0;
-    for (; i < n_bits; i++)
+    for (size_t i = 0; i < n_bits; i++)
     {
-        if (my_dba[i] != (i >= 10 && i < 38))
-        {
-            correct = false;
-            break;
-        }
+        ASSERT_EQ(my_dba[i], i >= 10 && i < 38);
     }
-    ASSERT_TRUE(correct);
-    ASSERT_EQ(i, n_bits);
 }
