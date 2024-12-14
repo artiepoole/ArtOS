@@ -251,11 +251,6 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         (main_region_end - post_kernel_page) >> base_address_shift,
         true
     );
-    // for (size_t addr = post_kernel_page; addr < main_region_end; addr += page_alignment)
-    // {
-    //     page_available_physical_bitmap.set_bit(addr >> base_address_shift, true);
-    //     // TODO: implement and use .set_range(...)
-    // }
 
 
     LOG("Paging: memory map processed.");
