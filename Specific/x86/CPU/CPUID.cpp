@@ -6,8 +6,13 @@
 
 
 #include <Terminal.h>
+
+#include "CPU.h"
+#include "kernel.h"
 #include "types.h"
 #include "logging.h"
+#include "PIT.h"
+#include "TSC.h"
 
 u8 binaryNum[32];
 const u8 decimal[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -17,6 +22,8 @@ cpuid_manufacturer_info_t cpu_manufacturer_info;
 cpuid_ext_manufacturer_info_t cpu_ext_manufacturer_info;
 cpuid_core_frequency_info_t cpu_frequency_info;
 cpuid_feature_info_t cpu_feature_info;
+u32 cpu_frequency = 0;
+bool initialised = false;
 
 
 void decToBinary(u32 n)
@@ -55,7 +62,7 @@ cpuid_ext_manufacturer_info_t* cpuid_print_ext_manufacturer_info()
 
     // brand string
     // todo: replace with other getter/setter methods.
-    if (!cpu_ext_manufacturer_info.max_ext_param - 0x80000000 >= 4){return nullptr;}
+    if (!cpu_ext_manufacturer_info.max_ext_param - 0x80000000 >= 4) { return nullptr; }
 
     u32 parts[12];
     asm volatile("mov $0x80000002, %eax");
@@ -75,7 +82,6 @@ cpuid_ext_manufacturer_info_t* cpuid_print_ext_manufacturer_info()
         }
     }
     NEWLINE();
-
 
 
     return &cpu_ext_manufacturer_info;
@@ -99,6 +105,22 @@ cpuid_feature_info_t* cpuid_get_feature_info()
     //     NEWLINE();
     // }
     return &cpu_feature_info;
+}
+
+void measure_cpu_freq()
+{
+    constexpr double duration_ms = 1000;
+    const auto start = TSC_get_ticks();
+    PIT_sleep_ms(duration_ms);
+    const auto end = TSC_get_ticks();
+    cpu_frequency = 1.0f * (end - start) / (duration_ms / 1000);
+}
+
+u32 cpuid_get_core_frequency()
+{
+    if (cpu_manufacturer_info.max_param > 0x15) return cpu_frequency_info.core_clock_freq_hz;
+    if (cpu_frequency == 0) measure_cpu_freq();
+    return cpu_frequency;
 }
 
 
@@ -139,4 +161,16 @@ cpuid_core_frequency_info_t* cpuid_get_frequency_info()
         cpu_frequency_info.core_clock_freq_hz = (cpu_frequency_info.cpu_base_freq_MHz * 10000000) * (cpu_frequency_info.tsc_ratio_denom * cpu_frequency_info.tsc_ratio_numer);
     }
     return &cpu_frequency_info;
+}
+
+
+/* DEPENDS ON PIT and IDT */
+void CPUID_init()
+{
+    cpuid_get_manufacturer_info();
+    cpuid_print_ext_manufacturer_info();
+    cpuid_get_feature_info();
+    cpuid_get_frequency_info();
+    cpuid_get_core_frequency();
+    initialised = true;
 }

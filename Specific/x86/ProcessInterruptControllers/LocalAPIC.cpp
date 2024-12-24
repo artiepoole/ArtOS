@@ -3,8 +3,13 @@
 //
 
 #include "LocalAPIC.h"
+
+#include <CPUID.h>
+#include <TSC.h>
+
 #include "logging.h"
 #include "memory.h"
+#include "IDT.h"
 uintptr_t* eoi_addr;
 
 // LVT entry offsets
@@ -17,7 +22,8 @@ uintptr_t* eoi_addr;
 #define ERROR_LVT_OFFSET 0x370
 
 // other local apic offsets
-#define TIMER_INITIAL_COUNT 0x380
+#define TIMER_INITIAL_COUNT_OFFSET 0x380
+#define TIMER_CURRENT_COUNT_OFFSET 0x390
 #define TIMER_DIVISOR_OFFSET 0x3E0
 #define LOCAL_APIC_ID_OFFSET 0x20
 #define EOI_OFFSET 0xB0
@@ -34,7 +40,7 @@ union destination_format_register
     };
 
     u32 raw;
-};
+}__attribute__((packed));;
 
 
 union local_destination_register
@@ -48,12 +54,14 @@ union local_destination_register
     };
 
     u32 raw;
-};
+}__attribute__((packed));
 
+
+volatile bool calibrated = false;
 
 LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 {
-    paging_identity_map(local_apic_physical_address, 0x3f0 , true, false);
+    paging_identity_map(local_apic_physical_address, 0x3f0, true, false);
     base = local_apic_physical_address;
     TIMESTAMP();
     WRITE("LAPIC base addr: ");
@@ -61,7 +69,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     NEWLINE();
     eoi_addr = reinterpret_cast<uintptr_t*>(base + EOI_OFFSET);
     auto spv_addr = reinterpret_cast<u32*>(base + SPURIOUS_OFFSET_VECTOR);
-    [[maybe_unused]]auto id = *reinterpret_cast<u32*>(base + ID_OFFSET);
+    [[maybe_unused]] auto id = *reinterpret_cast<u32*>(base + ID_OFFSET);
     LOG("LAPIC id: ", id);
     // Writing to registers must be done using a 32-bit write. This means that you cannot vary the members using a pointer obj
     // We take a copy, edit the copy and write the entire 32-bit copy to the original address and store the new register.
@@ -86,7 +94,7 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 
     auto volatile model = reinterpret_cast<u32*>(base + DFR_OFFSET);
     *model = 0xFFFFFFFF;
-    [[maybe_unused]]auto dfr = reinterpret_cast<destination_format_register*>(base + DFR_OFFSET);
+    [[maybe_unused]] auto dfr = reinterpret_cast<destination_format_register*>(base + DFR_OFFSET);
     LOG("LAPIC DFR mode: ", static_cast<u8>(dfr->model));
 
     local_destination_register local_ldr{};
@@ -94,19 +102,72 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
     local_ldr.lapic_addr = 0;
     local_ldr.cluster_addr = 1;
     *ldr_addr = local_ldr.raw;
-    [[maybe_unused]]auto volatile* ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
+    [[maybe_unused]] auto volatile* ldr = reinterpret_cast<local_destination_register*>(base + LDR_OFFSET);
     LOG(
         "LAPIC LDR cluster address set: ",
         static_cast<u8>(ldr->cluster_addr)
     );
 }
 
-void LocalAPIC::configure_timer([[maybe_unused]] const u32 hz)
+// Returns number of clock cycles per LAPIC tick (e.g. if divisor set to 128, this will be LAPIC_clock_rate/128. Measured using 1000 ticks. Set divisor first).
+void LocalAPIC::calibrate_timer()
 {
+    size_t n_LAPIC_ticks = 1000000;
+    auto start_ticks = TSC_get_ticks();
+
+    *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = n_LAPIC_ticks;
+    // *reinterpret_cast<u32*>(base + TIMER_CURRENT_COUNT_OFFSET) = n_LAPIC_ticks;
+    while (!calibrated)
+    {
+    }
+    auto elapsed_cycles = TSC_get_ticks() - start_ticks;
+
+    LAPIC_ratio = elapsed_cycles / n_LAPIC_ticks;
+    LAPIC_rate = cpuid_get_core_frequency() / LAPIC_ratio;
+    LOG("LAPIC calibrated with TSC ratio: ", LAPIC_ratio);
+    LOG("LAPIC tick rate in Hz: ", cpuid_get_core_frequency() / LAPIC_ratio);
+}
+
+
+/* DEPENDS ON PIT and IDT */
+void LocalAPIC::configure_timer(const DIVISOR divisor)
+{
+    // TODO: handle incorrect divisors
+    full_lvt.timer.parts.interrupt_vector = LAPIC_CALIBRATE_IRQ + 32;
+    full_lvt.timer.parts.timer_mode = 0;
+    full_lvt.timer.parts.interrupt_mask = 0;
+
+
+    *reinterpret_cast<u32*>(base + TIMER_LVT_OFFSET) = full_lvt.timer.raw;
+
+    auto timer = *reinterpret_cast<LVT_timer_entry*>(base + TIMER_LVT_OFFSET);
+
+    // TODO: this just uses 128
+    *reinterpret_cast<u32*>(base + TIMER_DIVISOR_OFFSET) = static_cast<u32>(divisor);
+
+
+    calibrate_timer();
+
+    full_lvt.timer.parts.interrupt_vector = LAPIC_IRQ + 32;
+    *reinterpret_cast<u32*>(base + TIMER_LVT_OFFSET) = full_lvt.timer.raw;
+
     //TODO: implement https://github.com/dreamportdev/Osdev-Notes/blob/master/02_Architecture/08_Timers.md
 }
 
 void LAPIC_EOI()
 {
     eoi_addr[0] = 0;
+}
+
+void LAPIC_handler()
+{
+    LOG("LAPIC INTERRUPT");
+
+    // TODO: implement
+}
+
+void LAPIC_calibrate_handler()
+{
+    LOG("CALIBRATE INTERRUPT");
+    calibrated = true;
 }

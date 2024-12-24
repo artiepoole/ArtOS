@@ -35,6 +35,7 @@
 #include "IDEStorageContainer.h"
 #include "ATA.h"
 #include "BusMasterController.h"
+#include "CPUID.h"
 #include "kernel.h"
 #include "logging.h"
 #include "memory.h"
@@ -171,14 +172,23 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     configure_pit(2000);
     vga.incrementProgressBarChunk(bar);
-    // local_apic.configure_timer(1024);
-    // todo: configure apic timer.
 
     // Create a new GDT and load it. Paging is used so this is just redundant
     GDT_init();
     // Configure interrupt tables and enable interrupts.
     IDT idt;
     vga.incrementProgressBarChunk(bar);
+
+    // TODO: In order to implement scheduling:
+    CPUID_init();
+    local_apic.configure_timer(DIVISOR_128);
+    // todo: configure apic timer.
+    // todo: APIC timer should be configured for "SCHEDULER_TIMESLICE" duration one shots, but needs to be calibrated against TSC or something similar first.
+    // todo: Processes need a way to yield
+    // todo: Processes need to have a way to start/be executed
+    // todo: SLEEP should schedule things instead of waiting on RTC
+    // todo: get_time (precise) should work out the system time using TSC or something, and get_date_time can have low precision like 1ms or 1s by reading from RTC.
+
 
     LOG("Singletons loaded.");
 

@@ -62,6 +62,9 @@ cpuid_feature_info_t* cpuid_get_feature_info(); // leaf 1
 
 cpuid_core_frequency_info_t* cpuid_get_frequency_info(); // leaf 0x15/0x16
 
+u32 cpuid_get_core_frequency();
+
+void CPUID_init();
 
 //todo: write a total reading of CPUID leaves to make it easier to access data by the common naming scheme:  CPUID.**h:E*X[bit *]
 

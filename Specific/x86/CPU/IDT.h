@@ -8,9 +8,32 @@
 #include "PIC.h"
 
 
-#define IDT_STUB_COUNT 49
+#define IDT_STUB_COUNT 51
 #define IDT_SPURIOUS_ID 0xFF
 
+
+enum
+{
+    PIC_IRQ,
+    KEYBOARD_IRQ,
+    CASCADE_IRQ,
+    COM2_IRQ,
+    COM1_IRQ,
+    LPT2_IRQ,
+    FLOPPY_IRQ,
+    LPT1_IRQ,
+    RTC_IRQ,
+    IRQ_9,
+    IRQ_10,
+    IRQ_11,
+    PS2_MOUSE_IRQ,
+    FPU_IRQ,
+    IDE_PRIMARY_IRQ,
+    IDE_SECONDARY_IRQ,
+    LAPIC_IRQ,
+    LAPIC_CALIBRATE_IRQ,
+    SPURIOUS_IRQ = 208
+};
 
 class IDT
 {

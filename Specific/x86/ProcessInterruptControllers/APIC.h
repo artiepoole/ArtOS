@@ -20,8 +20,8 @@ union LVT_timer_entry
         u32 pad : 13;
     } parts;
 
-    u32 entry;
-};
+    u32 raw;
+}__attribute__((packed));
 
 
 union LVT_entry
@@ -40,7 +40,7 @@ union LVT_entry
     };
 
     u32 entry;
-};
+}__attribute__((packed));
 
 
 union LVT_spurious_vector
@@ -54,7 +54,7 @@ union LVT_spurious_vector
     };
 
     u32 raw;
-};
+}__attribute__((packed));
 
 
 struct LVT

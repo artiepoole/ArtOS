@@ -77,7 +77,7 @@ inline constexpr char exception_messages[][40] =
     "reserved exceptions", //
 };
 
-void log_registers([[maybe_unused]]const cpu_registers_t* r)
+void log_registers([[maybe_unused]] const cpu_registers_t* r)
 {
     WRITE("int_no, err_code: ");
     NEWLINE();
@@ -177,34 +177,42 @@ void exception_handler(const cpu_registers_t* r)
     13 	FPU / Coprocessor / Inter-processor
     14 	Primary ATA Bus
     15 	Secondary ATA Bus
+    16  LAPIC
     240-32  Spurious APIC
 */
+
+
 extern "C"
 void irq_handler(const cpu_registers_t* r)
 {
     if (const auto int_no = r->int_no; int_no >= 32)
     {
-
         switch (int_no - 32)
         {
-        case 0:
+        case PIC_IRQ:
             pit_handler();
             break;
-        case 1:
+        case KEYBOARD_IRQ:
             keyboardHandler();
             break;
-        case 4:
+        case COM1_IRQ:
             break;
-        case 8:
+        case RTC_IRQ:
             rtc_handler();
             break;
-        case 14:
+        case IDE_PRIMARY_IRQ:
             IDE_handler(true);
             break;
-        case 15:
+        case IDE_SECONDARY_IRQ:
             IDE_handler(false);
             break;
-        case 208:
+        case LAPIC_IRQ:
+            LAPIC_handler();
+            break;
+        case LAPIC_CALIBRATE_IRQ:
+            LAPIC_calibrate_handler();
+            break;
+        case SPURIOUS_IRQ:
             LOG("Spurious Interrupt");
             break;
         default:
