@@ -51,7 +51,8 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 - - [x] Kernel sleep (block until n ticks occur)
 - - [x] Replace PIC with APIC
 - - [x] Real time clock implemented
-- - [ ] Replace PIT with HPET
+-
+    - [x] Configure LAPIC timer for scheduling
 - [ ] **User IO**
 - - [x] Keyboard
 - - [ ] Mouse

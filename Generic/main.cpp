@@ -189,6 +189,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // todo: SLEEP should schedule things instead of waiting on RTC
     // todo: get_time (precise) should work out the system time using TSC or something, and get_date_time can have low precision like 1ms or 1s by reading from RTC.
 
+    // TODO: implement the idea of a timer which can have a callback and a one shot duration etc.
 
     LOG("Singletons loaded.");
 
