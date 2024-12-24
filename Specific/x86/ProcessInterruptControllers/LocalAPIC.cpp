@@ -112,11 +112,10 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 // Returns number of clock cycles per LAPIC tick (e.g. if divisor set to 128, this will be LAPIC_clock_rate/128. Measured using 1000 ticks. Set divisor first).
 void LocalAPIC::calibrate_timer()
 {
-    size_t n_LAPIC_ticks = 1000000;
-    auto start_ticks = TSC_get_ticks();
+    const size_t n_LAPIC_ticks = 1000000;
+    const auto start_ticks = TSC_get_ticks();
 
     *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = n_LAPIC_ticks;
-    // *reinterpret_cast<u32*>(base + TIMER_CURRENT_COUNT_OFFSET) = n_LAPIC_ticks;
     while (!calibrated)
     {
     }
@@ -128,6 +127,19 @@ void LocalAPIC::calibrate_timer()
     LOG("LAPIC tick rate in Hz: ", cpuid_get_core_frequency() / LAPIC_ratio);
 }
 
+bool LocalAPIC::ready() const
+{
+    return is_ready;
+}
+
+int LocalAPIC::start_timer(u32 ms)
+{
+    if (!is_ready) return -1;
+    const size_t n_LAPIC_ticks = ms * (LAPIC_rate / 1000);
+    if (n_LAPIC_ticks == 0) return -1;
+    *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = n_LAPIC_ticks;
+    return 0;
+}
 
 /* DEPENDS ON PIT and IDT */
 void LocalAPIC::configure_timer(const DIVISOR divisor)
@@ -145,13 +157,12 @@ void LocalAPIC::configure_timer(const DIVISOR divisor)
     // TODO: this just uses 128
     *reinterpret_cast<u32*>(base + TIMER_DIVISOR_OFFSET) = static_cast<u32>(divisor);
 
-
     calibrate_timer();
 
     full_lvt.timer.parts.interrupt_vector = LAPIC_IRQ + 32;
     *reinterpret_cast<u32*>(base + TIMER_LVT_OFFSET) = full_lvt.timer.raw;
 
-    //TODO: implement https://github.com/dreamportdev/Osdev-Notes/blob/master/02_Architecture/08_Timers.md
+    is_ready = true;
 }
 
 void LAPIC_EOI()
@@ -163,11 +174,11 @@ void LAPIC_handler()
 {
     LOG("LAPIC INTERRUPT");
 
-    // TODO: implement
+    // TODO: implement scheduler
 }
 
 void LAPIC_calibrate_handler()
 {
-    LOG("CALIBRATE INTERRUPT");
+    LOG("LAPIC CALIBRATE INTERRUPT");
     calibrated = true;
 }

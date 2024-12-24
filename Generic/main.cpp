@@ -179,11 +179,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     IDT idt;
     vga.incrementProgressBarChunk(bar);
 
+    CPUID_init(); // load CPUID values and try and get TSC rate otherwise get TSC rate from PIT calibration
+    local_apic.configure_timer(DIVISOR_128); // use TSC rate to calibrate TSC->LAPIC timer ratio and calculate LAPIC timer rate at given divisor
     // TODO: In order to implement scheduling:
-    CPUID_init();
-    local_apic.configure_timer(DIVISOR_128);
-    // todo: configure apic timer.
-    // todo: APIC timer should be configured for "SCHEDULER_TIMESLICE" duration one shots, but needs to be calibrated against TSC or something similar first.
     // todo: Processes need a way to yield
     // todo: Processes need to have a way to start/be executed
     // todo: SLEEP should schedule things instead of waiting on RTC

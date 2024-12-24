@@ -36,13 +36,16 @@ public:
     LocalAPIC(uintptr_t local_apic_physical_address);
     void calibrate_timer();
     void configure_timer(DIVISOR divisor);
+    bool ready() const;
+    int start_timer(u32 ms);
 
 private:
     uintptr_t base;
     LVT full_lvt;
     LVT_spurious_vector volatile * spurious_vector_entry;
     u32 LAPIC_ratio = 0;
-    u32 LAPIC_rate = 0;
+    u32 LAPIC_rate= 0;
+    bool is_ready = false;
 };
 
 void LAPIC_EOI();
