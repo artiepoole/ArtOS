@@ -19,17 +19,7 @@ constexpr size_t max_n_pages = 0x100000;
 /// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
 constexpr size_t page_table_size = 1024;
 
-union virtual_address_t
-{
-    uintptr_t raw;
 
-    struct
-    {
-        uintptr_t page_offset : 12;
-        uintptr_t page_table_index : 10;
-        uintptr_t page_directory_index : 10;
-    };
-};
 
 union page_directory_4kb_t
 {
@@ -50,29 +40,21 @@ union page_directory_4kb_t
     u32 raw;
 };
 
-union page_table_entry
+union virtual_address_t
 {
+    uintptr_t raw;
+
     struct
     {
-        u32 present : 1 = true;
-        u32 rw : 1; // read write if set, read only otherwise
-        u32 user_access : 1; // user and supervisor if set, supervisor only if not.
-        u32 write_through : 1 = false; // write through caching if set, write-back otherwise
-        u32 cache_disable : 1 = false; // is caching disabled?
-        u32 accessed : 1 = false; // Gets sets on access, has to be cleared manually by OS if used.
-        u32 dirty : 1 = false; // "Has been written to if set"
-        u32 page_attribute_table : 1 = false; // Res and zero probably: "If PAT is supported, then PAT along with PCD and PWT shall indicate the memory caching type. Otherwise, it is reserved and must be set to 0."
-        u32 global : 1 = false; // "If PAT is supported, then PAT along with PCD and PWT shall indicate the memory caching type. Otherwise, it is reserved and must be set to 0."
-        u32 OS_data : 3 = 0; // free nibble available for OS flags
-        u32 physical_address : 20; // bits 12-31. 4KiB alignment means first 12 bits are always zero.
+        uintptr_t page_offset : 12;
+        uintptr_t page_table_index : 10;
+        uintptr_t page_directory_index : 10;
     };
-
-    u32 raw;
 };
 
 struct page_table
 {
-    page_table_entry table[page_table_size];
+    page_table_entry_t table[page_table_size];
 };
 
 uintptr_t main_region_start;
@@ -132,7 +114,7 @@ void assign_page_directory_entry(size_t dir_idx, const bool writable, const bool
 
 void assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable, const bool user)
 {
-    page_table_entry tab_entry = {};
+    page_table_entry_t tab_entry = {};
     tab_entry.present = true;
     tab_entry.physical_address = physical_addr >> base_address_shift;
     tab_entry.rw = writable;
@@ -220,7 +202,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         if (entry->addr > last_end)
         {
             // fill holes
-            paging_identity_map(last_end, entry->addr - last_end, false, false);
+            paging_identity_map(last_end, entry->addr - last_end, true, false);
         }
 
         if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc)
@@ -307,3 +289,29 @@ int munmap(void* addr, const size_t length)
         reinterpret_cast<uintptr_t>(addr) >> base_address_shift,
         (length + page_alignment - 1) >> base_address_shift);
 }
+
+
+uintptr_t paging_get_phys_addr(uintptr_t vaddr)
+{
+    const virtual_address_t lookup = {vaddr};
+    if (const auto entry = paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
+    {
+        return entry.physical_address;
+    }
+    return 0;
+}
+
+page_table_entry_t paging_check_contents(uintptr_t vaddr)
+{
+    const virtual_address_t lookup = {vaddr};
+    if (const auto entry = paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
+    {
+        return entry;
+    }
+    return page_table_entry_t{};
+}
+
+// uintptr_t paging_check_contents(void* vaddr)
+// {
+//     return paging_check_contents(reinterpret_cast<uintptr_t>(vaddr));
+// }
