@@ -116,7 +116,7 @@ void measure_cpu_freq()
     cpu_frequency = 1.0f * (end - start) / (duration_ms / 1000);
 }
 
-u32 cpuid_get_core_frequency()
+u32 cpuid_get_TSC_frequency()
 {
     if (cpu_manufacturer_info.max_param > 0x15) return cpu_frequency_info.core_clock_freq_hz;
     if (cpu_frequency == 0) measure_cpu_freq();
@@ -171,6 +171,6 @@ void CPUID_init()
     cpuid_print_ext_manufacturer_info();
     cpuid_get_feature_info();
     cpuid_get_frequency_info();
-    cpuid_get_core_frequency();
+    cpuid_get_TSC_frequency();
     initialised = true;
 }

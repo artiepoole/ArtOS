@@ -122,3 +122,12 @@ int run_doom()
 
     return 0;
 }
+
+extern "C"
+void run_doom_noret()
+{
+    // printf("run_doom called: \n");
+    doomgeneric_Create(0, nullptr);
+
+    while (doomgeneric_Tick());
+}

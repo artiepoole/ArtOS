@@ -6,27 +6,38 @@
 #include <GDT.h>
 #include <LocalAPIC.h>
 #include <logging.h>
+#include <SMBIOS.h>
 #include <stdlib.h>
+#include <TSC.h>
 #include <doomgeneric/doomkeys.h>
 
+#include "CPUID.h"
+#include "kernel.h"
 #include "memory.h"
+#include "LinkedList.h"
+#include "PIT.h"
 
 
-// typedef struct {
-//     uint32_t cs;
-//     uint32_t eip;
-// } eip_t;
+struct sleep_timer_t
+{
+    size_t pid;
+    i64 counter;
+};
+
 
 size_t stack_alignment = 16;
 
 u32 default_eflags = 0x206;
 Scheduler* scheduler_instance = nullptr;
-u64 execution_counter = 0;
+u32 execution_counter = 0;
 size_t current_process_id = 0;
 size_t next_process_id = 1;
 size_t context_switch_period_ms = 100;
 Process processes[max_processes];
 LocalAPIC* lapic_timer = nullptr;
+
+
+LinkedList<sleep_timer_t> sleep_timers;
 
 
 Scheduler::Scheduler(void (*main_func)(), LocalAPIC* timer)
@@ -36,6 +47,7 @@ Scheduler::Scheduler(void (*main_func)(), LocalAPIC* timer)
     scheduler_instance = this;
     lapic_timer = timer;
     processes[0].state = Process::STATE_PARKED;
+    execution_counter = TSC_get_ticks();
     execf(main_func);
 }
 
@@ -52,22 +64,33 @@ Scheduler& Scheduler::get()
 
 void Scheduler::switch_process(const size_t new_PID)
 {
+    if (new_PID == 0)
+    {
+        start_oneshot(context_switch_period_ms);
+        while (true);
+    }
     const auto old_pid = current_process_id;
     current_process_id = new_PID;
     store_current_context(old_pid);
     const auto priority = processes[current_process_id].priority;
     start_oneshot(context_switch_period_ms * priority);
-    execution_counter += priority;
+    execution_counter = TSC_get_ticks();
     set_current_context(new_PID);
 }
 
+
 void Scheduler::switch_process(const cpu_registers_t* r, const size_t new_PID)
 {
+    if (new_PID == 0)
+    {
+        start_oneshot(context_switch_period_ms);
+        while (true);
+    }
     convert_current_context(r, current_process_id);
     current_process_id = new_PID;
     const auto priority = processes[current_process_id].priority;
     start_oneshot(context_switch_period_ms * priority);
-    execution_counter += priority;
+    execution_counter = TSC_get_ticks();
     set_current_context(current_process_id);
 }
 
@@ -75,26 +98,54 @@ void Scheduler::switch_process(const cpu_registers_t* r, const size_t new_PID)
 // {
 // }
 
-void Scheduler::exit(const size_t pid)
+void Scheduler::exit()
 {
+    size_t pid = current_process_id;
     aligned_free(processes[pid].stack);
     processes[pid].reset();
+    processes[1].state = Process::STATE_READY;
 }
 
-size_t Scheduler::getNextProcessID()
+
+// files.find_if([filename](ArtFile f) { return strcmp(f.get_name(), filename) == 0; });
+// iterate([device](ArtDirectory* dir) { device->populate_directory_recursive(dir); });
+void handle_expired_timers()
 {
-    size_t target_pid = 0;
+    u32 elapsed_ms = (TSC_get_ticks() - execution_counter) / (cpuid_get_TSC_frequency() / 1000);
+    sleep_timers.iterate([elapsed_ms](sleep_timer_t* t) { t->counter -= elapsed_ms; });
+
+    while (true)
+    {
+        sleep_timer_t* timer = sleep_timers.find_if([](sleep_timer_t t) { return t.counter < 0; });
+        if (timer == nullptr) break;
+        size_t pid = timer->pid;
+        sleep_timers.remove(timer);
+        processes[pid].state = Process::STATE_READY;
+    }
+}
+
+size_t get_oldest_process()
+{
+    size_t ret_id = 0;
     size_t lowest = -1;
     for (size_t i = 0; i < max_processes; i++)
     {
         if (processes[i].state != Process::STATE_READY) continue;
         if (processes[i].last_executed < lowest)
         {
-            target_pid = i;
+            ret_id = i;
             lowest = processes[i].last_executed;
         }
     }
-    return target_pid;
+
+    return ret_id;
+}
+
+size_t Scheduler::getNextProcessID()
+{
+    handle_expired_timers();
+
+    return get_oldest_process();
 }
 
 void Scheduler::start_oneshot(u32 time_ms)
@@ -184,6 +235,13 @@ void Scheduler::schedule()
     switch_process(getNextProcessID());
 }
 
+void Scheduler::sleep_ms(const u32 ms)
+{
+    sleep_timers.append(sleep_timer_t{current_process_id, ms});
+    processes[current_process_id].state = Process::STATE_PARKED;
+    schedule();
+}
+
 // When called from interrupt, the state is stored at this pointer loc, r.
 void Scheduler::schedule(const cpu_registers_t* r)
 {
@@ -199,6 +257,7 @@ void Scheduler::schedule(const cpu_registers_t* r)
 // Create new process
 void Scheduler::execf(void (*func)()) // if user mode then the CS and DS should be different
 {
+    processes[current_process_id].state = Process::STATE_PARKED;
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
     void* proc_stack = aligned_malloc(stack_size, stack_alignment);
     void* stack_top = static_cast<u8*>(proc_stack) + stack_size;
@@ -216,7 +275,7 @@ void Scheduler::execf(void (*func)()) // if user mode then the CS and DS should 
     proc->pid = next_process_id++;
     proc->state = Process::STATE_READY;
     proc->priority = Process::PRIORITY_NORMAL;
-    proc->last_executed = execution_counter;
+    proc->last_executed = 0;
     proc->context = context;
     proc->stack = stack_top;
 

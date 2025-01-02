@@ -4,6 +4,7 @@
 
 #include "kernel.h"
 
+#include <Scheduler.h>
 #include "SMBIOS.h"
 
 #include "logging.h"
@@ -43,12 +44,12 @@ extern "C"
 void _exit([[maybe_unused]] int status)
 {
     LOG("Exit status: ", status);
+    Scheduler::exit();
 }
 
 u64 get_clock_rate_hz()
 {
-
-    return SMBIOS_get_CPU_clock_rate_hz();;
+    return SMBIOS_get_CPU_clock_rate_hz();
 }
 
 u64 get_current_clock()
@@ -75,6 +76,7 @@ uint32_t get_tick_ns()
     return TSC_get_ticks()/(SMBIOS_get_CPU_clock_rate_mhz()/1000);
 }
 
+// TODO: replace PIT_sleep* with scheduler sleep
 void sleep_s(const u32 s)
 {
     const u32 ms = s*1000;
@@ -85,6 +87,7 @@ void sleep_s(const u32 s)
 
 void sleep_ms(const u32 ms)
 {
+    // Scheduler::sleep_ms(ms);
     PIT_sleep_ms(ms);
 }
 
@@ -98,6 +101,12 @@ void sleep_us(const u32 us)
 {
     const u32 start = get_tick_us();
     while (get_tick_us() - start < us){};
+}
+
+
+void pause_exec(const u32 ms)
+{
+    Scheduler::sleep_ms(ms);
 }
 
 void draw_screen_region(const u32* frame_buffer)

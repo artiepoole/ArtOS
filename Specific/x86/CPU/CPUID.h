@@ -62,7 +62,7 @@ cpuid_feature_info_t* cpuid_get_feature_info(); // leaf 1
 
 cpuid_core_frequency_info_t* cpuid_get_frequency_info(); // leaf 0x15/0x16
 
-u32 cpuid_get_core_frequency();
+u32 cpuid_get_TSC_frequency();
 
 void CPUID_init();
 

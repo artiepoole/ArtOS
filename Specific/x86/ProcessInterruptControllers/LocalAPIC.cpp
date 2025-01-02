@@ -122,9 +122,10 @@ void LocalAPIC::calibrate_timer()
     auto elapsed_cycles = TSC_get_ticks() - start_ticks;
 
     LAPIC_ratio = elapsed_cycles / n_LAPIC_ticks;
-    LAPIC_rate = cpuid_get_core_frequency() / LAPIC_ratio;
+    // TODO: should use SMBIOS frequency.
+    LAPIC_rate = cpuid_get_TSC_frequency() / LAPIC_ratio;
     LOG("LAPIC calibrated with TSC ratio: ", LAPIC_ratio);
-    LOG("LAPIC tick rate in Hz: ", cpuid_get_core_frequency() / LAPIC_ratio);
+    LOG("LAPIC tick rate in Hz: ", cpuid_get_TSC_frequency() / LAPIC_ratio);
 }
 
 bool LocalAPIC::ready() const

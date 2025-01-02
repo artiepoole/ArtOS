@@ -1087,7 +1087,7 @@ static void D_Endoom(void)
 
     I_Endoom(endoom);
     doom_is_running = false;
-	// exit(0);
+    exit(0);
 }
 
 #if ORIGCODE

@@ -23,13 +23,13 @@ public:
     static Scheduler& get();
     // void start(size_t PID);
     static void switch_process(size_t new_PID);
-    void switch_process(const cpu_registers_t* r, size_t new_PID);
+    static void switch_process(const cpu_registers_t* r, size_t new_PID);
 
     // Only takes void foo() types atm. No support for input variables
     static void execf(void (*func)());
 
     static void fork();
-    static void exit(size_t pid);
+    static void exit();
 
     // size_t getCurrentProcessID();
     static size_t getNextProcessID();
@@ -41,6 +41,8 @@ public:
 
     static void schedule(const cpu_registers_t* r);
     static void schedule();
+
+    static void sleep_ms(u32 ms);
 };
 
 

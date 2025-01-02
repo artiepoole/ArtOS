@@ -66,6 +66,7 @@ void sleep_ms(u32 ms);
 void sleep_us(u32 us);
 void sleep_ns(u32 ns);
 void get_clock_ms();
+void pause_exec(const u32 ms);
 
 void draw_screen_region(const u32 * frame_buffer);
 

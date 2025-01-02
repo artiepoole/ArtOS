@@ -18,9 +18,9 @@ struct Process
 
     enum State_t
     {
-        STATE_READY,
-        STATE_PARKED,
         STATE_DEAD,
+        STATE_PARKED,
+        STATE_READY,
     };
 
     // Used to scale execution duration.

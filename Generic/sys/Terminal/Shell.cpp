@@ -8,6 +8,8 @@
 #include <logging.h>
 #include <string.h>
 
+#include "Scheduler.h"
+
 extern "C" {
 #include "doomgeneric/doomgeneric.h"
 }
@@ -224,7 +226,7 @@ void Shell::run()
             }
         }
         // else
-        sleep_ms(1);
+        pause_exec(250);
     }
 }
 
@@ -234,7 +236,7 @@ int Shell::process_cmd()
     if (strncasecmp(cmd_buffer, "play doom", 9) == 0)
     {
         Terminal::stop_drawing();
-        run_doom();
+        Scheduler::execf(run_doom_noret);
         Terminal::resume_drawing();
         Terminal::refresh();
     }

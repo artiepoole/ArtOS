@@ -64,6 +64,33 @@ public:
         return false;
     }
 
+    bool remove(T* data)
+    {
+        if (head == nullptr) return false;
+        LinkedListNode* curr = head;
+        LinkedListNode* prev = nullptr;
+        while (curr)
+        {
+            if (&curr->data == data)
+            {
+                if (prev) // not found at first node
+                {
+                    prev->next = curr->next;
+                }
+                else // currently at the first node.
+                {
+                    head = curr->next; // remake the link but the first node is replaced with the second
+                }
+                delete curr; // free the memory
+                return true; // success
+            }
+            // Not yet found so go to the next node
+            prev = curr;
+            curr = curr->next;
+        }
+        return false;
+    }
+
 
     template <typename predicate>
     void iterate(predicate pred) const

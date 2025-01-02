@@ -52,5 +52,6 @@ void DG_SetWindowTitle(const char * title);
 
 
 int run_doom();
+void run_doom_noret();
 
 #endif //DOOM_GENERIC
