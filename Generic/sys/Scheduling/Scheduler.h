@@ -23,6 +23,7 @@ public:
     static Scheduler& get();
     // void start(size_t PID);
     static void switch_process(size_t new_PID);
+    void switch_process(const cpu_registers_t* r, size_t new_PID);
 
     // Only takes void foo() types atm. No support for input variables
     static void execf(void (*func)());
@@ -30,25 +31,26 @@ public:
     static void fork();
     static void exit(size_t pid);
 
-    size_t getCurrentProcessID();
-    size_t getNextProcessID();
+    // size_t getCurrentProcessID();
+    static size_t getNextProcessID();
 
-    static void start_oneshot();
+    static void start_oneshot(u32 time_ms);
     static void store_current_context(size_t PID);
+    static void convert_current_context(const cpu_registers_t* r, size_t PID);
     static void set_current_context(size_t PID);
 
+    static void schedule(const cpu_registers_t* r);
     static void schedule();
-
 };
 
 
 extern "C" {
 #endif
 
-int kexecf(void (*main_func)(), bool user);
+// int kexecf(void (*main_func)(), bool user);
 int kfork();
+int kyield();
 int kexit(size_t pid);
-
 
 
 #ifdef __cplusplus

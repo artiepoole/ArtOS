@@ -11,6 +11,7 @@
 
 #include "memory.h"
 
+
 // typedef struct {
 //     uint32_t cs;
 //     uint32_t eip;
@@ -27,12 +28,14 @@ size_t context_switch_period_ms = 100;
 Process processes[max_processes];
 LocalAPIC* lapic_timer = nullptr;
 
+
 Scheduler::Scheduler(void (*main_func)(), LocalAPIC* timer)
 {
     // Store current state in process[0]
     // Set up first Lapic one shot
     scheduler_instance = this;
     lapic_timer = timer;
+    processes[0].state = Process::STATE_PARKED;
     execf(main_func);
 }
 
@@ -49,16 +52,54 @@ Scheduler& Scheduler::get()
 
 void Scheduler::switch_process(const size_t new_PID)
 {
-    auto old_pid = current_process_id;
+    const auto old_pid = current_process_id;
     current_process_id = new_PID;
     store_current_context(old_pid);
-    start_oneshot();
+    const auto priority = processes[current_process_id].priority;
+    start_oneshot(context_switch_period_ms * priority);
+    execution_counter += priority;
     set_current_context(new_PID);
 }
 
-void Scheduler::start_oneshot()
+void Scheduler::switch_process(const cpu_registers_t* r, const size_t new_PID)
 {
-    lapic_timer->start_timer(context_switch_period_ms);
+    convert_current_context(r, current_process_id);
+    current_process_id = new_PID;
+    const auto priority = processes[current_process_id].priority;
+    start_oneshot(context_switch_period_ms * priority);
+    execution_counter += priority;
+    set_current_context(current_process_id);
+}
+
+// size_t Scheduler::getCurrentProcessID()
+// {
+// }
+
+void Scheduler::exit(const size_t pid)
+{
+    aligned_free(processes[pid].stack);
+    processes[pid].reset();
+}
+
+size_t Scheduler::getNextProcessID()
+{
+    size_t target_pid = 0;
+    size_t lowest = -1;
+    for (size_t i = 0; i < max_processes; i++)
+    {
+        if (processes[i].state != Process::STATE_READY) continue;
+        if (processes[i].last_executed < lowest)
+        {
+            target_pid = i;
+            lowest = processes[i].last_executed;
+        }
+    }
+    return target_pid;
+}
+
+void Scheduler::start_oneshot(u32 time_ms)
+{
+    lapic_timer->start_timer(time_ms);
 }
 
 void Scheduler::store_current_context(size_t PID)
@@ -93,6 +134,27 @@ void Scheduler::store_current_context(size_t PID)
     processes[PID].context = context;
 }
 
+void Scheduler::convert_current_context(const cpu_registers_t* r, const size_t PID)
+{
+    const auto context = &processes[PID].context;
+    context->esp = r->esp;
+    context->cs = r->cs;
+    context->ds = r->ds;
+    context->ss = r->ss;
+    context->eip = r->eip;
+    context->eflags = r->eflags;
+    context->ecx = r->ecx;
+    context->edx = r->edx;
+    context->eax = r->eax;
+    context->ebx = r->ebx;
+    context->esi = r->esi;
+    context->edi = r->edi;
+    context->ebp = r->ebp;
+    context->es = r->es;
+    context->fs = r->fs;
+    context->gs = r->gs;
+}
+
 void Scheduler::set_current_context(size_t PID)
 {
     const auto context = processes[PID].context;
@@ -103,89 +165,36 @@ void Scheduler::set_current_context(size_t PID)
         "movl %2, %%edi\n\t" // Restore edi
         "movl %3, %%esi\n\t" // Restore esi
         "movl %4, %%ebp\n\t" // Restore ebp
-        "movl %6, %%esp\n\t" // Restore esp // stack
-        "push %7\n\t"      // Push CS (segment) onto the stack
-        "push %8\n\t"      // Push EIP (offset) onto the stack
+        // TODO: if I choose to restore more values, they will go here.
+        "movl %6, %%esp\n\t" // Restore esp i.e. the stack
+        "push %7\n\t" // Push CS (segment) onto the stack
+        "push %8\n\t" // Push EIP (offset) onto the stack
         "ljmp *(%%esp)\n\t"
         :
         : "m"(context.ds), "m"(context.ss), "m"(context.edi), "m"(context.esi), "m"(context.ebp),
         "m"(context.eflags), "r"(context.esp), "r"(context.cs), "r"(context.eip)
         : "memory"
     );
-
-//     __asm__ volatile (
-//     "movw %0, %%cs\n\t"    // Restore CS
-//     :
-//     : "m"(context.cs)
-//     );
-//
-//     __asm__ volatile (
-//         "movw %0, %%ds\n\t"    // Restore DS
-//         :
-//         : "m"(context.ds)
-//     );
-//
-//     __asm__ volatile (
-//         "movw %0, %%ss\n\t"    // Restore SS
-//         :
-//         : "m"(context.ss)
-//     );
-//
-//
-//
-//     __asm__ volatile (
-//         "movl %0, %%edi\n\t"   // Restore edi
-//         :
-//         : "m"(context.edi)
-//     );
-//
-//     __asm__ volatile (
-//         "movl %0, %%esi\n\t"   // Restore esi
-//         :
-//         : "m"(context.esi)
-//     );
-//
-//     __asm__ volatile (
-//         "movl %0, %%edx\n\t"   // Restore edx
-//         :
-//         : "m"(context.edx)
-//     );
-//
-//     __asm__ volatile (
-//         "movl %0, %%ebp\n\t"   // Restore ebp
-//         :
-//         : "m"(context.ebp)
-//     );
-//
-//     // __asm__ volatile (
-//     //
-//     //     "ljmp %0, %1\n\t"    // Perform a far jump, loading new CS and EIP
-//     //     :
-//     //     : "m"(context.cs), "m"(context.eip)  // context.cs contains the new CS, context.eip contains the new EIP
-//     // );
-//
-//     __asm__ volatile (
-//     "movl %0, %%esp\n\t"   // Restore esp (stack pointer)
-//     :
-//     : "m"(context.esp)
-// );
-//     __asm__ volatile (
-//        // Load the new CS into the CS register
-//     "ljmp %0\n"           // Jump to the new EIP (the target address)
-//     :
-//     : "m"(ptr)  // context.cs and context.eip hold the new CS and EIP
-//     : "memory"
-// );
     // no return.
 }
 
+// When called without stored registers.
 void Scheduler::schedule()
 {
-    LOG("Scheduling.");
-    asm("hlt");
-    // TODO: store current context, get next process.
+    switch_process(getNextProcessID());
 }
 
+// When called from interrupt, the state is stored at this pointer loc, r.
+void Scheduler::schedule(const cpu_registers_t* r)
+{
+    const size_t next_id = getNextProcessID();
+    if (next_id == current_process_id)
+    {
+        start_oneshot(context_switch_period_ms * processes[next_id].priority);
+        return;
+    }
+    switch_process(r, next_id);
+}
 
 // Create new process
 void Scheduler::execf(void (*func)()) // if user mode then the CS and DS should be different
@@ -207,7 +216,7 @@ void Scheduler::execf(void (*func)()) // if user mode then the CS and DS should 
     proc->pid = next_process_id++;
     proc->state = Process::STATE_READY;
     proc->priority = Process::PRIORITY_NORMAL;
-    proc->last_executed = 0;
+    proc->last_executed = execution_counter;
     proc->context = context;
     proc->stack = stack_top;
 
@@ -217,7 +226,6 @@ void Scheduler::execf(void (*func)()) // if user mode then the CS and DS should 
 
 void LAPIC_handler(const cpu_registers_t* r)
 {
-    LOG("LAPIC INTERRUPT. r pointer: ", reinterpret_cast<u32>(r));
-    Scheduler::schedule();
+    Scheduler::schedule(r);
     // TODO: implement scheduler
 }
