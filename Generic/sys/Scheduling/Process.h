@@ -10,9 +10,8 @@
 
 #ifdef __cplusplus
 //https://en.wikipedia.org/wiki/Task_state_segment
-class Process
+struct Process
 {
-public:
     Process();
     ~Process() = default;
 
@@ -23,10 +22,14 @@ public:
         STATE_DEAD,
     };
 
+    enum Priority_t
+    {
+        PRIORITY_NORMAL
+    };
+
     bool isParked() { return state == STATE_PARKED; }
     bool isDead() { return state == STATE_DEAD; }
 
-private:
     u32 pid;
     u32 state;
     char priority;
@@ -34,8 +37,19 @@ private:
     cpu_context_t context;
     //    u32 base_vaddr;
     // char name[32]; this can be stored in an equivalent of proc?
-    char* stack[];
+    void* stack;
 };
+
+inline Process::Process()
+{
+    state = STATE_DEAD;
+    pid = -1;
+    priority = PRIORITY_NORMAL;
+    last_executed = 0;
+    context = cpu_context_t{};
+    stack = NULL;
+}
+
 
 extern "C" {
 #endif

@@ -5,6 +5,7 @@
 #include "Shell.h"
 
 #include <kernel.h>
+#include <logging.h>
 #include <string.h>
 
 extern "C" {
@@ -14,14 +15,33 @@ extern "C" {
 #include "Terminal.h"
 #include "EventQueue.h"
 
+Shell* shell_instance = nullptr;
+EventQueue* events = nullptr;
+
+u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
+size_t cmd_buffer_idx = 0;
+char cmd_buffer[cmd_buffer_size];
+
 Shell::Shell(EventQueue* e)
 {
     events = e;
+    shell_instance = this;
 }
 
+Shell::~Shell()
+{
+    shell_instance = nullptr;
+}
+
+Shell& Shell::get()
+{
+    return *shell_instance;
+}
 
 void Shell::run()
 {
+    LOG("Running shell");
+    if (shell_instance == nullptr) return;
     while (true)
     {
         if (events->pendingEvents())
@@ -226,4 +246,3 @@ int Shell::process_cmd()
     }
     return 0;
 }
-

@@ -4,6 +4,8 @@
 
 #include "IDT.h"
 
+#include <GDT.h>
+
 #include "IDE_handler.h"
 
 #include "LocalAPIC.h"
@@ -37,8 +39,7 @@ static bool idt_vectors[IDT_STUB_COUNT];
 static idt_ptr_t idt_pointer;
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
-u16 KERNEL_CS;
-u16 KERNEL_DS;
+
 
 
 inline constexpr char exception_messages[][40] =
@@ -207,7 +208,7 @@ void irq_handler(const cpu_registers_t* r)
             IDE_handler(false);
             break;
         case LAPIC_IRQ:
-            LAPIC_handler();
+            LAPIC_handler(r);
             break;
         case LAPIC_CALIBRATE_IRQ:
             LAPIC_calibrate_handler();
@@ -230,7 +231,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
     idt_entry_t* descriptor = &idt_entries[idt_index];
 
     descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
-    descriptor->kernel_cs = KERNEL_CS;
+    descriptor->kernel_cs = kernel_cs_offset;
 
     // this value can be whatever offset your sys code selector is in your GDT.
     // My entry point is 0x001005e0 so the offset is 0x0010(XXXX) (because of GRUB)
@@ -242,8 +243,7 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 
 IDT::IDT()
 {
-    KERNEL_CS = get_cs();
-    KERNEL_DS = get_ds();
+
     LOG("Initialising IDT");
     idt_pointer.limit = (sizeof(idt_entry_t) * IDT_STUB_COUNT) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt

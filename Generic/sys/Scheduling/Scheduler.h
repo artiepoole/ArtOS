@@ -5,6 +5,8 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include <LocalAPIC.h>
+
 #include  "types.h"
 #include "Process.h"
 
@@ -16,29 +18,37 @@ constexpr size_t max_processes = 255;
 class Scheduler
 {
 public:
-    explicit Scheduler(void main_fn());
+    Scheduler(void (*main_func)(), LocalAPIC* timer);
+    ~Scheduler();
+    static Scheduler& get();
+    // void start(size_t PID);
+    static void switch_process(size_t new_PID);
 
-    int start();
-    int fork();
-    int exit();
+    // Only takes void foo() types atm. No support for input variables
+    static void execf(void (*func)());
 
-    const Process* currentProcess();
-    const Process* nextProcess();
+    static void fork();
+    static void exit(size_t pid);
 
-private:
-    u64 execution_counter = 0;
-    size_t current_process_id = 0;
-    size_t next_process_id = 0;
-    size_t context_switch_period_ms = 100;
-    Process processes[max_processes];
+    size_t getCurrentProcessID();
+    size_t getNextProcessID();
+
+    static void start_oneshot();
+    static void store_current_context(size_t PID);
+    static void set_current_context(size_t PID);
+
+    static void schedule();
+
 };
+
 
 extern "C" {
 #endif
 
-int kstart(bool user);
+int kexecf(void (*main_func)(), bool user);
 int kfork();
-int kexit();
+int kexit(size_t pid);
+
 
 
 #ifdef __cplusplus

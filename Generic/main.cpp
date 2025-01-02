@@ -66,7 +66,6 @@ extern "C" {
 #endif
 
 // VideoGraphicsArray* vgap;
-u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 IDE_drive_info_t drive_list[4];
 uintptr_t BM_controller_base_port;
 
@@ -134,8 +133,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     NEWLINE();
     full_madt_t* full_madt = populate_madt(madt_addr);
     LOG("LAPIC count: ", full_madt->LAPIC_count);
-    [[maybe_unused]] LocalAPIC local_apic(get_local_apic_base_addr());
-    [[maybe_unused]] IOAPIC io_apic(full_madt->io_apic.physical_address);
+    auto local_apic = new LocalAPIC(get_local_apic_base_addr());
+    auto io_apic = new IOAPIC(full_madt->io_apic.physical_address);
 #if ENABLE_SERIAL_LOGGING
     serial.register_device();
 #endif
@@ -159,15 +158,15 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
 
     // remap IRQs in APIC
-    io_apic.remap_IRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
+    io_apic->remap_IRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
     vga.incrementProgressBarChunk(bar);
-    io_apic.remap_IRQ(1, 33); // Keyboard
+    io_apic->remap_IRQ(1, 33); // Keyboard
     vga.incrementProgressBarChunk(bar);
-    io_apic.remap_IRQ(8, 40); // RTC
+    io_apic->remap_IRQ(8, 40); // RTC
     vga.incrementProgressBarChunk(bar);
-    io_apic.remap_IRQ(14, 46); // IDE primary
+    io_apic->remap_IRQ(14, 46); // IDE primary
     vga.incrementProgressBarChunk(bar);
-    io_apic.remap_IRQ(15, 47); // IDE primary
+    io_apic->remap_IRQ(15, 47); // IDE primary
     vga.incrementProgressBarChunk(bar);
 
     configure_pit(2000);
@@ -180,7 +179,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
 
     CPUID_init(); // load CPUID values and try and get TSC rate otherwise get TSC rate from PIT calibration
-    local_apic.configure_timer(DIVISOR_128); // use TSC rate to calibrate TSC->LAPIC timer ratio and calculate LAPIC timer rate at given divisor
+    local_apic->configure_timer(DIVISOR_128); // use TSC rate to calibrate TSC->LAPIC timer ratio and calculate LAPIC timer rate at given divisor
     // TODO: In order to implement scheduling:
     // todo: Processes need a way to yield
     // todo: Processes need to have a way to start/be executed
@@ -283,7 +282,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Init and load the shell. Shell draws directly to the terminal by using static methods.
     Shell shell(&events);
-    shell.run();
+    [[maybe_unused]] auto scheduler = new Scheduler(shell_run, local_apic);
 
     WRITE("ERROR: Left main loop.");
     asm("hlt");

@@ -170,12 +170,7 @@ void LAPIC_EOI()
     eoi_addr[0] = 0;
 }
 
-void LAPIC_handler()
-{
-    LOG("LAPIC INTERRUPT");
 
-    // TODO: implement scheduler
-}
 
 void LAPIC_calibrate_handler()
 {

@@ -18,30 +18,25 @@ struct cpu_registers_t
 
 struct cpu_context_t
 {
-    u32 eax;
-    u32 ebx;
-    u32 ecx;
-    u32 edx;
-    u32 esi;
-    u32 edi;
-    u32 ebp;
-    u32 esp;
-    u32 cs;
-    u32 ds;
-    u32 es;
-    u32 fs;
-    u32 gs;
-    u32 eip;
-    u32 eflags;
-    u32 link;
-    u32 cr3;
-    u32 ldtr;
-    u32 ss0;
-    u32 esp0;
-    u32 ss1;
-    u32 esp1;
-    u32 ss2;
-    u32 esp2;
+    u32 esp; // stack top pointer
+    u32 cs; // code segment
+    u32 ds; // data segment
+    u32 ss; // stack segment?
+    u32 eip; // function pointer
+    u32 eflags; // eflags
+    u32 ecx = 0; // fastcall variable set here
+    u32 edx = 0; // fastcall variable set here
+    u32 eax = 0;
+    u32 ebx = 0;
+    u32 esi = 0;
+    u32 edi = 0;
+    u32 ebp = 0; // base pointer, set by program execution? can be set to stack top
+    u32 es = 0; //
+    u32 fs = 0;
+    u32 gs = 0;
+    // u32 link;
+    // u32 cr3;
+    // u32 ldtr;
 };
 
 union eflags_t
@@ -111,7 +106,6 @@ void write_register(uintptr_t addr, uintptr_t val);
 u32 read_register(uintptr_t addr);
 void cpu_get_MSR(u32 msr, u32* lo, u32* hi);
 void cpu_set_MSR(u32 msr, u32 lo, u32 hi);
-
 
 
 extern u32 DATA_CS;

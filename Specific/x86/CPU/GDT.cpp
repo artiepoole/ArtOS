@@ -12,12 +12,7 @@ constexpr u32 limits[n_entries] = {0, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFF
 constexpr u8 accesses[n_entries] = {0, 0x9a, 0x93, 0xFa, 0xF3, 0x89};
 constexpr u8 flags[n_entries] = {0, 0xc, 0xc, 0xc, 0xc, 0}; // 0xc is double and paging modes
 
-constexpr size_t null_offset = 0x0;
-constexpr size_t kernel_cs_offset = 0x8;
-constexpr size_t kernel_ds_offset = 0x10;
-constexpr size_t user_cs_offset = 0x18;
-constexpr size_t user_ds_offset = 0x20;
-constexpr size_t tss_offset = 0x28;
+
 
 union gdt_flags_t
 {

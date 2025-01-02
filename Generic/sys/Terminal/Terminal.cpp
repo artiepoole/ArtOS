@@ -21,7 +21,7 @@
 #endif
 
 
-static Terminal* instance{nullptr};
+static Terminal* term_instance{nullptr};
 static TermFileWrapper* stdout_wrapper{nullptr};
 static TermFileWrapper* stderr_wrapper{nullptr};
 static bool owns_screen = false;
@@ -57,7 +57,7 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
     memset(terminal_buffer, 0, n_characters * sizeof(terminal_char_t));
     memset(rendered_buffer, 1, n_characters * sizeof(terminal_char_t));
 
-    instance = this;
+    term_instance = this;
 
     for (size_t i = 0; i < screen_region.w * screen_region.h; i++)
     {
@@ -74,12 +74,12 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
 
 Terminal::~Terminal()
 {
-    instance = nullptr;
+    term_instance = nullptr;
 }
 
 Terminal& Terminal::get()
 {
-    return *instance;
+    return *term_instance;
 }
 
 ArtFile* Terminal::get_stdout_file()
@@ -226,7 +226,7 @@ void Terminal::_update_cursor()
 
 void Terminal::_draw_changes()
 {
-    if (!instance || !owns_screen) return;
+    if (!term_instance || !owns_screen) return;
     _update_cursor();
     size_t i = 0;
     for (size_t row = 0; row < buffer_height; row++)
@@ -257,7 +257,7 @@ void Terminal::_append_to_queue(const char* data, const u32 count, const PALETTE
 
 void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE_t colour)
 {
-    if (!instance)
+    if (!term_instance)
     {
         _append_to_queue(data, count, colour);
         return;
@@ -332,7 +332,7 @@ u32 Terminal::write(const char* data, PALETTE_t colour)
 u32 Terminal::write(const char c, const PALETTE_t colour)
 {
     const char data[1] = {c};
-    if (!instance)
+    if (!term_instance)
     {
         _append_to_queue(data, 1, colour);
         return 1;
@@ -344,7 +344,7 @@ u32 Terminal::write(const char c, const PALETTE_t colour)
 
 u32 Terminal::write(const char* data, const size_t len, PALETTE_t colour)
 {
-    if (!instance)
+    if (!term_instance)
     {
         _append_to_queue(data, len, colour);
         return len;
@@ -392,7 +392,7 @@ void Terminal::_render_queue(const terminal_char_t* data, size_t len)
 
 void Terminal::backspace()
 {
-    if (!instance) return;
+    if (!term_instance) return;
     if (terminal_column > 1)
     {
         terminal_buffer[terminal_row * buffer_width + (terminal_column - 1)] = terminal_char_t{' ', colour_bkgd};
@@ -403,7 +403,7 @@ void Terminal::backspace()
 
 void Terminal::clear()
 {
-    if (!instance) return;
+    if (!term_instance) return;
     memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
 
     // 1 so that it doesn't match terminal buffer clears and redraws whole screen
@@ -429,7 +429,7 @@ void Terminal::time_stamp()
 // used to add and remove cursor
 void Terminal::setChar(size_t x, size_t y, char c, PALETTE_t colour)
 {
-    if (instance)
+    if (term_instance)
     {
         terminal_buffer[y * buffer_width + x] = terminal_char_t{c, colour};
     }
@@ -438,7 +438,7 @@ void Terminal::setChar(size_t x, size_t y, char c, PALETTE_t colour)
 
 void Terminal::newLine()
 {
-    if (!instance)
+    if (!term_instance)
     {
         terminal_queue[queue_pos++ % queue_size] = terminal_char_t{'\n', colour_bkgd};
         return;
@@ -459,7 +459,7 @@ void Terminal::newLine()
 void Terminal::_scroll()
 {
     // TODO: use px_x and px_y or row/column for this stuff and throughout the file for legibility reasons..
-    if (!instance) return;
+    if (!term_instance) return;
     for (size_t x = 0; x < buffer_width; x++)
     {
         // All lines move up one

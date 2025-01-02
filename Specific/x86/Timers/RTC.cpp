@@ -8,7 +8,7 @@
 #include "mystring.h"
 
 u16 CURRENT_YEAR = 2000;
-RTC* instance = nullptr;
+RTC* rtc_instance = nullptr;
 
 u8 days_in_months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 tm empty_time{0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -19,7 +19,7 @@ u32 seconds_since_start = 0;
 
 RTC::RTC()
 {
-    instance = this;
+    rtc_instance = this;
     LOG("Initialising RTC");
     u8 flag = readRegister(CMOS_STATUS_B);
     // Set the clock to binary mode (more efficient) and 24 hour mode.
@@ -36,17 +36,17 @@ RTC::RTC()
 
 RTC::~RTC()
 {
-    instance = nullptr;
+    rtc_instance = nullptr;
 }
 
 RTC& RTC::get()
 {
-    return *instance;
+    return *rtc_instance;
 }
 
 tm* RTC::getTime()
 {
-    if (instance)
+    if (rtc_instance)
     {
         return &current_time;
     }

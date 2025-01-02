@@ -51,6 +51,11 @@ void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool u
 uintptr_t paging_get_phys_addr(uintptr_t vaddr);
 
 
+void* aligned_malloc(size_t size, size_t alignment);
+
+void aligned_free(void* ptr);
+
+
 #ifdef __cplusplus
 page_table_entry_t paging_check_contents(uintptr_t vaddr);
 }

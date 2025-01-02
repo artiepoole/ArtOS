@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "APIC.h"
+#include "CPU.h"
 
 //Divide Value (bits 0, 1 and 3)
 // 000: Divide by 2
@@ -50,7 +51,7 @@ private:
 
 void LAPIC_EOI();
 
-void LAPIC_handler();
+extern void LAPIC_handler(const cpu_registers_t* r);
 void LAPIC_calibrate_handler();
 
 

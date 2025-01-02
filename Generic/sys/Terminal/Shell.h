@@ -16,16 +16,23 @@ class Shell
 {
 public:
     explicit Shell(EventQueue* e);
+    ~Shell();
+    static Shell& get();
 
-    void run();
+    static void run();
 
 private:
-    int process_cmd();
-    EventQueue* events;
-    u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
-    size_t cmd_buffer_idx = 0;
-    char cmd_buffer[cmd_buffer_size];
+    static int process_cmd();
+    // EventQueue* events;
+
 };
+
+
+inline void shell_run()
+{
+    Shell::get().run();
+}
+
 
 
 #endif //SHELL_H
