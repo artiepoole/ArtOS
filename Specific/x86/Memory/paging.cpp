@@ -220,7 +220,6 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         }
 
         last_end = entry->addr + entry->len;
-        LOG(last_end);
     }
 
     // Protect kernel and init identity map
