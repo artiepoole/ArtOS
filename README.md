@@ -94,7 +94,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 - - [ ] Ther are many other optimisations to consider
 - [ ] **Path to User Space**
 - - [x] Use Paging/virtual memory
-- - [ ] Proper handling of a scheduler to allow for sleeping of a task
+- - [x] Proper handling of a scheduler to allow for sleeping of a task
 - - [ ] Implement a standard library for user space
 - - [ ] Run an executable
 - - [ ] Self hosting compiler
