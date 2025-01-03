@@ -93,7 +93,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 - - [ ] Advanced SIMD usage (string operations and vector maths)
 - - [ ] Ther are many other optimisations to consider
 - [ ] **Path to User Space**
-- - [ ] Use Paging/virtual memory
+- - [x] Use Paging/virtual memory
 - - [ ] Proper handling of a scheduler to allow for sleeping of a task
 - - [ ] Implement a standard library for user space
 - - [ ] Run an executable
