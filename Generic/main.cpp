@@ -285,6 +285,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] auto scheduler = new Scheduler(shell_run, local_apic);
 
     WRITE("ERROR: Left main loop.");
+    while (true);
     asm("hlt");
 
     // todo: Create string handling to concatenate strings and print them more easily

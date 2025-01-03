@@ -26,10 +26,10 @@ public:
     static void switch_process(const cpu_registers_t* r, size_t new_PID);
 
     // Only takes void foo() types atm. No support for input variables
-    static void execf(void (*func)());
+    static void execf(void (*func)(), char* name);
 
     static void fork();
-    static void exit();
+    static void exit(int status);
 
     // size_t getCurrentProcessID();
     static size_t getNextProcessID();

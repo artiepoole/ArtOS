@@ -43,7 +43,7 @@ void aligned_free(void* ptr)
     // Retrieve the original pointer and free the allocated memory
     if (ptr != NULL)
     {
-        void** aligned_ptr = (void**)((uintptr_t)ptr - sizeof(void*));
-        free(*aligned_ptr);
+        void* aligned_ptr = *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(ptr) - sizeof(void*));
+        free(aligned_ptr);
     }
 }

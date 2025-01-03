@@ -3,6 +3,7 @@
 //
 #include "Scheduler.h"
 
+#include <cmp_int.h>
 #include <GDT.h>
 #include <LocalAPIC.h>
 #include <logging.h>
@@ -48,7 +49,7 @@ Scheduler::Scheduler(void (*main_func)(), LocalAPIC* timer)
     lapic_timer = timer;
     processes[0].state = Process::STATE_PARKED;
     execution_counter = TSC_get_ticks();
-    execf(main_func);
+    execf(main_func, "scheduler");
 }
 
 Scheduler::~Scheduler()
@@ -67,11 +68,13 @@ void Scheduler::switch_process(const size_t new_PID)
     if (new_PID == 0)
     {
         start_oneshot(context_switch_period_ms);
-        while (true);
+        // TODO: check for waiting timers and then wait for timers, or execute process 1.
+        return;
+        // while (true);
     }
     const auto old_pid = current_process_id;
     current_process_id = new_PID;
-    store_current_context(old_pid);
+    if (processes[old_pid].state != Process::STATE_DEAD) store_current_context(old_pid);
     const auto priority = processes[current_process_id].priority;
     start_oneshot(context_switch_period_ms * priority);
     execution_counter = TSC_get_ticks();
@@ -98,12 +101,15 @@ void Scheduler::switch_process(const cpu_registers_t* r, const size_t new_PID)
 // {
 // }
 
-void Scheduler::exit()
+void Scheduler::exit(int status)
 {
     size_t pid = current_process_id;
     aligned_free(processes[pid].stack);
+
+    LOG("Exiting ", processes[pid].name, " PID: ", pid, " with status: ", status);
     processes[pid].reset();
     processes[1].state = Process::STATE_READY;
+    schedule();
 }
 
 
@@ -120,7 +126,10 @@ void handle_expired_timers()
         if (timer == nullptr) break;
         size_t pid = timer->pid;
         sleep_timers.remove(timer);
-        processes[pid].state = Process::STATE_READY;
+        if (processes[pid].state == Process::STATE_PARKED)
+        {
+            processes[pid].state = Process::STATE_READY;
+        }
     }
 }
 
@@ -239,6 +248,8 @@ void Scheduler::sleep_ms(const u32 ms)
 {
     sleep_timers.append(sleep_timer_t{current_process_id, ms});
     processes[current_process_id].state = Process::STATE_PARKED;
+    // TODO: it might be good to start a oneshot of this duration if the sleep time is smaller than one period.
+    // i.e. start_oneshot(MIN(ms, context_switch_period_ms));
     schedule();
 }
 
@@ -255,7 +266,7 @@ void Scheduler::schedule(const cpu_registers_t* r)
 }
 
 // Create new process
-void Scheduler::execf(void (*func)()) // if user mode then the CS and DS should be different
+void Scheduler::execf(void (*func)(), char* name) // if user mode then the CS and DS should be different
 {
     processes[current_process_id].state = Process::STATE_PARKED;
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
@@ -277,8 +288,9 @@ void Scheduler::execf(void (*func)()) // if user mode then the CS and DS should 
     proc->priority = Process::PRIORITY_NORMAL;
     proc->last_executed = 0;
     proc->context = context;
-    proc->stack = stack_top;
-
+    proc->stack = proc_stack;
+    // TODO: safe max len
+    strncpy(proc->name, name, MIN(32, strlen(name)));
     switch_process(pid);
 }
 

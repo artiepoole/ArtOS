@@ -156,7 +156,7 @@ void exception_handler(const cpu_registers_t* r)
             return;
         default:
             WRITE("Unhandled exception. System Halted!");
-            for (;;);
+            while (true);
         }
     }
 }

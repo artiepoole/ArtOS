@@ -13,7 +13,7 @@
 
 void _Exit( int status )
 {
-    _PDCLIB_closeall();
+    // _PDCLIB_closeall();
     _PDCLIB_Exit( status );
 }
 

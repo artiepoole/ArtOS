@@ -8,11 +8,11 @@
 
 #ifndef REGTEST
 
-char * strncpy( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2, size_t n )
+char* strncpy(char* _PDCLIB_restrict dest, const char* _PDCLIB_restrict src, size_t n)
 {
-    char * rc = s1;
+    char* rc = dest;
 
-    while ( n && ( *s1++ = *s2++ ) )
+    while (n && (*dest++ = *src++))
     {
         /* Cannot do "n--" in the conditional as size_t is unsigned and we have
            to check it again for >0 in the next loop below, so we must not risk
@@ -24,7 +24,7 @@ char * strncpy( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2, si
     /* Checking against 1 as we missed the last --n in the loop above. */
     while ( n-- > 1 )
     {
-        *s1++ = '\0';
+        *dest++ = '\0';
     }
 
     return rc;

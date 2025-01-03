@@ -46,20 +46,20 @@ _PDCLIB_PUBLIC void * memcpy( void * _PDCLIB_restrict s1, const void * _PDCLIB_r
 */
 _PDCLIB_PUBLIC void * memmove( void * _PDCLIB_restrict s1, const void * _PDCLIB_restrict s2, size_t n );
 
-/* Copy the character array s2 (including terminating '\0' byte) into the
-   character array s1.
-   Returns the value of s1.
+/* Copy the character array src (including terminating '\0' byte) into the
+   character array dest.
+   Returns the value of dest.
 */
-_PDCLIB_PUBLIC char * strcpy( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2 );
+_PDCLIB_PUBLIC char* strcpy(char* _PDCLIB_restrict dest, const char* _PDCLIB_restrict src);
 
-/* Copy a maximum of n characters from the character array s2 into the character
-   array s1. If s2 is shorter than n characters, '\0' bytes will be appended to
-   the copy in s1 until n characters have been written. If s2 is longer than n
-   characters, NO terminating '\0' will be written to s1. If the arrays overlap,
+/* Copy a maximum of n characters from the character array src into the character
+   array dest. If src is shorter than n characters, '\0' bytes will be appended to
+   the copy in dest until n characters have been written. If dest is longer than n
+   characters, NO terminating '\0' will be written to dest. If the arrays overlap,
    behaviour is undefined.
    Returns the value of s1.
 */
-_PDCLIB_PUBLIC char * strncpy( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2, size_t n );
+_PDCLIB_PUBLIC char* strncpy(char* _PDCLIB_restrict dest, const char* _PDCLIB_restrict src, size_t n);
 
 /* Concatenation functions */
 

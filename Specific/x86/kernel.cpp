@@ -43,8 +43,7 @@ time_t get_epoch_time()
 extern "C"
 void _exit([[maybe_unused]] int status)
 {
-    LOG("Exit status: ", status);
-    Scheduler::exit();
+    Scheduler::exit(status);
 }
 
 u64 get_clock_rate_hz()
@@ -87,8 +86,8 @@ void sleep_s(const u32 s)
 
 void sleep_ms(const u32 ms)
 {
-    // Scheduler::sleep_ms(ms);
-    PIT_sleep_ms(ms);
+    Scheduler::sleep_ms(ms);
+    // PIT_sleep_ms(ms);
 }
 
 void sleep_ns(const u32 ns)

@@ -236,7 +236,7 @@ int Shell::process_cmd()
     if (strncasecmp(cmd_buffer, "play doom", 9) == 0)
     {
         Terminal::stop_drawing();
-        Scheduler::execf(run_doom_noret);
+        Scheduler::execf(run_doom_noret, "doom");
         Terminal::resume_drawing();
         Terminal::refresh();
     }

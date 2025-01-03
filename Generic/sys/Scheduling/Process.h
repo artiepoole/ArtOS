@@ -40,7 +40,7 @@ struct Process
     size_t last_executed;
     cpu_context_t context;
     //    u32 base_vaddr;
-    // char name[32]; this can be stored in an equivalent of proc?
+    char name[32]; //this can be stored in an equivalent of proc?
     void* stack;
 };
 
@@ -52,6 +52,7 @@ inline Process::Process()
     last_executed = 0;
     context = cpu_context_t{};
     stack = NULL;
+    name[0] = '\0';
 }
 
 inline void Process::reset()
@@ -62,6 +63,7 @@ inline void Process::reset()
     last_executed = 0;
     context = cpu_context_t{};
     stack = NULL;
+    name[0] = '\0';
 }
 
 
