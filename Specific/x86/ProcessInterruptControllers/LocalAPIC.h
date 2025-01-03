@@ -43,15 +43,15 @@ public:
 private:
     uintptr_t base;
     LVT full_lvt;
-    LVT_spurious_vector volatile * spurious_vector_entry;
+    LVT_spurious_vector volatile* spurious_vector_entry;
     u32 LAPIC_ratio = 0;
-    u32 LAPIC_rate= 0;
+    u32 LAPIC_rate = 0;
     bool is_ready = false;
 };
 
 void LAPIC_EOI();
 
-extern void LAPIC_handler(const cpu_registers_t* r);
+extern void LAPIC_handler(cpu_registers_t* const r);
 void LAPIC_calibrate_handler();
 
 

@@ -139,7 +139,7 @@ int LocalAPIC::start_timer(u32 ms)
     const size_t n_LAPIC_ticks = ms * (LAPIC_rate / 1000);
     if (n_LAPIC_ticks == 0) return -1;
     *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = n_LAPIC_ticks;
-    return 0;
+    return n_LAPIC_ticks;
 }
 
 /* DEPENDS ON PIT and IDT */

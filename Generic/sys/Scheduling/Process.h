@@ -19,6 +19,7 @@ struct Process
     enum State_t
     {
         STATE_DEAD,
+        STATE_EXITED,
         STATE_PARKED,
         STATE_READY,
     };
@@ -34,8 +35,8 @@ struct Process
     bool isParked() { return state == STATE_PARKED; }
     bool isDead() { return state == STATE_DEAD; }
 
-    u32 pid;
-    u32 state;
+    u32 parent_pid;
+    State_t state;
     Priority_t priority;
     size_t last_executed;
     cpu_context_t context;
@@ -47,7 +48,7 @@ struct Process
 inline Process::Process()
 {
     state = STATE_DEAD;
-    pid = -1;
+    parent_pid = -1;
     priority = PRIORITY_NORMAL;
     last_executed = 0;
     context = cpu_context_t{};
@@ -58,7 +59,7 @@ inline Process::Process()
 inline void Process::reset()
 {
     state = STATE_DEAD;
-    pid = -1;
+    parent_pid = -1;
     priority = PRIORITY_NORMAL;
     last_executed = 0;
     context = cpu_context_t{};

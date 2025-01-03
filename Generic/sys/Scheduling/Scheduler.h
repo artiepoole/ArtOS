@@ -18,29 +18,32 @@ constexpr size_t max_processes = 255;
 class Scheduler
 {
 public:
-    Scheduler(void (*main_func)(), LocalAPIC* timer);
+    Scheduler(void (*main_func)(), char* name, LocalAPIC* timer);
     ~Scheduler();
     static Scheduler& get();
     // void start(size_t PID);
-    static void switch_process(size_t new_PID);
-    static void switch_process(const cpu_registers_t* r, size_t new_PID);
+    // static void switch_process(size_t new_PID);
+    static void switch_process(cpu_registers_t* r, size_t new_PID);
 
+    static size_t getNextFreeProcessID();
+    static size_t getMaxAliveProcessID();
     // Only takes void foo() types atm. No support for input variables
-    static void execf(void (*func)(), char* name);
+    static void execf(void (*func)(), const char* name);
 
-    static void fork();
+    // static void fork();
     static void exit(int status);
 
+    static void clean_up_exited_threads();
     // size_t getCurrentProcessID();
     static size_t getNextProcessID();
 
     static void start_oneshot(u32 time_ms);
-    static void store_current_context(size_t PID);
-    static void convert_current_context(const cpu_registers_t* r, size_t PID);
-    static void set_current_context(size_t PID);
+    // static void store_current_context(size_t PID);
+    static void convert_current_context(cpu_registers_t* r, size_t PID);
+    static void set_current_context(cpu_registers_t* r, size_t PID);
 
-    static void schedule(const cpu_registers_t* r);
-    static void schedule();
+    static void schedule(cpu_registers_t* r);
+    // static void schedule();
 
     static void sleep_ms(u32 ms);
 };

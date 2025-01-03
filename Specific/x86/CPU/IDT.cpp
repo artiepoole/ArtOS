@@ -136,7 +136,7 @@ void handle_div_by_zero(const cpu_registers_t* r)
 
 
 extern "C"
-void exception_handler(const cpu_registers_t* r)
+void exception_handler(cpu_registers_t* const r)
 {
     log_registers(r);
 
@@ -153,7 +153,8 @@ void exception_handler(const cpu_registers_t* r)
         switch (r->int_no)
         {
         case 0:
-            return;
+            WRITE("Unhandled exception. System Halted!");
+            while (true);
         default:
             WRITE("Unhandled exception. System Halted!");
             while (true);
@@ -184,8 +185,9 @@ void exception_handler(const cpu_registers_t* r)
 
 
 extern "C"
-void irq_handler(const cpu_registers_t* r)
+void irq_handler(cpu_registers_t* const r)
 {
+
     if (const auto int_no = r->int_no; int_no >= 32)
     {
         switch (int_no - 32)

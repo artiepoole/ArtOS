@@ -280,12 +280,16 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     Terminal::write("Loading done.\n");
 #endif
 
+
     // Init and load the shell. Shell draws directly to the terminal by using static methods.
     Shell shell(&events);
-    [[maybe_unused]] auto scheduler = new Scheduler(shell_run, local_apic);
+    // io_apic->disable_IRQ(2); // PIT moved to pin2 on APIC. 0 is taken for something else
+    // io_apic->disable_IRQ(8); // disable rtc
+    [[maybe_unused]] auto scheduler = new Scheduler(shell_run, "shell", local_apic);
 
-    WRITE("ERROR: Left main loop.");
+
     while (true);
+    WRITE("ERROR: Left main loop.");
     asm("hlt");
 
     // todo: Create string handling to concatenate strings and print them more easily

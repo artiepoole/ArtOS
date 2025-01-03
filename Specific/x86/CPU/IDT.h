@@ -44,10 +44,10 @@ private:
 };
 
 extern "C"
-void exception_handler(const cpu_registers_t* r);
+void exception_handler(cpu_registers_t* const r);
 
 extern "C"
-void irq_handler(const cpu_registers_t* r);
+void irq_handler(cpu_registers_t* const r);
 
 extern volatile bool ATA_transfer_in_progress;
 extern volatile bool BM_transfer_in_progress;

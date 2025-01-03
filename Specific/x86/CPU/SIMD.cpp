@@ -84,27 +84,67 @@ bool simd_enabled()
 
 // TODO: does this start need to be aligned?
 extern "C"
-void* simd_copy(void* dest, const void* src, const size_t size)
+void* simd_copy(void* dest, const void* src, size_t size)
 {
+    // auto* d = static_cast<unsigned char*>(dest);
+    // auto* s = static_cast<const unsigned char*>(src);
+    //
+    // // Copy in 16-byte chunks
+    // size_t i = 0;
+    // for (; i + sizeof(m128i) < size; i += sizeof(m128i))
+    // {
+    //     const m128i chunk = mm_loadu_si128(reinterpret_cast<const m128i*>(s + i)); // Load 16 bytes
+    //     mm_storeu_si128(reinterpret_cast<m128i*>(d + i), chunk); // Store 16 bytes
+    // }
+    //
+    // // Copy any remaining bytes
+    // for (; i < size; i++)
+    // {
+    //     d[i] = s[i];
+    // }
+    //
+    // return dest;
     auto* d = static_cast<unsigned char*>(dest);
     auto* s = static_cast<const unsigned char*>(src);
 
-    // Copy in 16-byte chunks
-    size_t i = 0;
-    for (; i + sizeof(m128i) < size; i += sizeof(m128i))
-    {
-        const m128i chunk = mm_loadu_si128(reinterpret_cast<const m128i*>(s + i)); // Load 16 bytes
-        mm_storeu_si128(reinterpret_cast<m128i*>(d + i), chunk); // Store 16 bytes
-    }
+    // Alignment boundaries
+    uintptr_t dest_align_offset = reinterpret_cast<uintptr_t>(d) % 16;
 
-    // Copy any remaining bytes
-    for (; i < size; i++)
+    // Handle unaligned head
+    size_t head_bytes = (16 - dest_align_offset) % 16;
+    if (head_bytes > size)
+    {
+        head_bytes = size; // Cap head processing to remaining size
+    }
+    for (size_t i = 0; i < head_bytes; i++)
     {
         d[i] = s[i];
     }
 
+    d += head_bytes;
+    s += head_bytes;
+    size -= head_bytes;
+
+    // Handle aligned main block
+    size_t simd_chunks = size / 16;
+    for (size_t i = 0; i < simd_chunks; i++)
+    {
+        m128i chunk = mm_loadu_si128((const m128i*)s); // Unaligned load
+        mm_storeu_si128((m128i*)d, chunk); // Aligned store
+        d += 16;
+        s += 16;
+    }
+
+    size_t tail_bytes = size % 16;
+
+    // Handle remaining unaligned tail
+    for (size_t i = 0; i < tail_bytes; i++)
+    {
+        d[i] = s[i];
+    }
     return dest;
 }
+
 
 extern "C"
 void* simd_move(void* dest, const void* src, const size_t size)

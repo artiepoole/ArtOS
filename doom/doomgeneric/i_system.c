@@ -245,6 +245,8 @@ void I_BindVariables(void)
 
 void I_Quit (void)
 {
+    exit(0);
+    return;
     atexit_listentry_t *entry;
 
     // Run through all exit functions
@@ -460,7 +462,7 @@ void I_Error (char *error, ...)
     }
 #endif
 
-    // abort();
+    exit(-1);
 #if ORIGCODE
     SDL_Quit();
 

@@ -4,6 +4,7 @@
 
 #include "Shell.h"
 
+#include <IDT.h>
 #include <kernel.h>
 #include <logging.h>
 #include <string.h>
@@ -42,7 +43,7 @@ Shell& Shell::get()
 
 void Shell::run()
 {
-    LOG("Running shell");
+    LOG("Shell started");
     if (shell_instance == nullptr) return;
     while (true)
     {
@@ -226,7 +227,7 @@ void Shell::run()
             }
         }
         // else
-        pause_exec(250);
+        pause_exec(100);
     }
 }
 

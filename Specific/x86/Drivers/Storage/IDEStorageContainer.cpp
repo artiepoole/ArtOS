@@ -79,6 +79,7 @@ int IDEStorageContainer::mount()
 // Read from byte offset. Useful for use with files.
 i64 IDEStorageContainer::read(char* dest, const size_t byte_offset, const size_t n_bytes)
 {
+    LOG("Reading from IDEStorageContainer::read(char*...). start: ", byte_offset, " length: ", n_bytes);
     i64 n_read = 0; // has to be able to be neg but also up to U32_MAX so use an i64. n_read >0 here due to program flow.
     i64 real_offset = byte_offset; // position within disk in bytes
     while (n_read < n_bytes)
@@ -97,16 +98,19 @@ i64 IDEStorageContainer::read(char* dest, const size_t byte_offset, const size_t
         n_read += available_bytes;
         real_offset = byte_offset + n_read;
     }
+    LOG("nread: ", n_read);
     return n_read;
 }
 
 i64 IDEStorageContainer::read(void* dest, const size_t byte_offset, const size_t n_bytes)
 {
+    LOG("Reading from IDEStorageContainer::read(void*...) start: ", byte_offset, " length: ", n_bytes);
     return read(static_cast<char*>(dest), byte_offset, n_bytes);
 }
 
 i64 IDEStorageContainer::read_lba(void* dest, const size_t lba_offset, const size_t n_bytes)
 {
+    LOG("Reading from IDEStorageContainer::read_lba. start: ", lba_offset, " length: ", n_bytes);
     const i64 byte_offset = lba_offset * one_block_size;
     return read(static_cast<char*>(dest), byte_offset, n_bytes);
 }

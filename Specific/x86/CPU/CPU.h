@@ -34,6 +34,7 @@ struct cpu_context_t
     u32 es = 0; //
     u32 fs = 0;
     u32 gs = 0;
+    u32 useresp;
     // u32 link;
     // u32 cr3;
     // u32 ldtr;
