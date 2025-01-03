@@ -68,11 +68,11 @@ page_table paging_tables[page_table_size]__attribute__((aligned(page_alignment))
 // 4GB worth of 4096 pages. Set all to false. Processing the multiboot2 memory_map will set the necessary bits.
 // TODO: replace with DenseBooleanArray
 constexpr size_t n_DBs = (max_n_pages + (64 - 1)) / 32;
-DenseBoolean<u64> paging_phys_bitmap_array[n_DBs];
-DenseBoolean<u64> paging_virt_bitmap_array[n_DBs];
+DenseBoolean<u32> paging_phys_bitmap_array[n_DBs];
+DenseBoolean<u32> paging_virt_bitmap_array[n_DBs];
 
-DenseBooleanArray<u64> page_available_physical_bitmap;
-DenseBooleanArray<u64> page_available_virtual_bitmap;
+DenseBooleanArray<u32> page_available_physical_bitmap;
+DenseBooleanArray<u32> page_available_virtual_bitmap;
 //
 // bool page_available_physical_bitmap[max_n_pages] = {false};
 // bool page_available_virtual_bitmap[max_n_pages] = {false};
