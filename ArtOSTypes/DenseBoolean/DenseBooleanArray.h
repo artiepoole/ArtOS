@@ -4,7 +4,7 @@
 
 #ifndef DENSEBOOLEANARRAY_H
 #define DENSEBOOLEANARRAY_H
-#include "DenseBoolean.h"
+// #include "DenseBoolean.h"
 
 inline size_t DBA_ERR_IDX = -1;
 
@@ -12,16 +12,15 @@ template <typename int_like>
 class __attribute__ ((__packed__)) DenseBooleanArray
 {
 public:
-    DenseBooleanArray()
-    {
-    }
+    DenseBooleanArray() = default;
+
 
     explicit DenseBooleanArray(const size_t total_bits)
     {
         capacity = total_bits;
         n_bits = sizeof(int_like) * 8;
         array_len = (total_bits + (n_bits - 1)) / n_bits;
-        array = new DenseBoolean<int_like>[array_len];
+
         set_all(false);
     }
 
@@ -30,7 +29,7 @@ public:
         capacity = total_bits;
         n_bits = sizeof(int_like) * 8;
         array_len = (total_bits + (n_bits - 1)) / n_bits;
-        array = new DenseBoolean<int_like>[array_len];
+        array = new int_like[array_len];
         set_all(def_bool);
     }
 
@@ -47,24 +46,36 @@ public:
         capacity = total_bits;
         n_bits = sizeof(int_like) * 8;
         array_len = (total_bits + (n_bits - 1)) / n_bits;
-        array = static_cast<DenseBoolean<int_like>*>(initial_array);
+        array = reinterpret_cast<int_like*>(initial_array);
         int_like v = get_mask(b);
         for (size_t i = 0; i < array_len; i++)
         {
-            array[i].init(v);
+            array[i] = v;
         }
     }
 
     bool operator [](const size_t bit_idx)
     {
+        if (bit_idx >= capacity) return false;
         constexpr int_like v = 1;
-        return array[bit_idx / n_bits].data() & (v << (bit_idx % n_bits));
+        return array[bit_idx / n_bits] & (v << (bit_idx % n_bits));
     }
+
 
     void set_bit(const size_t idx, bool b)
     {
-        array[idx / n_bits].set_bit(idx % n_bits, b);
+        size_t array_idx = idx / n_bits;
+        size_t bit_idx = idx % n_bits;
+        if (bit_idx > this->n_bits) return;
+        constexpr int_like v = 1;
+        if (b)
+            array[array_idx] |= (v << (bit_idx));
+        else
+        {
+            array[array_idx] &= ~(v << (bit_idx));
+        }
     }
+
 
     int get_next_false()
     {
@@ -78,13 +89,13 @@ public:
         size_t item_idx = offset % n_bits;
         constexpr int_like v = -1;
         int_like mask = v << item_idx; // returns, e.g. 11111000 if item_idx == 3
-        int_like data = ~array[array_idx].data() & mask; // ignores lowest bits
+        int_like data = ~array[array_idx] & mask; // ignores lowest bits
         item_idx = 0;
 
         while (data == 0 && array_idx < array_len) // while data is all ones (no falses in int_like)
         {
             array_idx++;
-            data = ~array[array_idx].data();
+            data = ~array[array_idx];
         }
 
         for  (constexpr int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bit wise
@@ -121,13 +132,13 @@ public:
         size_t item_idx = offset % n_bits;
         constexpr int_like v = -1;
         int_like mask = v << item_idx;
-        int_like data = array[array_idx].data() & mask; // ignores lowest bits
+        int_like data = array[array_idx] & mask; // ignores lowest bits
         item_idx = 0;
 
         while (data == 0 && array_idx < array_len) // while data is all zeros (no trues in int_like)
         {
             array_idx++;
-            data = array[array_idx].data();
+            data = array[array_idx];
         }
 
         for (int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bitwise search within.
@@ -155,24 +166,24 @@ public:
     size_t get_array_len() { return array_len; }
 
     // return error or n copied. 
-    size_t set_range(const size_t start, const size_t n, const bool b)
+    size_t set_range(const size_t start, const size_t end, const bool b)
     {
-        if (start + n > capacity || n == 0 || n >= DBA_ERR_IDX) return DBA_ERR_IDX;
+        if (end > capacity || end < start || end == 0 || end >= DBA_ERR_IDX) return DBA_ERR_IDX;
         const int_like mask = get_mask(b);
         size_t bit = start;
-        for (; bit % n_bits > 0 && bit < n; bit++) // set bits up to next whole chunk
+        for (; bit % n_bits > 0 && bit < end; bit++) // set bits up to next whole chunk
         {
-            array[bit / n_bits].set_bit(bit % n_bits, b);
+            set_bit(bit, b);
         }
-        for (; bit + n_bits < n; bit += n_bits) // set all whole chunks
+        for (; bit + n_bits < end; bit += n_bits) // set all whole chunks
         {
-            array[bit / n_bits].set_data(mask);
+            array[bit / n_bits] = mask;
         }
-        for (; bit < n; bit++) // set remaining bits
+        for (; bit < end; bit++) // set remaining bits
         {
-            array[bit / n_bits].set_bit(bit % n_bits, b);
+            set_bit(bit, b);
         }
-        return n;
+        return end - start;
     }
 
     int_like get_mask(bool b)
@@ -187,12 +198,12 @@ public:
         const int_like v = get_mask(b);
         for (int i = 0; i < array_len; i++)
         {
-            array[i].set_data(v);
+            array[i] = v;
         }
     }
 
 private:
-    DenseBoolean<int_like>* array;
+    int_like* array;
     size_t array_len = 0; // n_items in array
     size_t capacity = 0; // bits
     size_t n_bits = 0;

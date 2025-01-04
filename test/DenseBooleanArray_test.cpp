@@ -94,11 +94,9 @@ TYPED_TEST(DenseBooleanArrayTest, late_inits)
     const auto dba_true = new DenseBooleanArray<TypeParam>;
     const auto dba_false = new DenseBooleanArray<TypeParam>;
 
-    const auto array_true = new DenseBoolean<TypeParam>[n_DBs];
-    const auto array_false = new DenseBoolean<TypeParam>[n_DBs];
 
-    dba_true->init(array_true, n_bits, true);
-    dba_false->init(array_false, n_bits, false);
+    dba_true->init(n_bits, true);
+    dba_false->init(n_bits, false);
 
     for (size_t i = 0; i < n_bits; i++)
     {
@@ -124,12 +122,16 @@ TYPED_TEST(DenseBooleanArrayTest, set_data)
 
     // Covers starting inside an element, spanning two full elements and ending inside an element.
     size_t start = bits_per_element / 2;
-    size_t end = bits_per_element / 2 + 2 * bits_per_element;
+    const size_t end = bits_per_element / 2 + 2 * bits_per_element;
 
     my_dba.set_range(start, end, true);
 
     for (size_t i = 0; i < total_bits; i++)
     {
+        if (my_dba[i]!= i >= start && i < end)
+        {
+            printf("%lu\n", i);
+        }
         ASSERT_EQ(my_dba[i], i >= start && i < end);
     }
 }
