@@ -20,8 +20,8 @@ void* memcpy(void* _PDCLIB_restrict dest, const void* _PDCLIB_restrict src, size
     }
     else
     {
-        char* s1 = (char*)dest;
-        const char* s2 = (const char*)src;
+        char* s1 = dest;
+        const char* s2 = src;
 
         while (n--)
         {
