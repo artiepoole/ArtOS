@@ -86,7 +86,7 @@ public:
             array_idx++;
             data = ~array[array_idx].data();
         }
-        // constexpr
+
         for  (constexpr int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bit wise
 
         item_idx = array_idx * n_bits + item_idx;
@@ -123,12 +123,13 @@ public:
         int_like mask = v << item_idx;
         int_like data = array[array_idx].data() & mask; // ignores lowest bits
         item_idx = 0;
+
         while (data == 0 && array_idx < array_len) // while data is all zeros (no trues in int_like)
         {
             array_idx++;
             data = array[array_idx].data();
         }
-        // constexpr int_like vv = 1; // just need the type to be correct for shifting, esp with 64bit vals
+
         for (int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bitwise search within.
 
         item_idx = array_idx * n_bits + item_idx;
