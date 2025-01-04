@@ -18,6 +18,7 @@ void* sbrk(const long increment)
     return retval;
 }
 
+// alignment is in bytes
 void* aligned_malloc(size_t size, size_t alignment)
 {
     // Allocate extra space to account for alignment and for storing the original pointer

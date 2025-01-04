@@ -7,6 +7,7 @@
 
 #include "types.h"
 
+// TODO: this could be replaced with using operators on int_like within the DBA class to maximise density. This currently requires extra bytes as overhead.
 template <typename int_like>
 class __attribute__ ((__packed__)) DenseBoolean
 {
@@ -50,11 +51,12 @@ public:
     void set_bit(size_t idx, const bool b)
     {
         if (idx > this->size_in_bits) return;
+        constexpr int_like v = 1;
         if (b)
-            raw |= (1 << (idx));
+            raw |= (v << (idx));
         else
         {
-            raw &= ~(1 << (idx));
+            raw &= ~(v << (idx));
         }
     }
 
@@ -86,8 +88,8 @@ public:
     // TODO: maybe implement int_like comparisons?
 
 private:
-    size_t size_in_bits;
-    int_like raw;
+    size_t size_in_bits = 0;
+    int_like raw = 0;
 };
 
 

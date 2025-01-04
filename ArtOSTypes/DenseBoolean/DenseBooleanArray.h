@@ -22,6 +22,7 @@ public:
         n_bits = sizeof(int_like) * 8;
         array_len = (total_bits + (n_bits - 1)) / n_bits;
         array = new DenseBoolean<int_like>[array_len];
+        set_all(false);
     }
 
     DenseBooleanArray(const size_t total_bits, const bool def_bool)
@@ -56,7 +57,8 @@ public:
 
     bool operator [](const size_t bit_idx)
     {
-        return array[bit_idx / n_bits].data() & (1 << (bit_idx % n_bits));
+        constexpr int_like v = 1;
+        return array[bit_idx / n_bits].data() & (v << (bit_idx % n_bits));
     }
 
     void set_bit(const size_t idx, bool b)
@@ -74,7 +76,8 @@ public:
     {
         size_t array_idx = offset / n_bits;
         size_t item_idx = offset % n_bits;
-        int_like mask = (-1) << item_idx; // returns, e.g. 11111000 if item_idx == 3
+        constexpr int_like v = -1;
+        int_like mask = v << item_idx; // returns, e.g. 11111000 if item_idx == 3
         int_like data = ~array[array_idx].data() & mask; // ignores lowest bits
         item_idx = 0;
 
@@ -83,8 +86,8 @@ public:
             array_idx++;
             data = ~array[array_idx].data();
         }
-
-        while (!(data & 0x1 << item_idx) && item_idx < n_bits) // bit wise
+        constexpr int_like vv = 1;
+        while (!(data & vv << item_idx) && item_idx < n_bits) // bit wise
         {
             item_idx++;
         }
@@ -119,7 +122,8 @@ public:
     {
         size_t array_idx = offset / n_bits;
         size_t item_idx = offset % n_bits;
-        int_like mask = (-1) << item_idx;
+        constexpr int_like v = -1;
+        int_like mask = v << item_idx;
         int_like data = array[array_idx].data() & mask; // ignores lowest bits
         item_idx = 0;
         while (data == 0 && array_idx < array_len) // while data is all zeros (no trues in int_like)
@@ -127,8 +131,8 @@ public:
             array_idx++;
             data = array[array_idx].data();
         }
-
-        while (!(data & 0x1 << item_idx) && item_idx < n_bits) // bitwise search within.
+        constexpr int_like vv = 1; // just need the type to be correct for shifting, esp with 64bit vals
+        while (!(data & vv << item_idx) && item_idx < n_bits) // bitwise search within.
         {
             item_idx++;
         }
@@ -185,7 +189,7 @@ public:
 
     void set_all(bool b)
     {
-        int_like v = get_mask(b);
+        const int_like v = get_mask(b);
         for (int i = 0; i < array_len; i++)
         {
             array[i].set_data(v);
@@ -194,9 +198,9 @@ public:
 
 private:
     DenseBoolean<int_like>* array;
-    size_t array_len; // n_items in array
-    size_t capacity; // bits
-    size_t n_bits;
+    size_t array_len = 0; // n_items in array
+    size_t capacity = 0; // bits
+    size_t n_bits = 0;
 };
 
 
