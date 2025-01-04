@@ -102,8 +102,8 @@ TYPED_TEST(DenseBooleanArrayTest, late_inits)
 
     for (size_t i = 0; i < n_bits; i++)
     {
-        ASSERT_TRUE((*dba_true)[i]);
-        ASSERT_FALSE((*dba_false)[i]);
+        ASSERT_TRUE((*dba_true)[i]) << "first occurred when i = " << i << '\n';
+        ASSERT_FALSE((*dba_false)[i]) << "first occurred when i = " << i << '\n';
     }
 }
 
@@ -119,7 +119,7 @@ TYPED_TEST(DenseBooleanArrayTest, set_data)
 
     for (size_t i = 0; i < total_bits; i++)
     {
-        ASSERT_FALSE(my_dba[i]);
+        ASSERT_FALSE(my_dba[i]) << "first occurred when i = " << i << '\n';
     }
 
     // Covers starting inside an element, spanning two full elements and ending inside an element.
@@ -130,6 +130,6 @@ TYPED_TEST(DenseBooleanArrayTest, set_data)
 
     for (size_t i = 0; i < total_bits; i++)
     {
-        ASSERT_EQ(my_dba[i], i >= start && i < end);
+        ASSERT_EQ(my_dba[i], i >= start && i < end) << "first occurred when i = " << i << '\n';
     }
 }

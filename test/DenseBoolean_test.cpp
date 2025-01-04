@@ -45,7 +45,7 @@ TEST(DenseBooleanTest, late_init)
     my_array.init(data);
     for (size_t i = 0; i < n_bits; i++)
     {
-        ASSERT_TRUE(my_array[i]);
+        ASSERT_TRUE(my_array[i]) << "first occurred when i = " << i << '\n';;
     }
 }
 
