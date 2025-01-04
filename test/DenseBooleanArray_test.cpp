@@ -130,10 +130,6 @@ TYPED_TEST(DenseBooleanArrayTest, set_data)
 
     for (size_t i = 0; i < total_bits; i++)
     {
-        if (my_dba[i]!= i >= start && i < end)
-        {
-            printf("%lu\n", i);
-        }
         ASSERT_EQ(my_dba[i], i >= start && i < end);
     }
 }
