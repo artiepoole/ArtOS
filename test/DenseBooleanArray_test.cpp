@@ -91,12 +91,14 @@ TYPED_TEST(DenseBooleanArrayTest, late_inits)
 {
     constexpr size_t n_DBs = 5;
     constexpr size_t n_bits = sizeof(TypeParam) * 8 * n_DBs;
+    TypeParam array_true[n_DBs];
+    TypeParam array_false[n_DBs];
     const auto dba_true = new DenseBooleanArray<TypeParam>;
     const auto dba_false = new DenseBooleanArray<TypeParam>;
 
 
-    dba_true->init(n_bits, true);
-    dba_false->init(n_bits, false);
+    dba_true->init(array_true, n_bits, true);
+    dba_false->init(array_false, n_bits, false);
 
     for (size_t i = 0; i < n_bits; i++)
     {
