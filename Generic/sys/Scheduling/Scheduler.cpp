@@ -208,46 +208,12 @@ void Scheduler::start_oneshot(u32 time_ms)
 
 void Scheduler::convert_current_context(cpu_registers_t* r, const size_t PID)
 {
-    const auto context = &processes[PID].context;
-    context->esp = r->esp;
-    context->cs = r->cs;
-    context->ds = r->ds;
-    context->ss = r->ss;
-    context->eip = r->eip;
-    context->eflags = r->eflags;
-    context->ecx = r->ecx;
-    context->edx = r->edx;
-    context->eax = r->eax;
-    context->ebx = r->ebx;
-    context->esi = r->esi;
-    context->edi = r->edi;
-    context->ebp = r->ebp;
-    context->es = r->es;
-    context->fs = r->fs;
-    context->gs = r->gs;
-    context->useresp = r->useresp;
+    memcpy(&processes[PID].context, r, sizeof(cpu_registers_t));
 }
 
 void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
 {
-    const auto context = processes[PID].context;
-    r->esp = context.esp;
-    r->cs = context.cs;
-    r->ds = context.ds;
-    r->ss = context.ss;
-    r->eip = context.eip;
-    r->eflags = context.eflags;
-    r->ecx = context.ecx;
-    r->edx = context.edx;
-    r->eax = context.eax;
-    r->ebx = context.ebx;
-    r->esi = context.esi;
-    r->edi = context.edi;
-    r->ebp = context.ebp;
-    r->es = context.es;
-    r->fs = context.fs;
-    r->gs = context.gs;
-    r->useresp = context.useresp;
+    memcpy(r, &processes[PID].context, sizeof(cpu_registers_t));
 }
 
 void Scheduler::sleep_ms(const u32 ms)
@@ -273,7 +239,7 @@ void Scheduler::execf(void (*func)(), const char* name) // if user mode then the
     void* proc_stack = aligned_malloc(stack_size, stack_alignment);
     void* stack_top = static_cast<u8*>(proc_stack) + stack_size;
     LOG("Starting Process: ", name, " PID: ", next_process_id);
-    cpu_context_t context{};
+    cpu_registers_t context{};
     context.esp = reinterpret_cast<u32>(stack_top);
     context.cs = kernel_cs_offset;
     context.ds = kernel_ds_offset;

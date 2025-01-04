@@ -16,30 +16,6 @@ struct cpu_registers_t
     u32 eip, cs, eflags, useresp, ss; /* pushed by the processor automatically */
 }__attribute__((packed));
 
-struct cpu_context_t
-{
-    u32 esp; // stack top pointer
-    u32 cs; // code segment
-    u32 ds; // data segment
-    u32 ss; // stack segment?
-    u32 eip; // function pointer
-    u32 eflags; // eflags
-    u32 ecx = 0; // fastcall variable set here
-    u32 edx = 0; // fastcall variable set here
-    u32 eax = 0;
-    u32 ebx = 0;
-    u32 esi = 0;
-    u32 edi = 0;
-    u32 ebp = 0; // base pointer, set by program execution? can be set to stack top
-    u32 es = 0; //
-    u32 fs = 0;
-    u32 gs = 0;
-    u32 useresp;
-    // u32 link;
-    // u32 cr3;
-    // u32 ldtr;
-};
-
 union eflags_t
 {
     struct

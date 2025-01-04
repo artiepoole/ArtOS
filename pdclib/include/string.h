@@ -38,7 +38,7 @@ typedef _PDCLIB_size_t size_t;
    area pointed to by s1. If the two areas overlap, behaviour is undefined.
    Returns the value of s1.
 */
-_PDCLIB_PUBLIC void * memcpy( void * _PDCLIB_restrict s1, const void * _PDCLIB_restrict s2, size_t n );
+_PDCLIB_PUBLIC void* memcpy(void* _PDCLIB_restrict dest, const void* _PDCLIB_restrict src, size_t n);
 
 /* Copy a number of n characters from the memory area pointed to by s2 to the
    area pointed to by s1. The two areas may overlap.

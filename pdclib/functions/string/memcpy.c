@@ -12,24 +12,24 @@
 #include "SIMD.h"
 
 
-void* memcpy(void* _PDCLIB_restrict s1, const void* _PDCLIB_restrict s2, size_t n)
+void* memcpy(void* _PDCLIB_restrict dest, const void* _PDCLIB_restrict src, size_t n)
 {
     if (simd_enabled())
     {
-        simd_copy(s1, s2, n);
+        simd_copy(dest, src, n);
     }
     else
     {
-        char* dest = (char*)s1;
-        const char* src = (const char*)s2;
+        char* s1 = (char*)dest;
+        const char* s2 = (const char*)src;
 
         while (n--)
         {
-            *dest++ = *src++;
+            *s1++ = *s2++;
         }
     }
 
-    return s1;
+    return dest;
 }
 
 #endif

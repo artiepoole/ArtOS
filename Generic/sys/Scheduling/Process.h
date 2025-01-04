@@ -39,7 +39,7 @@ struct Process
     State_t state;
     Priority_t priority;
     size_t last_executed;
-    cpu_context_t context;
+    cpu_registers_t context;
     //    u32 base_vaddr;
     char name[32]; //this can be stored in an equivalent of proc?
     void* stack;
@@ -51,7 +51,7 @@ inline Process::Process()
     parent_pid = -1;
     priority = PRIORITY_NORMAL;
     last_executed = 0;
-    context = cpu_context_t{};
+    context = cpu_registers_t{};
     stack = NULL;
     name[0] = '\0';
 }
@@ -62,7 +62,7 @@ inline void Process::reset()
     parent_pid = -1;
     priority = PRIORITY_NORMAL;
     last_executed = 0;
-    context = cpu_context_t{};
+    context = cpu_registers_t{};
     stack = NULL;
     name[0] = '\0';
 }
