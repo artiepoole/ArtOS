@@ -86,11 +86,8 @@ public:
             array_idx++;
             data = ~array[array_idx].data();
         }
-        constexpr int_like vv = 1;
-        while (!(data & vv << item_idx) && item_idx < n_bits) // bit wise
-        {
-            item_idx++;
-        }
+        // constexpr
+        for  (constexpr int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bit wise
 
         item_idx = array_idx * n_bits + item_idx;
         if (item_idx >= capacity) return DBA_ERR_IDX; // possible if last entry is not full
@@ -131,11 +128,8 @@ public:
             array_idx++;
             data = array[array_idx].data();
         }
-        constexpr int_like vv = 1; // just need the type to be correct for shifting, esp with 64bit vals
-        while (!(data & vv << item_idx) && item_idx < n_bits) // bitwise search within.
-        {
-            item_idx++;
-        }
+        // constexpr int_like vv = 1; // just need the type to be correct for shifting, esp with 64bit vals
+        for (int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bitwise search within.
 
         item_idx = array_idx * n_bits + item_idx;
         if (item_idx >= capacity) return DBA_ERR_IDX; // possible if last entry is not full
