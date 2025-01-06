@@ -58,7 +58,6 @@ extern "C"
 void DG_Init()
 {
     // Nothing to do here but maybe this should prep the FS if not init.
-
 }
 
 extern "C"
@@ -85,7 +84,6 @@ int DG_GetKey(int* pressed, unsigned char* key)
     // should return 0 if no events
     // should update just one keypress if keypress
     // should skip to next event if not keypress
-    // TODO: Sending repeatedly held keys not working as intended. Keys not getting detected between frames
     auto& queue = EventQueue::getInstance();
     if (!queue.pendingEvents()) return 0; // no events
 
@@ -114,7 +112,6 @@ void DG_SetWindowTitle(const char*)
 extern "C"
 int run_doom()
 {
-    // printf("run_doom called: \n");
     doomgeneric_Create(0, nullptr);
 
     while (doomgeneric_Tick());
@@ -124,10 +121,12 @@ int run_doom()
 }
 
 extern "C"
+/* I have not implemented generic handling of functions as executable files yet, so I needed to create a different entry point for doom. */
 void run_doom_noret()
 {
-    // printf("run_doom called: \n");
     doomgeneric_Create(0, nullptr);
 
     while (doomgeneric_Tick());
+
+    exit(0); // should be unreachable.
 }

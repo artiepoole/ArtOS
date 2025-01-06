@@ -13,7 +13,6 @@ volatile u32 timer_ticks = 0;
 
 void configure_pit(const u32 hz)
 {
-
     LOG("Initialising PIT");
     const u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = 1193180 / divisor; // calculating back to get the real rate after integer maths
@@ -27,7 +26,6 @@ void configure_pit(const u32 hz)
 
 void PIT_sleep_ms(const u32 ms)
 {
-
     if (rate == 0)
     {
         LOG("Tried to PIT_sleep_ms when timer is not initiated.");

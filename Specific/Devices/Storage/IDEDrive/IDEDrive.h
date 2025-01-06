@@ -6,7 +6,6 @@
 #define IDEDRIVE_H
 
 
-
 #include "IDE_notifiable.h"
 #include "ATA_types.h"
 #include "types.h"
@@ -36,9 +35,9 @@ public:
     virtual int send_packet_PIO(const ATAPI_packet_t& packet) =0;
     virtual int send_packet_DMA(const ATAPI_packet_t& packet) =0;
 
-    IDE_drive_info_t * get_drive_info() const {return drive_info;}
-    [[nodiscard]] bool is_waiting_for_transfer() const{return waiting_for_transfer;}
-    void set_waiting_for_transfer(const bool state){waiting_for_transfer = state;}
+    IDE_drive_info_t* get_drive_info() const { return drive_info; }
+    [[nodiscard]] bool is_waiting_for_transfer() const { return waiting_for_transfer; }
+    void set_waiting_for_transfer(const bool state) { waiting_for_transfer = state; }
 
 protected:
     IDE_drive_info_t* drive_info = nullptr;

@@ -30,7 +30,7 @@ full_madt_t* populate_madt(const uintptr_t madt_location)
                 madt.local_apics[madt.LAPIC_count].apic_id,
                 " and processor id: ",
                 madt.local_apics[madt.LAPIC_count].apic_processor_id
-                );
+            );
 
             madt.LAPIC_count++;
             break;

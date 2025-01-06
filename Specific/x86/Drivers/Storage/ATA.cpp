@@ -324,7 +324,7 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
         if (identity_data[63] != 0)
         {
             LOG("MW DMA modes detected.");
-            drive_info->MW_DMA_modes = identity_data[63] & 0xFF ;
+            drive_info->MW_DMA_modes = identity_data[63] & 0xFF;
             drive_info->DMA_device = true;
         }
         if (identity_data[88] != 0)
@@ -397,7 +397,7 @@ int ATAPI_set_max_dma_mode(const bool supports_udma, IDE_drive_info_t* drive_inf
 
     if (ATA_status_t status = ATA_get_alt_status(drive_info); status.error)
     {
-        [[maybe_unused]]ATA_error_t error = ATA_get_error(drive_info);
+        [[maybe_unused]] ATA_error_t error = ATA_get_error(drive_info);
         LOG("Error enabling DMA. Raw error", error.raw);
         return -DEVICE_ERROR;
     }

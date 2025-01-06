@@ -27,7 +27,7 @@ void keyboardHandler()
 
     if (const u32 scancode = inb(KEYB_DATA); scancode & 0x80) // key down event
     {
-        const auto ku = event_t{KEY_UP, event_data_t{scancode-0x80, 0}};
+        const auto ku = event_t{KEY_UP, event_data_t{scancode - 0x80, 0}};
         queue.addEvent(ku);
         /* You can use this one to see if the user released the
         *  shift, alt, or control keys... */
@@ -41,14 +41,13 @@ void keyboardHandler()
 
 EventQueue::EventQueue()
 {
-
     LOG("Initialising EventQueue");
     instance = this;
     _unread_counter = 0;
     _write_index = 0;
     _read_index = 0;
 
-    for (auto & i : _event_queue)
+    for (auto& i : _event_queue)
     {
         i = event_t{NULL_EVENT, event_data_t{0, 0}};
     }
@@ -69,11 +68,9 @@ EventQueue& EventQueue::getInstance()
 void EventQueue::addEvent(const event_t& event)
 {
     _event_queue[_write_index] = event;
-    _write_index = (_write_index+1)%max_len;
+    _write_index = (_write_index + 1) % max_len;
     _unread_counter++;
-
 }
-
 
 
 bool EventQueue::pendingEvents() const
@@ -86,13 +83,12 @@ event_t EventQueue::getEvent()
 {
     if (_unread_counter == 0)
     {
-
         WRITE("Tried to get read event ahead of event queue. Returning NONE event");
         return event_t{NULL_EVENT, event_data_t{0, 0}};
     }
 
     const auto event_out = _event_queue[_read_index];
     _unread_counter--;
-    _read_index = (_read_index+1)%max_len;
+    _read_index = (_read_index + 1) % max_len;
     return event_out;
 }

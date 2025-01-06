@@ -11,9 +11,9 @@
     #define LOGICAL_TARGET 2
     #define DESTINATION_MODE 1
 #else
-    #define TARGET_APIC 0
-    #define LOGICAL_TARGET 0
-    #define DESTINATION_MODE 0
+#define TARGET_APIC 0
+#define LOGICAL_TARGET 0
+#define DESTINATION_MODE 0
 #endif
 
 // io apic offsets
@@ -29,7 +29,7 @@
 
 IOAPIC::IOAPIC(uintptr_t io_apic_physical_address)
 {
-    paging_identity_map(io_apic_physical_address, 0x3F , true, false);
+    paging_identity_map(io_apic_physical_address, 0x3F, true, false);
     base_addr = reinterpret_cast<uintptr_t*>(io_apic_physical_address);
     TIMESTAMP();
     WRITE("IOAPIC base addr: ");

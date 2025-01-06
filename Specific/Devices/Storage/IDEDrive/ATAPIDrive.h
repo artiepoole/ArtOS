@@ -13,7 +13,6 @@
 class ATAPIDrive : public IDEDrive
 {
 public:
-
     explicit ATAPIDrive(IDE_drive_info_t& drive_info);
     ~ATAPIDrive() override;
 

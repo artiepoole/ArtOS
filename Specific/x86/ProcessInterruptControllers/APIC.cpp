@@ -26,4 +26,3 @@ void set_local_apic_base_addr(const uintptr_t local_apic_base_addr)
     const u32 eax = (local_apic_base_addr & 0xfffff0000) | IA32_APIC_BASE_MSR_ENABLE;
     cpu_set_MSR(IA32_APIC_BASE_MSR, eax, edx);
 }
-

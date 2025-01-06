@@ -49,10 +49,6 @@ void cpu_set_MSR(u32 msr, u32 lo, u32 hi)
 }
 
 
-
-
-
-
 u16 get_cs()
 {
     u16 cs;

@@ -5,8 +5,8 @@
 #ifndef IDE_DEVICE_H
 #define IDE_DEVICE_H
 
-#include <ArtDirectory.h>
-#include <iso_fs.h>
+#include "ArtDirectory.h"
+#include "iso_fs.h"
 
 #include "Errors.h"
 
@@ -36,7 +36,7 @@ public:
     i64 read_lba(void* dest, size_t lba_offset, size_t n_bytes);
     i64 seek([[maybe_unused]] u64 offset, [[maybe_unused]] int whence) override { return -NOT_IMPLEMENTED; }
     i64 write([[maybe_unused]] const char* src, [[maybe_unused]] size_t byte_count, [[maybe_unused]] size_t byte_offset) override { return -NOT_IMPLEMENTED; }
-    char* get_name() override {return name;}
+    char* get_name() override { return name; }
 
     size_t get_block_size() override;
     size_t get_block_count() override;
@@ -70,7 +70,7 @@ private:
     int populate_file_tree();
 
     // members
-    char *name;
+    char* name;
     IDEDrive* drive_dev;
     PCIDevice* pci_dev;
     BusMasterController* bm_dev;

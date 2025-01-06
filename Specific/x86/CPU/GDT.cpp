@@ -13,7 +13,6 @@ constexpr u8 accesses[n_entries] = {0, 0x9a, 0x93, 0xFa, 0xF3, 0x89};
 constexpr u8 flags[n_entries] = {0, 0xc, 0xc, 0xc, 0xc, 0}; // 0xc is double and paging modes
 
 
-
 union gdt_flags_t
 {
     struct

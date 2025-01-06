@@ -40,7 +40,7 @@ void print_colour(u32 color, args_t&&... args)
 }
 
 template <typename int_like>
-requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
+    requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
 void print_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
 {
     auto& term = Terminal::get();
@@ -51,7 +51,7 @@ void print_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
 extern "C"
 void _exit(int status);
 
-tm *get_time();
+tm* get_time();
 time_t get_epoch_time();
 
 u64 get_clock_rate_hz();
@@ -68,7 +68,7 @@ void sleep_ns(u32 ns);
 void get_clock_ms();
 void pause_exec(const u32 ms);
 
-void draw_screen_region(const u32 * frame_buffer);
+void draw_screen_region(const u32* frame_buffer);
 
 
 #endif //KERNEL_H

@@ -58,29 +58,30 @@ u64 get_current_clock()
 
 uint32_t get_tick_s()
 {
-    return TSC_get_ticks()/(SMBIOS_get_CPU_clock_rate_hz());
+    return TSC_get_ticks() / (SMBIOS_get_CPU_clock_rate_hz());
 }
 
 uint32_t get_tick_ms()
 {
-    return TSC_get_ticks()/(SMBIOS_get_CPU_clock_rate_hz()/1000);
+    return TSC_get_ticks() / (SMBIOS_get_CPU_clock_rate_hz() / 1000);
 }
 
 uint32_t get_tick_us()
 {
-    return TSC_get_ticks()/(SMBIOS_get_CPU_clock_rate_mhz());
+    return TSC_get_ticks() / (SMBIOS_get_CPU_clock_rate_mhz());
 }
+
 uint32_t get_tick_ns()
 {
-    return TSC_get_ticks()/(SMBIOS_get_CPU_clock_rate_mhz()/1000);
+    return TSC_get_ticks() / (SMBIOS_get_CPU_clock_rate_mhz() / 1000);
 }
 
 // TODO: replace PIT_sleep* with scheduler sleep
 void sleep_s(const u32 s)
 {
-    const u32 ms = s*1000;
+    const u32 ms = s * 1000;
     // if s*1000 out of bounds for u32 then handle that by sleeping for s lots of milliseconds a thousand times.
-    if (ms < s){ for (u32 i = 0; i < 1000; i++) PIT_sleep_ms(s);}
+    if (ms < s) { for (u32 i = 0; i < 1000; i++) PIT_sleep_ms(s); }
     PIT_sleep_ms(ms);
 }
 
@@ -93,13 +94,17 @@ void sleep_ms(const u32 ms)
 void sleep_ns(const u32 ns)
 {
     const u32 start = get_tick_ns();
-    while (get_tick_ns() - start < ns){};
+    while (get_tick_ns() - start < ns)
+    {
+    };
 }
 
 void sleep_us(const u32 us)
 {
     const u32 start = get_tick_us();
-    while (get_tick_us() - start < us){};
+    while (get_tick_us() - start < us)
+    {
+    };
 }
 
 

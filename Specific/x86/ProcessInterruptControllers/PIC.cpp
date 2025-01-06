@@ -48,7 +48,6 @@ PIC::PIC()
 
 void PIC::pause_PIC()
 {
-
     WRITE("Disabled PIC");
     mask1 = inb(PIC1_DATA); // save masks
     mask2 = inb(PIC2_DATA);
@@ -58,7 +57,6 @@ void PIC::pause_PIC()
 
 void PIC::resume_PIC()
 {
-
     WRITE("Renabled PIC");
     outb(PIC1_DATA, mask1);
     outb(PIC2_DATA, mask2);
@@ -104,7 +102,6 @@ void IRQ_clear_mask(u8 IRQline)
 
 void PIC::enableIRQ(u8 irq_id)
 {
-
     LOG("PIC: Enabling IRQ", irq_id);
 
     if (irq_id < 8)
@@ -125,7 +122,6 @@ void PIC::enableIRQ(u8 irq_id)
 
 void PIC::disableIRQ(const u8 irq_id)
 {
-
     LOG("Disabling IRQ", static_cast<u16>(irq_id));
 
     if (irq_id < 8)
@@ -135,7 +131,7 @@ void PIC::disableIRQ(const u8 irq_id)
     }
     else
     {
-        mask2 = mask2 | (1 << (irq_id-8));
+        mask2 = mask2 | (1 << (irq_id - 8));
         outb(PIC2_DATA, mask2);
     }
     LOG("mask1: ", mask1, " mask2: ", mask2);

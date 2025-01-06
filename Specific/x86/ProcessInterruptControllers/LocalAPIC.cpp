@@ -172,7 +172,6 @@ void LAPIC_EOI()
 }
 
 
-
 void LAPIC_calibrate_handler()
 {
     LOG("LAPIC CALIBRATE INTERRUPT");

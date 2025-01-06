@@ -10,7 +10,7 @@
 #include "IDEDrive.h"
 
 
-class ATADrive: public IDEDrive
+class ATADrive : public IDEDrive
 {
 public:
     explicit ATADrive(IDE_drive_info_t& drive_info);

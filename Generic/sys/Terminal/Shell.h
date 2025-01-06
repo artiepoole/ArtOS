@@ -8,7 +8,6 @@
 
 class EventQueue;
 class Terminal;
-#include "types.h"
 
 constexpr size_t cmd_buffer_size = 1024;
 
@@ -23,7 +22,6 @@ public:
 
 private:
     static int process_cmd();
-    // EventQueue* events;
 };
 
 

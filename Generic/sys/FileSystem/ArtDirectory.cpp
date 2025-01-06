@@ -63,7 +63,7 @@ char* ArtDirectory::get_name()
 
 size_t ArtDirectory::get_lba()
 {
-    return descriptor_loc_bytes/device->get_block_size();
+    return descriptor_loc_bytes / device->get_block_size();
 }
 
 LinkedList<ArtDirectory> const* ArtDirectory::get_dirs() const

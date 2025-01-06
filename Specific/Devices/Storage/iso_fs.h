@@ -104,7 +104,6 @@ struct file_id_ext_header
 {
     char tag[2];
     u8 len;
-
 };
 
 #endif //ISO_FS_H

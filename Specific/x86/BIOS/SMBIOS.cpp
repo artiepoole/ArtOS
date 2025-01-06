@@ -26,7 +26,7 @@ smbios_t search_for_SMBIOS()
     while (eps <= reinterpret_cast<u8*>(0x000FFFFF))
     {
         /* Check Anchor String (32-bit version) */
-        if (const char magic[4] = {'_','S','M','_'}; !memcmp(eps, magic, 4))
+        if (const char magic[4] = {'_', 'S', 'M', '_'}; !memcmp(eps, magic, 4))
         {
             const size_t length = eps[5];
             checksum = 0;
@@ -61,7 +61,6 @@ size_t find_real_len(smbios_header_t* hd)
 
 void SMBIOS_populate_cpu_info()
 {
-
     if (smbios == NULL)
     {
         search_for_SMBIOS();
@@ -94,7 +93,7 @@ void SMBIOS_populate_cpu_info()
 
 u64 SMBIOS_get_CPU_clock_rate_hz()
 {
-    if (clock_rate_hz!=0) return clock_rate_hz;
+    if (clock_rate_hz != 0) return clock_rate_hz;
     if (cpu_info == NULL)
     {
         SMBIOS_populate_cpu_info();
@@ -106,7 +105,7 @@ u64 SMBIOS_get_CPU_clock_rate_hz()
 
 u64 SMBIOS_get_CPU_clock_rate_mhz()
 {
-    if (clock_rate_mhz!=0) return clock_rate_mhz;
+    if (clock_rate_mhz != 0) return clock_rate_mhz;
     if (cpu_info == NULL)
     {
         SMBIOS_populate_cpu_info();
@@ -115,6 +114,3 @@ u64 SMBIOS_get_CPU_clock_rate_mhz()
     clock_rate_hz = clock_rate_mhz * 1000000;
     return clock_rate_mhz;
 }
-
-
-

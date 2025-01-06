@@ -7,8 +7,8 @@
 #include "RTC.h"
 #include "logging.h"
 
-static Serial *instance{ nullptr };
-static ArtFile *file_wrapper{ nullptr };
+static Serial* instance{nullptr};
+static ArtFile* file_wrapper{nullptr};
 
 #define RECEIVE_OFFSET 0x0
 #define SEND_OFFSET 0x0
@@ -52,15 +52,18 @@ Serial::Serial()
 }
 
 
-Serial::~Serial(){
+Serial::~Serial()
+{
     instance = nullptr;
 }
 
-Serial &Serial::get(){
+Serial& Serial::get()
+{
     return *instance;
 }
 
-ArtFile*& Serial::get_file(){
+ArtFile*& Serial::get_file()
+{
     return file_wrapper;
 }
 
@@ -112,7 +115,7 @@ void Serial::_send_one_byte(unsigned char a)
 {
     while (_get_transmit_empty() == 0);
 
-    outb(PORT+ SEND_OFFSET, a);
+    outb(PORT + SEND_OFFSET, a);
 }
 
 void Serial::write(bool b)
@@ -144,11 +147,13 @@ void Serial::time_stamp()
 
 u32 Serial::com_read(char* dest, const u32 count)
 {
-    for(u32 i = 0; i < count; i++) {
+    for (u32 i = 0; i < count; i++)
+    {
         dest[i] = _read_one_byte();
     }
     return count;
 }
+
 u32 Serial::com_write(const char* data, const u32 count)
 {
     _write_buffer(data, count);

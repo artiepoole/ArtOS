@@ -40,8 +40,6 @@ static idt_ptr_t idt_pointer;
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
 
-
-
 inline constexpr char exception_messages[][40] =
 {
     "div by zero", // 0
@@ -187,7 +185,6 @@ void exception_handler(cpu_registers_t* const r)
 extern "C"
 void irq_handler(cpu_registers_t* const r)
 {
-
     if (const auto int_no = r->int_no; int_no >= 32)
     {
         switch (int_no - 32)
@@ -245,7 +242,6 @@ void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
 
 IDT::IDT()
 {
-
     LOG("Initialising IDT");
     idt_pointer.limit = (sizeof(idt_entry_t) * IDT_STUB_COUNT) - 1;
     idt_pointer.base = reinterpret_cast<uintptr_t>(&idt_entries[0]); // this should point to first idt

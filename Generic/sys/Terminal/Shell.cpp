@@ -237,7 +237,7 @@ int Shell::process_cmd()
     if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
     {
         Terminal::stop_drawing();
-        Scheduler::execf(run_doom_noret, "doom");
+        Scheduler::execf(run_doom_noret, "doom"); // TODO: implement actual command lookup of executables.
         Terminal::resume_drawing();
         Terminal::refresh();
     }

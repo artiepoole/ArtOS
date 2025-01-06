@@ -13,7 +13,3 @@ size_t mystrlen(const char* str)
         len++;
     return len;
 }
-
-
-
-

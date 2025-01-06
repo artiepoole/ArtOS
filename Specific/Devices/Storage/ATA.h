@@ -8,8 +8,6 @@
 #include "types.h"
 
 
-
-
 // Must be passed a list of IDE_drive_t[4].
 int populate_drives_list(IDE_drive_info_t* drive_list);
 

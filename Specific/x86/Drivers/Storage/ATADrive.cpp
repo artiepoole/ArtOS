@@ -58,4 +58,3 @@ int ATADrive::send_packet_DMA(const ATAPI_packet_t& packet)
 {
     return -NOT_IMPLEMENTED;
 }
-
