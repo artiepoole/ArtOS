@@ -49,15 +49,15 @@ struct timespec
 
 struct tm
 {
-    int tm_sec;   /* 0-60 */
-    int tm_min;   /* 0-59 */
-    int tm_hour;  /* 0-23 */
-    int tm_mday;  /* 1-31 */
-    int tm_mon;   /* 0-11 */
-    int tm_year;  /* years since 1900 */
-    int tm_wday;  /* 0-6 */
-    int tm_yday;  /* 0-365 */
-    int tm_isdst; /* >0 DST, 0 no DST, <0 information unavailable */
+   int tm_sec; /* 0-60 */
+   int tm_min; /* 0-59 */
+   int tm_hour; /* 0-23 */
+   int tm_mday; /* 1-31 */
+   int tm_mon; /* 0-11 */
+   int tm_year; /* years since 1900 */
+   int tm_wday; /* 0-6 */
+   int tm_yday; /* 0-365 */
+   int tm_isdst; /* >0 DST, 0 no DST, <0 information unavailable */
 };
 
 /* Returns the number of "clocks" in processor time since the invocation
@@ -65,48 +65,48 @@ struct tm
    Returns -1 if the value cannot be represented in the return type or is
    not available.
 */
-_PDCLIB_PUBLIC clock_t clock( void );
+_PDCLIB_PUBLIC clock_t clock(void);
 
 /* Returns the difference between two calendar times in seconds. */
-_PDCLIB_PUBLIC double difftime( time_t time1, time_t time0 );
+_PDCLIB_PUBLIC double difftime(time_t time1, time_t time0);
 
 /* Normalizes the values in the broken-down time pointed to by timeptr.
    Returns the calender time specified by the broken-down time.
 */
-_PDCLIB_PUBLIC time_t mktime( struct tm * timeptr );
+_PDCLIB_PUBLIC time_t mktime(struct tm* timeptr);
 
 /* Returns the current calender time. If timer is not a NULL pointer, stores
    the current calender time at that address as well.
 */
-_PDCLIB_PUBLIC time_t time( time_t * timer );
+_PDCLIB_PUBLIC time_t time(time_t* timer);
 
 /* Sets the interval pointed to by ts to the current calender time, based
    on the specified base.
    Returns base, if successful, otherwise zero.
 */
-_PDCLIB_PUBLIC int timespec_get( struct timespec * ts, int base );
+_PDCLIB_PUBLIC int timespec_get(struct timespec* ts, int base);
 
 /* Converts the broken-down time pointed to by timeptr into a string in the
    form "Sun Sep 16 01:03:52 1973\n\0".
 */
-_PDCLIB_PUBLIC char * asctime( const struct tm * timeptr );
+_PDCLIB_PUBLIC char* asctime(const struct tm* timeptr);
 
 /* Equivalent to asctime( localtime( timer ) ). */
-_PDCLIB_PUBLIC char * ctime( const time_t * timer );
+_PDCLIB_PUBLIC char* ctime(const time_t* timer);
 
 /* Converts the calender time pointed to by timer into a broken-down time
    expressed as UTC.
    Returns a pointer to the broken-down time, or a NULL pointer if it
    cannot be represented.
 */
-_PDCLIB_PUBLIC struct tm * gmtime( const time_t * timer );
+_PDCLIB_PUBLIC struct tm* gmtime(const time_t* timer);
 
 /* Converts the calender time pointed to by timer into a broken-down time
    expressed as local time.
    Returns a pointer to the broken-down time, or a NULL pointer if if
    cannot be represented.
 */
-_PDCLIB_PUBLIC struct tm * localtime( const time_t * timer );
+_PDCLIB_PUBLIC struct tm* localtime(const time_t* timer);
 
 /* Writes the broken-down time pointed to by timeptr into the character
    array pointed to by s. The string pointed to by format controls the
@@ -114,7 +114,7 @@ _PDCLIB_PUBLIC struct tm * localtime( const time_t * timer );
    Returns the number of characters written (excluding the terminating
    null character), or zero on failure.
 */
-_PDCLIB_PUBLIC size_t strftime( char * _PDCLIB_restrict s, size_t maxsize, const char * _PDCLIB_restrict format, const struct tm * _PDCLIB_restrict timeptr );
+_PDCLIB_PUBLIC size_t strftime(char* _PDCLIB_restrict s, size_t maxsize, const char* _PDCLIB_restrict format, const struct tm* _PDCLIB_restrict timeptr);
 
 /* Annex K -- Bounds-checking interfaces */
 

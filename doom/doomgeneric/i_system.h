@@ -27,12 +27,12 @@
 typedef void (*atexit_func_t)(void);
 
 // Called by DoomMain.
-void I_Init (void);
+void I_Init(void);
 
 // Called by startup code
 // to get the ammount of memory to malloc
 // for the zone management.
-byte*	I_ZoneBase (int *size);
+byte* I_ZoneBase(int* size);
 
 boolean I_ConsoleStdout(void);
 
@@ -45,18 +45,18 @@ boolean I_ConsoleStdout(void);
 // or calls a loadable driver to build it.
 // This ticcmd will then be modified by the gameloop
 // for normal input.
-ticcmd_t* I_BaseTiccmd (void);
+ticcmd_t* I_BaseTiccmd(void);
 
 
 // Called by M_Responder when quit is selected.
 // Clean exit, displays sell blurb.
-void I_Quit (void);
+void I_Quit(void);
 
-void I_Error (char *error, ...);
+void I_Error(char* error, ...);
 
-void I_Tactile (int on, int off, int total);
+void I_Tactile(int on, int off, int total);
 
-boolean I_GetMemoryValue(unsigned int offset, void *value, int size);
+boolean I_GetMemoryValue(unsigned int offset, void* value, int size);
 
 // Schedule a function to be called when the program exits.
 // If run_if_error is true, the function is called if the exit
@@ -70,15 +70,14 @@ void I_BindVariables(void);
 
 // Print startup banner copyright message.
 
-void I_PrintStartupBanner(char *gamedescription);
+void I_PrintStartupBanner(char* gamedescription);
 
 // Print a centered text banner displaying the given string.
 
-void I_PrintBanner(char *text);
+void I_PrintBanner(char* text);
 
 // Print a dividing line for startup banners.
 
 void I_PrintDivider(void);
 
 #endif
-

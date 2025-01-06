@@ -20,7 +20,6 @@ constexpr size_t max_n_pages = 0x100000;
 constexpr size_t page_table_size = 1024;
 
 
-
 union page_directory_4kb_t
 {
     struct

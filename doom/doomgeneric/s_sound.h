@@ -37,7 +37,6 @@ void S_Init(int sfxVolume, int musicVolume);
 void S_Shutdown(void);
 
 
-
 //
 // Per level startup code.
 // Kills playing sounds at start of level,
@@ -51,10 +50,10 @@ void S_Start(void);
 //  using <sound_id> from sounds.h
 //
 
-void S_StartSound(void *origin, int sound_id);
+void S_StartSound(void* origin, int sound_id);
 
 // Stop sound for thing at <origin>
-void S_StopSound(mobj_t *origin);
+void S_StopSound(mobj_t* origin);
 
 
 // Start music using <music_id> from sounds.h
@@ -78,7 +77,7 @@ void S_ResumeSound(void);
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(mobj_t *listener);
+void S_UpdateSounds(mobj_t* listener);
 
 void S_SetMusicVolume(int volume);
 void S_SetSfxVolume(int volume);
@@ -86,4 +85,3 @@ void S_SetSfxVolume(int volume);
 extern int snd_channels;
 
 #endif
-

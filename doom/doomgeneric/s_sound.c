@@ -66,19 +66,18 @@
 typedef struct
 {
     // sound information (if null, channel avail.)
-    sfxinfo_t *sfxinfo;
+    sfxinfo_t* sfxinfo;
 
     // origin of sound
-    mobj_t *origin;
+    mobj_t* origin;
 
     // handle of the sound being played
     int handle;
-    
 } channel_t;
 
 // The set of channels available
 
-static channel_t *channels;
+static channel_t* channels;
 
 // Maximum volume of a sound effect.
 // Internal default is max out of 0-15.
@@ -95,11 +94,11 @@ static int snd_SfxVolume;
 
 // Whether songs are mus_paused
 
-static boolean mus_paused;        
+static boolean mus_paused;
 
 // Music currently being played
 
-static musicinfo_t *mus_playing = NULL;
+static musicinfo_t* mus_playing = NULL;
 
 // Number of channels to use
 
@@ -339,7 +338,7 @@ static int S_GetChannel(mobj_t* origin, sfxinfo_t* sfxinfo)
 // Otherwise, modifies parameters and returns 1.
 //
 
-static int S_AdjustSoundParams(mobj_t *listener, mobj_t *source,
+static int S_AdjustSoundParams(mobj_t* listener, mobj_t* source,
                                int* vol, int* sep)
 {
     return 0;
@@ -719,4 +718,3 @@ void S_StopMusic(void)
 //         mus_playing = NULL;
 //     }
 // }
-

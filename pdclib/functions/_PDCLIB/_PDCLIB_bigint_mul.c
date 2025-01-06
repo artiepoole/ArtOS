@@ -11,23 +11,23 @@
 #include <stddef.h>
 #include <stdint.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint_mul( _PDCLIB_bigint_t * _PDCLIB_restrict result, _PDCLIB_bigint_t const * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs )
+_PDCLIB_bigint_t* _PDCLIB_bigint_mul(_PDCLIB_bigint_t* _PDCLIB_restrict result, _PDCLIB_bigint_t const* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs)
 {
-    _PDCLIB_bigint_t const * smaller;
-    _PDCLIB_bigint_t const * wider;
+    _PDCLIB_bigint_t const* smaller;
+    _PDCLIB_bigint_t const* wider;
     size_t s, w;
 
     /* Largest possible result size */
     result->size = lhs->size + rhs->size;
 
     /* Zeroing result struct (where it matters) */
-    for ( w = 0; w < result->size; ++w )
+    for (w = 0; w < result->size; ++w)
     {
         result->data[w] = 0;
     }
 
     /* Select smaller / wider number so we spend more time in the *inner* loop. */
-    if ( lhs->size < rhs->size )
+    if (lhs->size < rhs->size)
     {
         smaller = lhs;
         wider = rhs;
@@ -38,26 +38,26 @@ _PDCLIB_bigint_t * _PDCLIB_bigint_mul( _PDCLIB_bigint_t * _PDCLIB_restrict resul
         smaller = rhs;
     }
 
-    for ( s = 0; s < smaller->size; ++s )
+    for (s = 0; s < smaller->size; ++s)
     {
-        _PDCLIB_bigint_arith_t digit;     /* Hold intermediary (wide) result. */
+        _PDCLIB_bigint_arith_t digit; /* Hold intermediary (wide) result. */
         _PDCLIB_bigint_arith_t carry = 0; /* Hold overflow. */
 
-        for ( w = 0; w < wider->size; ++w )
+        for (w = 0; w < wider->size; ++w)
         {
             /* Add product and carry into intermediate result */
-            digit = result->data[ w + s ] + ( (_PDCLIB_bigint_arith_t)smaller->data[ s ] * (_PDCLIB_bigint_arith_t)wider->data[ w ] ) + carry;
+            digit = result->data[w + s] + ((_PDCLIB_bigint_arith_t)smaller->data[s] * (_PDCLIB_bigint_arith_t)wider->data[w]) + carry;
             /* High bits into carry */
             carry = digit >> _PDCLIB_BIGINT_DIGIT_BITS;
             /* Low bits into result */
-            result->data[ w + s ] = ( digit & _PDCLIB_BIGINT_DIGIT_MAX );
+            result->data[w + s] = (digit & _PDCLIB_BIGINT_DIGIT_MAX);
         }
 
-        result->data[ w + s ] += carry;
+        result->data[w + s] += carry;
     }
 
     /* Shrink result size back down if appropriate. */
-    while ( ( result->size > 0 ) && ( result->data[ result->size - 1 ] == 0 ) )
+    while ((result->size > 0) && (result->data[result->size - 1] == 0))
     {
         --result->size;
     }

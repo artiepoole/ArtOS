@@ -8,11 +8,11 @@
 
 #ifndef REGTEST
 
-imaxdiv_t imaxdiv( intmax_t numer, intmax_t denom )
+imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom)
 {
     imaxdiv_t rc;
     rc.quot = numer / denom;
-    rc.rem  = numer % denom;
+    rc.rem = numer % denom;
     return rc;
 }
 

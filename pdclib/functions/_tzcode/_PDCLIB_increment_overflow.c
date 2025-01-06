@@ -10,7 +10,7 @@
 
 /* Normalize logic courtesy Paul Eggert. */
 
-bool _PDCLIB_increment_overflow( int * ip, int j )
+bool _PDCLIB_increment_overflow(int* ip, int j)
 {
     int const i = *ip;
 
@@ -19,7 +19,7 @@ bool _PDCLIB_increment_overflow( int * ip, int j )
        If i < 0 there can only be overflow if i + j < INT_MIN
        or if j < INT_MIN - i; given i < 0, INT_MIN - i cannot overflow.
     */
-    if ( ( i >= 0 ) ? ( j > _PDCLIB_INT_MAX - i ) : ( j < _PDCLIB_INT_MIN - i ) )
+    if ((i >= 0) ? (j > _PDCLIB_INT_MAX - i) : (j < _PDCLIB_INT_MIN - i))
     {
         return true;
     }

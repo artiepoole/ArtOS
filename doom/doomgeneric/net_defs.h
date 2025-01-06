@@ -51,7 +51,7 @@ typedef struct _net_context_s net_context_t;
 
 struct _net_packet_s
 {
-    byte *data;
+    byte* data;
     size_t len;
     size_t alloced;
     unsigned int pos;
@@ -69,33 +69,33 @@ struct _net_module_s
 
     // Send a packet
 
-    void (*SendPacket)(net_addr_t *addr, net_packet_t *packet);
+    void (*SendPacket)(net_addr_t* addr, net_packet_t* packet);
 
     // Check for new packets to receive
     //
     // Returns true if packet received
 
-    boolean (*RecvPacket)(net_addr_t **addr, net_packet_t **packet);
+    boolean (*RecvPacket)(net_addr_t** addr, net_packet_t** packet);
 
     // Converts an address to a string
 
-    void (*AddrToString)(net_addr_t *addr, char *buffer, int buffer_len);
+    void (*AddrToString)(net_addr_t* addr, char* buffer, int buffer_len);
 
     // Free back an address when no longer in use
 
-    void (*FreeAddress)(net_addr_t *addr);
+    void (*FreeAddress)(net_addr_t* addr);
 
     // Try to resolve a name to an address
 
-    net_addr_t *(*ResolveAddress)(char *addr);
+    net_addr_t*(*ResolveAddress)(char* addr);
 };
 
 // net_addr_t
 
 struct _net_addr_s
 {
-    net_module_t *module;
-    void *handle;
+    net_module_t* module;
+    void* handle;
 };
 
 // magic number sent when connecting to check this is a valid client
@@ -176,7 +176,7 @@ typedef struct
     int new_sync;
     int timelimit;
     int loadgame;
-    int random;  // [Strife only]
+    int random; // [Strife only]
 
     // These fields are only used by the server when sending a game
     // start message:
@@ -187,7 +187,6 @@ typedef struct
     // Hexen player classes:
 
     int player_classes[NET_MAXPLAYERS];
-
 } net_gamesettings_t;
 
 #define NET_TICDIFF_FORWARD      (1 << 0)
@@ -207,7 +206,7 @@ typedef struct
 
 // Complete set of ticcmds from all players
 
-typedef struct 
+typedef struct
 {
     signed int latency;
     unsigned int seq;
@@ -219,13 +218,13 @@ typedef struct
 
 typedef struct
 {
-    char *version;
+    char* version;
     int server_state;
     int num_players;
     int max_players;
     int gamemode;
     int gamemission;
-    char *description;
+    char* description;
 } net_querydata_t;
 
 // Data sent by the server while waiting for the game to start.

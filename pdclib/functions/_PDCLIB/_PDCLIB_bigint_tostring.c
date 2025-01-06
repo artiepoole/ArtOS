@@ -12,27 +12,27 @@
 #include <stdio.h>
 #include <string.h>
 
-char * _PDCLIB_bigint_tostring( _PDCLIB_bigint_t const * _PDCLIB_restrict value, char * _PDCLIB_restrict buffer )
+char* _PDCLIB_bigint_tostring(_PDCLIB_bigint_t const* _PDCLIB_restrict value, char* _PDCLIB_restrict buffer)
 {
-    char * rc = buffer;
+    char* rc = buffer;
     char prefix[3] = "0x";
     int hexdigits = _PDCLIB_BIGINT_DIGIT_BITS / 4;
 
-    if ( value->size > 0 )
+    if (value->size > 0)
     {
         unsigned i;
 
-        for ( i = value->size; i > 0; --i )
+        for (i = value->size; i > 0; --i)
         {
-            sprintf( buffer, "%s%0*" PRIxLEAST32, prefix, hexdigits, value->data[i - 1] );
-            buffer += hexdigits + strlen( prefix );
+            sprintf(buffer, "%s%0*" PRIxLEAST32, prefix, hexdigits, value->data[i - 1]);
+            buffer += hexdigits + strlen(prefix);
             prefix[0] = '.';
             prefix[1] = '\0';
         }
     }
     else
     {
-        sprintf( buffer, "0x%0*x", hexdigits, 0 );
+        sprintf(buffer, "0x%0*x", hexdigits, 0);
     }
 
     return rc;

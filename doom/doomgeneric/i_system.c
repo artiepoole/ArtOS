@@ -16,7 +16,6 @@
 //
 
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -65,14 +64,14 @@ struct atexit_listentry_s
 {
     atexit_func_t func;
     boolean run_on_error;
-    atexit_listentry_t *next;
+    atexit_listentry_t* next;
 };
 
-static atexit_listentry_t *exit_funcs = NULL;
+static atexit_listentry_t* exit_funcs = NULL;
 
 void I_AtExit(atexit_func_t func, boolean run_on_error)
 {
-    atexit_listentry_t *entry;
+    atexit_listentry_t* entry;
 
     entry = malloc(sizeof(*entry));
 
@@ -92,9 +91,9 @@ void I_Tactile(int on, int off, int total)
 // by trying progressively smaller zone sizes until one is found that
 // works.
 
-static byte *AutoAllocMemory(int *size, int default_ram, int min_ram)
+static byte* AutoAllocMemory(int* size, int default_ram, int min_ram)
 {
-    byte *zonemem;
+    byte* zonemem;
 
     // Allocate the zone memory.  This loop tries progressively smaller
     // zone sizes until a size is found that can be allocated.
@@ -130,9 +129,9 @@ static byte *AutoAllocMemory(int *size, int default_ram, int min_ram)
     return zonemem;
 }
 
-byte *I_ZoneBase (int *size)
+byte* I_ZoneBase(int* size)
 {
-    byte *zonemem;
+    byte* zonemem;
     int min_ram, default_ram;
     int p;
 
@@ -146,7 +145,7 @@ byte *I_ZoneBase (int *size)
 
     if (p > 0)
     {
-        default_ram = atoi(myargv[p+1]);
+        default_ram = atoi(myargv[p + 1]);
         min_ram = default_ram;
     }
     else
@@ -157,18 +156,18 @@ byte *I_ZoneBase (int *size)
 
     zonemem = AutoAllocMemory(size, default_ram, min_ram);
 
-    printf("zone memory: %p, %x allocated for zone\n", 
+    printf("zone memory: %p, %x allocated for zone\n",
            zonemem, *size);
 
     return zonemem;
 }
 
-void I_PrintBanner(char *msg)
+void I_PrintBanner(char* msg)
 {
     int i;
     int spaces = 35 - (strlen(msg) / 2);
 
-    for (i=0; i<spaces; ++i)
+    for (i = 0; i < spaces; ++i)
         putchar(' ');
 
     puts(msg);
@@ -178,7 +177,7 @@ void I_PrintDivider(void)
 {
     int i;
 
-    for (i=0; i<75; ++i)
+    for (i = 0; i < 75; ++i)
     {
         putchar('=');
     }
@@ -186,22 +185,22 @@ void I_PrintDivider(void)
     putchar('\n');
 }
 
-void I_PrintStartupBanner(char *gamedescription)
+void I_PrintStartupBanner(char* gamedescription)
 {
     I_PrintDivider();
     I_PrintBanner(gamedescription);
     I_PrintDivider();
-    
+
     printf(
-    " " PACKAGE_NAME " is free software, covered by the GNU General Public\n"
-    " License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS\n"
-    " FOR A PARTICULAR PURPOSE. You are welcome to change and distribute\n"
-    " copies under certain conditions. See the source for more information.\n");
+        " " PACKAGE_NAME " is free software, covered by the GNU General Public\n"
+        " License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS\n"
+        " FOR A PARTICULAR PURPOSE. You are welcome to change and distribute\n"
+        " copies under certain conditions. See the source for more information.\n");
 
     I_PrintDivider();
 }
 
-// 
+//
 // I_ConsoleStdout
 //
 // Returns true if stdout is a real console, false if it is a file
@@ -216,7 +215,7 @@ boolean I_ConsoleStdout(void)
 #if ORIGCODE
     return isatty(fileno(stdout));
 #else
-	return 0;
+    return 0;
 #endif
 #endif
 }
@@ -243,15 +242,15 @@ void I_BindVariables(void)
 // I_Quit
 //
 
-void I_Quit (void)
+void I_Quit(void)
 {
     exit(0);
     return;
-    atexit_listentry_t *entry;
+    atexit_listentry_t* entry;
 
     // Run through all exit functions
- 
-    entry = exit_funcs; 
+
+    entry = exit_funcs;
 
     while (entry != NULL)
     {
@@ -279,9 +278,9 @@ static int ZenityAvailable(void)
 // Escape special characters in the given string so that they can be
 // safely enclosed in shell quotes.
 
-static char *EscapeShellString(char *string)
+static char* EscapeShellString(char* string)
 {
-    char *result;
+    char* result;
     char *r, *s;
 
     // In the worst case, every character might be escaped.
@@ -322,11 +321,11 @@ static char *EscapeShellString(char *string)
 
 // Open a native error box with a message using zenity
 
-static int ZenityErrorBox(char *message)
+static int ZenityErrorBox(char* message)
 {
     int result;
-    char *escaped_message;
-    char *errorboxpath;
+    char* escaped_message;
+    char* errorboxpath;
     static size_t errorboxpath_size;
 
     if (!ZenityAvailable())
@@ -358,11 +357,11 @@ static int ZenityErrorBox(char *message)
 
 static boolean already_quitting = false;
 
-void I_Error (char *error, ...)
+void I_Error(char* error, ...)
 {
     char msgbuf[512];
     va_list argptr;
-    atexit_listentry_t *entry;
+    atexit_listentry_t* entry;
     boolean exit_gui_popup;
 
     if (already_quitting)
@@ -495,16 +494,19 @@ void I_Error (char *error, ...)
 #define DOS_MEM_DUMP_SIZE 10
 
 static const unsigned char mem_dump_dos622[DOS_MEM_DUMP_SIZE] = {
-  0x57, 0x92, 0x19, 0x00, 0xF4, 0x06, 0x70, 0x00, 0x16, 0x00};
+    0x57, 0x92, 0x19, 0x00, 0xF4, 0x06, 0x70, 0x00, 0x16, 0x00
+};
 static const unsigned char mem_dump_win98[DOS_MEM_DUMP_SIZE] = {
-  0x9E, 0x0F, 0xC9, 0x00, 0x65, 0x04, 0x70, 0x00, 0x16, 0x00};
+    0x9E, 0x0F, 0xC9, 0x00, 0x65, 0x04, 0x70, 0x00, 0x16, 0x00
+};
 static const unsigned char mem_dump_dosbox[DOS_MEM_DUMP_SIZE] = {
-  0x00, 0x00, 0x00, 0xF1, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00};
+    0x00, 0x00, 0x00, 0xF1, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00
+};
 static unsigned char mem_dump_custom[DOS_MEM_DUMP_SIZE];
 
-static const unsigned char *dos_mem_dump = mem_dump_dos622;
+static const unsigned char* dos_mem_dump = mem_dump_dos622;
 
-boolean I_GetMemoryValue(unsigned int offset, void *value, int size)
+boolean I_GetMemoryValue(unsigned int offset, void* value, int size)
 {
     static boolean firsttime = true;
 
@@ -552,7 +554,7 @@ boolean I_GetMemoryValue(unsigned int offset, void *value, int size)
                     }
 
                     M_StrToInt(myargv[p], &val);
-                    mem_dump_custom[i++] = (unsigned char) val;
+                    mem_dump_custom[i++] = (unsigned char)val;
                 }
 
                 dos_mem_dump = mem_dump_custom;
@@ -563,17 +565,17 @@ boolean I_GetMemoryValue(unsigned int offset, void *value, int size)
     switch (size)
     {
     case 1:
-        *((unsigned char *) value) = dos_mem_dump[offset];
+        *((unsigned char*)value) = dos_mem_dump[offset];
         return true;
     case 2:
-        *((unsigned short *) value) = dos_mem_dump[offset]
-                                    | (dos_mem_dump[offset + 1] << 8);
+        *((unsigned short*)value) = dos_mem_dump[offset]
+            | (dos_mem_dump[offset + 1] << 8);
         return true;
     case 4:
-        *((unsigned int *) value) = dos_mem_dump[offset]
-                                  | (dos_mem_dump[offset + 1] << 8)
-                                  | (dos_mem_dump[offset + 2] << 16)
-                                  | (dos_mem_dump[offset + 3] << 24);
+        *((unsigned int*)value) = dos_mem_dump[offset]
+            | (dos_mem_dump[offset + 1] << 8)
+            | (dos_mem_dump[offset + 2] << 16)
+            | (dos_mem_dump[offset + 3] << 24);
         return true;
     }
 

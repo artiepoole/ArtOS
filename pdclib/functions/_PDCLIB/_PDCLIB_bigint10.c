@@ -10,34 +10,38 @@
 
 #include <stdint.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint10( _PDCLIB_bigint_t * bigint, unsigned n )
+_PDCLIB_bigint_t* _PDCLIB_bigint10(_PDCLIB_bigint_t* bigint, unsigned n)
 {
     _PDCLIB_bigint_t local1, local2;
 
-    _PDCLIB_bigint_t * tmp = &local1;
-    _PDCLIB_bigint_t * base = &local2;
-    _PDCLIB_bigint_t * result = bigint;
-    _PDCLIB_bigint_t * swap;
+    _PDCLIB_bigint_t* tmp = &local1;
+    _PDCLIB_bigint_t* base = &local2;
+    _PDCLIB_bigint_t* result = bigint;
+    _PDCLIB_bigint_t* swap;
 
-    _PDCLIB_bigint32( result, 1 );
-    _PDCLIB_bigint32( base, 10 );
+    _PDCLIB_bigint32(result, 1);
+    _PDCLIB_bigint32(base, 10);
 
-    while ( n > 0 )
+    while (n > 0)
     {
-        if ( n & 1 )
+        if (n & 1)
         {
-            _PDCLIB_bigint_mul( tmp, result, base );
-            swap = result; result = tmp; tmp = swap;
+            _PDCLIB_bigint_mul(tmp, result, base);
+            swap = result;
+            result = tmp;
+            tmp = swap;
         }
 
         n >>= 1;
-        _PDCLIB_bigint_mul( tmp, base, base );
-        swap = base; base = tmp; tmp = swap;
+        _PDCLIB_bigint_mul(tmp, base, base);
+        swap = base;
+        base = tmp;
+        tmp = swap;
     }
 
-    if ( result != bigint )
+    if (result != bigint)
     {
-        _PDCLIB_bigint( bigint, result );
+        _PDCLIB_bigint(bigint, result);
     }
 
     return bigint;

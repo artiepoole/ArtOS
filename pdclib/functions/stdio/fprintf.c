@@ -9,13 +9,13 @@
 
 #ifndef REGTEST
 
-int fprintf( struct _PDCLIB_file_t * _PDCLIB_restrict stream, const char * _PDCLIB_restrict format, ... )
+int fprintf(struct _PDCLIB_file_t* _PDCLIB_restrict stream, const char* _PDCLIB_restrict format, ...)
 {
     int rc;
     va_list ap;
-    va_start( ap, format );
-    rc = vfprintf( stream, format, ap );
-    va_end( ap );
+    va_start(ap, format);
+    rc = vfprintf(stream, format, ap);
+    va_end(ap);
     return rc;
 }
 

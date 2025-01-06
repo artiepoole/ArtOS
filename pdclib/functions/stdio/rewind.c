@@ -8,10 +8,10 @@
 
 #ifndef REGTEST
 
-void rewind( struct _PDCLIB_file_t * stream )
+void rewind(struct _PDCLIB_file_t* stream)
 {
-    stream->status &= ~ _PDCLIB_ERRORFLAG;
-    fseek( stream, 0L, SEEK_SET );
+    stream->status &= ~_PDCLIB_ERRORFLAG;
+    fseek(stream, 0L, SEEK_SET);
 }
 
 #endif

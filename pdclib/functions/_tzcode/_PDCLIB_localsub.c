@@ -22,39 +22,39 @@
 */
 
 /*ARGSUSED*/
-struct tm * _PDCLIB_localsub( struct state const * sp, time_t const * timep, int_fast32_t setname, struct tm * const tmp )
+struct tm* _PDCLIB_localsub(struct state const* sp, time_t const* timep, int_fast32_t setname, struct tm* const tmp)
 {
-    const struct ttinfo * ttisp;
-    int                   i;
-    struct tm *           result;
-    const time_t          t = *timep;
+    const struct ttinfo* ttisp;
+    int i;
+    struct tm* result;
+    const time_t t = *timep;
 
-    if ( sp == NULL )
+    if (sp == NULL)
     {
         /* Don't bother to set tzname etc.; tzset has already done it.  */
-        return _PDCLIB_gmtsub( &_PDCLIB_gmtmem, timep, 0, tmp );
+        return _PDCLIB_gmtsub(&_PDCLIB_gmtmem, timep, 0, tmp);
     }
 
-    if ( ( sp->goback && t < sp->ats[ 0 ] ) || ( sp->goahead && t > sp->ats[ sp->timecnt - 1 ] ) )
+    if ((sp->goback && t < sp->ats[0]) || (sp->goahead && t > sp->ats[sp->timecnt - 1]))
     {
         time_t newt = t;
         time_t seconds;
         time_t years;
 
-        if ( t < sp->ats[ 0 ] )
+        if (t < sp->ats[0])
         {
-            seconds = sp->ats[ 0 ] - t;
+            seconds = sp->ats[0] - t;
         }
         else
         {
-            seconds = t - sp->ats[ sp->timecnt - 1 ];
+            seconds = t - sp->ats[sp->timecnt - 1];
         }
 
         --seconds;
-        years = ( seconds / SECSPERREPEAT + 1 ) * YEARSPERREPEAT;
+        years = (seconds / SECSPERREPEAT + 1) * YEARSPERREPEAT;
         seconds = years * AVGSECSPERYEAR;
 
-        if ( t < sp->ats[ 0 ] )
+        if (t < sp->ats[0])
         {
             newt += seconds;
         }
@@ -63,20 +63,20 @@ struct tm * _PDCLIB_localsub( struct state const * sp, time_t const * timep, int
             newt -= seconds;
         }
 
-        if ( newt < sp->ats[ 0 ] || newt > sp->ats[ sp->timecnt - 1 ] )
+        if (newt < sp->ats[0] || newt > sp->ats[sp->timecnt - 1])
         {
-            return NULL;    /* "cannot happen" */
+            return NULL; /* "cannot happen" */
         }
 
-        result = _PDCLIB_localsub( sp, &newt, setname, tmp );
+        result = _PDCLIB_localsub(sp, &newt, setname, tmp);
 
-        if ( result )
+        if (result)
         {
             int_fast64_t newy;
 
             newy = result->tm_year;
 
-            if ( t < sp->ats[ 0 ] )
+            if (t < sp->ats[0])
             {
                 newy -= years;
             }
@@ -85,7 +85,7 @@ struct tm * _PDCLIB_localsub( struct state const * sp, time_t const * timep, int
                 newy += years;
             }
 
-            if ( ! ( _PDCLIB_INT_MIN <= newy && newy <= _PDCLIB_INT_MAX ) )
+            if (!(_PDCLIB_INT_MIN <= newy && newy <= _PDCLIB_INT_MAX))
             {
                 return NULL;
             }
@@ -96,7 +96,7 @@ struct tm * _PDCLIB_localsub( struct state const * sp, time_t const * timep, int
         return result;
     }
 
-    if ( sp->timecnt == 0 || t < sp->ats[ 0 ] )
+    if (sp->timecnt == 0 || t < sp->ats[0])
     {
         i = sp->defaulttype;
     }
@@ -105,11 +105,11 @@ struct tm * _PDCLIB_localsub( struct state const * sp, time_t const * timep, int
         int lo = 1;
         int hi = sp->timecnt;
 
-        while ( lo < hi )
+        while (lo < hi)
         {
-            int mid = ( lo + hi ) >> 1;
+            int mid = (lo + hi) >> 1;
 
-            if ( t < sp->ats[ mid ] )
+            if (t < sp->ats[mid])
             {
                 hi = mid;
             }
@@ -119,28 +119,28 @@ struct tm * _PDCLIB_localsub( struct state const * sp, time_t const * timep, int
             }
         }
 
-        i = (int) sp->types[ lo - 1 ];
+        i = (int)sp->types[lo - 1];
     }
 
-    ttisp = &sp->ttis[ i ];
+    ttisp = &sp->ttis[i];
 
     /* To get (wrong) behavior that's compatible with System V Release 2.0
        you'd replace the statement below with
        t += ttisp->utoff;
        timesub( &t, 0L, sp, tmp );
     */
-    result = _PDCLIB_timesub( &t, ttisp->utoff, sp, tmp );
+    result = _PDCLIB_timesub(&t, ttisp->utoff, sp, tmp);
 
-    if ( result )
+    if (result)
     {
         result->tm_isdst = ttisp->isdst;
 #ifdef TM_ZONE
         result->TM_ZONE = (char *) &sp->chars[ ttisp->desigidx ];
 #endif /* defined TM_ZONE */
 
-        if ( setname )
+        if (setname)
         {
-            _PDCLIB_update_tzname_etc( sp, ttisp );
+            _PDCLIB_update_tzname_etc(sp, ttisp);
         }
     }
 

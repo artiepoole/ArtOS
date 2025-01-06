@@ -10,9 +10,9 @@
 
 #include <locale.h>
 
-int isalnum( int c )
+int isalnum(int c)
 {
-    return ( isdigit( c ) || isalpha( c ) );
+    return (isdigit(c) || isalpha(c));
 }
 
 #endif

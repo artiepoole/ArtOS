@@ -315,27 +315,27 @@ extern "C" {
 struct _PDCLIB_fpos_t
 {
     _PDCLIB_uint_least64_t offset; /* File position offset */
-    int                    status; /* Multibyte parsing state (unused, reserved) */
+    int status; /* Multibyte parsing state (unused, reserved) */
 };
 
 /* FILE structure */
 struct _PDCLIB_file_t
 {
-    _PDCLIB_fd_t            handle;   /* OS file handle */
-    char *                  buffer;   /* Pointer to buffer memory */
-    _PDCLIB_size_t          bufsize;  /* Size of buffer */
-    _PDCLIB_size_t          bufidx;   /* Index of current position in buffer */
-    _PDCLIB_size_t          bufend;   /* Index of last pre-read character in buffer */
-    struct _PDCLIB_fpos_t   pos;      /* Offset and multibyte parsing state */
-    _PDCLIB_size_t          ungetidx; /* Number of ungetc()'ed characters */
-    unsigned char           ungetbuf[_PDCLIB_UNGETCBUFSIZE]; /* ungetc() buffer */
-    unsigned int            status;   /* Status flags; see above */
-    /* multibyte parsing status to be added later */
+   _PDCLIB_fd_t handle; /* OS file handle */
+   char* buffer; /* Pointer to buffer memory */
+   _PDCLIB_size_t bufsize; /* Size of buffer */
+   _PDCLIB_size_t bufidx; /* Index of current position in buffer */
+   _PDCLIB_size_t bufend; /* Index of last pre-read character in buffer */
+   struct _PDCLIB_fpos_t pos; /* Offset and multibyte parsing state */
+   _PDCLIB_size_t ungetidx; /* Number of ungetc()'ed characters */
+   unsigned char ungetbuf[_PDCLIB_UNGETCBUFSIZE]; /* ungetc() buffer */
+   unsigned int status; /* Status flags; see above */
+   /* multibyte parsing status to be added later */
 #ifndef __STDC_NO_THREADS__
     _PDCLIB_mtx_t           mtx;      /* Multithreading safety */
 #endif
-    char *                  filename; /* Name the current stream has been opened with */
-    struct _PDCLIB_file_t * next;     /* Pointer to next struct (internal) */
+    char* filename; /* Name the current stream has been opened with */
+   struct _PDCLIB_file_t* next; /* Pointer to next struct (internal) */
 };
 
 /* -------------------------------------------------------------------------- */
@@ -345,25 +345,25 @@ struct _PDCLIB_file_t
 /* Structure required by both atexit() and exit() for handling atexit functions */
 struct _PDCLIB_exitfunc_t
 {
-    struct _PDCLIB_exitfunc_t * next;
-    void ( *func )( void );
+    struct _PDCLIB_exitfunc_t* next;
+    void (*func)(void);
 };
 
 /* Status structure required by _PDCLIB_print(). */
 struct _PDCLIB_status_t
 {
-    int              base;   /* base to which the value shall be converted   */
+    int base; /* base to which the value shall be converted   */
     _PDCLIB_int_fast32_t flags; /* flags and length modifiers                */
-    _PDCLIB_size_t   n;      /* print: maximum characters to be written      */
-                             /* scan:  number matched conversion specifiers  */
-    _PDCLIB_size_t   i;      /* number of characters read/written            */
-    _PDCLIB_size_t   current;/* chars read/written in the CURRENT conversion */
-    char *           s;      /* *sprintf(): target buffer                    */
-                             /* *sscanf():  source string                    */
-    _PDCLIB_size_t   width;  /* specified field width                        */
-    int              prec;   /* specified field precision                    */
-    struct _PDCLIB_file_t * stream; /* *fprintf() / *fscanf() stream         */
-    _PDCLIB_va_list  arg;    /* argument stack                               */
+    _PDCLIB_size_t n; /* print: maximum characters to be written      */
+    /* scan:  number matched conversion specifiers  */
+    _PDCLIB_size_t i; /* number of characters read/written            */
+    _PDCLIB_size_t current; /* chars read/written in the CURRENT conversion */
+    char* s; /* *sprintf(): target buffer                    */
+    /* *sscanf():  source string                    */
+    _PDCLIB_size_t width; /* specified field width                        */
+    int prec; /* specified field precision                    */
+    struct _PDCLIB_file_t* stream; /* *fprintf() / *fscanf() stream         */
+    _PDCLIB_va_list arg; /* argument stack                               */
 };
 
 /* -------------------------------------------------------------------------- */
@@ -371,14 +371,14 @@ struct _PDCLIB_status_t
 /* -------------------------------------------------------------------------- */
 
 /* This is the main function called by atoi(), atol() and atoll().            */
-_PDCLIB_LOCAL _PDCLIB_intmax_t _PDCLIB_atomax( const char * s );
+_PDCLIB_LOCAL _PDCLIB_intmax_t _PDCLIB_atomax(const char* s);
 
 /* Two helper functions used by strtol(), strtoul() and long long variants.   */
-_PDCLIB_LOCAL const char * _PDCLIB_strtox_prelim( const char * p, char * sign, int * base );
-_PDCLIB_LOCAL _PDCLIB_uintmax_t _PDCLIB_strtox_main( const char ** p, unsigned int base, _PDCLIB_uintmax_t error, _PDCLIB_uintmax_t limval, int limdigit, char * sign );
+_PDCLIB_LOCAL const char* _PDCLIB_strtox_prelim(const char* p, char* sign, int* base);
+_PDCLIB_LOCAL _PDCLIB_uintmax_t _PDCLIB_strtox_main(const char** p, unsigned int base, _PDCLIB_uintmax_t error, _PDCLIB_uintmax_t limval, int limdigit, char* sign);
 
 /* A helper function used by strtof(), strtod(), and strtold().               */
-_PDCLIB_LOCAL void _PDCLIB_strtod_scan( const char * s, const char ** dec, const char ** frac, const char ** exp, int base );
+_PDCLIB_LOCAL void _PDCLIB_strtod_scan(const char* s, const char** dec, const char** frac, const char** exp, int base);
 
 /* Digits arrays used by various integer conversion functions */
 extern const char _PDCLIB_digits[];
@@ -391,7 +391,7 @@ extern const char _PDCLIB_Xdigits[];
    by the function.
    Returns a pointer to the first character not parsed as conversion specifier.
 */
-_PDCLIB_LOCAL const char * _PDCLIB_print( const char * spec, struct _PDCLIB_status_t * status );
+_PDCLIB_LOCAL const char* _PDCLIB_print(const char* spec, struct _PDCLIB_status_t* status);
 
 /* The worker for all scanf() type of functions. The pointer spec should point
    to the introducing '%' of a conversion specifier. The status structure is to
@@ -402,46 +402,46 @@ _PDCLIB_LOCAL const char * _PDCLIB_print( const char * spec, struct _PDCLIB_stat
    or NULL in case of error.
    FIXME: Should distinguish between matching and input error
 */
-_PDCLIB_LOCAL const char * _PDCLIB_scan( const char * spec, struct _PDCLIB_status_t * status );
+_PDCLIB_LOCAL const char* _PDCLIB_scan(const char* spec, struct _PDCLIB_status_t* status);
 
 /* Parsing any fopen() style filemode string into a number of flags. */
-_PDCLIB_LOCAL unsigned int _PDCLIB_filemode( const char * mode );
+_PDCLIB_LOCAL unsigned int _PDCLIB_filemode(const char* mode);
 
 /* Initialize a FILE structure. If the parameter is NULL, a new FILE structure
    is malloc'ed. Returns a pointer to the stream if successful, NULL otherwise.
 */
-_PDCLIB_LOCAL struct _PDCLIB_file_t * _PDCLIB_init_file_t( struct _PDCLIB_file_t * stream );
+_PDCLIB_LOCAL struct _PDCLIB_file_t* _PDCLIB_init_file_t(struct _PDCLIB_file_t* stream);
 
 /* Sanity checking and preparing of read buffer, should be called first thing
    by any stdio read-data function.
    Returns 0 on success, EOF on error.
    On error, EOF / error flags and errno are set appropriately.
 */
-_PDCLIB_LOCAL int _PDCLIB_prepread( struct _PDCLIB_file_t * stream );
+_PDCLIB_LOCAL int _PDCLIB_prepread(struct _PDCLIB_file_t* stream);
 
 /* Sanity checking, should be called first thing by any stdio write-data
    function.
    Returns 0 on success, EOF on error.
    On error, error flags and errno are set appropriately.
 */
-_PDCLIB_LOCAL int _PDCLIB_prepwrite( struct _PDCLIB_file_t * stream );
+_PDCLIB_LOCAL int _PDCLIB_prepwrite(struct _PDCLIB_file_t* stream);
 
 /* Closing all streams on program exit */
-_PDCLIB_LOCAL void _PDCLIB_closeall( void );
+_PDCLIB_LOCAL void _PDCLIB_closeall(void);
 
 /* Check if a given year is a leap year. Parameter is offset to 1900. */
-_PDCLIB_LOCAL int _PDCLIB_is_leap( int year_offset );
+_PDCLIB_LOCAL int _PDCLIB_is_leap(int year_offset);
 
 /* Read a specified number of lines from a file stream; return a pointer to
    allocated memory holding the lines (newlines replaced with zero terminators)
    or NULL in case of error.
 */
-_PDCLIB_LOCAL char * _PDCLIB_load_lines( struct _PDCLIB_file_t * stream, _PDCLIB_size_t lines );
+_PDCLIB_LOCAL char* _PDCLIB_load_lines(struct _PDCLIB_file_t* stream, _PDCLIB_size_t lines);
 
 /* Returns the (locale dependent) error message associated with the argument
    errno value.
 */
-_PDCLIB_LOCAL char * _PDCLIB_geterrtext( int errnum );
+_PDCLIB_LOCAL char* _PDCLIB_geterrtext(int errnum);
 
 /* Returns non-zero if the given stream is on the internal list of open files,
    zero otherwise. Sets the second paramenter (if not NULL) to the previous
@@ -449,24 +449,24 @@ _PDCLIB_LOCAL char * _PDCLIB_geterrtext( int errnum );
    This function does not lock _PDCLIB_filelist_mtx, this needs to be done by
    the calling function (_PDCLIB_getstream() or freopen()).
 */
-_PDCLIB_LOCAL int _PDCLIB_isstream( struct _PDCLIB_file_t * stream, struct _PDCLIB_file_t ** previous );
+_PDCLIB_LOCAL int _PDCLIB_isstream(struct _PDCLIB_file_t* stream, struct _PDCLIB_file_t** previous);
 
 /* Removes the given stream from the internal list of open files. Returns zero
    if successful, non-zero otherwise. In case of error, sets errno to EBADF.
    This function does not lock _PDCLIB_filelist_mtx, this needs to be done by
    the calling function (fclose()).
 */
-_PDCLIB_LOCAL int _PDCLIB_getstream( struct _PDCLIB_file_t * stream );
+_PDCLIB_LOCAL int _PDCLIB_getstream(struct _PDCLIB_file_t* stream);
 
 /* Backend for strtok and strtok_s (plus potential extensions like strtok_r). */
-_PDCLIB_LOCAL char * _PDCLIB_strtok( char * _PDCLIB_restrict s1, _PDCLIB_size_t * _PDCLIB_restrict s1max, const char * _PDCLIB_restrict s2, char ** _PDCLIB_restrict ptr );
+_PDCLIB_LOCAL char* _PDCLIB_strtok(char* _PDCLIB_restrict s1, _PDCLIB_size_t* _PDCLIB_restrict s1max, const char* _PDCLIB_restrict s2, char** _PDCLIB_restrict ptr);
 
 /* -------------------------------------------------------------------------- */
 /* Declaration of helper functions (implemented in functions/_dtoa).          */
 /* -------------------------------------------------------------------------- */
 
-_PDCLIB_LOCAL void _PDCLIB_freedtoa( char * s );
-_PDCLIB_LOCAL char * _PDCLIB_dtoa( double dd, int mode, int ndigits, int * decpt, int * sign, char ** rve );
+_PDCLIB_LOCAL void _PDCLIB_freedtoa(char* s);
+_PDCLIB_LOCAL char* _PDCLIB_dtoa(double dd, int mode, int ndigits, int* decpt, int* sign, char** rve);
 
 /* -------------------------------------------------------------------------- */
 /* errno                                                                      */
@@ -478,7 +478,7 @@ _PDCLIB_LOCAL char * _PDCLIB_dtoa( double dd, int mode, int ndigits, int * decpt
    operating systems). That is why we use an internal name, providing a means to
    access it through <errno.h>.
 */
-_PDCLIB_PUBLIC int * _PDCLIB_errno_func( void );
+_PDCLIB_PUBLIC int* _PDCLIB_errno_func(void);
 
 /* -------------------------------------------------------------------------- */
 /* <locale.h> support                                                         */
@@ -506,20 +506,20 @@ _PDCLIB_PUBLIC int * _PDCLIB_errno_func( void );
 
 struct _PDCLIB_lc_lconv_numeric_t
 {
-    char * decimal_point;
-    char * thousands_sep;
-    char * grouping;
+    char* decimal_point;
+    char* thousands_sep;
+    char* grouping;
 };
 
 struct _PDCLIB_lc_lconv_monetary_t
 {
-    char * mon_decimal_point;
-    char * mon_thousands_sep;
-    char * mon_grouping;
-    char * positive_sign;
-    char * negative_sign;
-    char * currency_symbol;
-    char * int_curr_symbol;
+    char* mon_decimal_point;
+    char* mon_thousands_sep;
+    char* mon_grouping;
+    char* positive_sign;
+    char* negative_sign;
+    char* currency_symbol;
+    char* int_curr_symbol;
     char frac_digits;
     char p_cs_precedes;
     char n_cs_precedes;
@@ -538,7 +538,7 @@ struct _PDCLIB_lc_lconv_monetary_t
 
 struct _PDCLIB_lc_numeric_monetary_t
 {
-    struct lconv * lconv;
+    struct lconv* lconv;
     int numeric_alloced;
     int monetary_alloced;
 };
@@ -553,63 +553,63 @@ struct _PDCLIB_lc_collate_t
 };
 
 extern struct _PDCLIB_lc_collate_t _PDCLIB_lc_collate_C;
-extern struct _PDCLIB_lc_collate_t * _PDCLIB_lc_collate;
+extern struct _PDCLIB_lc_collate_t* _PDCLIB_lc_collate;
 
 /* One entry to the _PDCLIB_lc_ctype_t.entry data table */
 struct _PDCLIB_lc_ctype_entry_t
 {
-    _PDCLIB_uint_least16_t flags;  /* Whether a character is of a given CTYPE */
-    unsigned char upper;           /* Result for toupper() */
-    unsigned char lower;           /* Result for tolower() */
+    _PDCLIB_uint_least16_t flags; /* Whether a character is of a given CTYPE */
+    unsigned char upper; /* Result for toupper() */
+    unsigned char lower; /* Result for tolower() */
 };
 
 struct _PDCLIB_lc_ctype_t
 {
-    int alloced;                             /* .entry dynamically allocated? */
-    int digits_low;                          /* Where decimal digits start */
-    int digits_high;                         /* Where decimal digits end */
-    int Xdigits_low;                         /* Where A..F start */
-    int Xdigits_high;                        /* Where A..F end */
-    int xdigits_low;                         /* Where a..f start */
-    int xdigits_high;                        /* Where a..f end */
-    struct _PDCLIB_lc_ctype_entry_t * entry; /* The data table */
+    int alloced; /* .entry dynamically allocated? */
+    int digits_low; /* Where decimal digits start */
+    int digits_high; /* Where decimal digits end */
+    int Xdigits_low; /* Where A..F start */
+    int Xdigits_high; /* Where A..F end */
+    int xdigits_low; /* Where a..f start */
+    int xdigits_high; /* Where a..f end */
+    struct _PDCLIB_lc_ctype_entry_t* entry; /* The data table */
 };
 
 extern struct _PDCLIB_lc_ctype_t _PDCLIB_lc_ctype_C;
-extern struct _PDCLIB_lc_ctype_t * _PDCLIB_lc_ctype;
+extern struct _PDCLIB_lc_ctype_t* _PDCLIB_lc_ctype;
 
 struct _PDCLIB_lc_messages_t
 {
     int alloced;
-    char * errno_texts[_PDCLIB_ERRNO_MAX]; /* strerror() / perror()   */
+    char* errno_texts[_PDCLIB_ERRNO_MAX]; /* strerror() / perror()   */
 };
 
 extern struct _PDCLIB_lc_messages_t _PDCLIB_lc_messages_C;
-extern struct _PDCLIB_lc_messages_t * _PDCLIB_lc_messages;
+extern struct _PDCLIB_lc_messages_t* _PDCLIB_lc_messages;
 
 struct _PDCLIB_lc_time_t
 {
     int alloced;
-    char * month_name_abbr[12]; /* month names, abbreviated                   */
-    char * month_name_full[12]; /* month names, full                          */
-    char * day_name_abbr[7];    /* weekday names, abbreviated                 */
-    char * day_name_full[7];    /* weekday names, full                        */
-    char * date_time_format;    /* date / time format for strftime( "%c" )    */
-    char * time_format_12h;     /* 12-hour time format for strftime( "%r" )   */
-    char * date_format;         /* date format for strftime( "%x" )           */
-    char * time_format;         /* time format for strftime( "%X" )           */
-    char * am_pm[2];            /* AM / PM designation                        */
+    char* month_name_abbr[12]; /* month names, abbreviated                   */
+    char* month_name_full[12]; /* month names, full                          */
+    char* day_name_abbr[7]; /* weekday names, abbreviated                 */
+    char* day_name_full[7]; /* weekday names, full                        */
+    char* date_time_format; /* date / time format for strftime( "%c" )    */
+    char* time_format_12h; /* 12-hour time format for strftime( "%r" )   */
+    char* date_format; /* date format for strftime( "%x" )           */
+    char* time_format; /* time format for strftime( "%X" )           */
+    char* am_pm[2]; /* AM / PM designation                        */
 };
 
 extern struct _PDCLIB_lc_time_t _PDCLIB_lc_time_C;
-extern struct _PDCLIB_lc_time_t * _PDCLIB_lc_time;
+extern struct _PDCLIB_lc_time_t* _PDCLIB_lc_time;
 
-_PDCLIB_LOCAL struct _PDCLIB_lc_lconv_numeric_t * _PDCLIB_load_lc_numeric( const char * path, const char * locale );
-_PDCLIB_LOCAL struct _PDCLIB_lc_lconv_monetary_t * _PDCLIB_load_lc_monetary( const char * path, const char * locale );
-_PDCLIB_LOCAL struct _PDCLIB_lc_collate_t * _PDCLIB_load_lc_collate( const char * path, const char * locale );
-_PDCLIB_LOCAL struct _PDCLIB_lc_ctype_t * _PDCLIB_load_lc_ctype( const char * path, const char * locale );
-_PDCLIB_LOCAL struct _PDCLIB_lc_time_t * _PDCLIB_load_lc_time( const char * path, const char * locale );
-_PDCLIB_LOCAL struct _PDCLIB_lc_messages_t * _PDCLIB_load_lc_messages( const char * path, const char * locale );
+_PDCLIB_LOCAL struct _PDCLIB_lc_lconv_numeric_t* _PDCLIB_load_lc_numeric(const char* path, const char* locale);
+_PDCLIB_LOCAL struct _PDCLIB_lc_lconv_monetary_t* _PDCLIB_load_lc_monetary(const char* path, const char* locale);
+_PDCLIB_LOCAL struct _PDCLIB_lc_collate_t* _PDCLIB_load_lc_collate(const char* path, const char* locale);
+_PDCLIB_LOCAL struct _PDCLIB_lc_ctype_t* _PDCLIB_load_lc_ctype(const char* path, const char* locale);
+_PDCLIB_LOCAL struct _PDCLIB_lc_time_t* _PDCLIB_load_lc_time(const char* path, const char* locale);
+_PDCLIB_LOCAL struct _PDCLIB_lc_messages_t* _PDCLIB_load_lc_messages(const char* path, const char* locale);
 
 /* -------------------------------------------------------------------------- */
 /* _PDCLIB_bigint_t support (required for floating point conversions)         */
@@ -653,7 +653,7 @@ typedef _PDCLIB_int_least16_t _PDCLIB_bigint_sarith_t;
 typedef struct
 {
     /* Least significant digit first */
-    _PDCLIB_bigint_digit_t data[ _PDCLIB_BIGINT_DIGITS ];
+    _PDCLIB_bigint_digit_t data[_PDCLIB_BIGINT_DIGITS];
     /* Number of digits used; zero value == zero size */
     _PDCLIB_size_t size;
 } _PDCLIB_bigint_t;
@@ -662,26 +662,26 @@ typedef struct
 /* ----------- */
 
 /* Sets a bigint to pow2( n ) */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint2( _PDCLIB_bigint_t * bigint, unsigned n );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint2(_PDCLIB_bigint_t* bigint, unsigned n);
 
 /* Sets a bigint to pow10( n ) */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint10( _PDCLIB_bigint_t * bigint, unsigned n );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint10(_PDCLIB_bigint_t* bigint, unsigned n);
 
 /* Sets a bigint from a 32bit input value. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint32( _PDCLIB_bigint_t * bigint, _PDCLIB_uint_least32_t value );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint32(_PDCLIB_bigint_t* bigint, _PDCLIB_uint_least32_t value);
 
 /* Sets a bigint from two 32bit input values. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint64( _PDCLIB_bigint_t * bigint, _PDCLIB_uint_least32_t high, _PDCLIB_uint_least32_t low );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint64(_PDCLIB_bigint_t* bigint, _PDCLIB_uint_least32_t high, _PDCLIB_uint_least32_t low);
 
 /* Sets a bigint to the mantissa of a floating point value, as used rather
    specifically in _PDCLIB_print_fp.c.
 */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_mant( _PDCLIB_bigint_t * bigint, unsigned char const * mant, _PDCLIB_size_t mant_dig );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_mant(_PDCLIB_bigint_t* bigint, unsigned char const* mant, _PDCLIB_size_t mant_dig);
 
 /* Sets a bigint from another bigint. (Copies only value->size digits, so it is
    faster than a POD copy of a _PDCLIB_bigint_t in most cases.)
 */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint( _PDCLIB_bigint_t * _PDCLIB_restrict bigint, _PDCLIB_bigint_t const * _PDCLIB_restrict value );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint(_PDCLIB_bigint_t* _PDCLIB_restrict bigint, _PDCLIB_bigint_t const* _PDCLIB_restrict value);
 
 /* Comparison, Output */
 /* ------------------ */
@@ -689,39 +689,39 @@ _PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint( _PDCLIB_bigint_t * _PDCLIB_rest
 /* Compares two given bigint values. Returns 0 if lhs == rhs, a negative number
    if lhs < rhs, and a positive number if lhs > rhs.
 */
-_PDCLIB_LOCAL int _PDCLIB_bigint_cmp( _PDCLIB_bigint_t const * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs );
+_PDCLIB_LOCAL int _PDCLIB_bigint_cmp(_PDCLIB_bigint_t const* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs);
 
 /* Writes a hexadecimal representation of the given bigint into the given buffer.
    Buffer should be at least _PDCLIB_BIGINT_CHARS in size.
 */
-_PDCLIB_LOCAL char * _PDCLIB_bigint_tostring( _PDCLIB_bigint_t const * _PDCLIB_restrict value, char * _PDCLIB_restrict buffer );
+_PDCLIB_LOCAL char* _PDCLIB_bigint_tostring(_PDCLIB_bigint_t const* _PDCLIB_restrict value, char* _PDCLIB_restrict buffer);
 
 /* Operations (in-place) */
 /* --------------------- */
 
 /* Adds to a given bigint another given bigint. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_add( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_add(_PDCLIB_bigint_t* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs);
 
 /* Substracts from a given bigint another given bigint. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_sub( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_sub(_PDCLIB_bigint_t* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs);
 
 /* Multiplies a given bigint with a given 32bit value. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_mul_dig( _PDCLIB_bigint_t * lhs, _PDCLIB_bigint_digit_t rhs );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_mul_dig(_PDCLIB_bigint_t* lhs, _PDCLIB_bigint_digit_t rhs);
 
 /* Divides a given bigint by a given 32bit value. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_div_dig( _PDCLIB_bigint_t * lhs, _PDCLIB_bigint_digit_t rhs );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_div_dig(_PDCLIB_bigint_t* lhs, _PDCLIB_bigint_digit_t rhs);
 
 /* Shifts a given bigint left by a given count of bits. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_shl( _PDCLIB_bigint_t * lhs, unsigned rhs );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_shl(_PDCLIB_bigint_t* lhs, unsigned rhs);
 
 /* Operations (into new bigint) */
 /* ---------------------------- */
 
 /* Multiplies a given bigint with another given bigint. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_mul( _PDCLIB_bigint_t * _PDCLIB_restrict result, _PDCLIB_bigint_t const * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_mul(_PDCLIB_bigint_t* _PDCLIB_restrict result, _PDCLIB_bigint_t const* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs);
 
 /* Divides a given bigint by another given bigint. */
-_PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_div( _PDCLIB_bigint_t * _PDCLIB_restrict result, _PDCLIB_bigint_t const * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs );
+_PDCLIB_LOCAL _PDCLIB_bigint_t* _PDCLIB_bigint_div(_PDCLIB_bigint_t* _PDCLIB_restrict result, _PDCLIB_bigint_t const* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs);
 
 /* Queries */
 /* ------- */
@@ -729,12 +729,12 @@ _PDCLIB_LOCAL _PDCLIB_bigint_t * _PDCLIB_bigint_div( _PDCLIB_bigint_t * _PDCLIB_
 /* Returns the log2() of a given bigint, i.e. the offset of the highest
    bit set.
 */
-_PDCLIB_LOCAL unsigned _PDCLIB_bigint_log2( _PDCLIB_bigint_t const * bigint );
+_PDCLIB_LOCAL unsigned _PDCLIB_bigint_log2(_PDCLIB_bigint_t const* bigint);
 
 /* Returns the "inverse" log2() of a given bigint, i.e. the offset of the
    lowest bit set.
 */
-_PDCLIB_LOCAL unsigned _PDCLIB_bigint_invlog2( _PDCLIB_bigint_t const * bigint );
+_PDCLIB_LOCAL unsigned _PDCLIB_bigint_invlog2(_PDCLIB_bigint_t const* bigint);
 
 /* FP Conversions */
 /* -------------- */
@@ -742,51 +742,55 @@ _PDCLIB_LOCAL unsigned _PDCLIB_bigint_invlog2( _PDCLIB_bigint_t const * bigint )
 /* Split a float into its integral components.
    Returns 1 if value is negative, zero otherwise.
 */
-_PDCLIB_LOCAL int _PDCLIB_float_split( float value, unsigned * exponent, _PDCLIB_bigint_t * significand );
+_PDCLIB_LOCAL int _PDCLIB_float_split(float value, unsigned* exponent, _PDCLIB_bigint_t* significand);
 
 /* Split a double into its integral components.
    Returns 1 if value is negative, zero otherwise.
 */
-_PDCLIB_LOCAL int _PDCLIB_double_split( double value, unsigned * exponent, _PDCLIB_bigint_t * significand );
+_PDCLIB_LOCAL int _PDCLIB_double_split(double value, unsigned* exponent, _PDCLIB_bigint_t* significand);
 
 /* Split a long double into its integral components.
    Returns 1 if value is negative, zero otherwise.
 */
-_PDCLIB_LOCAL int _PDCLIB_long_double_split( long double value, unsigned * exponent, _PDCLIB_bigint_t * significand );
+_PDCLIB_LOCAL int _PDCLIB_long_double_split(long double value, unsigned* exponent, _PDCLIB_bigint_t* significand);
 
 /* -------------------------------------------------------------------------- */
 /* Sanity checks                                                              */
 /* -------------------------------------------------------------------------- */
 
 /* signed-ness of char */
-_PDCLIB_static_assert( _PDCLIB_CHAR_MIN == ((((char) -1) < 0) ? _PDCLIB_SCHAR_MIN : 0), "Compiler disagrees on signed-ness of 'char'." );
+_PDCLIB_static_assert(_PDCLIB_CHAR_MIN == ((((char) -1) < 0) ? _PDCLIB_SCHAR_MIN : 0), "Compiler disagrees on signed-ness of 'char'.");
 
 /* two's complement */
 #if _PDCLIB_TWOS_COMPLEMENT == 1
 #if _PDCLIB_CHAR_MIN < 0
-_PDCLIB_static_assert( ((char) ~ (char) 0 < 0), "Not two's complement on 'char'." );
+_PDCLIB_static_assert(((char) ~ (char) 0 < 0), "Not two's complement on 'char'.");
 #endif
-_PDCLIB_static_assert( ((short) ~ (short) 0 < 0), "Not two's complement on 'short'." );
-_PDCLIB_static_assert( ((int) ~ (int) 0 < 0), "Not two's complement on 'int'." );
-_PDCLIB_static_assert( ((long) ~ (long) 0 < 0), "Not two's complement on 'long'." );
-_PDCLIB_static_assert( ((long long) ~ (long long) 0 < 0), "Not two's complement on 'long long'." );
+_PDCLIB_static_assert(((short) ~ (short) 0 < 0), "Not two's complement on 'short'.");
+
+_PDCLIB_static_assert(((int) ~ (int) 0 < 0), "Not two's complement on 'int'.");
+
+_PDCLIB_static_assert(((long) ~ (long) 0 < 0), "Not two's complement on 'long'.");
+
+_PDCLIB_static_assert(((long long) ~ (long long) 0 < 0), "Not two's complement on 'long long'.");
 #endif
 
 /* size_t as the result of sizeof */
-_PDCLIB_static_assert( sizeof( sizeof( int ) ) == sizeof( _PDCLIB_size_t ), "Compiler disagrees on size_t." );
+_PDCLIB_static_assert(sizeof( sizeof( int ) ) == sizeof( _PDCLIB_size_t ), "Compiler disagrees on size_t.");
 
 /* wchar_t as the type of wide character literals */
-_PDCLIB_static_assert( sizeof( _PDCLIB_wchar_t ) == sizeof( L'x' ), "Compiler disagrees on wchar_t." );
+_PDCLIB_static_assert(sizeof( _PDCLIB_wchar_t ) == sizeof( L'x' ), "Compiler disagrees on wchar_t.");
 #ifdef __cplusplus
 _PDCLIB_static_assert( sizeof( _PDCLIB_wchar_t ) == sizeof( wchar_t ), "Compiler disagrees on wchar_t (C++)." );
 #endif
 
 /* intptr_t/uintptr_t being wide enough to store the value of a pointer */
-_PDCLIB_static_assert( sizeof( void * ) == sizeof( _PDCLIB_intptr_t ), "Compiler disagrees on intptr_t." );
-_PDCLIB_static_assert( sizeof( void * ) == sizeof( _PDCLIB_uintptr_t ), "Compiler disagrees on uintptr_t." );
+_PDCLIB_static_assert(sizeof( void * ) == sizeof( _PDCLIB_intptr_t ), "Compiler disagrees on intptr_t.");
+
+_PDCLIB_static_assert(sizeof( void * ) == sizeof( _PDCLIB_uintptr_t ), "Compiler disagrees on uintptr_t.");
 
 /* ptrdiff_t as the result of pointer arithmetic */
-_PDCLIB_static_assert( sizeof( &_PDCLIB_digits[1] - &_PDCLIB_digits[0] ) == sizeof( _PDCLIB_ptrdiff_t ), "Compiler disagrees on ptrdiff_t." );
+_PDCLIB_static_assert(sizeof( &_PDCLIB_digits[1] - &_PDCLIB_digits[0] ) == sizeof( _PDCLIB_ptrdiff_t ), "Compiler disagrees on ptrdiff_t.");
 
 #ifdef __cplusplus
 }

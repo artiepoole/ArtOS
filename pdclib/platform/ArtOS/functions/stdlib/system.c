@@ -14,11 +14,13 @@ extern "C" {
 #endif
 
 int fork(void) { return 0; }
+
 int execve(const char* filename, char* const argv[], char* const envp[])
 {
     // TODO: Read an executable and load into memory and do context switching etc.
     return 0;
 }
+
 int wait(int* status) { return 0; }
 int _PDCLIB_rename(const char* oldpath, const char* newpath) { return 0; }
 #ifdef __cplusplus

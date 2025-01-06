@@ -11,45 +11,45 @@
 
 #include "pdclib/_PDCLIB_print.h"
 
-static void intformat( intmax_t value, struct _PDCLIB_status_t * status )
+static void intformat(intmax_t value, struct _PDCLIB_status_t* status)
 {
     /* At worst, we need two prefix characters (hex prefix). */
     char preface[3] = "\0";
     size_t preidx = 0;
 
-    if ( status->prec < 0 )
+    if (status->prec < 0)
     {
         status->prec = 1;
     }
 
-    if ( ( status->flags & E_alt ) && ( status->base == 16 || status->base == 8 ) && ( value != 0 ) )
+    if ((status->flags & E_alt) && (status->base == 16 || status->base == 8) && (value != 0))
     {
         /* Octal / hexadecimal prefix for "%#" conversions */
-        preface[ preidx++ ] = '0';
+        preface[preidx++] = '0';
 
-        if ( status->base == 16 )
+        if (status->base == 16)
         {
-            preface[ preidx++ ] = ( status->flags & E_lower ) ? 'x' : 'X';
+            preface[preidx++] = (status->flags & E_lower) ? 'x' : 'X';
         }
     }
 
-    if ( value < 0 )
+    if (value < 0)
     {
         /* Negative sign for negative values - at all times. */
-        preface[ preidx++ ] = '-';
+        preface[preidx++] = '-';
     }
-    else if ( !( status->flags & E_unsigned ) )
+    else if (!(status->flags & E_unsigned))
     {
         /* plus sign / extra space are only for signed conversions */
-        if ( status->flags & E_plus )
+        if (status->flags & E_plus)
         {
-            preface[ preidx++ ] = '+';
+            preface[preidx++] = '+';
         }
         else
         {
-            if ( status->flags & E_space )
+            if (status->flags & E_space)
             {
-                preface[ preidx++ ] = ' ';
+                preface[preidx++] = ' ';
             }
         }
     }
@@ -58,9 +58,9 @@ static void intformat( intmax_t value, struct _PDCLIB_status_t * status )
         /* At this point, status->current has the number of digits queued up.
            Determine if we have a precision requirement to pad those.
         */
-        size_t prec_pads = ( ( _PDCLIB_size_t )status->prec > status->current ) ? ( ( _PDCLIB_size_t )status->prec - status->current ) : 0;
+        size_t prec_pads = ((_PDCLIB_size_t)status->prec > status->current) ? ((_PDCLIB_size_t)status->prec - status->current) : 0;
 
-        if ( !( status->flags & ( E_minus | E_zero ) ) )
+        if (!(status->flags & (E_minus | E_zero)))
         {
             /* Space padding is only done if no zero padding or left alignment
                is requested. Calculate the number of characters that WILL be
@@ -71,16 +71,16 @@ static void intformat( intmax_t value, struct _PDCLIB_status_t * status )
                I've ever perpetrated. Greetings to Samface, DevL, and all
                sceners at Breakpoint 2006.
             */
-            size_t characters = preidx + ( ( status->current > ( _PDCLIB_size_t )status->prec ) ? status->current : ( _PDCLIB_size_t )status->prec );
+            size_t characters = preidx + ((status->current > (_PDCLIB_size_t)status->prec) ? status->current : (_PDCLIB_size_t)status->prec);
 
-            if ( status->width > characters )
+            if (status->width > characters)
             {
                 size_t i;
 
-                for ( i = 0; i < status->width - characters; ++i )
+                for (i = 0; i < status->width - characters; ++i)
                 {
-                    PUT( ' ' );
-                    ++( status->current );
+                    PUT(' ');
+                    ++(status->current);
                 }
             }
         }
@@ -88,28 +88,28 @@ static void intformat( intmax_t value, struct _PDCLIB_status_t * status )
         /* Now we did the padding, do the prefixes (if any). */
         preidx = 0;
 
-        while ( preface[ preidx ] != '\0' )
+        while (preface[preidx] != '\0')
         {
-            PUT( preface[ preidx++ ] );
-            ++( status->current );
+            PUT(preface[ preidx++ ]);
+            ++(status->current);
         }
 
         /* Do the precision padding if necessary. */
-        while ( prec_pads-- > 0 )
+        while (prec_pads-- > 0)
         {
-            PUT( '0' );
-            ++( status->current );
+            PUT('0');
+            ++(status->current);
         }
 
-        if ( ( !( status->flags & E_minus ) ) && ( status->flags & E_zero ) )
+        if ((!(status->flags & E_minus)) && (status->flags & E_zero))
         {
             /* If field is not left aligned, and zero padding is requested, do
                so.
             */
-            while ( status->current < status->width )
+            while (status->current < status->width)
             {
-                PUT( '0' );
-                ++( status->current );
+                PUT('0');
+                ++(status->current);
             }
         }
     }
@@ -123,37 +123,37 @@ static void intformat( intmax_t value, struct _PDCLIB_status_t * status )
    output once the number of characters to be printed is known, which happens
    at the lowermost recursion level.
 */
-void _PDCLIB_print_integer( imaxdiv_t div, struct _PDCLIB_status_t * status )
+void _PDCLIB_print_integer(imaxdiv_t div, struct _PDCLIB_status_t* status)
 {
-    if ( status->current == 0 && div.quot == 0 && div.rem == 0 && status->prec == 0 )
+    if (status->current == 0 && div.quot == 0 && div.rem == 0 && status->prec == 0)
     {
-        intformat( 0, status );
+        intformat(0, status);
     }
     else
     {
         ++(status->current);
 
-        if ( div.quot != 0 )
+        if (div.quot != 0)
         {
-            _PDCLIB_print_integer( imaxdiv( div.quot, status->base ), status );
+            _PDCLIB_print_integer(imaxdiv(div.quot, status->base), status);
         }
         else
         {
-            intformat( div.rem, status );
+            intformat(div.rem, status);
         }
 
-        if ( div.rem < 0 )
+        if (div.rem < 0)
         {
             div.rem *= -1;
         }
 
-        if ( status->flags & E_lower )
+        if (status->flags & E_lower)
         {
-            PUT( _PDCLIB_digits[ div.rem ] );
+            PUT(_PDCLIB_digits[ div.rem ]);
         }
         else
         {
-            PUT( _PDCLIB_Xdigits[ div.rem ] );
+            PUT(_PDCLIB_Xdigits[ div.rem ]);
         }
     }
 }

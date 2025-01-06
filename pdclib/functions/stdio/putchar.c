@@ -8,9 +8,9 @@
 
 #ifndef REGTEST
 
-int putchar( int c )
+int putchar(int c)
 {
-    return fputc( c, stdout );
+    return fputc(c, stdout);
 }
 
 #endif

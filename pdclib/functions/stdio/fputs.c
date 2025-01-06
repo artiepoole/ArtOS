@@ -14,31 +14,31 @@
 #include <threads.h>
 #endif
 
-int fputs( const char * _PDCLIB_restrict s, struct _PDCLIB_file_t * _PDCLIB_restrict stream )
+int fputs(const char* _PDCLIB_restrict s, struct _PDCLIB_file_t* _PDCLIB_restrict stream)
 {
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( _PDCLIB_prepwrite( stream ) == EOF )
+    if (_PDCLIB_prepwrite(stream) == EOF)
     {
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
         return EOF;
     }
 
-    while ( *s != '\0' )
+    while (*s != '\0')
     {
         /* Unbuffered and line buffered streams get flushed when fputs() does
            write the terminating end-of-line. All streams get flushed if the
            buffer runs full.
         */
-        stream->buffer[ stream->bufidx++ ] = *s;
+        stream->buffer[stream->bufidx++] = *s;
 
-        if ( ( stream->bufidx == stream->bufsize ) ||
-             ( ( stream->status & _IOLBF ) && *s == '\n' )
-           )
+        if ((stream->bufidx == stream->bufsize) ||
+            ((stream->status & _IOLBF) && *s == '\n')
+        )
         {
-            if ( _PDCLIB_flushbuffer( stream ) == EOF )
+            if (_PDCLIB_flushbuffer(stream) == EOF)
             {
-                _PDCLIB_UNLOCK( stream->mtx );
+                _PDCLIB_UNLOCK(stream->mtx);
                 return EOF;
             }
         }
@@ -46,16 +46,16 @@ int fputs( const char * _PDCLIB_restrict s, struct _PDCLIB_file_t * _PDCLIB_rest
         ++s;
     }
 
-    if ( stream->status & _IONBF )
+    if (stream->status & _IONBF)
     {
-        if ( _PDCLIB_flushbuffer( stream ) == EOF )
+        if (_PDCLIB_flushbuffer(stream) == EOF)
         {
-            _PDCLIB_UNLOCK( stream->mtx );
+            _PDCLIB_UNLOCK(stream->mtx);
             return EOF;
         }
     }
 
-    _PDCLIB_UNLOCK( stream->mtx );
+    _PDCLIB_UNLOCK(stream->mtx);
 
     return 0;
 }

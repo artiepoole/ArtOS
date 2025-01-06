@@ -8,9 +8,9 @@
 
 #ifndef REGTEST
 
-int atoi( const char * s )
+int atoi(const char* s)
 {
-    return ( int ) _PDCLIB_atomax( s );
+    return (int)_PDCLIB_atomax(s);
 }
 
 #endif

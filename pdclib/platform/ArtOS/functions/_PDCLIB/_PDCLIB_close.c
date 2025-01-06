@@ -24,9 +24,9 @@ extern int close(size_t fd);
 }
 #endif
 
-int _PDCLIB_close( int fd )
+int _PDCLIB_close(int fd)
 {
-    return close( fd );
+    return close(fd);
 }
 
 #endif

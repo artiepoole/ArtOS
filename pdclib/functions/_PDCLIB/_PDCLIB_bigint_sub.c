@@ -12,32 +12,32 @@
 #include <stddef.h>
 #include <stdint.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint_sub( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs )
+_PDCLIB_bigint_t* _PDCLIB_bigint_sub(_PDCLIB_bigint_t* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs)
 {
     size_t i;
     unsigned carry = 0;
 
-    assert( _PDCLIB_bigint_cmp( lhs, rhs ) >= 0 );
+    assert(_PDCLIB_bigint_cmp( lhs, rhs ) >= 0);
 
-    for ( i = 0; i < rhs->size; ++i )
+    for (i = 0; i < rhs->size; ++i)
     {
         int newcarry;
 
-        if ( ( newcarry = ( lhs->data[i] < rhs->data[i] ) || ( carry && ( lhs->data[i] == rhs->data[i] ) ) ) )
+        if ((newcarry = (lhs->data[i] < rhs->data[i]) || (carry && (lhs->data[i] == rhs->data[i]))))
         {
-            lhs->data[i] += ( _PDCLIB_BIGINT_DIGIT_MAX - rhs->data[i] ) + ( 1 - carry );
+            lhs->data[i] += (_PDCLIB_BIGINT_DIGIT_MAX - rhs->data[i]) + (1 - carry);
         }
         else
         {
-            lhs->data[i] -= ( rhs->data[i] + carry );
+            lhs->data[i] -= (rhs->data[i] + carry);
         }
 
         carry = newcarry;
     }
 
-    for ( ; carry; ++i )
+    for (; carry; ++i)
     {
-        if ( lhs->data[i] > 0 )
+        if (lhs->data[i] > 0)
         {
             --lhs->data[i];
             carry = 0;
@@ -48,7 +48,7 @@ _PDCLIB_bigint_t * _PDCLIB_bigint_sub( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, 
         }
     }
 
-    while ( lhs->size > 0 && lhs->data[ lhs->size - 1 ] == 0 )
+    while (lhs->size > 0 && lhs->data[lhs->size - 1] == 0)
     {
         --lhs->size;
     }

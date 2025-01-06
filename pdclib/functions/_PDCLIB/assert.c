@@ -10,17 +10,17 @@
 
 #ifndef REGTEST
 
-void _PDCLIB_assert99( const char * const message1, const char * const function, const char * const message2 )
+void _PDCLIB_assert99(const char* const message1, const char* const function, const char* const message2)
 {
-    fputs( message1, stderr );
-    fputs( function, stderr );
-    fputs( message2, stderr );
+    fputs(message1, stderr);
+    fputs(function, stderr);
+    fputs(message2, stderr);
     abort();
 }
 
-void _PDCLIB_assert89( const char * const message )
+void _PDCLIB_assert89(const char* const message)
 {
-    fputs( message, stderr );
+    fputs(message, stderr);
     abort();
 }
 

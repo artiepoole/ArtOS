@@ -8,9 +8,9 @@
 
 #ifndef REGTEST
 
-void clearerr( struct _PDCLIB_file_t * stream )
+void clearerr(struct _PDCLIB_file_t* stream)
 {
-    stream->status &= ~( _PDCLIB_ERRORFLAG | _PDCLIB_EOFFLAG );
+    stream->status &= ~(_PDCLIB_ERRORFLAG | _PDCLIB_EOFFLAG);
 }
 
 #endif

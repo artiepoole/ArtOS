@@ -8,7 +8,7 @@
 
 #include "pdclib/_PDCLIB_tzcode.h"
 
-void _PDCLIB_update_tzname_etc( struct state const * sp, struct ttinfo const * ttisp )
+void _PDCLIB_update_tzname_etc(struct state const* sp, struct ttinfo const* ttisp)
 {
 #if HAVE_TZNAME
     tzname[ ttisp->isdst ] = (char *) &sp->chars[ ttisp->desigidx ];

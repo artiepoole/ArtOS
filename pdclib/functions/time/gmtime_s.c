@@ -13,16 +13,16 @@
 
 #include "pdclib/_PDCLIB_tzcode.h"
 
-struct tm * gmtime_s( const time_t * _PDCLIB_restrict timer, struct tm * _PDCLIB_restrict result )
+struct tm* gmtime_s(const time_t* _PDCLIB_restrict timer, struct tm* _PDCLIB_restrict result)
 {
-    if ( timer == NULL || result == NULL )
+    if (timer == NULL || result == NULL)
     {
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return NULL;
     }
 
     _PDCLIB_gmtcheck();
-    return _PDCLIB_gmtsub( &_PDCLIB_gmtmem, timer, 0, result );
+    return _PDCLIB_gmtsub(&_PDCLIB_gmtmem, timer, 0, result);
 }
 
 #endif

@@ -14,7 +14,8 @@
 extern "C" {
 #endif
 
-extern char * realpath( const char * file_name, char * resolved_name ) {
+extern char* realpath(const char* file_name, char* resolved_name)
+{
     // TODO this is a stub
     return file_name;
 }
@@ -23,9 +24,9 @@ extern char * realpath( const char * file_name, char * resolved_name ) {
 }
 #endif
 
-char * _PDCLIB_realpath( const char * path )
+char* _PDCLIB_realpath(const char* path)
 {
-    return realpath( path, NULL );
+    return realpath(path, NULL);
 }
 
 #endif

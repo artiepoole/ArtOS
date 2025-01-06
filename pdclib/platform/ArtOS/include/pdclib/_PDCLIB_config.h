@@ -53,33 +53,33 @@
 */
 
 #ifdef _PDCLIB_STATIC_DEFINE
-  #define _PDCLIB_PUBLIC
-  #define _PDCLIB_LOCAL
+#define _PDCLIB_PUBLIC
+#define _PDCLIB_LOCAL
 #else
-  #if defined _WIN32 || defined __CYGWIN__
-    #ifdef _PDCLIB_BUILD
-      #ifdef __GNUC__
+#if defined _WIN32 || defined __CYGWIN__
+#ifdef _PDCLIB_BUILD
+#ifdef __GNUC__
         #define _PDCLIB_PUBLIC __attribute__ ((dllexport))
-      #else
+#else
         #define _PDCLIB_PUBLIC __declspec(dllexport)
-      #endif
-    #else
-      #ifdef __GNUC__
+#endif
+#else
+#ifdef __GNUC__
         #define _PDCLIB_PUBLIC __attribute__ ((dllimport))
-      #else
+#else
         #define _PDCLIB_PUBLIC __declspec(dllimport)
-      #endif
-    #endif
+#endif
+#endif
     #define _PDCLIB_LOCAL
-  #else
-    #if __GNUC__ >= 4
+#else
+#if __GNUC__ >= 4
       #define _PDCLIB_PUBLIC __attribute__ ((visibility ("default")))
       #define _PDCLIB_LOCAL  __attribute__ ((visibility ("hidden")))
-    #else
+#else
       #define _PDCLIB_PUBLIC
       #define _PDCLIB_LOCAL
-    #endif
-  #endif
+#endif
+#endif
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -548,7 +548,7 @@ struct _PDCLIB_imaxdiv_t
 /* Internal helper macro. va_round is not part of <stdarg.h>.                 */
 #define _PDCLIB_va_round( type ) ( (sizeof(type) + sizeof(void *) - 1) & ~(sizeof(void *) - 1) )
 
-typedef char * _PDCLIB_va_list;
+typedef char* _PDCLIB_va_list;
 #define _PDCLIB_va_arg( ap, type ) ( (ap) += (_PDCLIB_va_round(type)), ( *(type*) ( (ap) - (_PDCLIB_va_round(type)) ) ) )
 #define _PDCLIB_va_copy( dest, src ) ( (dest) = (src), (void)0 )
 #define _PDCLIB_va_end( ap ) ( (ap) = (void *)0, (void)0 )

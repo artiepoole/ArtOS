@@ -10,7 +10,7 @@
 
 #include <locale.h>
 
-int tolower( int c )
+int tolower(int c)
 {
     return _PDCLIB_lc_ctype->entry[c].lower;
 }

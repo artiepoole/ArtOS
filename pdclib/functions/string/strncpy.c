@@ -22,7 +22,7 @@ char* strncpy(char* _PDCLIB_restrict dest, const char* _PDCLIB_restrict src, siz
     }
 
     /* Checking against 1 as we missed the last --n in the loop above. */
-    while ( n-- > 1 )
+    while (n-- > 1)
     {
         *dest++ = '\0';
     }

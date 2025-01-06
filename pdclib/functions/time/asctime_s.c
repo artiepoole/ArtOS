@@ -13,27 +13,27 @@
 
 #include "stdio.h"
 
-errno_t asctime_s( char * s, rsize_t maxsize, const struct tm * timeptr )
+errno_t asctime_s(char* s, rsize_t maxsize, const struct tm* timeptr)
 {
-    if ( s == NULL || timeptr == NULL || maxsize < 26 || maxsize > RSIZE_MAX || timeptr->tm_year < -1900 || timeptr->tm_year > 8099 /* TODO: || not normalized */ )
+    if (s == NULL || timeptr == NULL || maxsize < 26 || maxsize > RSIZE_MAX || timeptr->tm_year < -1900 || timeptr->tm_year > 8099 /* TODO: || not normalized */)
     {
-        if ( s != NULL && maxsize > 0 && maxsize <= RSIZE_MAX )
+        if (s != NULL && maxsize > 0 && maxsize <= RSIZE_MAX)
         {
             s[0] = '\0';
         }
 
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
-    sprintf( s, "%s %s %2d %.2d:%.2d:%.2d %4d\n",
-             _PDCLIB_lc_time_C.day_name_abbr[ timeptr->tm_wday ],
-             _PDCLIB_lc_time_C.month_name_abbr[ timeptr->tm_mon ],
-             timeptr->tm_mday,
-             timeptr->tm_hour,
-             timeptr->tm_min,
-             timeptr->tm_sec,
-             timeptr->tm_year + 1900 );
+    sprintf(s, "%s %s %2d %.2d:%.2d:%.2d %4d\n",
+            _PDCLIB_lc_time_C.day_name_abbr[timeptr->tm_wday],
+            _PDCLIB_lc_time_C.month_name_abbr[timeptr->tm_mon],
+            timeptr->tm_mday,
+            timeptr->tm_hour,
+            timeptr->tm_min,
+            timeptr->tm_sec,
+            timeptr->tm_year + 1900);
 
     return 0;
 }

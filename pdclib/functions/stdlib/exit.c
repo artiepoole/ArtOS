@@ -12,17 +12,17 @@
    functions that had already been called at the time it was registered."
 */
 
-void ( *_PDCLIB_exitstack[ _PDCLIB_ATEXIT_SLOTS ] )( void );
+void (*_PDCLIB_exitstack[_PDCLIB_ATEXIT_SLOTS])(void);
 size_t _PDCLIB_exitptr = 0;
 
-void exit( int status )
+void exit(int status)
 {
-    while ( _PDCLIB_exitptr != 0 )
+    while (_PDCLIB_exitptr != 0)
     {
-        _PDCLIB_exitstack[ --_PDCLIB_exitptr ]();
+        _PDCLIB_exitstack[--_PDCLIB_exitptr]();
     }
 
-    _Exit( status );
+    _Exit(status);
 }
 
 #endif

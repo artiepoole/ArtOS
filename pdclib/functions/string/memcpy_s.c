@@ -11,16 +11,16 @@
 
 #ifndef REGTEST
 
-errno_t memcpy_s( void * _PDCLIB_restrict s1, rsize_t s1max, const void * _PDCLIB_restrict s2, rsize_t n )
+errno_t memcpy_s(void* _PDCLIB_restrict s1, rsize_t s1max, const void* _PDCLIB_restrict s2, rsize_t n)
 {
-    char * dest = ( char * ) s1;
-    const char * src = ( const char * ) s2;
+    char* dest = (char*)s1;
+    const char* src = (const char*)s2;
 
-    if ( s1 != NULL && s2 != NULL && s1max <= RSIZE_MAX && n <= RSIZE_MAX && n <= s1max )
+    if (s1 != NULL && s2 != NULL && s1max <= RSIZE_MAX && n <= RSIZE_MAX && n <= s1max)
     {
-        while ( n-- )
+        while (n--)
         {
-            if ( dest == s2 || src == s1 )
+            if (dest == s2 || src == s1)
             {
                 goto runtime_constraint_violation;
             }
@@ -33,12 +33,12 @@ errno_t memcpy_s( void * _PDCLIB_restrict s1, rsize_t s1max, const void * _PDCLI
 
 runtime_constraint_violation:
 
-    if ( s1 != NULL && s1max <= RSIZE_MAX )
+    if (s1 != NULL && s1max <= RSIZE_MAX)
     {
-        memset( s1, 0, s1max );
+        memset(s1, 0, s1max);
     }
 
-    _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+    _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
     return _PDCLIB_EINVAL;
 }
 

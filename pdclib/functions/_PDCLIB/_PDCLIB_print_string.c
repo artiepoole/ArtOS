@@ -15,25 +15,25 @@
 /* Print a "string" (%c, %s) under control of a given status struct. See
    INT2BASE().
 */
-void _PDCLIB_print_string( const char * s, struct _PDCLIB_status_t * status )
+void _PDCLIB_print_string(const char* s, struct _PDCLIB_status_t* status)
 {
-    if ( status->flags & E_char )
+    if (status->flags & E_char)
     {
         status->prec = 1;
     }
     else
     {
-        if ( status->prec < 0 )
+        if (status->prec < 0)
         {
-            status->prec = strlen( s );
+            status->prec = strlen(s);
         }
         else
         {
             int i;
 
-            for ( i = 0; i < status->prec; ++i )
+            for (i = 0; i < status->prec; ++i)
             {
-                if ( s[i] == 0 )
+                if (s[i] == 0)
                 {
                     status->prec = i;
                     break;
@@ -42,28 +42,28 @@ void _PDCLIB_print_string( const char * s, struct _PDCLIB_status_t * status )
         }
     }
 
-    if ( !( status->flags & E_minus ) && ( status->width > ( _PDCLIB_size_t )status->prec ) )
+    if (!(status->flags & E_minus) && (status->width > (_PDCLIB_size_t)status->prec))
     {
-        while ( status->current < ( status->width - status->prec ) )
+        while (status->current < (status->width - status->prec))
         {
-            PUT( ' ' );
-            ++( status->current );
+            PUT(' ');
+            ++(status->current);
         }
     }
 
-    while ( status->prec > 0 )
+    while (status->prec > 0)
     {
-        PUT( *( s++ ) );
-        --( status->prec );
-        ++( status->current );
+        PUT(*( s++ ));
+        --(status->prec);
+        ++(status->current);
     }
 
-    if ( status->flags & E_minus )
+    if (status->flags & E_minus)
     {
-        while ( status->width > status->current )
+        while (status->width > status->current)
         {
-            PUT( ' ' );
-            ++( status->current );
+            PUT(' ');
+            ++(status->current);
         }
     }
 }

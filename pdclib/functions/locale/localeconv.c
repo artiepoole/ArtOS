@@ -8,7 +8,7 @@
 
 #ifndef REGTEST
 
-struct lconv * localeconv( void )
+struct lconv* localeconv(void)
 {
     return _PDCLIB_lc_numeric_monetary.lconv;
 }

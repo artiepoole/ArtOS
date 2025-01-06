@@ -123,7 +123,7 @@ int I_CDMusPlay(int track)
     cd_Error = 0;
     return result;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -138,7 +138,7 @@ int I_CDMusStop(void)
 
     return result;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -153,7 +153,7 @@ int I_CDMusResume(void)
 
     return result;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -195,7 +195,7 @@ int I_CDMusFirstTrack(void)
 
     return -1;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -212,7 +212,7 @@ int I_CDMusLastTrack(void)
 
     return cd_handle->numtracks;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -237,7 +237,6 @@ int I_CDMusTrackLength(int track_num)
 
     return (track->length + CD_FPS - 1) / CD_FPS;
 #else
-	return 0;
+    return 0;
 #endif
 }
-

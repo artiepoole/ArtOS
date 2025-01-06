@@ -13,7 +13,7 @@
 #include <threads.h>
 #endif
 
-long int ftell( struct _PDCLIB_file_t * stream )
+long int ftell(struct _PDCLIB_file_t* stream)
 {
     /* ftell() must take into account:
        - the actual *physical* offset of the file, i.e. the offset as recognized
@@ -34,18 +34,18 @@ long int ftell( struct _PDCLIB_file_t * stream )
         offset value.
     */
     long int rc;
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( ( stream->pos.offset - stream->bufend ) > ( LONG_MAX - ( stream->bufidx - stream->ungetidx ) ) )
+    if ((stream->pos.offset - stream->bufend) > (LONG_MAX - (stream->bufidx - stream->ungetidx)))
     {
         /* integer overflow */
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
         *_PDCLIB_errno_func() = _PDCLIB_ERANGE;
         return -1;
     }
 
-    rc = ( stream->pos.offset - ( ( ( int )stream->bufend - ( int )stream->bufidx ) + stream->ungetidx ) );
-    _PDCLIB_UNLOCK( stream->mtx );
+    rc = (stream->pos.offset - (((int)stream->bufend - (int)stream->bufidx) + stream->ungetidx));
+    _PDCLIB_UNLOCK(stream->mtx);
     return rc;
 }
 

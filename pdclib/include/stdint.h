@@ -40,12 +40,12 @@ typedef _PDCLIB_uint64_t uint64_t;
 
 /* You are allowed to add more types here, e.g. int_least24_t. */
 
-typedef _PDCLIB_int_least8_t  int_least8_t;
+typedef _PDCLIB_int_least8_t int_least8_t;
 typedef _PDCLIB_int_least16_t int_least16_t;
 typedef _PDCLIB_int_least32_t int_least32_t;
 typedef _PDCLIB_int_least64_t int_least64_t;
 
-typedef _PDCLIB_uint_least8_t  uint_least8_t;
+typedef _PDCLIB_uint_least8_t uint_least8_t;
 typedef _PDCLIB_uint_least16_t uint_least16_t;
 typedef _PDCLIB_uint_least32_t uint_least32_t;
 typedef _PDCLIB_uint_least64_t uint_least64_t;
@@ -54,24 +54,24 @@ typedef _PDCLIB_uint_least64_t uint_least64_t;
 
 /* You are allowed to add more types here, e.g. int_fast24_t. */
 
-typedef _PDCLIB_int_fast8_t  int_fast8_t;
+typedef _PDCLIB_int_fast8_t int_fast8_t;
 typedef _PDCLIB_int_fast16_t int_fast16_t;
 typedef _PDCLIB_int_fast32_t int_fast32_t;
 typedef _PDCLIB_int_fast64_t int_fast64_t;
 
-typedef _PDCLIB_uint_fast8_t  uint_fast8_t;
+typedef _PDCLIB_uint_fast8_t uint_fast8_t;
 typedef _PDCLIB_uint_fast16_t uint_fast16_t;
 typedef _PDCLIB_uint_fast32_t uint_fast32_t;
 typedef _PDCLIB_uint_fast64_t uint_fast64_t;
 
 /* 7.18.1.4 Integer types capable of holding object pointers */
 
-typedef _PDCLIB_intptr_t  intptr_t;
+typedef _PDCLIB_intptr_t intptr_t;
 typedef _PDCLIB_uintptr_t uintptr_t;
 
 /* 7.18.1.5 Greatest-width integer types */
 
-typedef _PDCLIB_intmax_t  intmax_t;
+typedef _PDCLIB_intmax_t intmax_t;
 typedef _PDCLIB_uintmax_t uintmax_t;
 
 /* 7.18.2 Limits of specified-width integer types */

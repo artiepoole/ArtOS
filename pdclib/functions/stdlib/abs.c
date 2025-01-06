@@ -8,9 +8,9 @@
 
 #ifndef REGTEST
 
-int abs( int j )
+int abs(int j)
 {
-    return ( j >= 0 ) ? j : -j;
+    return (j >= 0) ? j : -j;
 }
 
 #endif

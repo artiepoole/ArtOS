@@ -80,4 +80,3 @@ extern int deh_species_infighting;
 #endif
 
 #endif /* #ifndef DEH_MISC_H */
-

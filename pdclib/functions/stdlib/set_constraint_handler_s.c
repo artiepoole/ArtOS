@@ -11,11 +11,11 @@
 
 constraint_handler_t _PDCLIB_constraint_handler = abort_handler_s;
 
-constraint_handler_t set_constraint_handler_s( constraint_handler_t handler )
+constraint_handler_t set_constraint_handler_s(constraint_handler_t handler)
 {
     constraint_handler_t previous = _PDCLIB_constraint_handler;
 
-    if ( handler == NULL )
+    if (handler == NULL)
     {
         _PDCLIB_constraint_handler = abort_handler_s;
     }

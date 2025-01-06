@@ -14,29 +14,29 @@
 #include <threads.h>
 #endif
 
-int fsetpos( struct _PDCLIB_file_t * stream, const struct _PDCLIB_fpos_t * pos )
+int fsetpos(struct _PDCLIB_file_t* stream, const struct _PDCLIB_fpos_t* pos)
 {
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( stream->status & _PDCLIB_FWRITE )
+    if (stream->status & _PDCLIB_FWRITE)
     {
-        if ( _PDCLIB_flushbuffer( stream ) == EOF )
+        if (_PDCLIB_flushbuffer(stream) == EOF)
         {
-            _PDCLIB_UNLOCK( stream->mtx );
+            _PDCLIB_UNLOCK(stream->mtx);
             return EOF;
         }
     }
 
-    if ( _PDCLIB_seek( stream, pos->offset, SEEK_SET ) == EOF )
+    if (_PDCLIB_seek(stream, pos->offset, SEEK_SET) == EOF)
     {
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
         return EOF;
     }
 
     stream->pos.status = pos->status;
     /* TODO: Add mbstate. */
 
-    _PDCLIB_UNLOCK( stream->mtx );
+    _PDCLIB_UNLOCK(stream->mtx);
 
     return 0;
 }

@@ -28,7 +28,7 @@
 #define HU_FONTEND	'_'	// the last font characters
 
 // Calculate # of glyphs in font.
-#define HU_FONTSIZE	(HU_FONTEND - HU_FONTSTART + 1)	
+#define HU_FONTSIZE	(HU_FONTEND - HU_FONTSTART + 1)
 
 #define HU_BROADCAST	5
 
@@ -53,7 +53,6 @@ void HU_Drawer(void);
 char HU_dequeueChatChar(void);
 void HU_Erase(void);
 
-extern char *chat_macros[10];
+extern char* chat_macros[10];
 
 #endif
-

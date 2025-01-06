@@ -224,14 +224,14 @@ static const char shiftxform[] =
 
 static unsigned char TranslateKey(unsigned char key)
 {
-	return key;
+    return key;
 
-	/*
+    /*
     if (key < sizeof(at_to_doom))
         return at_to_doom[key];
     else
         return 0x0;
-	*/
+    */
 
     //default:
     //  return tolower(key);
@@ -264,13 +264,17 @@ static void UpdateShiftStatus(int pressed, unsigned char key)
 {
     int change;
 
-    if (pressed) {
+    if (pressed)
+    {
         change = 1;
-    } else {
+    }
+    else
+    {
         change = -1;
     }
 
-    if (key == KEY_RSHIFT) {
+    if (key == KEY_RSHIFT)
+    {
         shiftdown += change;
     }
 }
@@ -282,13 +286,13 @@ void I_GetEvent(void)
     int pressed;
     unsigned char key;
 
-    
-	while (DG_GetKey(&pressed, &key))
+
+    while (DG_GetKey(&pressed, &key))
     {
         UpdateShiftStatus(pressed, key);
 
         // process event
-        
+
         if (pressed)
         {
             // data1 has the key pressed, data2 has the character
@@ -324,18 +328,17 @@ void I_GetEvent(void)
     }
 
 
-                /*
-            case SDL_MOUSEMOTION:
-                event.type = ev_mouse;
-                event.data1 = mouse_button_state;
-                event.data2 = AccelerateMouse(sdlevent.motion.xrel);
-                event.data3 = -AccelerateMouse(sdlevent.motion.yrel);
-                D_PostEvent(&event);
-                break;
-                */
+    /*
+case SDL_MOUSEMOTION:
+    event.type = ev_mouse;
+    event.data1 = mouse_button_state;
+    event.data2 = AccelerateMouse(sdlevent.motion.xrel);
+    event.data3 = -AccelerateMouse(sdlevent.motion.yrel);
+    D_PostEvent(&event);
+    break;
+    */
 }
 
 void I_InitInput(void)
 {
 }
-

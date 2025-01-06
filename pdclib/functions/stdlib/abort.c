@@ -9,10 +9,10 @@
 
 #ifndef REGTEST
 
-void abort( void )
+void abort(void)
 {
-    raise( SIGABRT );
-    exit( EXIT_FAILURE );
+    raise(SIGABRT);
+    exit(EXIT_FAILURE);
 }
 
 #endif

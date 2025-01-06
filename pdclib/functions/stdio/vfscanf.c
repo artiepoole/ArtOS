@@ -16,7 +16,7 @@
 #include <threads.h>
 #endif
 
-int vfscanf( FILE * _PDCLIB_restrict stream, const char * _PDCLIB_restrict format, va_list arg )
+int vfscanf(FILE* _PDCLIB_restrict stream, const char* _PDCLIB_restrict format, va_list arg)
 {
     /* TODO: This function should interpret format as multibyte characters.  */
     struct _PDCLIB_status_t status;
@@ -30,56 +30,56 @@ int vfscanf( FILE * _PDCLIB_restrict stream, const char * _PDCLIB_restrict forma
     status.prec = EOF;
     status.stream = stream;
 
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( _PDCLIB_prepread( stream ) == EOF || _PDCLIB_CHECKBUFFER( stream ) == EOF )
+    if (_PDCLIB_prepread(stream) == EOF || _PDCLIB_CHECKBUFFER(stream) == EOF)
     {
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
         return EOF;
     }
 
-    va_copy( status.arg, arg );
+    va_copy(status.arg, arg);
 
-    while ( *format != '\0' )
+    while (*format != '\0')
     {
-        const char * rc;
+        const char* rc;
 
-        if ( ( *format != '%' ) || ( ( rc = _PDCLIB_scan( format, &status ) ) == format ) )
+        if ((*format != '%') || ((rc = _PDCLIB_scan(format, &status)) == format))
         {
             int c;
 
             /* No conversion specifier, match verbatim */
-            if ( isspace( (unsigned char)*format ) )
+            if (isspace((unsigned char)*format))
             {
                 /* Whitespace char in format string: Skip all whitespaces */
                 /* No whitespaces in input does not result in matching error */
-                while ( isspace( (unsigned char)( c = getc( stream ) ) ) )
+                while (isspace((unsigned char)(c = getc(stream))))
                 {
                     ++status.i;
                 }
 
-                if ( ! feof( stream ) )
+                if (!feof(stream))
                 {
-                    ungetc( c, stream );
+                    ungetc(c, stream);
                 }
             }
             else
             {
                 /* Non-whitespace char in format string: Match verbatim */
-                if ( ( ( c = getc( stream ) ) != *format ) || feof( stream ) )
+                if (((c = getc(stream)) != *format) || feof(stream))
                 {
                     /* Matching error */
-                    if ( ! feof( stream ) && ! ferror( stream ) )
+                    if (!feof(stream) && !ferror(stream))
                     {
-                        ungetc( c, stream );
+                        ungetc(c, stream);
                     }
-                    else if ( status.n == 0 )
+                    else if (status.n == 0)
                     {
-                        _PDCLIB_UNLOCK( stream->mtx );
+                        _PDCLIB_UNLOCK(stream->mtx);
                         return EOF;
                     }
 
-                    _PDCLIB_UNLOCK( stream->mtx );
+                    _PDCLIB_UNLOCK(stream->mtx);
                     return status.n;
                 }
                 else
@@ -93,7 +93,7 @@ int vfscanf( FILE * _PDCLIB_restrict stream, const char * _PDCLIB_restrict forma
         else
         {
             /* NULL return code indicates matching error */
-            if ( rc == NULL )
+            if (rc == NULL)
             {
                 break;
             }
@@ -103,8 +103,8 @@ int vfscanf( FILE * _PDCLIB_restrict stream, const char * _PDCLIB_restrict forma
         }
     }
 
-    va_end( status.arg );
-    _PDCLIB_UNLOCK( stream->mtx );
+    va_end(status.arg);
+    _PDCLIB_UNLOCK(stream->mtx);
     return status.n;
 }
 

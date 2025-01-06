@@ -24,7 +24,6 @@ public:
 private:
     static int process_cmd();
     // EventQueue* events;
-
 };
 
 
@@ -32,7 +31,6 @@ inline void shell_run()
 {
     Shell::get().run();
 }
-
 
 
 #endif //SHELL_H

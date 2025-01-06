@@ -21,7 +21,6 @@
 //
 
 
-
 // Needed for FRACUNIT.
 #include "m_fixed.h"
 
@@ -34,19 +33,17 @@
 //
 // sky mapping
 //
-int			skyflatnum;
-int			skytexture;
-int			skytexturemid;
-
+int skyflatnum;
+int skytexture;
+int skytexturemid;
 
 
 //
 // R_InitSkyMap
 // Called whenever the view size changes.
 //
-void R_InitSkyMap (void)
+void R_InitSkyMap(void)
 {
-  // skyflatnum = R_FlatNumForName ( SKYFLATNAME );
-    skytexturemid = 100*FRACUNIT;
+    // skyflatnum = R_FlatNumForName ( SKYFLATNAME );
+    skytexturemid = 100 * FRACUNIT;
 }
-

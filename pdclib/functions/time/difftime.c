@@ -8,7 +8,7 @@
 
 #ifndef REGTEST
 
-double difftime( time_t time1, time_t time0 )
+double difftime(time_t time1, time_t time0)
 {
     /* If we want to avoid rounding errors and overflows, we need to be
        careful with the exact type of time_t being unknown to us.
@@ -19,28 +19,28 @@ double difftime( time_t time1, time_t time0 )
     /* If double is large enough, simply covert and substract
        (assuming that the larger type has more precision).
     */
-    if ( sizeof( time_t ) < sizeof( double ) )
+    if (sizeof(time_t) < sizeof(double))
     {
-        return ( double )time1 - ( double )time0;
+        return (double)time1 - (double)time0;
     }
 
     /* The difference of two unsigned values cannot overflow if the
        minuend is greater or equal to the subtrahend.
     */
-    if ( ! _PDCLIB_TYPE_SIGNED( time_t ) )
+    if (!_PDCLIB_TYPE_SIGNED(time_t))
     {
-        return ( time1 >= time0 ) ? ( double )( time1 - time0 ) : -( double )( time0 - time1 );
+        return (time1 >= time0) ? (double)(time1 - time0) : -(double)(time0 - time1);
     }
 
     /* Use uintmax_t if wide enough. */
-    if ( sizeof( time_t ) <= sizeof( _PDCLIB_uintmax_t ) )
+    if (sizeof(time_t) <= sizeof(_PDCLIB_uintmax_t))
     {
         _PDCLIB_uintmax_t t1 = time1, t0 = time0;
-        return ( time1 >= time0 ) ? t1 - t0 : -( double )( t0 - t1 );
+        return (time1 >= time0) ? t1 - t0 : -(double)(t0 - t1);
     }
 
     /* If both times have the same sign, their difference cannot overflow. */
-    if ( ( time1 < 0 ) == ( time0 < 0 ) )
+    if ((time1 < 0) == (time0 < 0))
     {
         return time1 - time0;
     }

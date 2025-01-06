@@ -11,21 +11,21 @@
 
 #ifndef REGTEST
 
-errno_t strncpy_s( char * _PDCLIB_restrict s1, rsize_t s1max, const char * _PDCLIB_restrict s2, rsize_t n )
+errno_t strncpy_s(char* _PDCLIB_restrict s1, rsize_t s1max, const char* _PDCLIB_restrict s2, rsize_t n)
 {
-    char * dest = s1;
-    const char * src = s2;
+    char* dest = s1;
+    const char* src = s2;
 
-    if ( s1 != NULL && s2 != NULL && s1max <= RSIZE_MAX && n <= RSIZE_MAX && s1max != 0 )
+    if (s1 != NULL && s2 != NULL && s1max <= RSIZE_MAX && n <= RSIZE_MAX && s1max != 0)
     {
-        while ( s1max-- )
+        while (s1max--)
         {
-            if ( dest == s2 || src == s1 )
+            if (dest == s2 || src == s1)
             {
                 goto runtime_constraint_violation;
             }
 
-            if ( n-- == 0 || ( *dest++ = *src++ ) == '\0' )
+            if (n-- == 0 || (*dest++ = *src++) == '\0')
             {
                 return 0;
             }
@@ -34,12 +34,12 @@ errno_t strncpy_s( char * _PDCLIB_restrict s1, rsize_t s1max, const char * _PDCL
 
 runtime_constraint_violation:
 
-    if ( s1 != NULL && s1max > 0 && s1max <= RSIZE_MAX )
+    if (s1 != NULL && s1max > 0 && s1max <= RSIZE_MAX)
     {
         s1[0] = '\0';
     }
 
-    _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+    _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
     return _PDCLIB_EINVAL;
 }
 

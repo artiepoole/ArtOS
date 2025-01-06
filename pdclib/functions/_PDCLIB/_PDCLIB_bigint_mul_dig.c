@@ -11,26 +11,26 @@
 #include <stddef.h>
 #include <stdint.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint_mul_dig( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, _PDCLIB_bigint_digit_t rhs )
+_PDCLIB_bigint_t* _PDCLIB_bigint_mul_dig(_PDCLIB_bigint_t* _PDCLIB_restrict lhs, _PDCLIB_bigint_digit_t rhs)
 {
-    _PDCLIB_bigint_arith_t digit;     /* Hold intermediary (wide) result. */
+    _PDCLIB_bigint_arith_t digit; /* Hold intermediary (wide) result. */
     _PDCLIB_bigint_digit_t carry = 0; /* Hold overflow. */
     size_t i;
 
-    for ( i = 0; i < lhs->size; ++i )
+    for (i = 0; i < lhs->size; ++i)
     {
         /* Add product and carry into intermediate result */
-        digit = (_PDCLIB_bigint_arith_t)lhs->data[ i ] * (_PDCLIB_bigint_arith_t)rhs + carry;
+        digit = (_PDCLIB_bigint_arith_t)lhs->data[i] * (_PDCLIB_bigint_arith_t)rhs + carry;
         /* High bits into carry */
         carry = digit >> _PDCLIB_BIGINT_DIGIT_BITS;
         /* Low bits back into bigint */
-        lhs->data[ i ] = ( digit & _PDCLIB_BIGINT_DIGIT_MAX );
+        lhs->data[i] = (digit & _PDCLIB_BIGINT_DIGIT_MAX);
     }
 
-    if ( carry > 0 )
+    if (carry > 0)
     {
         /* New digit. */
-        lhs->data[ lhs->size++ ] = carry;
+        lhs->data[lhs->size++] = carry;
     }
 
     return lhs;

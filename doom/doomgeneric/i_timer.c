@@ -37,10 +37,10 @@ static uint32_t basetime = 0;
 
 int I_GetTicks(void)
 {
-	return DG_GetTicksMs();
+    return DG_GetTicksMs();
 }
 
-int  I_GetTime (void)
+int I_GetTime(void)
 {
     uint32_t ticks;
 
@@ -78,7 +78,7 @@ void I_Sleep(int ms)
     //SDL_Delay(ms);
     //usleep (ms * 1000);
 
-	DG_SleepMs(ms);
+    DG_SleepMs(ms);
 }
 
 void I_WaitVBL(int count)

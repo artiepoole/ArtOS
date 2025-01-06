@@ -8,11 +8,11 @@
 
 #ifndef REGTEST
 
-lldiv_t lldiv( long long int numer, long long int denom )
+lldiv_t lldiv(long long int numer, long long int denom)
 {
     lldiv_t rc;
     rc.quot = numer / denom;
-    rc.rem  = numer % denom;
+    rc.rem = numer % denom;
     /* TODO: pre-C99 compilers might require modulus corrections */
     return rc;
 }

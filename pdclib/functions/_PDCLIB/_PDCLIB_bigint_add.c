@@ -11,15 +11,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint_add( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs )
+_PDCLIB_bigint_t* _PDCLIB_bigint_add(_PDCLIB_bigint_t* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs)
 {
-    _PDCLIB_bigint_t const * smaller;
-    _PDCLIB_bigint_t const * wider;
+    _PDCLIB_bigint_t const* smaller;
+    _PDCLIB_bigint_t const* wider;
     _PDCLIB_bigint_digit_t carry = 0;
     _PDCLIB_bigint_digit_t newcarry;
     size_t i;
 
-    if ( lhs->size < rhs->size )
+    if (lhs->size < rhs->size)
     {
         smaller = lhs;
         wider = rhs;
@@ -31,14 +31,14 @@ _PDCLIB_bigint_t * _PDCLIB_bigint_add( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, 
     }
 
     /* Add up the bigints digit by digit, ensuring no overflow of 32-bit range */
-    for ( i = 0; i < smaller->size; ++i )
+    for (i = 0; i < smaller->size; ++i)
     {
         _PDCLIB_bigint_digit_t l = _PDCLIB_BIGINT_DIGIT_MAX - lhs->data[i];
         _PDCLIB_bigint_digit_t r = _PDCLIB_BIGINT_DIGIT_MAX - rhs->data[i];
 
-        if ( ( newcarry = ( l < rhs->data[i] ) || ( carry && ( l == rhs->data[i] ) ) ) )
+        if ((newcarry = (l < rhs->data[i]) || (carry && (l == rhs->data[i]))))
         {
-            lhs->data[i] = _PDCLIB_BIGINT_DIGIT_MAX - ( l + r ) - 1 + carry;
+            lhs->data[i] = _PDCLIB_BIGINT_DIGIT_MAX - (l + r) - 1 + carry;
         }
         else
         {
@@ -48,9 +48,9 @@ _PDCLIB_bigint_t * _PDCLIB_bigint_add( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, 
         carry = newcarry;
     }
 
-    for ( ; i < wider->size; ++i )
+    for (; i < wider->size; ++i)
     {
-        if ( ( newcarry = ( ( _PDCLIB_BIGINT_DIGIT_MAX - wider->data[i] ) < carry ) ) )
+        if ((newcarry = ((_PDCLIB_BIGINT_DIGIT_MAX - wider->data[i]) < carry)))
         {
             lhs->data[i] = 0;
         }
@@ -63,7 +63,7 @@ _PDCLIB_bigint_t * _PDCLIB_bigint_add( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, 
     }
 
     /* Possible new digit */
-    if ( carry )
+    if (carry)
     {
         lhs->data[i++] = carry;
     }

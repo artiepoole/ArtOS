@@ -14,67 +14,67 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-struct _PDCLIB_lc_time_t * _PDCLIB_load_lc_time( const char * path, const char * locale )
+struct _PDCLIB_lc_time_t* _PDCLIB_load_lc_time(const char* path, const char* locale)
 {
-    struct _PDCLIB_lc_time_t * rc = NULL;
-    const char * extension = "_time.dat";
-    char * file = (char *)malloc( strlen( path ) + strlen( locale ) + strlen( extension ) + 1 );
+    struct _PDCLIB_lc_time_t* rc = NULL;
+    const char* extension = "_time.dat";
+    char* file = (char*)malloc(strlen(path) + strlen(locale) + strlen(extension) + 1);
 
-    if ( file )
+    if (file)
     {
-        FILE * fh;
+        FILE* fh;
 
-        strcpy( file, path );
-        strcat( file, locale );
-        strcat( file, extension );
+        strcpy(file, path);
+        strcat(file, locale);
+        strcat(file, extension);
 
-        if ( ( fh = fopen( file, "rb" ) ) != NULL )
+        if ((fh = fopen(file, "rb")) != NULL)
         {
-            if ( ( rc = (struct _PDCLIB_lc_time_t *)malloc( sizeof( struct _PDCLIB_lc_time_t ) ) ) != NULL )
+            if ((rc = (struct _PDCLIB_lc_time_t*)malloc(sizeof(struct _PDCLIB_lc_time_t))) != NULL)
             {
-                char * data = _PDCLIB_load_lines( fh, 44 );
+                char* data = _PDCLIB_load_lines(fh, 44);
 
-                if ( data != NULL )
+                if (data != NULL)
                 {
                     size_t i;
 
-                    for ( i = 0; i < 12; ++i )
+                    for (i = 0; i < 12; ++i)
                     {
-                        rc->month_name_abbr[ i ] = data;
-                        data += strlen( data ) + 1;
+                        rc->month_name_abbr[i] = data;
+                        data += strlen(data) + 1;
                     }
 
-                    for ( i = 0; i < 12; ++i )
+                    for (i = 0; i < 12; ++i)
                     {
-                        rc->month_name_full[ i ] = data;
-                        data += strlen( data ) + 1;
+                        rc->month_name_full[i] = data;
+                        data += strlen(data) + 1;
                     }
 
-                    for ( i = 0; i < 7; ++i )
+                    for (i = 0; i < 7; ++i)
                     {
-                        rc->day_name_abbr[ i ] = data;
-                        data += strlen( data ) + 1;
+                        rc->day_name_abbr[i] = data;
+                        data += strlen(data) + 1;
                     }
 
-                    for ( i = 0; i < 7; ++i )
+                    for (i = 0; i < 7; ++i)
                     {
-                        rc->day_name_full[ i ] = data;
-                        data += strlen( data ) + 1;
+                        rc->day_name_full[i] = data;
+                        data += strlen(data) + 1;
                     }
 
                     rc->alloced = 1;
                 }
                 else
                 {
-                    free( rc );
+                    free(rc);
                     rc = NULL;
                 }
             }
 
-            fclose( fh );
+            fclose(fh);
         }
 
-        free( file );
+        free(file);
     }
 
     return rc;

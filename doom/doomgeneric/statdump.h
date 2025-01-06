@@ -1,4 +1,4 @@
- /*
+/*
 
  Copyright(C) 2005-2014 Simon Howard
 
@@ -17,7 +17,7 @@
 #ifndef DOOM_STATDUMP_H
 #define DOOM_STATDUMP_H
 
-void StatCopy(wbstartstruct_t *stats);
+void StatCopy(wbstartstruct_t* stats);
 void StatDump(void);
 
 #endif /* #ifndef DOOM_STATDUMP_H */

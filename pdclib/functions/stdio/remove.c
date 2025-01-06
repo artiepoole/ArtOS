@@ -15,26 +15,26 @@
 
 #include <errno.h>
 
-extern struct _PDCLIB_file_t * _PDCLIB_filelist;
+extern struct _PDCLIB_file_t* _PDCLIB_filelist;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int unlink( const char * pathname );
+extern int unlink(const char* pathname);
 
 #ifdef __cplusplus
 }
 #endif
 
-int remove( const char * pathname )
+int remove(const char* pathname)
 {
     int rc;
-    struct _PDCLIB_file_t * current = _PDCLIB_filelist;
+    struct _PDCLIB_file_t* current = _PDCLIB_filelist;
 
-    while ( current != NULL )
+    while (current != NULL)
     {
-        if ( ( current->filename != NULL ) && ( strcmp( current->filename, pathname ) == 0 ) )
+        if ((current->filename != NULL) && (strcmp(current->filename, pathname) == 0))
         {
             return EOF;
         }
@@ -42,7 +42,7 @@ int remove( const char * pathname )
         current = current->next;
     }
 
-    if ( ( rc = unlink( pathname ) ) == -1 )
+    if ((rc = unlink(pathname)) == -1)
     {
         /* The 1:1 mapping in _PDCLIB_config.h ensures this works. */
         *_PDCLIB_errno_func() = errno;

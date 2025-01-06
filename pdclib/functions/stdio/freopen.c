@@ -19,80 +19,80 @@
 extern mtx_t _PDCLIB_filelist_mtx;
 #endif
 
-extern struct _PDCLIB_file_t * _PDCLIB_filelist;
+extern struct _PDCLIB_file_t* _PDCLIB_filelist;
 
-struct _PDCLIB_file_t * freopen( const char * _PDCLIB_restrict filename, const char * _PDCLIB_restrict mode, struct _PDCLIB_file_t * _PDCLIB_restrict stream )
+struct _PDCLIB_file_t* freopen(const char* _PDCLIB_restrict filename, const char* _PDCLIB_restrict mode, struct _PDCLIB_file_t* _PDCLIB_restrict stream)
 {
-    unsigned int filemode = _PDCLIB_filemode( mode );
+    unsigned int filemode = _PDCLIB_filemode(mode);
 
-    if ( stream == NULL )
+    if (stream == NULL)
     {
         errno = EBADF;
         return NULL;
     }
 
-    _PDCLIB_LOCK( _PDCLIB_filelist_mtx );
+    _PDCLIB_LOCK(_PDCLIB_filelist_mtx);
 
-    if ( _PDCLIB_isstream( stream, NULL ) )
+    if (_PDCLIB_isstream(stream, NULL))
     {
         /* May lock only after established that stream is valid */
-        _PDCLIB_LOCK( stream->mtx );
+        _PDCLIB_LOCK(stream->mtx);
 
         /* Flush buffer */
-        if ( stream->status & _PDCLIB_FWRITE )
+        if (stream->status & _PDCLIB_FWRITE)
         {
-            _PDCLIB_flushbuffer( stream );
+            _PDCLIB_flushbuffer(stream);
         }
 
-        if ( filename == NULL )
+        if (filename == NULL)
         {
             /* Attempt to change mode without closing stream */
-            switch ( _PDCLIB_changemode( stream, filemode ) )
+            switch (_PDCLIB_changemode(stream, filemode))
             {
-                case INT_MIN:
-                    /* fail completely */
-                    _PDCLIB_UNLOCK( stream->mtx );
-                    _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
-                    return NULL;
+            case INT_MIN:
+                /* fail completely */
+                _PDCLIB_UNLOCK(stream->mtx);
+                _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
+                return NULL;
 
-                case 0:
-                    /* fail; try close / reopen */
-                    filename = stream->filename;
-                    /* Setting to NULL to make the free() below a non-op. */
-                    stream->filename = NULL;
-                    break;
+            case 0:
+                /* fail; try close / reopen */
+                filename = stream->filename;
+            /* Setting to NULL to make the free() below a non-op. */
+                stream->filename = NULL;
+                break;
 
-                default:
-                    /* success */
-                    _PDCLIB_UNLOCK( stream->mtx );
-                    _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
-                    return stream;
+            default:
+                /* success */
+                _PDCLIB_UNLOCK(stream->mtx);
+                _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
+                return stream;
             }
         }
 
         /* Close handle */
-        _PDCLIB_close( stream->handle );
+        _PDCLIB_close(stream->handle);
 
         /* Remove stream from list */
-        _PDCLIB_getstream( stream );
+        _PDCLIB_getstream(stream);
 
         /* Delete tmpfile() */
-        if ( stream->status & _PDCLIB_DELONCLOSE )
+        if (stream->status & _PDCLIB_DELONCLOSE)
         {
             /* Have to switch here; stream->filename may have moved to
                filename after failed in-place mode change above.
             */
-            _PDCLIB_remove( ( stream->filename == NULL ) ? filename : stream->filename );
+            _PDCLIB_remove((stream->filename == NULL) ? filename : stream->filename);
             stream->status &= ~_PDCLIB_DELONCLOSE;
         }
 
         /* Free buffer */
-        if ( stream->status & _PDCLIB_FREEBUFFER )
+        if (stream->status & _PDCLIB_FREEBUFFER)
         {
-            free( stream->buffer );
+            free(stream->buffer);
         }
 
-        if ( filename == NULL )
+        if (filename == NULL)
         {
             /* Input was filename NULL, stream->filename NULL.
                No filename means there is nothing to reopen. In-place
@@ -107,7 +107,7 @@ struct _PDCLIB_file_t * freopen( const char * _PDCLIB_restrict filename, const c
                that, and will retrieve _PDCLIB_realpath() from that.
                So stream->filename is no longer needed.
             */
-            free( stream->filename );
+            free(stream->filename);
         }
     }
     else
@@ -131,7 +131,7 @@ struct _PDCLIB_file_t * freopen( const char * _PDCLIB_restrict filename, const c
         /* Locking the mutex, so we come out of the if-else with a locked
            mutex either way.
         */
-        _PDCLIB_LOCK( stream->mtx );
+        _PDCLIB_LOCK(stream->mtx);
     }
 
     /* Stream is closed, or never was open (even though its mutex exists
@@ -139,43 +139,43 @@ struct _PDCLIB_file_t * freopen( const char * _PDCLIB_restrict filename, const c
        Now we check if we have the whereabouts to open it.
     */
 
-    if ( filemode == 0 )
+    if (filemode == 0)
     {
         /* Mode invalid */
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
 #ifndef __STDC_NO_THREADS__
         mtx_destroy( &stream->mtx );
 #endif
-        free( stream->filename );
-        free( stream );
-        _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
+        free(stream->filename);
+        free(stream);
+        _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
         return NULL;
     }
 
-    if ( filename == NULL || filename[0] == '\0' )
+    if (filename == NULL || filename[0] == '\0')
     {
         /* No filename available (standard stream?) */
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
 #ifndef __STDC_NO_THREADS__
         mtx_destroy( &stream->mtx );
 #endif
-        free( stream->filename );
-        free( stream );
-        _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
+        free(stream->filename);
+        free(stream);
+        _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
         return NULL;
     }
 
     /* (Re-)initializing the structure. */
-    if ( _PDCLIB_init_file_t( stream ) == NULL )
+    if (_PDCLIB_init_file_t(stream) == NULL)
     {
         /* Re-init failed. */
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
 #ifndef __STDC_NO_THREADS__
         mtx_destroy( &stream->mtx );
 #endif
-        free( stream->filename );
-        free( stream );
-        _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
+        free(stream->filename);
+        free(stream);
+        _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
         return NULL;
     }
 
@@ -183,29 +183,29 @@ struct _PDCLIB_file_t * freopen( const char * _PDCLIB_restrict filename, const c
     stream->status |= filemode | _IOLBF;
 
     /* Attempt open */
-    if ( ( stream->handle = _PDCLIB_open( filename, stream->status ) ) == _PDCLIB_NOHANDLE )
+    if ((stream->handle = _PDCLIB_open(filename, stream->status)) == _PDCLIB_NOHANDLE)
     {
         /* OS open() failed */
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
 #ifndef __STDC_NO_THREADS__
         mtx_destroy( &stream->mtx );
 #endif
-        free( stream->filename );
-        free( stream->buffer );
-        free( stream );
-        _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
+        free(stream->filename);
+        free(stream->buffer);
+        free(stream);
+        _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
         return NULL;
     }
 
     /* Getting absolute filename */
-    stream->filename = _PDCLIB_realpath( filename );
+    stream->filename = _PDCLIB_realpath(filename);
 
     /* Adding to list of open files */
     stream->next = _PDCLIB_filelist;
     _PDCLIB_filelist = stream;
 
-    _PDCLIB_UNLOCK( stream->mtx );
-    _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
+    _PDCLIB_UNLOCK(stream->mtx);
+    _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
 
     return stream;
 }

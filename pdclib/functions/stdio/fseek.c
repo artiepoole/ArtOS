@@ -14,34 +14,34 @@
 #include <threads.h>
 #endif
 
-int fseek( struct _PDCLIB_file_t * stream, long offset, int whence )
+int fseek(struct _PDCLIB_file_t* stream, long offset, int whence)
 {
     int rc;
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( stream->status & _PDCLIB_FWRITE )
+    if (stream->status & _PDCLIB_FWRITE)
     {
-        if ( _PDCLIB_flushbuffer( stream ) == EOF )
+        if (_PDCLIB_flushbuffer(stream) == EOF)
         {
-            _PDCLIB_UNLOCK( stream->mtx );
+            _PDCLIB_UNLOCK(stream->mtx);
             return EOF;
         }
     }
 
-    stream->status &= ~ _PDCLIB_EOFFLAG;
+    stream->status &= ~_PDCLIB_EOFFLAG;
 
-    if ( stream->status & _PDCLIB_FRW )
+    if (stream->status & _PDCLIB_FRW)
     {
-        stream->status &= ~( _PDCLIB_FREAD | _PDCLIB_FWRITE );
+        stream->status &= ~(_PDCLIB_FREAD | _PDCLIB_FWRITE);
     }
 
-    if ( whence == SEEK_CUR )
+    if (whence == SEEK_CUR)
     {
-        offset -= ( ( ( int )stream->bufend - ( int )stream->bufidx ) + stream->ungetidx );
+        offset -= (((int)stream->bufend - (int)stream->bufidx) + stream->ungetidx);
     }
 
-    rc = ( _PDCLIB_seek( stream, offset, whence ) != EOF ) ? 0 : EOF;
-    _PDCLIB_UNLOCK( stream->mtx );
+    rc = (_PDCLIB_seek(stream, offset, whence) != EOF) ? 0 : EOF;
+    _PDCLIB_UNLOCK(stream->mtx);
     return rc;
 }
 

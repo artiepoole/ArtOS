@@ -340,14 +340,14 @@ void I_BindJoystickVariables(void)
 {
     int i;
 
-    M_BindVariable("use_joystick",          &usejoystick);
-    M_BindVariable("joystick_index",        &joystick_index);
-    M_BindVariable("joystick_x_axis",       &joystick_x_axis);
-    M_BindVariable("joystick_y_axis",       &joystick_y_axis);
-    M_BindVariable("joystick_strafe_axis",  &joystick_strafe_axis);
-    M_BindVariable("joystick_x_invert",     &joystick_x_invert);
-    M_BindVariable("joystick_y_invert",     &joystick_y_invert);
-    M_BindVariable("joystick_strafe_invert",&joystick_strafe_invert);
+    M_BindVariable("use_joystick", &usejoystick);
+    M_BindVariable("joystick_index", &joystick_index);
+    M_BindVariable("joystick_x_axis", &joystick_x_axis);
+    M_BindVariable("joystick_y_axis", &joystick_y_axis);
+    M_BindVariable("joystick_strafe_axis", &joystick_strafe_axis);
+    M_BindVariable("joystick_x_invert", &joystick_x_invert);
+    M_BindVariable("joystick_y_invert", &joystick_y_invert);
+    M_BindVariable("joystick_strafe_invert", &joystick_strafe_invert);
 
     for (i = 0; i < NUM_VIRTUAL_BUTTONS; ++i)
     {

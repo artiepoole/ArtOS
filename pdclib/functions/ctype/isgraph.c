@@ -10,9 +10,9 @@
 
 #include <locale.h>
 
-int isgraph( int c )
+int isgraph(int c)
 {
-    return ( _PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_GRAPH );
+    return (_PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_GRAPH);
 }
 
 #endif

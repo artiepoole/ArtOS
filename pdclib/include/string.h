@@ -44,7 +44,7 @@ _PDCLIB_PUBLIC void* memcpy(void* _PDCLIB_restrict dest, const void* _PDCLIB_res
    area pointed to by s1. The two areas may overlap.
    Returns the value of s1.
 */
-_PDCLIB_PUBLIC void * memmove( void * _PDCLIB_restrict s1, const void * _PDCLIB_restrict s2, size_t n );
+_PDCLIB_PUBLIC void* memmove(void* _PDCLIB_restrict s1, const void* _PDCLIB_restrict s2, size_t n);
 
 /* Copy the character array src (including terminating '\0' byte) into the
    character array dest.
@@ -68,7 +68,7 @@ _PDCLIB_PUBLIC char* strncpy(char* _PDCLIB_restrict dest, const char* _PDCLIB_re
    the arrays overlap, behaviour is undefined.
    Returns the value of s1.
 */
-_PDCLIB_PUBLIC char * strcat( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2 );
+_PDCLIB_PUBLIC char* strcat(char* _PDCLIB_restrict s1, const char* _PDCLIB_restrict s2);
 
 /* Append a maximum of n characters from the character array s2 to the character
    array s1 (first character of s2 overwriting the '\0' of s1). A terminating
@@ -76,7 +76,7 @@ _PDCLIB_PUBLIC char * strcat( char * _PDCLIB_restrict s1, const char * _PDCLIB_r
    written. If the arrays overlap, behaviour is undefined.
    Returns the value of s1.
 */
-_PDCLIB_PUBLIC char * strncat( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2, size_t n );
+_PDCLIB_PUBLIC char* strncat(char* _PDCLIB_restrict s1, const char* _PDCLIB_restrict s2, size_t n);
 
 /* Comparison functions */
 
@@ -84,13 +84,13 @@ _PDCLIB_PUBLIC char * strncat( char * _PDCLIB_restrict s1, const char * _PDCLIB_
    Returns 0 if s1 == s2, a negative number if s1 < s2, and a positive number if
    s1 > s2.
 */
-_PDCLIB_PUBLIC int memcmp( const void * s1, const void * s2, size_t n );
+_PDCLIB_PUBLIC int memcmp(const void* s1, const void* s2, size_t n);
 
 /* Compare the character arrays s1 and s2.
    Returns 0 if s1 == s2, a negative number if s1 < s2, and a positive number if
    s1 > s2.
 */
-_PDCLIB_PUBLIC int strcmp( const char * s1, const char * s2 );
+_PDCLIB_PUBLIC int strcmp(const char* s1, const char* s2);
 
 /* Compare the character arrays s1 and s2, interpreted as specified by the
    LC_COLLATE category of the current locale.
@@ -99,14 +99,14 @@ _PDCLIB_PUBLIC int strcmp( const char * s1, const char * s2 );
    TODO: Currently a dummy wrapper for strcmp() as PDCLib does not yet support
    locales.
 */
-_PDCLIB_PUBLIC int strcoll( const char * s1, const char * s2 );
+_PDCLIB_PUBLIC int strcoll(const char* s1, const char* s2);
 
 /* Compare no more than the first n characters of the character arrays s1 and
    s2.
    Returns 0 if s1 == s2, a negative number if s1 < s2, and a positive number if
    s1 > s2.
 */
-_PDCLIB_PUBLIC int strncmp( const char * s1, const char * s2, size_t n );
+_PDCLIB_PUBLIC int strncmp(const char* s1, const char* s2, size_t n);
 
 
 /* Compare no more than N characters of S1 and S2,
@@ -120,18 +120,17 @@ greater than zero if s1 is  less than, equal to or greater than s2.  */
 _PDCLIB_PUBLIC int strcasecmp(const char* s1, const char* s2);
 
 /* Duplicate S, returning an identical malloc'd string.  */
-_PDCLIB_PUBLIC char * strdup (const char *s);
+_PDCLIB_PUBLIC char* strdup(const char* s);
 
 /* Duplicate S for specified number of bytes, returning an identical malloc'd string.   */
-_PDCLIB_PUBLIC char * strndup (const char *s, size_t n);
+_PDCLIB_PUBLIC char* strndup(const char* s, size_t n);
 
 /* Transform the character array s2 as appropriate for the LC_COLLATE setting of
 the current locale. If length of resulting string is less than n, store it in
 the character array pointed to by s1. Return the length of the resulting
 string.
 */
-_PDCLIB_PUBLIC size_t strxfrm( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2, size_t n );
-
+_PDCLIB_PUBLIC size_t strxfrm(char* _PDCLIB_restrict s1, const char* _PDCLIB_restrict s2, size_t n);
 
 
 /* Search functions */
@@ -140,42 +139,42 @@ _PDCLIB_PUBLIC size_t strxfrm( char * _PDCLIB_restrict s1, const char * _PDCLIB_
    character c (interpreted as unsigned char).
    Returns a pointer to the first instance found, or NULL.
 */
-_PDCLIB_PUBLIC void * memchr( const void * s, int c, size_t n );
+_PDCLIB_PUBLIC void* memchr(const void* s, int c, size_t n);
 
 /* Search the character array s (including terminating '\0') for the character c
    (interpreted as char).
    Returns a pointer to the first instance found, or NULL.
 */
-_PDCLIB_PUBLIC char * strchr( const char * s, int c );
+_PDCLIB_PUBLIC char* strchr(const char* s, int c);
 
 /* Determine the length of the initial substring of character array s1 which
    consists only of characters not from the character array s2.
    Returns the length of that substring.
 */
-_PDCLIB_PUBLIC size_t strcspn( const char * s1, const char * s2 );
+_PDCLIB_PUBLIC size_t strcspn(const char* s1, const char* s2);
 
 /* Search the character array s1 for any character from the character array s2.
    Returns a pointer to the first occurrence, or NULL.
 */
-_PDCLIB_PUBLIC char * strpbrk( const char * s1, const char * s2 );
+_PDCLIB_PUBLIC char* strpbrk(const char* s1, const char* s2);
 
 /* Search the character array s (including terminating '\0') for the character c
    (interpreted as char).
    Returns a pointer to the last instance found, or NULL.
 */
-_PDCLIB_PUBLIC char * strrchr( const char * s, int c );
+_PDCLIB_PUBLIC char* strrchr(const char* s, int c);
 
 /* Determine the length of the initial substring of character array s1 which
    consists only of characters from the character array s2.
    Returns the length of that substring.
 */
-_PDCLIB_PUBLIC size_t strspn( const char * s1, const char * s2 );
+_PDCLIB_PUBLIC size_t strspn(const char* s1, const char* s2);
 
 /* Search the character array s1 for the substring in character array s2.
    Returns a pointer to that sbstring, or NULL. If s2 is of length zero,
    returns s1.
 */
-_PDCLIB_PUBLIC char * strstr( const char * s1, const char * s2 );
+_PDCLIB_PUBLIC char* strstr(const char* s1, const char* s2);
 
 /* In a series of subsequent calls, parse a C string into tokens.
    On the first call to strtok(), the first argument is a pointer to the to-be-
@@ -186,7 +185,7 @@ _PDCLIB_PUBLIC char * strstr( const char * s1, const char * s2 );
    Returns a pointer to the next token.
    WARNING: This function uses static storage, and as such is not reentrant.
 */
-_PDCLIB_PUBLIC char * strtok( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2 );
+_PDCLIB_PUBLIC char* strtok(char* _PDCLIB_restrict s1, const char* _PDCLIB_restrict s2);
 
 /* Miscellaneous functions */
 
@@ -194,17 +193,17 @@ _PDCLIB_PUBLIC char * strtok( char * _PDCLIB_restrict s1, const char * _PDCLIB_r
    characters of the memory area pointed to by s.
    Returns s.
 */
-_PDCLIB_PUBLIC void * memset( void * s, int c, size_t n );
+_PDCLIB_PUBLIC void* memset(void* s, int c, size_t n);
 
 /* Map an error number to a (locale-specific) error message string. Error
    numbers are typically errno values, but any number is mapped to a message.
    TODO: PDCLib does not yet support locales.
 */
-_PDCLIB_PUBLIC char * strerror( int errnum );
+_PDCLIB_PUBLIC char* strerror(int errnum);
 
 /* Returns the length of the string s (excluding terminating '\0').
 */
-_PDCLIB_PUBLIC size_t strlen( const char * s );
+_PDCLIB_PUBLIC size_t strlen(const char* s);
 
 /* Annex K -- Bounds-checking interfaces */
 

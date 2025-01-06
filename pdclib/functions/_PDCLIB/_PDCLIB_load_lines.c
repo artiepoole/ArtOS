@@ -9,17 +9,17 @@
 
 #ifndef REGTEST
 
-char * _PDCLIB_load_lines( FILE * fh, size_t lines )
+char* _PDCLIB_load_lines(FILE* fh, size_t lines)
 {
     size_t required = 0;
-    long pos = ftell( fh );
-    char * rc = NULL;
+    long pos = ftell(fh);
+    char* rc = NULL;
     int c;
 
     /* Count the number of characters */
-    while ( lines && ( c = fgetc( fh ) ) != EOF )
+    while (lines && (c = fgetc(fh)) != EOF)
     {
-        if ( c == '\n' )
+        if (c == '\n')
         {
             --lines;
         }
@@ -27,20 +27,20 @@ char * _PDCLIB_load_lines( FILE * fh, size_t lines )
         ++required;
     }
 
-    if ( ! feof( fh ) )
+    if (!feof(fh))
     {
-        if ( ( rc = (char *)malloc( required ) ) != NULL )
+        if ((rc = (char*)malloc(required)) != NULL)
         {
             size_t i;
 
-            fseek( fh, pos, SEEK_SET );
-            fread( rc, 1, required, fh );
+            fseek(fh, pos, SEEK_SET);
+            fread(rc, 1, required, fh);
 
-            for ( i = 0; i < required; ++i )
+            for (i = 0; i < required; ++i)
             {
-                if ( rc[ i ] == '\n' )
+                if (rc[i] == '\n')
                 {
-                    rc[ i ] = '\0';
+                    rc[i] = '\0';
                 }
             }
         }

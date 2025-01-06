@@ -28,10 +28,10 @@ typedef _PDCLIB_size_t size_t;
 
 /* TODO: atof(), strtof(), strtod(), strtold() */
 
-_PDCLIB_PUBLIC double atof( const char * nptr );
-_PDCLIB_PUBLIC double strtod( const char * _PDCLIB_restrict nptr, char ** _PDCLIB_restrict endptr );
-_PDCLIB_PUBLIC float strtof( const char * _PDCLIB_restrict nptr, char ** _PDCLIB_restrict endptr );
-_PDCLIB_PUBLIC long double strtold( const char * _PDCLIB_restrict nptr, char ** _PDCLIB_restrict endptr );
+_PDCLIB_PUBLIC double atof(const char* nptr);
+_PDCLIB_PUBLIC double strtod(const char* _PDCLIB_restrict nptr, char** _PDCLIB_restrict endptr);
+_PDCLIB_PUBLIC float strtof(const char* _PDCLIB_restrict nptr, char** _PDCLIB_restrict endptr);
+_PDCLIB_PUBLIC long double strtold(const char* _PDCLIB_restrict nptr, char** _PDCLIB_restrict endptr);
 
 /* Separate the character array nptr into three parts: A (possibly empty)
    sequence of whitespace characters, a character representation of an integer
@@ -55,10 +55,10 @@ _PDCLIB_PUBLIC long double strtold( const char * _PDCLIB_restrict nptr, char ** 
 /* There is strtoimax() and strtoumax() in <inttypes.h> operating on intmax_t /
    uintmax_t, if the long long versions do not suit your needs.
 */
-_PDCLIB_PUBLIC long int strtol( const char * _PDCLIB_restrict nptr, char ** _PDCLIB_restrict endptr, int base );
-_PDCLIB_PUBLIC long long int strtoll( const char * _PDCLIB_restrict nptr, char ** _PDCLIB_restrict endptr, int base );
-_PDCLIB_PUBLIC unsigned long int strtoul( const char * _PDCLIB_restrict nptr, char ** _PDCLIB_restrict endptr, int base );
-_PDCLIB_PUBLIC unsigned long long int strtoull( const char * _PDCLIB_restrict nptr, char ** _PDCLIB_restrict endptr, int base );
+_PDCLIB_PUBLIC long int strtol(const char* _PDCLIB_restrict nptr, char** _PDCLIB_restrict endptr, int base);
+_PDCLIB_PUBLIC long long int strtoll(const char* _PDCLIB_restrict nptr, char** _PDCLIB_restrict endptr, int base);
+_PDCLIB_PUBLIC unsigned long int strtoul(const char* _PDCLIB_restrict nptr, char** _PDCLIB_restrict endptr, int base);
+_PDCLIB_PUBLIC unsigned long long int strtoull(const char* _PDCLIB_restrict nptr, char** _PDCLIB_restrict endptr, int base);
 
 /* These functions are the equivalent of (int)strtol( nptr, NULL, 10 ),
    strtol( nptr, NULL, 10 ) and strtoll(nptr, NULL, 10 ) respectively, with the
@@ -68,9 +68,9 @@ _PDCLIB_PUBLIC unsigned long long int strtoull( const char * _PDCLIB_restrict np
    provides a simpler atox() function that saves a couple of tests and simply
    continues with the conversion in case of overflow.)
 */
-_PDCLIB_PUBLIC int atoi( const char * nptr );
-_PDCLIB_PUBLIC long int atol( const char * nptr );
-_PDCLIB_PUBLIC long long int atoll( const char * nptr );
+_PDCLIB_PUBLIC int atoi(const char* nptr);
+_PDCLIB_PUBLIC long int atol(const char* nptr);
+_PDCLIB_PUBLIC long long int atoll(const char* nptr);
 
 /* Pseudo-random sequence generation functions */
 
@@ -83,12 +83,12 @@ extern unsigned long int _PDCLIB_seed;
    (PDCLib uses the implementation suggested by the standard document, which is
    next = next * 1103515245 + 12345; return (unsigned int)(next/65536) % 32768;)
 */
-_PDCLIB_PUBLIC int rand( void );
+_PDCLIB_PUBLIC int rand(void);
 
 /* Initialize a new pseudo-random sequence with the starting seed. Same seeds
    result in the same pseudo-random sequence. The default seed is 1.
 */
-_PDCLIB_PUBLIC void srand( unsigned int seed );
+_PDCLIB_PUBLIC void srand(unsigned int seed);
 
 /* Memory management functions */
 
@@ -96,21 +96,21 @@ _PDCLIB_PUBLIC void srand( unsigned int seed );
    satisfied, return NULL. Otherwise, return a pointer to the allocated
    memory. Memory contents are undefined.
 */
-_PDCLIB_PUBLIC void * malloc( size_t size );
+_PDCLIB_PUBLIC void* malloc(size_t size);
 
 /* Allocate a chunk of heap memory that is large enough to hold nmemb elements
    of the given size, and zero-initialize that memory. If request could not be
    satisfied, return NULL. Otherwise, return a pointer to the allocated
    memory.
 */
-_PDCLIB_PUBLIC void * calloc( size_t nmemb, size_t size );
+_PDCLIB_PUBLIC void* calloc(size_t nmemb, size_t size);
 
 /* De-allocate a chunk of heap memory previously allocated using malloc(),
    calloc(), or realloc(), and pointed to by ptr. If ptr does not match a
    pointer previously returned by the mentioned allocation functions, or
    free() has already been called for this ptr, behaviour is undefined.
 */
-_PDCLIB_PUBLIC void free( void * ptr );
+_PDCLIB_PUBLIC void free(void* ptr);
 
 /* Resize a chunk of memory previously allocated with malloc() and pointed to
    by ptr to the given size (which might be larger or smaller than the original
@@ -121,7 +121,7 @@ _PDCLIB_PUBLIC void free( void * ptr );
    memory beyond the original size is undefined. If ptr is NULL, realloc()
    behaves like malloc().
 */
-_PDCLIB_PUBLIC void * realloc( void * ptr, size_t size );
+_PDCLIB_PUBLIC void* realloc(void* ptr, size_t size);
 
 /* Communication with the environment */
 
@@ -141,21 +141,21 @@ _PDCLIB_PUBLIC void * realloc( void * ptr, size_t size );
    temporary files before exiting with EXIT_FAILURE.
    abort() does not return.
 */
-_PDCLIB_PUBLIC _PDCLIB_Noreturn void abort( void ) _PDCLIB_NORETURN;
+_PDCLIB_PUBLIC _PDCLIB_Noreturn void abort(void) _PDCLIB_NORETURN;
 
 /* Register a function that will be called on quick_exit().
    At least 32 functions can be registered this way, and will be called in
    reverse order of registration (last-in, first-out).
    Returns zero if registration is successfull, nonzero if it failed.
 */
-_PDCLIB_PUBLIC int at_quick_exit( void ( *func )( void ) );
+_PDCLIB_PUBLIC int at_quick_exit(void (*func)(void));
 
 /* Register a function that will be called on exit(), or when main() returns.
    At least 32 functions can be registered this way, and will be called in
    reverse order of registration (last-in, first-out).
    Returns zero if registration is successfull, nonzero if it failed.
 */
-_PDCLIB_PUBLIC int atexit( void ( *func )( void ) );
+_PDCLIB_PUBLIC int atexit(void (*func)(void));
 
 /* Normal process termination. Functions registered by atexit() (see above) are
    called, streams flushed, files closed and temporary files removed before the
@@ -163,7 +163,7 @@ _PDCLIB_PUBLIC int atexit( void ( *func )( void ) );
    and EXIT_FAILURE above.)
    exit() does not return.
 */
-_PDCLIB_PUBLIC _PDCLIB_Noreturn void exit( int status ) _PDCLIB_NORETURN;
+_PDCLIB_PUBLIC _PDCLIB_Noreturn void exit(int status) _PDCLIB_NORETURN;
 
 /* Normal process termination. Functions registered by at_quick_exit() (see
    above) are called, streams flushed, files closed and temporary files removed
@@ -171,7 +171,7 @@ _PDCLIB_PUBLIC _PDCLIB_Noreturn void exit( int status ) _PDCLIB_NORETURN;
    EXIT_SUCCESS and EXIT_FAILURE above.)
    quick_exit() does not return.
 */
-_PDCLIB_PUBLIC _PDCLIB_Noreturn void quick_exit( int status ) _PDCLIB_NORETURN;
+_PDCLIB_PUBLIC _PDCLIB_Noreturn void quick_exit(int status) _PDCLIB_NORETURN;
 
 /* Normal process termination. Functions registered by atexit()/at_quick_exit()
    (see above) are NOT CALLED. This implementation DOES flush streams, close
@@ -179,7 +179,7 @@ _PDCLIB_PUBLIC _PDCLIB_Noreturn void quick_exit( int status ) _PDCLIB_NORETURN;
    given status. (See comment for EXIT_SUCCESS and EXIT_FAILURE above.)
    _Exit() does not return.
 */
-_PDCLIB_PUBLIC _PDCLIB_Noreturn void _Exit( int status ) _PDCLIB_NORETURN;
+_PDCLIB_PUBLIC _PDCLIB_Noreturn void _Exit(int status) _PDCLIB_NORETURN;
 
 /* Search an environment-provided key-value map for the given key name, and
    return a pointer to the associated value string (or NULL if key name cannot
@@ -188,14 +188,14 @@ _PDCLIB_PUBLIC _PDCLIB_Noreturn void _Exit( int status ) _PDCLIB_NORETURN;
    Details on the provided keys and how to set / change them are determined by
    the hosting OS and its glue function.
 */
-_PDCLIB_PUBLIC char * getenv( const char * name );
+_PDCLIB_PUBLIC char* getenv(const char* name);
 
 /* If string is a NULL pointer, system() returns nonzero if a command processor
    is available, and zero otherwise. If string is not a NULL pointer, it is
    passed to the command processor. If system() returns, it does so with a
    value that is determined by the hosting OS and its glue function.
 */
-_PDCLIB_PUBLIC int system( const char * string );
+_PDCLIB_PUBLIC int system(const char* string);
 
 /* Searching and sorting */
 
@@ -209,7 +209,7 @@ _PDCLIB_PUBLIC int system( const char * string );
    The function returns a pointer to a matching element found, or NULL if no
    match is found.
 */
-_PDCLIB_PUBLIC void * bsearch( const void * key, const void * base, size_t nmemb, size_t size, int ( *compar )( const void *, const void * ) );
+_PDCLIB_PUBLIC void* bsearch(const void* key, const void* base, size_t nmemb, size_t size, int (*compar)(const void*, const void*));
 
 /* Do a quicksort on an array with a given base pointer, which consists of
    nmemb elements that are of the given size each. To compare two elements from
@@ -219,7 +219,7 @@ _PDCLIB_PUBLIC void * bsearch( const void * key, const void * base, size_t nmemb
    If two elements are compared equal, their order in the sorted array is not
    specified.
 */
-_PDCLIB_PUBLIC void qsort( void * base, size_t nmemb, size_t size, int ( *compar )( const void *, const void * ) );
+_PDCLIB_PUBLIC void qsort(void* base, size_t nmemb, size_t size, int (*compar)(const void*, const void*));
 
 /* Integer arithmetic functions */
 
@@ -227,25 +227,25 @@ _PDCLIB_PUBLIC void qsort( void * base, size_t nmemb, size_t size, int ( *compar
    complement's notation (most modern CPUs), the largest negative value cannot
    be represented as positive value. In this case, behaviour is unspecified.
 */
-_PDCLIB_PUBLIC int abs( int j );
-_PDCLIB_PUBLIC long int labs( long int j );
-_PDCLIB_PUBLIC long long int llabs( long long int j );
+_PDCLIB_PUBLIC int abs(int j);
+_PDCLIB_PUBLIC long int labs(long int j);
+_PDCLIB_PUBLIC long long int llabs(long long int j);
 
 /* These structures each have a member quot and a member rem, of type int (for
    div_t), long int (for ldiv_t) and long long it (for lldiv_t) respectively.
    The order of the members is platform-defined to allow the div() functions
    below to be implemented efficiently.
 */
-typedef struct _PDCLIB_div_t     div_t;
-typedef struct _PDCLIB_ldiv_t   ldiv_t;
+typedef struct _PDCLIB_div_t div_t;
+typedef struct _PDCLIB_ldiv_t ldiv_t;
 typedef struct _PDCLIB_lldiv_t lldiv_t;
 
 /* Return quotient (quot) and remainder (rem) of an integer division in one of
    the structs above.
 */
-_PDCLIB_PUBLIC div_t div( int numer, int denom );
-_PDCLIB_PUBLIC ldiv_t ldiv( long int numer, long int denom );
-_PDCLIB_PUBLIC lldiv_t lldiv( long long int numer, long long int denom );
+_PDCLIB_PUBLIC div_t div(int numer, int denom);
+_PDCLIB_PUBLIC ldiv_t ldiv(long int numer, long int denom);
+_PDCLIB_PUBLIC lldiv_t lldiv(long long int numer, long long int denom);
 
 /* TODO: Multibyte / wide character conversion functions */
 

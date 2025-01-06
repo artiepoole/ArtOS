@@ -9,18 +9,18 @@
 
 #ifndef REGTEST
 
-void * memmove( void * s1, const void * s2, size_t n )
+void* memmove(void* s1, const void* s2, size_t n)
 {
     if (simd_enabled())
     {
         return simd_move(s1, s2, n);
     }
-    char * dest = ( char * ) s1;
-    const char * src = ( const char * ) s2;
+    char* dest = (char*)s1;
+    const char* src = (const char*)s2;
 
-    if ( dest <= src )
+    if (dest <= src)
     {
-        while ( n-- )
+        while (n--)
         {
             *dest++ = *src++;
         }
@@ -30,7 +30,7 @@ void * memmove( void * s1, const void * s2, size_t n )
         src += n;
         dest += n;
 
-        while ( n-- )
+        while (n--)
         {
             *--dest = *--src;
         }

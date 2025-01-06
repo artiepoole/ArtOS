@@ -10,18 +10,18 @@
 
 #ifndef REGTEST
 
-void * memset( void * s, int c, size_t n )
+void* memset(void* s, int c, size_t n)
 {
     if (simd_enabled())
     {
         return simd_set(s, c, n);
     }
 
-    unsigned char * p = ( unsigned char * ) s;
+    unsigned char* p = (unsigned char*)s;
 
-    while ( n-- )
+    while (n--)
     {
-        *p++ = ( unsigned char ) c;
+        *p++ = (unsigned char)c;
     }
 
     return s;

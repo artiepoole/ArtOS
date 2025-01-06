@@ -9,9 +9,9 @@
 
 #ifndef REGTEST
 
-int vscanf( const char * _PDCLIB_restrict format, _PDCLIB_va_list arg )
+int vscanf(const char* _PDCLIB_restrict format, _PDCLIB_va_list arg)
 {
-    return vfscanf( stdin, format, arg );
+    return vfscanf(stdin, format, arg);
 }
 
 #endif

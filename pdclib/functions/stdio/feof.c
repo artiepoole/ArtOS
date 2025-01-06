@@ -8,7 +8,7 @@
 
 #ifndef REGTEST
 
-int feof( struct _PDCLIB_file_t * stream )
+int feof(struct _PDCLIB_file_t* stream)
 {
     return stream->status & _PDCLIB_EOFFLAG;
 }

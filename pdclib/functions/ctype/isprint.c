@@ -10,10 +10,10 @@
 
 #include <locale.h>
 
-int isprint( int c )
+int isprint(int c)
 {
     /* FIXME: Space as of current locale charset, not source charset. */
-    return ( _PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_GRAPH ) || ( c == ' ' );
+    return (_PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_GRAPH) || (c == ' ');
 }
 
 #endif

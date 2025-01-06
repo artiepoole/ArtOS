@@ -8,9 +8,9 @@
 
 #ifndef REGTEST
 
-long int labs( long int j )
+long int labs(long int j)
 {
-    return ( j >= 0 ) ? j : -j;
+    return (j >= 0) ? j : -j;
 }
 
 #endif

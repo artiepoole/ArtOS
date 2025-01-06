@@ -33,7 +33,7 @@ _PDCLIB_int_least64_t _PDCLIB_seek(struct _PDCLIB_file_t* stream, _PDCLIB_int_le
     _PDCLIB_int_least64_t rc;
     rc = seek(stream, offset, whence);
 
-    if ( rc != EOF )
+    if (rc != EOF)
     {
         stream->ungetidx = 0;
         stream->bufidx = 0;

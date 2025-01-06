@@ -16,43 +16,43 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-struct _PDCLIB_lc_ctype_t * _PDCLIB_load_lc_ctype( const char * path, const char * locale )
+struct _PDCLIB_lc_ctype_t* _PDCLIB_load_lc_ctype(const char* path, const char* locale)
 {
-    struct _PDCLIB_lc_ctype_t * rc = NULL;
-    const char * extension = "_ctype.dat";
-    char * file = (char *)malloc( strlen( path ) + strlen( locale ) + strlen( extension ) + 1 );
+    struct _PDCLIB_lc_ctype_t* rc = NULL;
+    const char* extension = "_ctype.dat";
+    char* file = (char*)malloc(strlen(path) + strlen(locale) + strlen(extension) + 1);
 
-    if ( file )
+    if (file)
     {
-        FILE * fh;
+        FILE* fh;
 
-        strcpy( file, path );
-        strcat( file, locale );
-        strcat( file, extension );
+        strcpy(file, path);
+        strcat(file, locale);
+        strcat(file, extension);
 
-        if ( ( fh = fopen( file, "rb" ) ) != NULL )
+        if ((fh = fopen(file, "rb")) != NULL)
         {
-            if ( ( rc = (struct _PDCLIB_lc_ctype_t *)malloc( sizeof( struct _PDCLIB_lc_ctype_t ) ) ) != NULL )
+            if ((rc = (struct _PDCLIB_lc_ctype_t*)malloc(sizeof(struct _PDCLIB_lc_ctype_t))) != NULL)
             {
-                struct _PDCLIB_lc_ctype_entry_t * entry;
+                struct _PDCLIB_lc_ctype_entry_t* entry;
 
-                if ( ( entry = (struct _PDCLIB_lc_ctype_entry_t *)malloc( sizeof( struct _PDCLIB_lc_ctype_entry_t ) * _PDCLIB_CHARSET_SIZE + 1 ) ) != NULL )
+                if ((entry = (struct _PDCLIB_lc_ctype_entry_t*)malloc(sizeof(struct _PDCLIB_lc_ctype_entry_t) * _PDCLIB_CHARSET_SIZE + 1)) != NULL)
                 {
                     rc->entry = entry + 1;
-                    rc->entry[ -1 ].flags = rc->entry[ -1 ].upper = rc->entry[ -1 ].lower =  0;
+                    rc->entry[-1].flags = rc->entry[-1].upper = rc->entry[-1].lower = 0;
 
-                    if ( fscanf( fh, "%x %x %x %x %x %x", &rc->digits_low, &_PDCLIB_lc_ctype->digits_high, &_PDCLIB_lc_ctype->Xdigits_low, &_PDCLIB_lc_ctype->Xdigits_high, &_PDCLIB_lc_ctype->xdigits_low, &_PDCLIB_lc_ctype->xdigits_high ) == 6 )
+                    if (fscanf(fh, "%x %x %x %x %x %x", &rc->digits_low, &_PDCLIB_lc_ctype->digits_high, &_PDCLIB_lc_ctype->Xdigits_low, &_PDCLIB_lc_ctype->Xdigits_high, &_PDCLIB_lc_ctype->xdigits_low, &_PDCLIB_lc_ctype->xdigits_high) == 6)
                     {
                         size_t i;
 
-                        for ( i = 0; i < _PDCLIB_CHARSET_SIZE; ++i )
+                        for (i = 0; i < _PDCLIB_CHARSET_SIZE; ++i)
                         {
-                            if ( fscanf( fh, "%" SCNx16 " %hhx %hhx", &rc->entry[ i ].flags, &rc->entry[ i ].upper, &rc->entry[ i ].lower ) != 3 )
+                            if (fscanf(fh, "%" SCNx16 " %hhx %hhx", &rc->entry[i].flags, &rc->entry[i].upper, &rc->entry[i].lower) != 3)
                             {
-                                fclose( fh );
-                                free( file );
-                                free( rc->entry - 1 );
-                                free( rc );
+                                fclose(fh);
+                                free(file);
+                                free(rc->entry - 1);
+                                free(rc);
                                 return NULL;
                             }
                         }
@@ -62,14 +62,14 @@ struct _PDCLIB_lc_ctype_t * _PDCLIB_load_lc_ctype( const char * path, const char
                 }
                 else
                 {
-                    free( rc );
+                    free(rc);
                 }
             }
 
-            fclose( fh );
+            fclose(fh);
         }
 
-        free( file );
+        free(file);
     }
 
     return rc;

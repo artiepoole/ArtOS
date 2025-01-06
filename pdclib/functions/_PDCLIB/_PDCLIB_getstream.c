@@ -10,19 +10,19 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-extern struct _PDCLIB_file_t * _PDCLIB_filelist;
+extern struct _PDCLIB_file_t* _PDCLIB_filelist;
 
-int _PDCLIB_getstream( struct _PDCLIB_file_t * stream )
+int _PDCLIB_getstream(struct _PDCLIB_file_t* stream)
 {
-    struct _PDCLIB_file_t * previous;
+    struct _PDCLIB_file_t* previous;
 
-    if ( ! _PDCLIB_isstream( stream, &previous ) )
+    if (!_PDCLIB_isstream(stream, &previous))
     {
         *_PDCLIB_errno_func() = _PDCLIB_EBADF;
         return EOF;
     }
 
-    if ( previous != NULL )
+    if (previous != NULL)
     {
         previous->next = stream->next;
     }

@@ -10,20 +10,20 @@
 
 #include <stdint.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint_div_dig( _PDCLIB_bigint_t * _PDCLIB_restrict lhs, _PDCLIB_bigint_digit_t rhs )
+_PDCLIB_bigint_t* _PDCLIB_bigint_div_dig(_PDCLIB_bigint_t* _PDCLIB_restrict lhs, _PDCLIB_bigint_digit_t rhs)
 {
     unsigned i;
     _PDCLIB_bigint_digit_t digit;
     _PDCLIB_bigint_arith_t carry = 0;
 
-    for ( i = lhs->size; i > 0; --i )
+    for (i = lhs->size; i > 0; --i)
     {
-        digit = lhs->data[ i - 1 ];
-        lhs->data[ i - 1 ] = (_PDCLIB_bigint_digit_t)( ( carry * _PDCLIB_BIGINT_BASE + digit ) / rhs );
-        carry = ( _PDCLIB_BIGINT_BASE + digit ) - lhs->data[ i - 1 ] * rhs;
+        digit = lhs->data[i - 1];
+        lhs->data[i - 1] = (_PDCLIB_bigint_digit_t)((carry * _PDCLIB_BIGINT_BASE + digit) / rhs);
+        carry = (_PDCLIB_BIGINT_BASE + digit) - lhs->data[i - 1] * rhs;
     }
 
-    while ( lhs->size > 0 && lhs->data[ lhs->size - 1 ] == 0 )
+    while (lhs->size > 0 && lhs->data[lhs->size - 1] == 0)
     {
         --lhs->size;
     }

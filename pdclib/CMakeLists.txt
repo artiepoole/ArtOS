@@ -1,10 +1,10 @@
-cmake_minimum_required( VERSION 3.1.3...3.27.7 FATAL_ERROR )
+cmake_minimum_required(VERSION 3.1.3...3.27.7 FATAL_ERROR)
 
-project( pdclib_proj LANGUAGES C CXX )
+project(pdclib_proj LANGUAGES C CXX)
 
 set(TARGET_NAME platform_functions)
 
-set( PDCLIB_SOURCES
+set(PDCLIB_SOURCES
         functions/ctype/isalnum.c
         functions/ctype/isalpha.c
         functions/ctype/isblank.c
@@ -19,15 +19,15 @@ set( PDCLIB_SOURCES
         functions/ctype/isxdigit.c
         functions/ctype/tolower.c
         functions/ctype/toupper.c
-#
+        #
         functions/inttypes/imaxabs.c
         functions/inttypes/imaxdiv.c
         functions/inttypes/strtoimax.c
         functions/inttypes/strtoumax.c
-#
+        #
         functions/locale/localeconv.c
         functions/locale/setlocale.c
-#
+        #
         platform/ArtOS/functions/signal/raise.c
         platform/ArtOS/functions/signal/signal.c
 
@@ -78,7 +78,7 @@ set( PDCLIB_SOURCES
         functions/stdio/vsnprintf.c
         functions/stdio/vsprintf.c
         functions/stdio/vsscanf.c
-#        platform/ArtOS/functions/stdio/tmpfile.cpp
+        #        platform/ArtOS/functions/stdio/tmpfile.cpp
 
         functions/stdlib/abort.c
         functions/stdlib/abort_handler_s.c
@@ -112,7 +112,7 @@ set( PDCLIB_SOURCES
         platform/ArtOS/functions/stdlib/getenv.c
         platform/ArtOS/functions/stdlib/getenv_s.c
         platform/ArtOS/functions/stdlib/system.c
-#
+        #
         functions/string/memchr.c
         functions/string/memcmp.c
         functions/string/memcpy.c
@@ -148,7 +148,7 @@ set( PDCLIB_SOURCES
         functions/string/strcasecmp.c
         functions/string/strdup.c
         functions/string/strncasecmp.c
-#
+        #
         functions/time/asctime.c
         functions/time/asctime_s.c
         functions/time/ctime.c
@@ -162,7 +162,7 @@ set( PDCLIB_SOURCES
         functions/time/strftime.c
         platform/ArtOS/functions/time/clock.cpp
         platform/ArtOS/functions/time/time.cpp
-#        platform/ArtOS/functions/time/timespec_get.c
+        #        platform/ArtOS/functions/time/timespec_get.c
 
         functions/_dlmalloc/malloc.c
 
@@ -180,7 +180,7 @@ set( PDCLIB_SOURCES
         functions/_tzcode/_PDCLIB_tzparse.c
         functions/_tzcode/_PDCLIB_tzset_unlocked.c
         functions/_tzcode/_PDCLIB_update_tzname_etc.c
-#
+        #
         functions/_PDCLIB/assert.c
         functions/_PDCLIB/errno.c
         functions/_PDCLIB/_PDCLIB_atomax.c
@@ -237,7 +237,7 @@ set( PDCLIB_SOURCES
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_flushbuffer.cpp
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_open.cpp
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_realpath.c
-#        platform/ArtOS/functions/_PDCLIB/_PDCLIB_rename.c
+        #        platform/ArtOS/functions/_PDCLIB/_PDCLIB_rename.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_remove.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_seek.c
         platform/ArtOS/functions/_PDCLIB/_PDCLIB_stdinit.c
@@ -249,7 +249,7 @@ file(GLOB DIRS
         include/*
         platform/*)
 
-set( PDCLIB_HEADERS
+set(PDCLIB_HEADERS
         include/assert.h
         include/ctype.h
         include/errno.h
@@ -273,7 +273,7 @@ set( PDCLIB_HEADERS
 )
 
 
-set( PDCLIB_PRIVATE_HEADERS
+set(PDCLIB_PRIVATE_HEADERS
         include/pdclib/_PDCLIB_glue.h
         include/pdclib/_PDCLIB_internal.h
         include/pdclib/_PDCLIB_lib_ext1.h
@@ -285,7 +285,7 @@ set( PDCLIB_PRIVATE_HEADERS
 add_library(pdclib STATIC ${PDCLIB_SOURCES} ${PDCLIB_HEADERS} ${PDCLIB_PRIVATE_HEADERS} ${PDCLIB_NOINSTALL_HEADERS}) #${KERNEL}
 
 #target_include_directories( pdclib  BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include include platform/ArtOS/include ../src ../src/sys ../include)
-target_include_directories( pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include )
+target_include_directories(pdclib BEFORE PRIVATE ${CMAKE_BINARY_DIR}/configured_include)
 target_include_directories(pdclib PUBLIC
         include
         include/pdclib
@@ -332,16 +332,15 @@ target_include_directories(pdclib PUBLIC
         ../Specific/multiboot2
 
 
-
 )
 
 
-set_property( TARGET pdclib PROPERTY POSITION_INDEPENDENT_CODE 1 )
+set_property(TARGET pdclib PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 set(pdclib CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wmissing-declarations -Wredundant-decls -Winline -Wno-long-long -Wuninitialized -fno-builtin -fvisibility=hidden -D_STDC_PREDEF_H -nostdlib ")
 
-set_source_files_properties( functions/_dtoa/dtoa.c PROPERTIES COMPILE_OPTIONS -Wno-sign-compare )
+set_source_files_properties(functions/_dtoa/dtoa.c PROPERTIES COMPILE_OPTIONS -Wno-sign-compare)
 
-set_property( TARGET pdclib APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_STATIC_DEFINE ${FLAGS}" )
+set_property(TARGET pdclib APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_STATIC_DEFINE ${FLAGS}")
 
 target_link_libraries(pdclib ArtOSTypes)

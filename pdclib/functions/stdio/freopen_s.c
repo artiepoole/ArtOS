@@ -10,20 +10,20 @@
 
 #ifndef REGTEST
 
-_PDCLIB_PUBLIC errno_t freopen_s( FILE * _PDCLIB_restrict * _PDCLIB_restrict newstreamptr, const char * _PDCLIB_restrict filename, const char * _PDCLIB_restrict mode, FILE * _PDCLIB_restrict stream )
+_PDCLIB_PUBLIC errno_t freopen_s(FILE* _PDCLIB_restrict * _PDCLIB_restrict newstreamptr, const char* _PDCLIB_restrict filename, const char* _PDCLIB_restrict mode, FILE* _PDCLIB_restrict stream)
 {
-    if ( newstreamptr == NULL || mode == NULL || stream == NULL )
+    if (newstreamptr == NULL || mode == NULL || stream == NULL)
     {
-        if ( newstreamptr != NULL )
+        if (newstreamptr != NULL)
         {
             *newstreamptr = NULL;
         }
 
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
-    if ( ( *newstreamptr = freopen( filename, mode, stream ) ) == NULL )
+    if ((*newstreamptr = freopen(filename, mode, stream)) == NULL)
     {
         return *_PDCLIB_errno_func();
     }

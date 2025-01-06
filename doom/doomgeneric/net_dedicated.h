@@ -21,5 +21,3 @@
 void NET_DedicatedServer(void);
 
 #endif /* #ifndef NET_DEDICATED_H */
-
-

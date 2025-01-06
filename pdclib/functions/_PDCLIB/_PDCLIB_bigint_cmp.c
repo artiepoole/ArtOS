@@ -8,18 +8,18 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-int _PDCLIB_bigint_cmp( _PDCLIB_bigint_t const * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs )
+int _PDCLIB_bigint_cmp(_PDCLIB_bigint_t const* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs)
 {
     int i;
 
-    if ( lhs->size != rhs->size )
+    if (lhs->size != rhs->size)
     {
         return lhs->size - rhs->size;
     }
 
-    for ( i = lhs->size - 1; i >= 0; --i )
+    for (i = lhs->size - 1; i >= 0; --i)
     {
-        if ( lhs->data[i] != rhs->data[i] )
+        if (lhs->data[i] != rhs->data[i])
         {
             return lhs->data[i] - rhs->data[i];
         }

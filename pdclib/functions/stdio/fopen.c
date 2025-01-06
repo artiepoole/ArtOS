@@ -18,22 +18,22 @@
 extern mtx_t _PDCLIB_filelist_mtx;
 #endif
 
-extern struct _PDCLIB_file_t * _PDCLIB_filelist;
+extern struct _PDCLIB_file_t* _PDCLIB_filelist;
 
-struct _PDCLIB_file_t * fopen( const char * _PDCLIB_restrict filename, const char * _PDCLIB_restrict mode )
+struct _PDCLIB_file_t* fopen(const char* _PDCLIB_restrict filename, const char* _PDCLIB_restrict mode)
 {
     // TODO: proper implementation of this stream handling stuff,
 
-    struct _PDCLIB_file_t * rc;
-    unsigned int filemode = _PDCLIB_filemode( mode );
+    struct _PDCLIB_file_t* rc;
+    unsigned int filemode = _PDCLIB_filemode(mode);
 
-    if ( filemode == 0 )
+    if (filemode == 0)
     {
         /* mode invalid */
         return NULL;
     }
 
-    if ( filename == NULL || filename[0] == '\0' )
+    if (filename == NULL || filename[0] == '\0')
     {
         /* filename invalid */
         return NULL;
@@ -41,7 +41,7 @@ struct _PDCLIB_file_t * fopen( const char * _PDCLIB_restrict filename, const cha
 
     /* See tmpfile(), which does much of the same. */
 
-    if ( ( rc = _PDCLIB_init_file_t( NULL ) ) == NULL )
+    if ((rc = _PDCLIB_init_file_t(NULL)) == NULL)
     {
         /* initializing FILE structure failed */
         return NULL;
@@ -52,25 +52,25 @@ struct _PDCLIB_file_t * fopen( const char * _PDCLIB_restrict filename, const cha
        interactive device."
     */
     rc->status |= filemode | _IOLBF;
-    if ( ( rc->handle = _PDCLIB_open( filename, rc->status ) ) == _PDCLIB_NOHANDLE )
+    if ((rc->handle = _PDCLIB_open(filename, rc->status)) == _PDCLIB_NOHANDLE)
     {
         /* OS open() failed */
 #ifndef __STDC_NO_THREADS__
         mtx_destroy( &rc->mtx );
 #endif
-        free( rc->buffer );
-        free( rc );
+        free(rc->buffer);
+        free(rc);
         return NULL;
     }
 
     /* Getting absolute filename (for potential freopen()) */
-    rc->filename = _PDCLIB_realpath( filename );
+    rc->filename = _PDCLIB_realpath(filename);
 
     /* Adding to list of open files */
-    _PDCLIB_LOCK( _PDCLIB_filelist_mtx );
+    _PDCLIB_LOCK(_PDCLIB_filelist_mtx);
     rc->next = _PDCLIB_filelist;
     _PDCLIB_filelist = rc;
-    _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
+    _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
     return rc;
 }
 

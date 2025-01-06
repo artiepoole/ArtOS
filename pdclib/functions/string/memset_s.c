@@ -11,24 +11,24 @@
 
 #ifndef REGTEST
 
-errno_t memset_s( void * s, rsize_t smax, int c, rsize_t n )
+errno_t memset_s(void* s, rsize_t smax, int c, rsize_t n)
 {
-    unsigned char * p = ( unsigned char * ) s;
+    unsigned char* p = (unsigned char*)s;
 
-    if ( s == NULL || smax > RSIZE_MAX || n > RSIZE_MAX || n > smax )
+    if (s == NULL || smax > RSIZE_MAX || n > RSIZE_MAX || n > smax)
     {
-        if ( s != NULL && smax <= RSIZE_MAX )
+        if (s != NULL && smax <= RSIZE_MAX)
         {
-            memset( s, c, smax );
+            memset(s, c, smax);
         }
 
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
-    while ( n-- )
+    while (n--)
     {
-        *p++ = ( unsigned char ) c;
+        *p++ = (unsigned char)c;
     }
 
     return 0;

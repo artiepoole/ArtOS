@@ -37,16 +37,16 @@
 #include "limits.h"
 #include "stddef.h"
 
-int _PDCLIB_changemode( struct _PDCLIB_file_t * stream, unsigned int mode )
+int _PDCLIB_changemode(struct _PDCLIB_file_t* stream, unsigned int mode)
 {
-    if ( mode == 0 )
+    if (mode == 0)
     {
         return INT_MIN;
     }
 
     /* Attempt mode change without closing the stream */
 
-    if ( stream->filename == NULL )
+    if (stream->filename == NULL)
     {
         /* Standard stream, no filename for reopen */
         return INT_MIN;

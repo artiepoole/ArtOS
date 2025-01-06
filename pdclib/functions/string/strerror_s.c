@@ -14,31 +14,31 @@
 
 #include <locale.h>
 
-errno_t strerror_s( char * s, rsize_t maxsize, errno_t errnum )
+errno_t strerror_s(char* s, rsize_t maxsize, errno_t errnum)
 {
-    size_t len = strerrorlen_s( errnum );
+    size_t len = strerrorlen_s(errnum);
 
-    if ( s == NULL || maxsize > RSIZE_MAX || maxsize == 0 )
+    if (s == NULL || maxsize > RSIZE_MAX || maxsize == 0)
     {
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
-    if ( len < maxsize )
+    if (len < maxsize)
     {
-        strcpy( s, strerror( errnum ) );
+        strcpy(s, strerror(errnum));
     }
     else
     {
-        strncpy( s, strerror( errnum ), maxsize - 1 );
+        strncpy(s, strerror(errnum), maxsize - 1);
 
-        if ( maxsize > 3 )
+        if (maxsize > 3)
         {
-            strcpy( &s[ maxsize - 4 ], "..." );
+            strcpy(&s[maxsize - 4], "...");
         }
         else
         {
-            s[ maxsize - 1 ] = '\0';
+            s[maxsize - 1] = '\0';
         }
     }
 

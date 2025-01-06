@@ -10,20 +10,20 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-extern struct _PDCLIB_file_t * _PDCLIB_filelist;
+extern struct _PDCLIB_file_t* _PDCLIB_filelist;
 
-int _PDCLIB_isstream( struct _PDCLIB_file_t * stream, struct _PDCLIB_file_t ** previous )
+int _PDCLIB_isstream(struct _PDCLIB_file_t* stream, struct _PDCLIB_file_t** previous)
 {
-    struct _PDCLIB_file_t * current = _PDCLIB_filelist;
+    struct _PDCLIB_file_t* current = _PDCLIB_filelist;
 
-    if ( previous != NULL )
+    if (previous != NULL)
     {
         *previous = NULL;
     }
 
-    while ( ( current != NULL ) && ( current != stream ) )
+    while ((current != NULL) && (current != stream))
     {
-        if ( previous != NULL )
+        if (previous != NULL)
         {
             *previous = current;
         }

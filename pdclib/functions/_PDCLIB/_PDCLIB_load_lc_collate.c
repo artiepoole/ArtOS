@@ -13,33 +13,33 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-struct _PDCLIB_lc_collate_t * _PDCLIB_load_lc_collate( const char * path, const char * locale )
+struct _PDCLIB_lc_collate_t* _PDCLIB_load_lc_collate(const char* path, const char* locale)
 {
-    struct _PDCLIB_lc_collate_t * rc = NULL;
-    const char * extension = "_collate.dat";
-    char * file = (char *)malloc( strlen( path ) + strlen( locale ) + strlen( extension ) + 1 );
+    struct _PDCLIB_lc_collate_t* rc = NULL;
+    const char* extension = "_collate.dat";
+    char* file = (char*)malloc(strlen(path) + strlen(locale) + strlen(extension) + 1);
 
-    if ( file )
+    if (file)
     {
-        FILE * fh;
+        FILE* fh;
 
-        strcpy( file, path );
-        strcat( file, locale );
-        strcat( file, extension );
+        strcpy(file, path);
+        strcat(file, locale);
+        strcat(file, extension);
 
-        if ( ( fh = fopen( file, "rb" ) ) != NULL )
+        if ((fh = fopen(file, "rb")) != NULL)
         {
-            if ( ( rc = (struct _PDCLIB_lc_collate_t *)malloc( sizeof( struct _PDCLIB_lc_collate_t ) ) ) != NULL )
+            if ((rc = (struct _PDCLIB_lc_collate_t*)malloc(sizeof(struct _PDCLIB_lc_collate_t))) != NULL)
             {
                 /* TODO: Collation data */
 
                 rc->alloced = 1;
             }
 
-            fclose( fh );
+            fclose(fh);
         }
 
-        free( file );
+        free(file);
     }
 
     return rc;

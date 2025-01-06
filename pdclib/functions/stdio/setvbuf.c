@@ -14,87 +14,87 @@
 #include <threads.h>
 #endif
 
-int setvbuf( struct _PDCLIB_file_t * _PDCLIB_restrict stream, char * _PDCLIB_restrict buf, int mode, size_t size )
+int setvbuf(struct _PDCLIB_file_t* _PDCLIB_restrict stream, char* _PDCLIB_restrict buf, int mode, size_t size)
 {
-    switch ( mode )
+    switch (mode)
     {
-        case _IONBF:
-            /* When unbuffered I/O is requested, we keep the buffer anyway, as
-               we don't want to e.g. flush the stream for every character of a
-               stream being printed.
+    case _IONBF:
+        /* When unbuffered I/O is requested, we keep the buffer anyway, as
+           we don't want to e.g. flush the stream for every character of a
+           stream being printed.
+        */
+        _PDCLIB_LOCK(stream->mtx);
+        break;
+
+    case _IOFBF:
+    case _IOLBF:
+        if (size > INT_MAX || size == 0)
+        {
+            /* PDCLib only supports buffers up to INT_MAX in size. A size
+               of zero doesn't make sense.
             */
-            _PDCLIB_LOCK( stream->mtx );
-            break;
-
-        case _IOFBF:
-        case _IOLBF:
-            if ( size > INT_MAX || size == 0 )
-            {
-                /* PDCLib only supports buffers up to INT_MAX in size. A size
-                   of zero doesn't make sense.
-                */
-                return -1;
-            }
-
-            if ( buf != NULL )
-            {
-                /* User provided buffer. Deallocate existing buffer, and mark
-                   the stream so that fclose() does not try to deallocate the
-                   user's buffer.
-                */
-                if ( stream->status & _PDCLIB_FREEBUFFER )
-                {
-                    free( stream->buffer );
-                }
-
-                stream->status &= ~_PDCLIB_FREEBUFFER;
-            }
-            else
-            {
-                /* User requested buffer size, but leaves it to library to
-                   allocate the buffer.
-                */
-                /* If current buffer is big enough for requested size, but not
-                   over twice as big (and wasting memory space), we use the
-                   current buffer (i.e., do nothing), to save the malloc() /
-                   free() overhead.
-                */
-                _PDCLIB_LOCK( stream->mtx );
-
-                if ( ( stream->bufsize < size ) || ( stream->bufsize > ( size << 1 ) ) )
-                {
-                    /* Buffer too small, or much too large - allocate. */
-                    if ( ( buf = ( char * ) malloc( size ) ) == NULL )
-                    {
-                        /* Out of memory error. */
-                        _PDCLIB_UNLOCK( stream->mtx );
-                        return -1;
-                    }
-
-                    if ( stream->status & _PDCLIB_FREEBUFFER )
-                    {
-                        free( stream->buffer );
-                    }
-
-                    /* This buffer must be free()d on fclose() */
-                    stream->status |= _PDCLIB_FREEBUFFER;
-                }
-            }
-
-            stream->buffer = buf;
-            stream->bufsize = size;
-            break;
-
-        default:
-            /* If mode is something else than _IOFBF, _IOLBF or _IONBF -> exit */
             return -1;
+        }
+
+        if (buf != NULL)
+        {
+            /* User provided buffer. Deallocate existing buffer, and mark
+               the stream so that fclose() does not try to deallocate the
+               user's buffer.
+            */
+            if (stream->status & _PDCLIB_FREEBUFFER)
+            {
+                free(stream->buffer);
+            }
+
+            stream->status &= ~_PDCLIB_FREEBUFFER;
+        }
+        else
+        {
+            /* User requested buffer size, but leaves it to library to
+               allocate the buffer.
+            */
+            /* If current buffer is big enough for requested size, but not
+               over twice as big (and wasting memory space), we use the
+               current buffer (i.e., do nothing), to save the malloc() /
+               free() overhead.
+            */
+            _PDCLIB_LOCK(stream->mtx);
+
+            if ((stream->bufsize < size) || (stream->bufsize > (size << 1)))
+            {
+                /* Buffer too small, or much too large - allocate. */
+                if ((buf = (char*)malloc(size)) == NULL)
+                {
+                    /* Out of memory error. */
+                    _PDCLIB_UNLOCK(stream->mtx);
+                    return -1;
+                }
+
+                if (stream->status & _PDCLIB_FREEBUFFER)
+                {
+                    free(stream->buffer);
+                }
+
+                /* This buffer must be free()d on fclose() */
+                stream->status |= _PDCLIB_FREEBUFFER;
+            }
+        }
+
+        stream->buffer = buf;
+        stream->bufsize = size;
+        break;
+
+    default:
+        /* If mode is something else than _IOFBF, _IOLBF or _IONBF -> exit */
+        return -1;
     }
 
     /* Deleting current buffer mode */
-    stream->status &= ~( _IOFBF | _IOLBF | _IONBF );
+    stream->status &= ~(_IOFBF | _IOLBF | _IONBF);
     /* Set user-defined mode */
     stream->status |= mode;
-    _PDCLIB_UNLOCK( stream->mtx );
+    _PDCLIB_UNLOCK(stream->mtx);
     return 0;
 }
 

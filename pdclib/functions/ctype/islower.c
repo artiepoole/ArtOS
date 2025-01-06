@@ -10,9 +10,9 @@
 
 #include <locale.h>
 
-int islower( int c )
+int islower(int c)
 {
-    return ( _PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_LOWER );
+    return (_PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_LOWER);
 }
 
 #endif

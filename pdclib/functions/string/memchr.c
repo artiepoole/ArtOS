@@ -8,15 +8,15 @@
 
 #ifndef REGTEST
 
-void * memchr( const void * s, int c, size_t n )
+void* memchr(const void* s, int c, size_t n)
 {
-    const unsigned char * p = ( const unsigned char * ) s;
+    const unsigned char* p = (const unsigned char*)s;
 
-    while ( n-- )
+    while (n--)
     {
-        if ( *p == ( unsigned char ) c )
+        if (*p == (unsigned char)c)
         {
-            return ( void * ) p;
+            return (void*)p;
         }
 
         ++p;

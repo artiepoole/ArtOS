@@ -13,15 +13,15 @@
 
 #include "pdclib/_PDCLIB_tzcode.h"
 
-struct tm * localtime_s( const time_t * _PDCLIB_restrict timer, struct tm * _PDCLIB_restrict result )
+struct tm* localtime_s(const time_t* _PDCLIB_restrict timer, struct tm* _PDCLIB_restrict result)
 {
-    if ( timer == NULL || result == NULL )
+    if (timer == NULL || result == NULL)
     {
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return NULL;
     }
 
-    return _PDCLIB_localtime_tzset( timer, result, true );
+    return _PDCLIB_localtime_tzset(timer, result, true);
 }
 
 #endif

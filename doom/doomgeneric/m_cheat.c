@@ -17,7 +17,6 @@
 //
 
 
-
 #include <string.h>
 
 #include "doomtype.h"
@@ -33,15 +32,15 @@
 //
 int
 cht_CheckCheat
-( cheatseq_t*	cht,
-  char		key )
+(cheatseq_t* cht,
+ char key)
 {
     // if we make a short sequence on a cheat with parameters, this 
     // will not work in vanilla doom.  behave the same.
 
     if (cht->parameter_chars > 0 && strlen(cht->sequence) < cht->sequence_len)
         return false;
-    
+
     if (cht->chars_read < strlen(cht->sequence))
     {
         // still reading characters from the cheat code
@@ -52,27 +51,27 @@ cht_CheckCheat
             ++cht->chars_read;
         else
             cht->chars_read = 0;
-        
+
         cht->param_chars_read = 0;
     }
     else if (cht->param_chars_read < cht->parameter_chars)
     {
         // we have passed the end of the cheat sequence and are 
         // entering parameters now 
-        
+
         cht->parameter_buf[cht->param_chars_read] = key;
-        
+
         ++cht->param_chars_read;
     }
 
     if (cht->chars_read >= strlen(cht->sequence)
-     && cht->param_chars_read >= cht->parameter_chars)
+        && cht->param_chars_read >= cht->parameter_chars)
     {
         cht->chars_read = cht->param_chars_read = 0;
 
         return true;
     }
-    
+
     // cheat not matched yet
 
     return false;
@@ -80,10 +79,8 @@ cht_CheckCheat
 
 void
 cht_GetParam
-( cheatseq_t*	cht,
-  char*		buffer )
+(cheatseq_t* cht,
+ char* buffer)
 {
     memcpy(buffer, cht->parameter_buf, cht->parameter_chars);
 }
-
-

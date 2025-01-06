@@ -8,11 +8,11 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-int _PDCLIB_is_leap( int year_offset )
+int _PDCLIB_is_leap(int year_offset)
 {
     /* year given as offset from 1900, matching tm.tm_year in <time.h> */
     long long year = year_offset + 1900ll;
-    return ( ( year % 4 ) == 0 && ( ( year % 25 ) != 0 || ( year % 400 ) == 0 ) );
+    return ((year % 4) == 0 && ((year % 25) != 0 || (year % 400) == 0));
 }
 
 #endif

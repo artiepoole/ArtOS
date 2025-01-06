@@ -8,11 +8,11 @@
 
 #ifndef REGTEST
 
-char * strcpy( char * _PDCLIB_restrict dest, const char * _PDCLIB_restrict src )
+char* strcpy(char* _PDCLIB_restrict dest, const char* _PDCLIB_restrict src)
 {
-    char * rc = dest;
+    char* rc = dest;
 
-    while ( ( *dest++ = *src++ ) )
+    while ((*dest++ = *src++))
     {
         /* EMPTY */
     }

@@ -17,102 +17,102 @@
    for strtof(), strtod() and strtold(), but is currently being implemented
    in terms of strtod() alone.
 */
-static double _PDCLIB_strtod_main( const char * nptr, char ** endptr )
+static double _PDCLIB_strtod_main(const char* nptr, char** endptr)
 {
     double value = 0.0;
     int base = 0;
     char sign = '+';
-    const char * dec_end;
-    const char * frac_end;
-    const char * exp_end;
-    const char * p = _PDCLIB_strtox_prelim( nptr, &sign, &base );
+    const char* dec_end;
+    const char* frac_end;
+    const char* exp_end;
+    const char* p = _PDCLIB_strtox_prelim(nptr, &sign, &base);
 
-    if ( endptr != NULL )
+    if (endptr != NULL)
     {
-        *endptr = (char *)nptr;
+        *endptr = (char*)nptr;
     }
 
-    _PDCLIB_strtod_scan( p, &dec_end, &frac_end, &exp_end, base );
+    _PDCLIB_strtod_scan(p, &dec_end, &frac_end, &exp_end, base);
 
     //printf( "p: %s   base: %d   dec_end: %s   frac_end: %s   exp_end: %s\n", p, base, dec_end, frac_end, exp_end );
 
-    switch ( base )
+    switch (base)
     {
-        case 10:
+    case 10:
+        {
+            /* Infinity */
+            if (tolower(p[0]) == 'i' && tolower(p[1]) == 'n' && tolower(p[2]) == 'f')
             {
-                /* Infinity */
-                if ( tolower( p[0] ) == 'i' && tolower( p[1] ) == 'n' && tolower( p[2] ) == 'f' )
+                value = 1.0 / 0.0;
+
+                if (sign == '-')
                 {
-                    value = 1.0 / 0.0;
-
-                    if ( sign == '-' )
-                    {
-                        value *= -1;
-                    }
-
-                    if ( endptr != NULL )
-                    {
-                        if ( tolower( p[3] ) == 'i' &&
-                             tolower( p[4] ) == 'n' &&
-                             tolower( p[5] ) == 'i' &&
-                             tolower( p[6] ) == 't' &&
-                             tolower( p[7] ) == 'y' )
-                        {
-                            *endptr = (char *)p + 8;
-                        }
-                        else
-                        {
-                            *endptr = (char *)p + 3;
-                        }
-                    }
-
-                    return value;
+                    value *= -1;
                 }
 
-                /* Not a number */
-                if ( tolower( p[0] ) == 'n' && tolower( p[1] ) == 'a' && tolower( p[2] ) == 'n' )
+                if (endptr != NULL)
                 {
-                    value = 0.0 / 0.0;
-
-                    if ( endptr != NULL )
+                    if (tolower(p[3]) == 'i' &&
+                        tolower(p[4]) == 'n' &&
+                        tolower(p[5]) == 'i' &&
+                        tolower(p[6]) == 't' &&
+                        tolower(p[7]) == 'y')
                     {
-                        p += 3;
-                        *endptr = (char *)p;
+                        *endptr = (char*)p + 8;
+                    }
+                    else
+                    {
+                        *endptr = (char*)p + 3;
+                    }
+                }
 
-                        if ( *p++ == '(' )
+                return value;
+            }
+
+            /* Not a number */
+            if (tolower(p[0]) == 'n' && tolower(p[1]) == 'a' && tolower(p[2]) == 'n')
+            {
+                value = 0.0 / 0.0;
+
+                if (endptr != NULL)
+                {
+                    p += 3;
+                    *endptr = (char*)p;
+
+                    if (*p++ == '(')
+                    {
+                        while (isalnum((unsigned char)*p))
                         {
-                            while ( isalnum( (unsigned char)*p ) )
-                            {
-                                ++p;
-                            }
+                            ++p;
+                        }
 
-                            if ( *p == ')' )
-                            {
-                                *endptr = (char *)p + 1;
-                            }
+                        if (*p == ')')
+                        {
+                            *endptr = (char*)p + 1;
                         }
                     }
-
-                    return value;
                 }
 
-                /* TODO: base-10 conversion */
+                return value;
+            }
 
-                return 0.0;
-            }
-        case 16:
-            {
-                /* TODO: base-16 conversion */
-            }
-        default:
-            {
-                if ( endptr != NULL )
-                {
-                    *endptr = (char *)exp_end;
-                }
+            /* TODO: base-10 conversion */
 
-                return 0.0;
+            return 0.0;
+        }
+    case 16:
+        {
+            /* TODO: base-16 conversion */
+        }
+    default:
+        {
+            if (endptr != NULL)
+            {
+                *endptr = (char*)exp_end;
             }
+
+            return 0.0;
+        }
     }
 }
 

@@ -15,25 +15,25 @@
 #endif
 
 /* TODO: Doing this via a static array is not the way to do it. */
-void perror( const char * s )
+void perror(const char* s)
 {
-    _PDCLIB_LOCK( stderr->mtx );
+    _PDCLIB_LOCK(stderr->mtx);
 
-    if ( ( s != NULL ) && ( s[0] != '\n' ) )
+    if ((s != NULL) && (s[0] != '\n'))
     {
-        fprintf( stderr, "%s: ", s );
+        fprintf(stderr, "%s: ", s);
     }
 
-    if ( errno >= _PDCLIB_ERRNO_MAX || errno < 0 )
+    if (errno >= _PDCLIB_ERRNO_MAX || errno < 0)
     {
-        fprintf( stderr, "%s\n", _PDCLIB_EUNKNOWN_TEXT );
+        fprintf(stderr, "%s\n", _PDCLIB_EUNKNOWN_TEXT);
     }
     else
     {
-        fprintf( stderr, "%s\n", _PDCLIB_lc_messages->errno_texts[errno] );
+        fprintf(stderr, "%s\n", _PDCLIB_lc_messages->errno_texts[errno]);
     }
 
-    _PDCLIB_UNLOCK( stderr->mtx );
+    _PDCLIB_UNLOCK(stderr->mtx);
     return;
 }
 

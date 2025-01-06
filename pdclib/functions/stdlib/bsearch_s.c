@@ -10,35 +10,35 @@
 
 #ifndef REGTEST
 
-void * bsearch_s( const void * key, const void * base, rsize_t nmemb, rsize_t size, int ( *compar )( const void *, const void *, void * ), void * context )
+void* bsearch_s(const void* key, const void* base, rsize_t nmemb, rsize_t size, int (*compar)(const void*, const void*, void*), void* context)
 {
-    const void * pivot;
+    const void* pivot;
     int rc;
     size_t corr;
 
-    if ( nmemb > RSIZE_MAX || size > RSIZE_MAX || ( nmemb > 0 && ( key == NULL || base == NULL || compar == NULL ) ) )
+    if (nmemb > RSIZE_MAX || size > RSIZE_MAX || (nmemb > 0 && (key == NULL || base == NULL || compar == NULL)))
     {
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return NULL;
     }
 
-    while ( nmemb )
+    while (nmemb)
     {
         /* algorithm needs -1 correction if remaining elements are an even number. */
         corr = nmemb % 2;
         nmemb /= 2;
-        pivot = ( const char * )base + ( nmemb * size );
-        rc = compar( key, pivot, context );
+        pivot = (const char*)base + (nmemb * size);
+        rc = compar(key, pivot, context);
 
-        if ( rc > 0 )
+        if (rc > 0)
         {
-            base = ( const char * )pivot + size;
+            base = (const char*)pivot + size;
             /* applying correction */
-            nmemb -= ( 1 - corr );
+            nmemb -= (1 - corr);
         }
-        else if ( rc == 0 )
+        else if (rc == 0)
         {
-            return ( void * )pivot;
+            return (void*)pivot;
         }
     }
 

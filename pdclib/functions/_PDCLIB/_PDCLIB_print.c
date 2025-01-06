@@ -14,76 +14,77 @@
 
 #include "pdclib/_PDCLIB_print.h"
 
-const char * _PDCLIB_print( const char * spec, struct _PDCLIB_status_t * status )
+const char* _PDCLIB_print(const char* spec, struct _PDCLIB_status_t* status)
 {
-    const char * orig_spec = spec;
+    const char* orig_spec = spec;
 
-    if ( *( ++spec ) == '%' )
+    if (*(++spec) == '%')
     {
         /* %% -> print single '%' */
-        PUT( *spec );
+        PUT(*spec);
         return ++spec;
     }
 
     /* Initializing status structure */
     status->flags = 0;
-    status->base  = 0;
-    status->current  = 0;
+    status->base = 0;
+    status->current = 0;
     status->width = 0;
-    status->prec  = EOF;
+    status->prec = EOF;
 
     /* First come 0..n flags */
     do
     {
-        switch ( *spec )
+        switch (*spec)
         {
-            case '-':
-                /* left-aligned output */
-                status->flags |= E_minus;
-                ++spec;
-                break;
+        case '-':
+            /* left-aligned output */
+            status->flags |= E_minus;
+            ++spec;
+            break;
 
-            case '+':
-                /* positive numbers prefixed with '+' */
-                status->flags |= E_plus;
-                ++spec;
-                break;
+        case '+':
+            /* positive numbers prefixed with '+' */
+            status->flags |= E_plus;
+            ++spec;
+            break;
 
-            case '#':
-                /* alternative format (leading 0x for hex, 0 for octal) */
-                status->flags |= E_alt;
-                ++spec;
-                break;
+        case '#':
+            /* alternative format (leading 0x for hex, 0 for octal) */
+            status->flags |= E_alt;
+            ++spec;
+            break;
 
-            case ' ':
-                /* positive numbers prefixed with ' ' */
-                status->flags |= E_space;
-                ++spec;
-                break;
+        case ' ':
+            /* positive numbers prefixed with ' ' */
+            status->flags |= E_space;
+            ++spec;
+            break;
 
-            case '0':
-                /* right-aligned padding done with '0' instead of ' ' */
-                status->flags |= E_zero;
-                ++spec;
-                break;
+        case '0':
+            /* right-aligned padding done with '0' instead of ' ' */
+            status->flags |= E_zero;
+            ++spec;
+            break;
 
-            default:
-                /* not a flag, exit flag parsing */
-                status->flags |= E_done;
-                break;
+        default:
+            /* not a flag, exit flag parsing */
+            status->flags |= E_done;
+            break;
         }
-    } while ( !( status->flags & E_done ) );
+    }
+    while (!(status->flags & E_done));
 
     /* Optional field width */
-    if ( *spec == '*' )
+    if (*spec == '*')
     {
         /* Retrieve width value from argument stack */
-        int width = va_arg( status->arg, int );
+        int width = va_arg(status->arg, int);
 
-        if ( width < 0 )
+        if (width < 0)
         {
             status->flags |= E_minus;
-            status->width = abs( width );
+            status->width = abs(width);
         }
         else
         {
@@ -98,29 +99,29 @@ const char * _PDCLIB_print( const char * spec, struct _PDCLIB_status_t * status 
            strtol() will return zero. In both cases, endptr will point to the
            rest of the conversion specifier - just what we need.
         */
-        status->width = ( int )strtol( spec, ( char ** )&spec, 10 );
+        status->width = (int)strtol(spec, (char**)&spec, 10);
     }
 
     /* Optional precision */
-    if ( *spec == '.' )
+    if (*spec == '.')
     {
         ++spec;
 
-        if ( *spec == '*' )
+        if (*spec == '*')
         {
             /* Retrieve precision value from argument stack. A negative value
                is as if no precision is given - as precision is initalized to
                EOF (negative), there is no need for testing for negative here.
             */
-            status->prec = va_arg( status->arg, int );
+            status->prec = va_arg(status->arg, int);
             ++spec;
         }
         else
         {
-            char * endptr;
-            status->prec = ( int )strtol( spec, &endptr, 10 );
+            char* endptr;
+            status->prec = (int)strtol(spec, &endptr, 10);
 
-            if ( spec == endptr )
+            if (spec == endptr)
             {
                 /* Decimal point but no number - equals zero */
                 status->prec = 0;
@@ -138,289 +139,289 @@ const char * _PDCLIB_print( const char * spec, struct _PDCLIB_status_t * status 
        there has been no length modifier (or step ahead another character if it
        has been "hh" or "ll").
     */
-    switch ( *( spec++ ) )
+    switch (*(spec++))
     {
-        case 'h':
-            if ( *spec == 'h' )
-            {
-                /* hh -> char */
-                status->flags |= E_char;
-                ++spec;
-            }
-            else
-            {
-                /* h -> short */
-                status->flags |= E_short;
-            }
+    case 'h':
+        if (*spec == 'h')
+        {
+            /* hh -> char */
+            status->flags |= E_char;
+            ++spec;
+        }
+        else
+        {
+            /* h -> short */
+            status->flags |= E_short;
+        }
 
-            break;
+        break;
 
-        case 'l':
-            if ( *spec == 'l' )
-            {
-                /* ll -> long long */
-                status->flags |= E_llong;
-                ++spec;
-            }
-            else
-            {
-                /* k -> long */
-                status->flags |= E_long;
-            }
+    case 'l':
+        if (*spec == 'l')
+        {
+            /* ll -> long long */
+            status->flags |= E_llong;
+            ++spec;
+        }
+        else
+        {
+            /* k -> long */
+            status->flags |= E_long;
+        }
 
-            break;
+        break;
 
-        case 'j':
-            /* j -> intmax_t, which might or might not be long long */
-            status->flags |= E_intmax;
-            break;
+    case 'j':
+        /* j -> intmax_t, which might or might not be long long */
+        status->flags |= E_intmax;
+        break;
 
-        case 'z':
-            /* z -> size_t, which might or might not be unsigned int */
-            status->flags |= E_size;
-            break;
+    case 'z':
+        /* z -> size_t, which might or might not be unsigned int */
+        status->flags |= E_size;
+        break;
 
-        case 't':
-            /* t -> ptrdiff_t, which might or might not be long */
-            status->flags |= E_ptrdiff;
-            break;
+    case 't':
+        /* t -> ptrdiff_t, which might or might not be long */
+        status->flags |= E_ptrdiff;
+        break;
 
-        case 'L':
-            /* L -> long double */
-            status->flags |= E_ldouble;
-            break;
+    case 'L':
+        /* L -> long double */
+        status->flags |= E_ldouble;
+        break;
 
-        default:
-            --spec;
-            break;
+    default:
+        --spec;
+        break;
     }
 
     /* Conversion specifier */
-    switch ( *spec )
+    switch (*spec)
     {
-        case 'd':
-            /* FALLTHROUGH */
+    case 'd':
+    /* FALLTHROUGH */
 
-        case 'i':
-            status->base = 10;
-            break;
+    case 'i':
+        status->base = 10;
+        break;
 
-        case 'o':
-            status->base = 8;
-            status->flags |= E_unsigned;
-            break;
+    case 'o':
+        status->base = 8;
+        status->flags |= E_unsigned;
+        break;
 
-        case 'u':
-            status->base = 10;
-            status->flags |= E_unsigned;
-            break;
+    case 'u':
+        status->base = 10;
+        status->flags |= E_unsigned;
+        break;
 
-        case 'x':
-            status->base = 16;
-            status->flags |= ( E_lower | E_unsigned );
-            break;
+    case 'x':
+        status->base = 16;
+        status->flags |= (E_lower | E_unsigned);
+        break;
 
-        case 'X':
-            status->base = 16;
-            status->flags |= E_unsigned;
-            break;
+    case 'X':
+        status->base = 16;
+        status->flags |= E_unsigned;
+        break;
 
-        case 'f':
-            status->base = 2;
-            status->flags |= ( E_decimal | E_double | E_lower );
-            break;
+    case 'f':
+        status->base = 2;
+        status->flags |= (E_decimal | E_double | E_lower);
+        break;
 
-        case 'F':
-            status->base = 2;
-            status->flags |= ( E_decimal | E_double );
-            break;
+    case 'F':
+        status->base = 2;
+        status->flags |= (E_decimal | E_double);
+        break;
 
-        case 'e':
-            status->base = 2;
-            status->flags |= ( E_exponent | E_double | E_lower );
-            break;
+    case 'e':
+        status->base = 2;
+        status->flags |= (E_exponent | E_double | E_lower);
+        break;
 
-        case 'E':
-            status->base = 2;
-            status->flags |= ( E_exponent | E_double );
-            break;
+    case 'E':
+        status->base = 2;
+        status->flags |= (E_exponent | E_double);
+        break;
 
-        case 'g':
-            status->base = 2;
-            status->flags |= ( E_generic | E_double | E_lower );
-            break;
+    case 'g':
+        status->base = 2;
+        status->flags |= (E_generic | E_double | E_lower);
+        break;
 
-        case 'G':
-            status->base = 2;
-            status->flags |= ( E_generic | E_double );
-            break;
+    case 'G':
+        status->base = 2;
+        status->flags |= (E_generic | E_double);
+        break;
 
-        case 'a':
-            status->base = 2;
-            status->flags |= ( E_hexa | E_double | E_lower );
-            break;
+    case 'a':
+        status->base = 2;
+        status->flags |= (E_hexa | E_double | E_lower);
+        break;
 
-        case 'A':
-            status->base = 2;
-            status->flags |= ( E_hexa | E_double );
-            break;
+    case 'A':
+        status->base = 2;
+        status->flags |= (E_hexa | E_double);
+        break;
 
-        case 'c':
-            /* TODO: wide chars. */
-            {
-                char c[1];
-                c[0] = ( char )va_arg( status->arg, int );
-                status->flags |= E_char;
-                _PDCLIB_print_string( c, status );
-                return ++spec;
-            }
-
-        case 's':
-            /* TODO: wide chars. */
-            _PDCLIB_print_string( va_arg( status->arg, char * ), status );
+    case 'c':
+        /* TODO: wide chars. */
+        {
+            char c[1];
+            c[0] = (char)va_arg(status->arg, int);
+            status->flags |= E_char;
+            _PDCLIB_print_string(c, status);
             return ++spec;
+        }
 
-        case 'p':
-            status->base = 16;
-            status->flags |= ( E_lower | E_unsigned | E_alt | E_pointer );
-            break;
+    case 's':
+        /* TODO: wide chars. */
+        _PDCLIB_print_string(va_arg(status->arg, char *), status);
+        return ++spec;
 
-        case 'n':
-            {
-                int * val = va_arg( status->arg, int * );
-                *val = status->i;
-                return ++spec;
-            }
+    case 'p':
+        status->base = 16;
+        status->flags |= (E_lower | E_unsigned | E_alt | E_pointer);
+        break;
 
-        default:
-            /* No conversion specifier. Bad conversion. */
-            return orig_spec;
+    case 'n':
+        {
+            int* val = va_arg(status->arg, int *);
+            *val = status->i;
+            return ++spec;
+        }
+
+    default:
+        /* No conversion specifier. Bad conversion. */
+        return orig_spec;
     }
 
     /* Do the actual output based on our findings */
-    if ( status->base != 0 )
+    if (status->base != 0)
     {
         /* TODO: Check for invalid flag combinations. */
-        if ( status->flags & E_double )
+        if (status->flags & E_double)
         {
             /* Floating Point conversions */
-            if ( status->flags & E_ldouble )
+            if (status->flags & E_ldouble)
             {
-                long double value = va_arg( status->arg, long double );
-                _PDCLIB_print_ldouble( value, status );
+                long double value = va_arg(status->arg, long double);
+                _PDCLIB_print_ldouble(value, status);
             }
             else
             {
-                double value = va_arg( status->arg, double );
-                _PDCLIB_print_double( value, status );
+                double value = va_arg(status->arg, double);
+                _PDCLIB_print_double(value, status);
             }
         }
         else
         {
-            if ( status->flags & E_unsigned )
+            if (status->flags & E_unsigned)
             {
                 /* Integer conversions (unsigned) */
                 uintmax_t value;
                 imaxdiv_t div;
 
-                switch ( status->flags & ( E_char | E_short | E_long | E_llong | E_size | E_pointer | E_intmax ) )
+                switch (status->flags & (E_char | E_short | E_long | E_llong | E_size | E_pointer | E_intmax))
                 {
-                    case E_char:
-                        value = ( uintmax_t )( unsigned char )va_arg( status->arg, int );
-                        break;
+                case E_char:
+                    value = (uintmax_t)(unsigned char)va_arg(status->arg, int);
+                    break;
 
-                    case E_short:
-                        value = ( uintmax_t )( unsigned short )va_arg( status->arg, int );
-                        break;
+                case E_short:
+                    value = (uintmax_t)(unsigned short)va_arg(status->arg, int);
+                    break;
 
-                    case 0:
-                        value = ( uintmax_t )va_arg( status->arg, unsigned int );
-                        break;
+                case 0:
+                    value = (uintmax_t)va_arg(status->arg, unsigned int);
+                    break;
 
-                    case E_long:
-                        value = ( uintmax_t )va_arg( status->arg, unsigned long );
-                        break;
+                case E_long:
+                    value = (uintmax_t)va_arg(status->arg, unsigned long);
+                    break;
 
-                    case E_llong:
-                        value = ( uintmax_t )va_arg( status->arg, unsigned long long );
-                        break;
+                case E_llong:
+                    value = (uintmax_t)va_arg(status->arg, unsigned long long);
+                    break;
 
-                    case E_size:
-                        value = ( uintmax_t )va_arg( status->arg, size_t );
-                        break;
+                case E_size:
+                    value = (uintmax_t)va_arg(status->arg, size_t);
+                    break;
 
-                    case E_pointer:
-                        value = ( uintmax_t )( uintptr_t )va_arg( status->arg, void * );
-                        break;
+                case E_pointer:
+                    value = (uintmax_t)(uintptr_t)va_arg(status->arg, void *);
+                    break;
 
-                    case E_intmax:
-                        value = va_arg( status->arg, uintmax_t );
-                        break;
+                case E_intmax:
+                    value = va_arg(status->arg, uintmax_t);
+                    break;
 
-                    default:
-                        puts( "UNSUPPORTED PRINTF FLAG COMBINATION" );
-                        return NULL;
+                default:
+                    puts("UNSUPPORTED PRINTF FLAG COMBINATION");
+                    return NULL;
                 }
 
                 div.quot = value / status->base;
                 div.rem = value % status->base;
-                _PDCLIB_print_integer( div, status );
+                _PDCLIB_print_integer(div, status);
             }
             else
             {
                 /* Integer conversions (signed) */
                 intmax_t value;
 
-                switch ( status->flags & ( E_char | E_short | E_long | E_llong | E_intmax ) )
+                switch (status->flags & (E_char | E_short | E_long | E_llong | E_intmax))
                 {
-                    case E_char:
-                        value = ( intmax_t )( char )va_arg( status->arg, int );
-                        break;
+                case E_char:
+                    value = (intmax_t)(char)va_arg(status->arg, int);
+                    break;
 
-                    case E_short:
-                        value = ( intmax_t )( short )va_arg( status->arg, int );
-                        break;
+                case E_short:
+                    value = (intmax_t)(short)va_arg(status->arg, int);
+                    break;
 
-                    case 0:
-                        value = ( intmax_t )va_arg( status->arg, int );
-                        break;
+                case 0:
+                    value = (intmax_t)va_arg(status->arg, int);
+                    break;
 
-                    case E_long:
-                        value = ( intmax_t )va_arg( status->arg, long );
-                        break;
+                case E_long:
+                    value = (intmax_t)va_arg(status->arg, long);
+                    break;
 
-                    case E_llong:
-                        value = ( intmax_t )va_arg( status->arg, long long );
-                        break;
+                case E_llong:
+                    value = (intmax_t)va_arg(status->arg, long long);
+                    break;
 
-                    case E_ptrdiff:
-                        value = ( intmax_t )va_arg( status->arg, ptrdiff_t );
-                        break;
+                case E_ptrdiff:
+                    value = (intmax_t)va_arg(status->arg, ptrdiff_t);
+                    break;
 
-                    case E_intmax:
-                        value = va_arg( status->arg, intmax_t );
-                        break;
+                case E_intmax:
+                    value = va_arg(status->arg, intmax_t);
+                    break;
 
-                    default:
-                        puts( "UNSUPPORTED PRINTF FLAG COMBINATION" );
-                        return NULL;
+                default:
+                    puts("UNSUPPORTED PRINTF FLAG COMBINATION");
+                    return NULL;
                 }
 
-                _PDCLIB_print_integer( imaxdiv( value, status->base ), status );
+                _PDCLIB_print_integer(imaxdiv(value, status->base), status);
             }
         }
 
-        if ( status->flags & E_minus )
+        if (status->flags & E_minus)
         {
             /* Left-aligned filling */
-            while ( status->current < status->width )
+            while (status->current < status->width)
             {
-                PUT( ' ' );
-                ++( status->current );
+                PUT(' ');
+                ++(status->current);
             }
         }
 
-        if ( status->i >= status->n && status->n > 0 )
+        if (status->i >= status->n && status->n > 0)
         {
             status->s[status->n - 1] = '\0';
         }

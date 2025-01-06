@@ -52,20 +52,20 @@
 // Create a directory
 //
 
-void M_MakeDirectory(char *path)
+void M_MakeDirectory(char* path)
 {
-// #ifdef _WIN32
-//     mkdir(path);
-// #else
-//     mkdir(path, 0755);
-// #endif
+    // #ifdef _WIN32
+    //     mkdir(path);
+    // #else
+    //     mkdir(path, 0755);
+    // #endif
 }
 
 // Check if a file exists
 
-boolean M_FileExists(char *filename)
+boolean M_FileExists(char* filename)
 {
-    FILE *fstream;
+    FILE* fstream;
 
     fstream = fopen(filename, "r");
 
@@ -76,7 +76,7 @@ boolean M_FileExists(char *filename)
     }
     else
     {
-        // If we can't open because the file is a directory, the 
+        // If we can't open because the file is a directory, the
         // "file" exists at least!
 
         return errno == EISDIR;
@@ -87,14 +87,14 @@ boolean M_FileExists(char *filename)
 // Determine the length of an open file.
 //
 
-long M_FileLength(FILE *handle)
-{ 
+long M_FileLength(FILE* handle)
+{
     long savedpos;
     long length;
 
     // save the current position in the file
     savedpos = ftell(handle);
-    
+
     // jump to the end and find the length
     fseek(handle, 0, SEEK_END);
     length = ftell(handle);
@@ -109,22 +109,22 @@ long M_FileLength(FILE *handle)
 // M_WriteFile
 //
 
-boolean M_WriteFile(char *name, void *source, int length)
+boolean M_WriteFile(char* name, void* source, int length)
 {
-    FILE *handle;
-    int	count;
-	
+    FILE* handle;
+    int count;
+
     handle = fopen(name, "wb");
 
     if (handle == NULL)
-	return false;
+        return false;
 
     count = fwrite(source, 1, length, handle);
     fclose(handle);
-	
+
     if (count < length)
-	return false;
-		
+        return false;
+
     return true;
 }
 
@@ -133,28 +133,28 @@ boolean M_WriteFile(char *name, void *source, int length)
 // M_ReadFile
 //
 
-int M_ReadFile(char *name, byte **buffer)
+int M_ReadFile(char* name, byte** buffer)
 {
-    FILE *handle;
-    int	count, length;
-    byte *buf;
-	
+    FILE* handle;
+    int count, length;
+    byte* buf;
+
     handle = fopen(name, "rb");
     if (handle == NULL)
-	I_Error ("Couldn't read file %s", name);
+        I_Error("Couldn't read file %s", name);
 
     // find the size of the file by seeking to the end and
     // reading the current position
 
     length = M_FileLength(handle);
-    
-    buf = Z_Malloc (length, PU_STATIC, NULL);
+
+    buf = Z_Malloc(length, PU_STATIC, NULL);
     count = fread(buf, 1, length, handle);
-    fclose (handle);
-	
+    fclose(handle);
+
     if (count < length)
-	I_Error ("Couldn't read file %s", name);
-		
+        I_Error("Couldn't read file %s", name);
+
     *buffer = buf;
     return length;
 }
@@ -164,9 +164,9 @@ int M_ReadFile(char *name, byte **buffer)
 //
 // The returned value must be freed with Z_Free after use.
 
-char *M_TempFile(char *s)
+char* M_TempFile(char* s)
 {
-    char *tempdir;
+    char* tempdir;
 
 #if defined(_WIN32) || defined(__DJGPP__)
 
@@ -187,7 +187,7 @@ char *M_TempFile(char *s)
     return M_StringJoin(tempdir, DIR_SEPARATOR_S, s, NULL);
 }
 
-boolean M_StrToInt(const char *str, int *result)
+boolean M_StrToInt(const char* str, int* result)
 {
     return sscanf(str, " 0x%x", result) == 1
         || sscanf(str, " 0X%x", result) == 1
@@ -195,10 +195,10 @@ boolean M_StrToInt(const char *str, int *result)
         || sscanf(str, " %d", result) == 1;
 }
 
-void M_ExtractFileBase(char *path, char *dest)
+void M_ExtractFileBase(char* path, char* dest)
 {
-    char *src;
-    char *filename;
+    char* src;
+    char* filename;
     int length;
 
     src = path + strlen(path) - 1;
@@ -206,7 +206,7 @@ void M_ExtractFileBase(char *path, char *dest)
     // back up until a \ or the start
     while (src != path && *(src - 1) != DIR_SEPARATOR)
     {
-	src--;
+        src--;
     }
 
     filename = src;
@@ -228,7 +228,7 @@ void M_ExtractFileBase(char *path, char *dest)
             break;
         }
 
-	dest[length++] = toupper((int)*src++);
+        dest[length++] = toupper((int)*src++);
     }
 }
 
@@ -240,9 +240,9 @@ void M_ExtractFileBase(char *path, char *dest)
 //
 //---------------------------------------------------------------------------
 
-void M_ForceUppercase(char *text)
+void M_ForceUppercase(char* text)
 {
-    char *p;
+    char* p;
 
     for (p = text; *p != '\0'; ++p)
     {
@@ -256,7 +256,7 @@ void M_ForceUppercase(char *text)
 // Case-insensitive version of strstr()
 //
 
-char *M_StrCaseStr(char *haystack, char *needle)
+char* M_StrCaseStr(char* haystack, char* needle)
 {
     unsigned int haystack_len;
     unsigned int needle_len;
@@ -289,9 +289,9 @@ char *M_StrCaseStr(char *haystack, char *needle)
 // allocated.
 //
 
-char *M_StringDuplicate(const char *orig)
+char* M_StringDuplicate(const char* orig)
 {
-    char *result;
+    char* result;
 
     result = strdup(orig);
 
@@ -308,11 +308,11 @@ char *M_StringDuplicate(const char *orig)
 // String replace function.
 //
 
-char *M_StringReplace(const char *haystack, const char *needle,
-                      const char *replacement)
+char* M_StringReplace(const char* haystack, const char* needle,
+                      const char* replacement)
 {
     char *result, *dst;
-    const char *p;
+    const char* p;
     size_t needle_len = strlen(needle);
     size_t result_len, dst_len;
 
@@ -342,7 +342,8 @@ char *M_StringReplace(const char *haystack, const char *needle,
         return NULL;
     }
 
-    dst = result; dst_len = result_len;
+    dst = result;
+    dst_len = result_len;
     p = haystack;
 
     while (*p != '\0')
@@ -357,7 +358,8 @@ char *M_StringReplace(const char *haystack, const char *needle,
         else
         {
             *dst = *p;
-            ++dst; --dst_len;
+            ++dst;
+            --dst_len;
             ++p;
         }
     }
@@ -370,7 +372,7 @@ char *M_StringReplace(const char *haystack, const char *needle,
 // Safe string copy function that works like OpenBSD's strlcpy().
 // Returns true if the string was not truncated.
 
-boolean M_StringCopy(char *dest, const char *src, size_t dest_size)
+boolean M_StringCopy(char* dest, const char* src, size_t dest_size)
 {
     size_t len;
 
@@ -391,7 +393,7 @@ boolean M_StringCopy(char *dest, const char *src, size_t dest_size)
 // Safe string concat function that works like OpenBSD's strlcat().
 // Returns true if string not truncated.
 
-boolean M_StringConcat(char *dest, const char *src, size_t dest_size)
+boolean M_StringConcat(char* dest, const char* src, size_t dest_size)
 {
     size_t offset;
 
@@ -406,7 +408,7 @@ boolean M_StringConcat(char *dest, const char *src, size_t dest_size)
 
 // Returns true if 's' begins with the specified prefix.
 
-boolean M_StringStartsWith(const char *s, const char *prefix)
+boolean M_StringStartsWith(const char* s, const char* prefix)
 {
     return strlen(s) > strlen(prefix)
         && strncmp(s, prefix, strlen(prefix)) == 0;
@@ -414,7 +416,7 @@ boolean M_StringStartsWith(const char *s, const char *prefix)
 
 // Returns true if 's' ends with the specified suffix.
 
-boolean M_StringEndsWith(const char *s, const char *suffix)
+boolean M_StringEndsWith(const char* s, const char* suffix)
 {
     return strlen(s) >= strlen(suffix)
         && strcmp(s + strlen(s) - strlen(suffix), suffix) == 0;
@@ -423,10 +425,10 @@ boolean M_StringEndsWith(const char *s, const char *suffix)
 // Return a newly-malloced string with all the strings given as arguments
 // concatenated together.
 
-char *M_StringJoin(const char *s, ...)
+char* M_StringJoin(const char* s, ...)
 {
-    char *result;
-    const char *v;
+    char* result;
+    const char* v;
     va_list args;
     size_t result_len;
 
@@ -479,7 +481,7 @@ char *M_StringJoin(const char *s, ...)
 #endif
 
 // Safe, portable vsnprintf().
-int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args)
+int M_vsnprintf(char* buf, size_t buf_len, const char* s, va_list args)
 {
     int result;
 
@@ -505,7 +507,7 @@ int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args)
 }
 
 // Safe, portable snprintf().
-int M_snprintf(char *buf, size_t buf_len, const char *s, ...)
+int M_snprintf(char* buf, size_t buf_len, const char* s, ...)
 {
     va_list args;
     int result;
@@ -533,4 +535,3 @@ char *M_OEMToUTF8(const char *oem)
 }
 
 #endif
-

@@ -49,14 +49,14 @@ typedef struct
 
 int
 cht_CheckCheat
-( cheatseq_t*		cht,
-  char			key );
+(cheatseq_t* cht,
+ char key);
 
 
 void
 cht_GetParam
-( cheatseq_t*		cht,
-  char*			buffer );
+(cheatseq_t* cht,
+ char* buffer);
 
 
 #endif

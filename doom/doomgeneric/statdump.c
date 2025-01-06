@@ -1,4 +1,4 @@
- /*
+/*
 
  Copyright(C) 2005-2014 Simon Howard
 
@@ -330,7 +330,7 @@ static void PrintStats(FILE *stream, wbstartstruct_t *stats)
 
 #endif
 
-void StatCopy(wbstartstruct_t *stats)
+void StatCopy(wbstartstruct_t* stats)
 {
     if (M_ParmExists("-statdump") && num_captured_stats < MAX_CAPTURES)
     {
@@ -389,4 +389,3 @@ void StatDump(void)
     }
 #endif
 }
-

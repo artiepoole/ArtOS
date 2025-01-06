@@ -8,11 +8,11 @@
 
 #include "pdclib/_PDCLIB_internal.h"
 
-_PDCLIB_bigint_t * _PDCLIB_bigint( _PDCLIB_bigint_t * _PDCLIB_restrict bigint, _PDCLIB_bigint_t const * _PDCLIB_restrict value )
+_PDCLIB_bigint_t* _PDCLIB_bigint(_PDCLIB_bigint_t* _PDCLIB_restrict bigint, _PDCLIB_bigint_t const* _PDCLIB_restrict value)
 {
-    for ( bigint->size = 0; bigint->size < value->size; ++bigint->size )
+    for (bigint->size = 0; bigint->size < value->size; ++bigint->size)
     {
-        bigint->data[ bigint->size ] = value->data[ bigint->size ];
+        bigint->data[bigint->size] = value->data[bigint->size];
     }
 
     return bigint;

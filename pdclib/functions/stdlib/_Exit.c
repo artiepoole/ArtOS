@@ -11,10 +11,10 @@
 
 #include "pdclib/_PDCLIB_glue.h"
 
-void _Exit( int status )
+void _Exit(int status)
 {
     // _PDCLIB_closeall();
-    _PDCLIB_Exit( status );
+    _PDCLIB_Exit(status);
 }
 
 #endif

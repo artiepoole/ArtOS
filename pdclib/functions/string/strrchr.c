@@ -8,22 +8,23 @@
 
 #ifndef REGTEST
 
-char * strrchr( const char * s, int c )
+char* strrchr(const char* s, int c)
 {
     size_t i = 0;
 
-    while ( s[i++] )
+    while (s[i++])
     {
         /* EMPTY */
     }
 
     do
     {
-        if ( s[--i] == ( char ) c )
+        if (s[--i] == (char)c)
         {
-            return ( char * ) s + i;
+            return (char*)s + i;
         }
-    } while ( i );
+    }
+    while (i);
 
     return NULL;
 }

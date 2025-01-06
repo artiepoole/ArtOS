@@ -11,17 +11,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-char * _PDCLIB_strtok( char * _PDCLIB_restrict s1, rsize_t * _PDCLIB_restrict s1max, const char * _PDCLIB_restrict s2, char ** _PDCLIB_restrict ptr )
+char* _PDCLIB_strtok(char* _PDCLIB_restrict s1, rsize_t* _PDCLIB_restrict s1max, const char* _PDCLIB_restrict s2, char** _PDCLIB_restrict ptr)
 {
-    const char * p = s2;
+    const char* p = s2;
 
-    if ( s1max == NULL || s2 == NULL || ptr == NULL || ( s1 == NULL && *ptr == NULL ) || *s1max > RSIZE_MAX )
+    if (s1max == NULL || s2 == NULL || ptr == NULL || (s1 == NULL && *ptr == NULL) || *s1max > RSIZE_MAX)
     {
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return NULL;
     }
 
-    if ( s1 != NULL )
+    if (s1 != NULL)
     {
         /* new string */
         *ptr = s1;
@@ -29,7 +29,7 @@ char * _PDCLIB_strtok( char * _PDCLIB_restrict s1, rsize_t * _PDCLIB_restrict s1
     else
     {
         /* old string continued */
-        if ( *ptr == NULL )
+        if (*ptr == NULL)
         {
             /* No old string, no new string, nothing to do */
             return NULL;
@@ -39,19 +39,19 @@ char * _PDCLIB_strtok( char * _PDCLIB_restrict s1, rsize_t * _PDCLIB_restrict s1
     }
 
     /* skip leading s2 characters */
-    while ( *p && *s1 )
+    while (*p && *s1)
     {
-        if ( *s1 == *p )
+        if (*s1 == *p)
         {
             /* found separator; skip and start over */
-            if ( *s1max == 0 )
+            if (*s1max == 0)
             {
-                _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+                _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
                 return NULL;
             }
 
             ++s1;
-            --( *s1max );
+            --(*s1max);
             p = s2;
             continue;
         }
@@ -59,7 +59,7 @@ char * _PDCLIB_strtok( char * _PDCLIB_restrict s1, rsize_t * _PDCLIB_restrict s1
         ++p;
     }
 
-    if ( ! *s1 )
+    if (!*s1)
     {
         /* no more to parse */
         *ptr = s1;
@@ -69,35 +69,35 @@ char * _PDCLIB_strtok( char * _PDCLIB_restrict s1, rsize_t * _PDCLIB_restrict s1
     /* skipping non-s2 characters */
     *ptr = s1;
 
-    while ( **ptr )
+    while (**ptr)
     {
         p = s2;
 
-        while ( *p )
+        while (*p)
         {
-            if ( **ptr == *p++ )
+            if (**ptr == *p++)
             {
                 /* found separator; overwrite with '\0', position *ptr, return */
-                if ( *s1max == 0 )
+                if (*s1max == 0)
                 {
-                    _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+                    _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
                     return NULL;
                 }
 
-                --( *s1max );
-                *( ( *ptr )++ ) = '\0';
+                --(*s1max);
+                *((*ptr)++) = '\0';
                 return s1;
             }
         }
 
-        if ( *s1max == 0 )
+        if (*s1max == 0)
         {
-            _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+            _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
             return NULL;
         }
 
-        --( *s1max );
-        ++( *ptr );
+        --(*s1max);
+        ++(*ptr);
     }
 
     /* parsed to end of string */

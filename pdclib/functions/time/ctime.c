@@ -8,15 +8,15 @@
 
 #ifndef REGTEST
 
-char * ctime( const time_t * timer )
+char* ctime(const time_t* timer)
 {
     /* Section 4.12.3.2 of X3.159-1989 requires that
         The ctime function converts the calendar time pointed to by timer
         to local time in the form of a string. It is equivalent to
             asctime(localtime(timer))
     */
-    struct tm * tmp = localtime( timer );
-    return tmp ? asctime( tmp ) : NULL;
+    struct tm* tmp = localtime(timer);
+    return tmp ? asctime(tmp) : NULL;
 }
 
 #endif

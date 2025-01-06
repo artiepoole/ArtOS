@@ -9,11 +9,11 @@
 #include "pdclib/_PDCLIB_tzcode.h"
 
 /* gmtsub is to gmtime as localsub is to localtime. */
-struct tm * _PDCLIB_gmtsub( struct state const * sp, time_t const * timep, int_fast32_t offset, struct tm * tmp )
+struct tm* _PDCLIB_gmtsub(struct state const* sp, time_t const* timep, int_fast32_t offset, struct tm* tmp)
 {
-    struct tm * result;
+    struct tm* result;
 
-    result = _PDCLIB_timesub( timep, offset, &_PDCLIB_gmtmem, tmp );
+    result = _PDCLIB_timesub(timep, offset, &_PDCLIB_gmtmem, tmp);
 
 #ifdef TM_ZONE
     /* Could get fancy here and deliver something such as

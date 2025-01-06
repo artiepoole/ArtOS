@@ -9,34 +9,34 @@
 
 #ifndef REGTEST
 
-_PDCLIB_intmax_t _PDCLIB_atomax( const char * s )
+_PDCLIB_intmax_t _PDCLIB_atomax(const char* s)
 {
     _PDCLIB_intmax_t rc = 0;
     char sign = '+';
-    const char * x;
+    const char* x;
 
     /* TODO: In other than "C" locale, additional patterns may be defined     */
-    while ( isspace( (unsigned char)*s ) )
+    while (isspace((unsigned char)*s))
     {
         ++s;
     }
 
-    if ( *s == '+' )
+    if (*s == '+')
     {
         ++s;
     }
-    else if ( *s == '-' )
+    else if (*s == '-')
     {
-        sign = *( s++ );
+        sign = *(s++);
     }
 
     /* TODO: Earlier version was missing tolower() but was not caught by tests */
-    while ( ( x = (const char *)memchr( _PDCLIB_digits, tolower( (unsigned char)*( s++ ) ), 10 ) ) != NULL )
+    while ((x = (const char*)memchr(_PDCLIB_digits, tolower((unsigned char)*(s++)), 10)) != NULL)
     {
-        rc = rc * 10 + ( x - _PDCLIB_digits );
+        rc = rc * 10 + (x - _PDCLIB_digits);
     }
 
-    return ( sign == '+' ) ? rc : -rc;
+    return (sign == '+') ? rc : -rc;
 }
 
 #endif

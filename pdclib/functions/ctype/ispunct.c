@@ -10,9 +10,9 @@
 
 #include <locale.h>
 
-int ispunct( int c )
+int ispunct(int c)
 {
-    return ( _PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_PUNCT );
+    return (_PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_PUNCT);
 }
 
 #endif

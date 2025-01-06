@@ -12,17 +12,17 @@
 
 #define DIGITS_PER_32BIT ( 32 / _PDCLIB_BIGINT_DIGIT_BITS )
 
-_PDCLIB_bigint_t * _PDCLIB_bigint32( _PDCLIB_bigint_t * bigint, uint_least32_t value )
+_PDCLIB_bigint_t* _PDCLIB_bigint32(_PDCLIB_bigint_t* bigint, uint_least32_t value)
 {
-    for ( bigint->size = 0; bigint->size < DIGITS_PER_32BIT; ++bigint->size )
+    for (bigint->size = 0; bigint->size < DIGITS_PER_32BIT; ++bigint->size)
     {
-        bigint->data[ bigint->size ] = value & _PDCLIB_BIGINT_DIGIT_MAX;
+        bigint->data[bigint->size] = value & _PDCLIB_BIGINT_DIGIT_MAX;
 #if _PDCLIB_BIGINT_DIGIT_BITS < 32
         value >>= _PDCLIB_BIGINT_DIGIT_BITS;
 #endif
     }
 
-    while ( bigint->size > 0 && bigint->data[ bigint->size - 1 ] == 0 )
+    while (bigint->size > 0 && bigint->data[bigint->size - 1] == 0)
     {
         --bigint->size;
     }

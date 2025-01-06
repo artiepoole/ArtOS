@@ -10,30 +10,30 @@
 
 #ifndef REGTEST
 
-const char * _PDCLIB_strtox_prelim( const char * p, char * sign, int * base )
+const char* _PDCLIB_strtox_prelim(const char* p, char* sign, int* base)
 {
     /* skipping leading whitespace */
-    while ( isspace( (unsigned char)*p ) )
+    while (isspace((unsigned char)*p))
     {
         ++p;
     }
 
     /* determining / skipping sign */
-    if ( *p != '+' && *p != '-' )
+    if (*p != '+' && *p != '-')
     {
         *sign = '+';
     }
     else
     {
-        *sign = *( p++ );
+        *sign = *(p++);
     }
 
     /* determining base */
-    if ( *p == '0' )
+    if (*p == '0')
     {
         ++p;
 
-        if ( ( *base == 0 || *base == 16 ) && ( *p == 'x' || *p == 'X' ) )
+        if ((*base == 0 || *base == 16) && (*p == 'x' || *p == 'X'))
         {
             *base = 16;
             ++p;
@@ -43,12 +43,12 @@ const char * _PDCLIB_strtox_prelim( const char * p, char * sign, int * base )
                We have to "rewind" the parsing; having the base set to 16 if it
                was zero previously does not hurt, as the result is zero anyway.
             */
-            if ( memchr( _PDCLIB_digits, tolower( (unsigned char)*p ), *base ) == NULL )
+            if (memchr(_PDCLIB_digits, tolower((unsigned char)*p), *base) == NULL)
             {
                 p -= 2;
             }
         }
-        else if ( *base == 0 )
+        else if (*base == 0)
         {
             *base = 8;
             /* back up one digit, so that a plain zero is decoded correctly
@@ -62,12 +62,12 @@ const char * _PDCLIB_strtox_prelim( const char * p, char * sign, int * base )
             --p;
         }
     }
-    else if ( ! *base )
+    else if (!*base)
     {
         *base = 10;
     }
 
-    return ( ( *base >= 2 ) && ( *base <= 36 ) ) ? p : NULL;
+    return ((*base >= 2) && (*base <= 36)) ? p : NULL;
 }
 
 #endif

@@ -12,29 +12,29 @@
 
 #include <stdio.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint_mant( _PDCLIB_bigint_t * bigint, unsigned char const * mant, size_t mant_dig )
+_PDCLIB_bigint_t* _PDCLIB_bigint_mant(_PDCLIB_bigint_t* bigint, unsigned char const* mant, size_t mant_dig)
 {
-    div_t mant_byte = div( mant_dig - 1, _PDCLIB_CHAR_BIT );
+    div_t mant_byte = div(mant_dig - 1, _PDCLIB_CHAR_BIT);
 
     size_t digit = 0;
     size_t offset = 0;
     size_t i;
 
-    bigint->size = ( ( mant_dig - 1 ) / _PDCLIB_BIGINT_DIGIT_BITS ) + 1;
+    bigint->size = ((mant_dig - 1) / _PDCLIB_BIGINT_DIGIT_BITS) + 1;
 
-    for ( i = 0; i < bigint->size; ++i )
+    for (i = 0; i < bigint->size; ++i)
     {
-        bigint->data[ i ] = 0;
+        bigint->data[i] = 0;
     }
 
     // Copy less significant bytes
-    for ( i = 0; i < (unsigned)mant_byte.quot; ++i )
+    for (i = 0; i < (unsigned)mant_byte.quot; ++i)
     {
-        bigint->data[ digit ] |= ( (_PDCLIB_bigint_digit_t)*( mant _PDCLIB_FLT_OP ( mant_byte.quot - i ) ) ) << offset;
+        bigint->data[digit] |= ((_PDCLIB_bigint_digit_t)*(mant _PDCLIB_FLT_OP (mant_byte.quot - i))) << offset;
 
         offset += _PDCLIB_CHAR_BIT;
 
-        if ( offset == _PDCLIB_BIGINT_DIGIT_BITS )
+        if (offset == _PDCLIB_BIGINT_DIGIT_BITS)
         {
             ++digit;
             offset = 0;
@@ -42,9 +42,9 @@ _PDCLIB_bigint_t * _PDCLIB_bigint_mant( _PDCLIB_bigint_t * bigint, unsigned char
     }
 
     // Copy most significant bytes
-    bigint->data[ digit ] |= ( ( (_PDCLIB_bigint_digit_t)*mant ) & ( ( 1 << ( mant_byte.rem + 1 ) ) - 1 ) ) << offset;
+    bigint->data[digit] |= (((_PDCLIB_bigint_digit_t)*mant) & ((1 << (mant_byte.rem + 1)) - 1)) << offset;
 
-    while ( bigint->size > 0 && bigint->data[ bigint->size - 1 ] == 0 )
+    while (bigint->size > 0 && bigint->data[bigint->size - 1] == 0)
     {
         --bigint->size;
     }

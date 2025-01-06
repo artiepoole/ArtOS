@@ -10,10 +10,10 @@
 
 #include "pdclib/_PDCLIB_tzcode.h"
 
-struct tm * gmtime( const time_t * timer )
+struct tm* gmtime(const time_t* timer)
 {
     _PDCLIB_gmtcheck();
-    return _PDCLIB_gmtsub( &_PDCLIB_gmtmem, timer, 0, &_PDCLIB_tm );
+    return _PDCLIB_gmtsub(&_PDCLIB_gmtmem, timer, 0, &_PDCLIB_tm);
 }
 
 #endif

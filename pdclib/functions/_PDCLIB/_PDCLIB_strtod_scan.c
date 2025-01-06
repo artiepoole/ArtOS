@@ -14,31 +14,31 @@
    values are discarded, as they need to be interpreted in floating
    point context, not integer.
 */
-void _PDCLIB_strtod_scan( const char * s, const char ** dec, const char ** frac, const char ** exp, int base )
+void _PDCLIB_strtod_scan(const char* s, const char** dec, const char** frac, const char** exp, int base)
 {
     char decimal_point = '.';
-    struct lconv * lconv;
+    struct lconv* lconv;
 
-    if ( ( lconv = localeconv() ) != NULL )
+    if ((lconv = localeconv()) != NULL)
     {
         decimal_point = *lconv->decimal_point;
     }
 
     // decimal part, until decimal point, exponent, or end of number
-    strtol( (char *)s, (char **)dec, base );
+    strtol((char*)s, (char**)dec, base);
 
-    if ( base == 16 && ( **dec == 'x' || **dec == 'X' ) )
+    if (base == 16 && (**dec == 'x' || **dec == 'X'))
     {
         // 0x immediately followed by decimal point
-        ++( *dec );
+        ++(*dec);
     }
 
-    if ( **dec == decimal_point )
+    if (**dec == decimal_point)
     {
         // fractional part, until exponent, or end of number
-        strtol( (char *)( *dec + 1 ), (char **)frac, base );
+        strtol((char*)(*dec + 1), (char**)frac, base);
 
-        if ( *dec == s && *frac == s + 1 )
+        if (*dec == s && *frac == s + 1)
         {
             *frac = s;
             *exp = s;
@@ -51,13 +51,13 @@ void _PDCLIB_strtod_scan( const char * s, const char ** dec, const char ** frac,
         *frac = *dec;
     }
 
-    if ( base == 10 && ( **frac == 'e' || **frac == 'E' ) )
+    if (base == 10 && (**frac == 'e' || **frac == 'E'))
     {
-        strtol( (char *)( *frac + 1 ), (char **)exp, base );
+        strtol((char*)(*frac + 1), (char**)exp, base);
     }
-    else if ( base == 16 && ( **frac == 'p' || **frac == 'P' ) )
+    else if (base == 16 && (**frac == 'p' || **frac == 'P'))
     {
-        strtol( (char *)( *frac + 1 ), (char **)exp, 10 );
+        strtol((char*)(*frac + 1), (char**)exp, 10);
     }
     else
     {
@@ -65,7 +65,7 @@ void _PDCLIB_strtod_scan( const char * s, const char ** dec, const char ** frac,
         *exp = *frac;
     }
 
-    if ( *exp == *frac + 1 )
+    if (*exp == *frac + 1)
     {
         /* exponent "lead" ('e', 'p') but no digits */
         *exp = *frac;

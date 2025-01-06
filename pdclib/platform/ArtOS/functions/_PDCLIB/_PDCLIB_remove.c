@@ -18,7 +18,8 @@
 extern "C" {
 #endif
 
-int unlink( const char * path) {
+int unlink(const char* path)
+{
     // TODO not implemented
     printf("ERROR: Unlink %s: not implemented", path);
     exit(1);
@@ -27,9 +28,9 @@ int unlink( const char * path) {
 }
 #endif
 
-int _PDCLIB_remove( const char * pathname )
+int _PDCLIB_remove(const char* pathname)
 {
-    return unlink( pathname );
+    return unlink(pathname);
 }
 
 #endif

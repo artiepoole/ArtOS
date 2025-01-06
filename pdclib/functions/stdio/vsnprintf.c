@@ -9,7 +9,7 @@
 
 #ifndef REGTEST
 
-int vsnprintf( char * _PDCLIB_restrict s, size_t n, const char * _PDCLIB_restrict format, _PDCLIB_va_list arg )
+int vsnprintf(char* _PDCLIB_restrict s, size_t n, const char* _PDCLIB_restrict format, _PDCLIB_va_list arg)
 {
     /* TODO: This function should interpret format as multibyte characters.  */
     struct _PDCLIB_status_t status;
@@ -22,18 +22,18 @@ int vsnprintf( char * _PDCLIB_restrict s, size_t n, const char * _PDCLIB_restric
     status.width = 0;
     status.prec = EOF;
     status.stream = NULL;
-    va_copy( status.arg, arg );
+    va_copy(status.arg, arg);
 
-    while ( *format != '\0' )
+    while (*format != '\0')
     {
-        const char * rc;
+        const char* rc;
 
-        if ( ( *format != '%' ) || ( ( rc = _PDCLIB_print( format, &status ) ) == format ) )
+        if ((*format != '%') || ((rc = _PDCLIB_print(format, &status)) == format))
         {
             /* No conversion specifier, print verbatim */
-            if ( status.i < n )
+            if (status.i < n)
             {
-                s[ status.i ] = *format;
+                s[status.i] = *format;
             }
 
             status.i++;
@@ -46,12 +46,12 @@ int vsnprintf( char * _PDCLIB_restrict s, size_t n, const char * _PDCLIB_restric
         }
     }
 
-    if ( status.i  < n )
+    if (status.i < n)
     {
-        s[ status.i ] = '\0';
+        s[status.i] = '\0';
     }
 
-    va_end( status.arg );
+    va_end(status.arg);
     return status.i;
 }
 

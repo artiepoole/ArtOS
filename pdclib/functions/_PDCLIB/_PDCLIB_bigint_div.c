@@ -29,29 +29,29 @@
 
 /* This is a fairly precise implementation of Knuth's Algorithm D. */
 
-_PDCLIB_bigint_t * _PDCLIB_bigint_div( _PDCLIB_bigint_t * _PDCLIB_restrict result, _PDCLIB_bigint_t const * _PDCLIB_restrict lhs, _PDCLIB_bigint_t const * _PDCLIB_restrict rhs )
+_PDCLIB_bigint_t* _PDCLIB_bigint_div(_PDCLIB_bigint_t* _PDCLIB_restrict result, _PDCLIB_bigint_t const* _PDCLIB_restrict lhs, _PDCLIB_bigint_t const* _PDCLIB_restrict rhs)
 {
     _PDCLIB_bigint_t lnorm, rnorm;
     int i;
 
-    if ( rhs->size == 0 || ( ( rhs->size == 1 ) && ( rhs->data[ 0 ] == 0 ) ) )
+    if (rhs->size == 0 || ((rhs->size == 1) && (rhs->data[0] == 0)))
     {
         // Division by zero
         return NULL;
     }
 
-    if ( lhs->size == 0 || lhs->size < rhs->size )
+    if (lhs->size == 0 || lhs->size < rhs->size)
     {
         // Result zero
-        _PDCLIB_bigint32( result, 0 );
+        _PDCLIB_bigint32(result, 0);
         return result;
     }
 
-    if ( rhs->size == 1 )
+    if (rhs->size == 1)
     {
         // One-digit divisor, simpler algorithm
-        _PDCLIB_bigint( result, lhs );
-        return _PDCLIB_bigint_div_dig( result, rhs->data[ 0 ] );
+        _PDCLIB_bigint(result, lhs);
+        return _PDCLIB_bigint_div_dig(result, rhs->data[0]);
     }
 
     {
@@ -59,34 +59,34 @@ _PDCLIB_bigint_t * _PDCLIB_bigint_div( _PDCLIB_bigint_t * _PDCLIB_restrict resul
            bit is on, and shift u left the same amount. We may have to append
            a high-order digit on the dividend; we do that unconditionally.
         */
-        unsigned s = ( _PDCLIB_BIGINT_DIGIT_BITS - 1 ) - ( _PDCLIB_bigint_log2( rhs ) % _PDCLIB_BIGINT_DIGIT_BITS );
+        unsigned s = (_PDCLIB_BIGINT_DIGIT_BITS - 1) - (_PDCLIB_bigint_log2(rhs) % _PDCLIB_BIGINT_DIGIT_BITS);
 
-        _PDCLIB_bigint( &lnorm, lhs );
-        _PDCLIB_bigint( &rnorm, rhs );
+        _PDCLIB_bigint(&lnorm, lhs);
+        _PDCLIB_bigint(&rnorm, rhs);
 
-        lnorm.data[ lnorm.size ] = 0;  // TODO: Check capacity
+        lnorm.data[lnorm.size] = 0; // TODO: Check capacity
 
-        _PDCLIB_bigint_shl( &lnorm, s );
-        _PDCLIB_bigint_shl( &rnorm, s );
+        _PDCLIB_bigint_shl(&lnorm, s);
+        _PDCLIB_bigint_shl(&rnorm, s);
     }
 
-    for ( i = lhs->size - rhs->size; i >= 0; --i ) // Main loop
+    for (i = lhs->size - rhs->size; i >= 0; --i) // Main loop
     {
         _PDCLIB_bigint_sarith_t t, k;
         unsigned j;
 
         // Compute estimate qhat of result->data[ i ].
-        _PDCLIB_bigint_arith_t qhat = ( lnorm.data[ i + rhs->size ] * _PDCLIB_BIGINT_BASE + lnorm.data[ i + rhs->size - 1 ] ) / rnorm.data[ rhs->size - 1 ];
-        _PDCLIB_bigint_arith_t rhat = ( lnorm.data[ i + rhs->size ] * _PDCLIB_BIGINT_BASE + lnorm.data[ i + rhs->size - 1 ] ) - qhat * rnorm.data[ rhs->size - 1 ];
+        _PDCLIB_bigint_arith_t qhat = (lnorm.data[i + rhs->size] * _PDCLIB_BIGINT_BASE + lnorm.data[i + rhs->size - 1]) / rnorm.data[rhs->size - 1];
+        _PDCLIB_bigint_arith_t rhat = (lnorm.data[i + rhs->size] * _PDCLIB_BIGINT_BASE + lnorm.data[i + rhs->size - 1]) - qhat * rnorm.data[rhs->size - 1];
 
-again:
+    again:
 
-        if ( qhat >= _PDCLIB_BIGINT_BASE || qhat * rnorm.data[ rhs->size - 2 ] > _PDCLIB_BIGINT_BASE * rhat + lnorm.data[ i + rhs->size - 2 ] )
+        if (qhat >= _PDCLIB_BIGINT_BASE || qhat * rnorm.data[rhs->size - 2] > _PDCLIB_BIGINT_BASE * rhat + lnorm.data[i + rhs->size - 2])
         {
             qhat = qhat - 1;
-            rhat = rhat + rnorm.data[ rhs->size - 1 ];
+            rhat = rhat + rnorm.data[rhs->size - 1];
 
-            if ( rhat < _PDCLIB_BIGINT_BASE )
+            if (rhat < _PDCLIB_BIGINT_BASE)
             {
                 goto again;
             }
@@ -95,39 +95,39 @@ again:
         // Multiply and subtract.
         k = 0;
 
-        for ( j = 0; j < rhs->size; ++j )
+        for (j = 0; j < rhs->size; ++j)
         {
-            _PDCLIB_bigint_arith_t p = qhat * rnorm.data[ j ];
-            t = lnorm.data[ j + i ] - k - ( p & _PDCLIB_BIGINT_DIGIT_MAX );
-            lnorm.data[ j + i ] = t;
-            k = ( p >> _PDCLIB_BIGINT_DIGIT_BITS ) - ( t >> _PDCLIB_BIGINT_DIGIT_BITS );
+            _PDCLIB_bigint_arith_t p = qhat * rnorm.data[j];
+            t = lnorm.data[j + i] - k - (p & _PDCLIB_BIGINT_DIGIT_MAX);
+            lnorm.data[j + i] = t;
+            k = (p >> _PDCLIB_BIGINT_DIGIT_BITS) - (t >> _PDCLIB_BIGINT_DIGIT_BITS);
         }
 
-        t = lnorm.data[ i + rhs->size ] - k;
-        lnorm.data[ i + rhs->size ] = t;
+        t = lnorm.data[i + rhs->size] - k;
+        lnorm.data[i + rhs->size] = t;
 
-        result->data[ i ] = qhat; // Store quotient digit.
+        result->data[i] = qhat; // Store quotient digit.
 
-        if ( t < 0 ) // If we subtracted too much,
+        if (t < 0) // If we subtracted too much,
         {
             // add back.
-            result->data[ i ] = result->data[ i ] - 1;
+            result->data[i] = result->data[i] - 1;
             k = 0;
 
-            for ( j = 0; j < rhs->size; ++j )
+            for (j = 0; j < rhs->size; ++j)
             {
-                t = ( _PDCLIB_bigint_arith_t )lnorm.data[ j + i ] + rnorm.data[ j ] + k;
-                lnorm.data[ j + i ] = t;
+                t = (_PDCLIB_bigint_arith_t)lnorm.data[j + i] + rnorm.data[j] + k;
+                lnorm.data[j + i] = t;
                 k = t >> _PDCLIB_BIGINT_DIGIT_BITS;
             }
 
-            lnorm.data[ i + rhs->size ] = lnorm.data[ i + rhs->size ] + k;
+            lnorm.data[i + rhs->size] = lnorm.data[i + rhs->size] + k;
         }
     }
 
     result->size = lhs->size - rhs->size + 1;
 
-    while ( result->size > 0 && result->data[ result->size - 1 ] == 0 )
+    while (result->size > 0 && result->data[result->size - 1] == 0)
     {
         --result->size;
     }

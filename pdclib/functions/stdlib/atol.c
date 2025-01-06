@@ -8,9 +8,9 @@
 
 #ifndef REGTEST
 
-long int atol( const char * s )
+long int atol(const char* s)
 {
-    return ( long int ) _PDCLIB_atomax( s );
+    return (long int)_PDCLIB_atomax(s);
 }
 
 #endif

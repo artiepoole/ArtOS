@@ -15,17 +15,17 @@ extern mtx_t _PDCLIB_time_mtx;
 
 #include <string.h>
 
-struct tm * _PDCLIB_localtime_tzset( time_t const * timep, struct tm * tmp, bool setname )
+struct tm* _PDCLIB_localtime_tzset(time_t const* timep, struct tm* tmp, bool setname)
 {
-    _PDCLIB_LOCK( _PDCLIB_time_mtx );
+    _PDCLIB_LOCK(_PDCLIB_time_mtx);
 
-    if ( setname || ! lcl_is_set )
+    if (setname || !lcl_is_set)
     {
         _PDCLIB_tzset_unlocked();
     }
 
-    tmp = _PDCLIB_localsub( &_PDCLIB_lclmem, timep, setname, tmp );
-    _PDCLIB_UNLOCK( _PDCLIB_time_mtx );
+    tmp = _PDCLIB_localsub(&_PDCLIB_lclmem, timep, setname, tmp);
+    _PDCLIB_UNLOCK(_PDCLIB_time_mtx);
     return tmp;
 }
 

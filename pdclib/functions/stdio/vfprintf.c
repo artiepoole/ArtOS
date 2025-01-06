@@ -16,7 +16,7 @@
 #include <threads.h>
 #endif
 
-int vfprintf( struct _PDCLIB_file_t * _PDCLIB_restrict stream, const char * _PDCLIB_restrict format, va_list arg )
+int vfprintf(struct _PDCLIB_file_t* _PDCLIB_restrict stream, const char* _PDCLIB_restrict format, va_list arg)
 {
     /* TODO: This function should interpret format as multibyte characters.  */
     struct _PDCLIB_status_t status;
@@ -30,33 +30,33 @@ int vfprintf( struct _PDCLIB_file_t * _PDCLIB_restrict stream, const char * _PDC
     status.prec = EOF;
     status.stream = stream;
 
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( _PDCLIB_prepwrite( stream ) == EOF )
+    if (_PDCLIB_prepwrite(stream) == EOF)
     {
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
         return EOF;
     }
 
-    va_copy( status.arg, arg );
+    va_copy(status.arg, arg);
 
-    while ( *format != '\0' )
+    while (*format != '\0')
     {
-        const char * rc;
+        const char* rc;
 
-        if ( ( *format != '%' ) || ( ( rc = _PDCLIB_print( format, &status ) ) == format ) )
+        if ((*format != '%') || ((rc = _PDCLIB_print(format, &status)) == format))
         {
             /* No conversion specifier, print verbatim */
-            stream->buffer[ stream->bufidx++ ] = *format;
+            stream->buffer[stream->bufidx++] = *format;
 
-            if ( ( stream->bufidx == stream->bufsize )
-                 || ( ( stream->status & _IOLBF ) && ( *format == '\n' ) )
-                 || ( stream->status & _IONBF )
-               )
+            if ((stream->bufidx == stream->bufsize)
+                || ((stream->status & _IOLBF) && (*format == '\n'))
+                || (stream->status & _IONBF)
+            )
             {
-                if ( _PDCLIB_flushbuffer( stream ) != 0 )
+                if (_PDCLIB_flushbuffer(stream) != 0)
                 {
-                    _PDCLIB_UNLOCK( stream->mtx );
+                    _PDCLIB_UNLOCK(stream->mtx);
                     return EOF;
                 }
             }
@@ -71,8 +71,8 @@ int vfprintf( struct _PDCLIB_file_t * _PDCLIB_restrict stream, const char * _PDC
         }
     }
 
-    va_end( status.arg );
-    _PDCLIB_UNLOCK( stream->mtx );
+    va_end(status.arg);
+    _PDCLIB_UNLOCK(stream->mtx);
     return status.i;
 }
 

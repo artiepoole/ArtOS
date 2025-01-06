@@ -19,15 +19,15 @@
 extern "C" {
 #endif
 
-extern _PDCLIB_Noreturn void _exit( int status ) _PDCLIB_NORETURN;
+extern _PDCLIB_Noreturn void _exit(int status) _PDCLIB_NORETURN;
 
 #ifdef __cplusplus
 }
 #endif
 
-void _PDCLIB_Exit( int status )
+void _PDCLIB_Exit(int status)
 {
-    _exit( status );
+    _exit(status);
 }
 
 #endif

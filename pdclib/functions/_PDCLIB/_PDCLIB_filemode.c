@@ -12,66 +12,66 @@
    the PDCLib flags FREAD, FWRITE, FAPPEND, FRW (read-write) and FBIN (binary
    mode).
 */
-unsigned int _PDCLIB_filemode( const char * const mode )
+unsigned int _PDCLIB_filemode(const char* const mode)
 {
     unsigned rc = 0;
     size_t i;
 
-    if ( mode == NULL )
+    if (mode == NULL)
     {
         return 0;
     }
 
-    switch ( mode[0] )
+    switch (mode[0])
     {
-        case 'r':
-            rc |= _PDCLIB_FREAD;
-            break;
+    case 'r':
+        rc |= _PDCLIB_FREAD;
+        break;
 
-        case 'w':
-            rc |= _PDCLIB_FWRITE;
-            break;
+    case 'w':
+        rc |= _PDCLIB_FWRITE;
+        break;
 
-        case 'a':
-            rc |= _PDCLIB_FAPPEND | _PDCLIB_FWRITE;
-            break;
+    case 'a':
+        rc |= _PDCLIB_FAPPEND | _PDCLIB_FWRITE;
+        break;
 
-        default:
-            /* Other than read, write, or append - invalid */
-            return 0;
+    default:
+        /* Other than read, write, or append - invalid */
+        return 0;
     }
 
-    for ( i = 1; i < 4; ++i )
+    for (i = 1; i < 4; ++i)
     {
-        switch ( mode[i] )
+        switch (mode[i])
         {
-            case '+':
-                if ( rc & _PDCLIB_FRW )
-                {
-                    /* Duplicates are invalid */
-                    return 0;
-                }
-
-                rc |= _PDCLIB_FRW;
-                break;
-
-            case 'b':
-                if ( rc & _PDCLIB_FBIN )
-                {
-                    /* Duplicates are invalid */
-                    return 0;
-                }
-
-                rc |= _PDCLIB_FBIN;
-                break;
-
-            case '\0':
-                /* End of mode */
-                return rc;
-
-            default:
-                /* Other than read/write or binary - invalid. */
+        case '+':
+            if (rc & _PDCLIB_FRW)
+            {
+                /* Duplicates are invalid */
                 return 0;
+            }
+
+            rc |= _PDCLIB_FRW;
+            break;
+
+        case 'b':
+            if (rc & _PDCLIB_FBIN)
+            {
+                /* Duplicates are invalid */
+                return 0;
+            }
+
+            rc |= _PDCLIB_FBIN;
+            break;
+
+        case '\0':
+            /* End of mode */
+            return rc;
+
+        default:
+            /* Other than read/write or binary - invalid. */
+            return 0;
         }
     }
 

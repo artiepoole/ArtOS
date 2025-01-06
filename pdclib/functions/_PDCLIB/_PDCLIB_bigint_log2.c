@@ -10,25 +10,25 @@
 
 #include <stdint.h>
 
-unsigned _PDCLIB_bigint_log2( _PDCLIB_bigint_t const * bigint )
+unsigned _PDCLIB_bigint_log2(_PDCLIB_bigint_t const* bigint)
 {
     /* DeBruijn lookup, courtesy of
        https://graphics.stanford.edu/~seander/bithacks.html#IntegerLogDeBruijn
     */
     static int const lookup[] =
     {
-        0,  9,  1, 10, 13, 21,  2, 29, 11, 14, 16, 18, 22, 25, 3, 30,
-        8, 12, 20, 28, 15, 17, 24,  7, 19, 27, 23,  6, 26,  5, 4, 31
+        0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30,
+        8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31
     };
 
     uint_least32_t value;
 
-    if ( bigint->size == 0 )
+    if (bigint->size == 0)
     {
         return 0;
     }
 
-    value = bigint->data[ bigint->size - 1 ];
+    value = bigint->data[bigint->size - 1];
 
     value |= value >> 1;
     value |= value >> 2;
@@ -36,7 +36,7 @@ unsigned _PDCLIB_bigint_log2( _PDCLIB_bigint_t const * bigint )
     value |= value >> 8;
     value |= value >> 16;
 
-    return lookup[ ( value * UINT32_C( 0x07C4ACDD ) ) >> 27 ] + ( bigint->size - 1 ) * _PDCLIB_BIGINT_DIGIT_BITS;
+    return lookup[(value * UINT32_C(0x07C4ACDD)) >> 27] + (bigint->size - 1) * _PDCLIB_BIGINT_DIGIT_BITS;
 }
 
 #endif

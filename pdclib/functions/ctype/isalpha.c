@@ -10,9 +10,9 @@
 
 #include <locale.h>
 
-int isalpha( int c )
+int isalpha(int c)
 {
-    return ( _PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_ALPHA );
+    return (_PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_ALPHA);
 }
 
 #endif

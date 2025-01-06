@@ -11,22 +11,22 @@
 
 #ifndef REGTEST
 
-errno_t ctime_s( char * s, rsize_t maxsize, const time_t * timer )
+errno_t ctime_s(char* s, rsize_t maxsize, const time_t* timer)
 {
     struct tm tm;
 
-    if ( s == NULL || timer == NULL || maxsize < 26 || maxsize > RSIZE_MAX )
+    if (s == NULL || timer == NULL || maxsize < 26 || maxsize > RSIZE_MAX)
     {
-        if ( s != NULL && maxsize > 0 && maxsize <= RSIZE_MAX )
+        if (s != NULL && maxsize > 0 && maxsize <= RSIZE_MAX)
         {
             s[0] = '\0';
         }
 
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
-    return asctime_s( s, maxsize, localtime_s( timer, &tm ) );
+    return asctime_s(s, maxsize, localtime_s(timer, &tm));
 }
 
 #endif

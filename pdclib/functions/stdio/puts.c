@@ -14,42 +14,42 @@
 #include <threads.h>
 #endif
 
-int puts( const char * s )
+int puts(const char* s)
 {
-    _PDCLIB_LOCK( stdout->mtx );
+    _PDCLIB_LOCK(stdout->mtx);
 
-    if ( _PDCLIB_prepwrite( stdout ) == EOF )
+    if (_PDCLIB_prepwrite(stdout) == EOF)
     {
-        _PDCLIB_UNLOCK( stdout->mtx );
+        _PDCLIB_UNLOCK(stdout->mtx);
         return EOF;
     }
 
-    while ( *s != '\0' )
+    while (*s != '\0')
     {
-        stdout->buffer[ stdout->bufidx++ ] = *s++;
+        stdout->buffer[stdout->bufidx++] = *s++;
 
-        if ( stdout->bufidx == stdout->bufsize )
+        if (stdout->bufidx == stdout->bufsize)
         {
-            if ( _PDCLIB_flushbuffer( stdout ) == EOF )
+            if (_PDCLIB_flushbuffer(stdout) == EOF)
             {
-                _PDCLIB_UNLOCK( stdout->mtx );
+                _PDCLIB_UNLOCK(stdout->mtx);
                 return EOF;
             }
         }
     }
 
-    stdout->buffer[ stdout->bufidx++ ] = '\n';
+    stdout->buffer[stdout->bufidx++] = '\n';
 
-    if ( ( stdout->bufidx == stdout->bufsize ) ||
-         ( stdout->status & ( _IOLBF | _IONBF ) ) )
+    if ((stdout->bufidx == stdout->bufsize) ||
+        (stdout->status & (_IOLBF | _IONBF)))
     {
-        int rc = _PDCLIB_flushbuffer( stdout );
-        _PDCLIB_UNLOCK( stdout->mtx );
+        int rc = _PDCLIB_flushbuffer(stdout);
+        _PDCLIB_UNLOCK(stdout->mtx);
         return rc;
     }
     else
     {
-        _PDCLIB_UNLOCK( stdout->mtx );
+        _PDCLIB_UNLOCK(stdout->mtx);
         return 0;
     }
 }

@@ -11,9 +11,9 @@
 #include <locale.h>
 
 /* TODO: Doing this via a static array is not the way to do it. */
-char * strerror( int errnum )
+char* strerror(int errnum)
 {
-    if ( errnum >= _PDCLIB_ERRNO_MAX || errnum < 0 )
+    if (errnum >= _PDCLIB_ERRNO_MAX || errnum < 0)
     {
         return _PDCLIB_EUNKNOWN_TEXT;
     }

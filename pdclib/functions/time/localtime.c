@@ -10,9 +10,9 @@
 
 #include "pdclib/_PDCLIB_tzcode.h"
 
-struct tm * localtime( const time_t * timer )
+struct tm* localtime(const time_t* timer)
 {
-    return _PDCLIB_localtime_tzset( timer, &_PDCLIB_tm, true );
+    return _PDCLIB_localtime_tzset(timer, &_PDCLIB_tm, true);
 }
 
 #endif

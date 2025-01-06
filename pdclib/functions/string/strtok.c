@@ -12,19 +12,19 @@
 
 #ifndef REGTEST
 
-char * strtok( char * _PDCLIB_restrict s1, const char * _PDCLIB_restrict s2 )
+char* strtok(char* _PDCLIB_restrict s1, const char* _PDCLIB_restrict s2)
 {
-    static char * tmp = NULL;
+    static char* tmp = NULL;
     static rsize_t max;
 
-    if ( s1 != NULL )
+    if (s1 != NULL)
     {
         /* new string */
         tmp = s1;
-        max = strlen( tmp );
+        max = strlen(tmp);
     }
 
-    return _PDCLIB_strtok( s1, &max, s2, &tmp );
+    return _PDCLIB_strtok(s1, &max, s2, &tmp);
 }
 
 #endif

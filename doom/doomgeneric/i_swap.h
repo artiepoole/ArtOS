@@ -73,7 +73,7 @@
 
 
 #else  // FEATURE_SOUND
-	
+
 #define SHORT(x)  ((signed short) (x))
 #define LONG(x)   ((signed int) (x))
 
@@ -82,4 +82,3 @@
 #endif /* FEATURE_SOUND */
 
 #endif
-

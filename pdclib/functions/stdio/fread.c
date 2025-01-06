@@ -17,7 +17,7 @@
 #endif
 extern size_t read(int fd, char* buf, const size_t count);
 
-size_t fread( void * _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PDCLIB_file_t * _PDCLIB_restrict stream )
+size_t fread(void* _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PDCLIB_file_t* _PDCLIB_restrict stream)
 {
     // TODO: proper implementation of this stream handling stuff,
 
@@ -54,8 +54,7 @@ size_t fread( void * _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PD
     // _PDCLIB_UNLOCK( stream->mtx );
     //
     // return nmemb_i;
-    return read(stream->handle, ptr, nmemb*size);
-
+    return read(stream->handle, ptr, nmemb * size);
 }
 
 #endif

@@ -98,7 +98,9 @@ public:
             data = ~array[array_idx];
         }
 
-        for  (constexpr int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bit wise
+        for (constexpr int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++)
+        {
+        } // bit wise
 
         item_idx = array_idx * n_bits + item_idx;
         if (item_idx >= capacity) return DBA_ERR_IDX; // possible if last entry is not full
@@ -141,7 +143,9 @@ public:
             data = array[array_idx];
         }
 
-        for (int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++){} // bitwise search within.
+        for (int_like vv = 1; !(data & vv << item_idx) && item_idx <= n_bits; item_idx++)
+        {
+        } // bitwise search within.
 
         item_idx = array_idx * n_bits + item_idx;
         if (item_idx >= capacity) return DBA_ERR_IDX; // possible if last entry is not full

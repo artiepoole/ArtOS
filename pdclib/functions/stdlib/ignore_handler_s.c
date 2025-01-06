@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 
-void ignore_handler_s( const char * _PDCLIB_restrict msg, void * _PDCLIB_restrict ptr, errno_t errno )
+void ignore_handler_s(const char* _PDCLIB_restrict msg, void* _PDCLIB_restrict ptr, errno_t errno)
 {
     return;
 }

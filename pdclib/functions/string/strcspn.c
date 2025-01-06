@@ -8,18 +8,18 @@
 
 #ifndef REGTEST
 
-size_t strcspn( const char * s1, const char * s2 )
+size_t strcspn(const char* s1, const char* s2)
 {
     size_t len = 0;
-    const char * p;
+    const char* p;
 
-    while ( s1[len] )
+    while (s1[len])
     {
         p = s2;
 
-        while ( *p )
+        while (*p)
         {
-            if ( s1[len] == *p++ )
+            if (s1[len] == *p++)
             {
                 return len;
             }

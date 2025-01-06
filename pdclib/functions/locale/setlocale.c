@@ -39,14 +39,14 @@ static const char * _PDCLIB_default_locale( int category )
 }
 #endif
 
-char * setlocale( int category, const char * locale )
+char* setlocale(int category, const char* locale)
 {
     /* All below is very much work-in-progress, so we do a dumb-dummy
        return here.
     */
-    if ( locale == NULL || ! strcmp( locale, "C" ) )
+    if (locale == NULL || !strcmp(locale, "C"))
     {
-        return ( char * )"C";
+        return (char*)"C";
     }
     else
     {

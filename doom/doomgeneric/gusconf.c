@@ -33,11 +33,11 @@
 
 typedef struct
 {
-    char *patch_names[MAX_INSTRUMENTS];
+    char* patch_names[MAX_INSTRUMENTS];
     int mapping[MAX_INSTRUMENTS];
 } gus_config_t;
 
-char *gus_patch_path = "";
+char* gus_patch_path = "";
 unsigned int gus_ram_kb = 1024;
 
 static unsigned int MappingIndex(void)
@@ -58,10 +58,10 @@ static unsigned int MappingIndex(void)
     }
 }
 
-static int SplitLine(char *line, char **fields, unsigned int max_fields)
+static int SplitLine(char* line, char** fields, unsigned int max_fields)
 {
     unsigned int num_fields;
-    char *p;
+    char* p;
 
     fields[0] = line;
     num_fields = 1;
@@ -76,7 +76,8 @@ static int SplitLine(char *line, char **fields, unsigned int max_fields)
             do
             {
                 ++p;
-            } while (*p != '\0' && isspace(*p));
+            }
+            while (*p != '\0' && isspace(*p));
 
             fields[num_fields] = p;
             ++num_fields;
@@ -105,9 +106,9 @@ static int SplitLine(char *line, char **fields, unsigned int max_fields)
     return num_fields;
 }
 
-static void ParseLine(gus_config_t *config, char *line)
+static void ParseLine(gus_config_t* config, char* line)
 {
-    char *fields[6];
+    char* fields[6];
     unsigned int num_fields;
     unsigned int instr_id, mapped_id;
 
@@ -126,7 +127,7 @@ static void ParseLine(gus_config_t *config, char *line)
     config->mapping[instr_id] = mapped_id;
 }
 
-static void ParseDMXConfig(char *dmxconf, gus_config_t *config)
+static void ParseDMXConfig(char* dmxconf, gus_config_t* config)
 {
     char *p, *newline;
     unsigned int i;
@@ -162,7 +163,7 @@ static void ParseDMXConfig(char *dmxconf, gus_config_t *config)
     }
 }
 
-static void FreeDMXConfig(gus_config_t *config)
+static void FreeDMXConfig(gus_config_t* config)
 {
     unsigned int i;
 
@@ -172,11 +173,11 @@ static void FreeDMXConfig(gus_config_t *config)
     }
 }
 
-static char *ReadDMXConfig(void)
+static char* ReadDMXConfig(void)
 {
     int lumpnum;
     unsigned int len;
-    char *data;
+    char* data;
 
     // TODO: This should be chosen based on gamemode == commercial:
 
@@ -194,9 +195,9 @@ static char *ReadDMXConfig(void)
     return data;
 }
 
-static boolean WriteTimidityConfig(char *path, gus_config_t *config)
+static boolean WriteTimidityConfig(char* path, gus_config_t* config)
 {
-    FILE *fstream;
+    FILE* fstream;
     unsigned int i;
 
     fstream = fopen(path, "w");
@@ -215,7 +216,7 @@ static boolean WriteTimidityConfig(char *path, gus_config_t *config)
     for (i = 0; i < 128; ++i)
     {
         if (config->mapping[i] >= 0 && config->mapping[i] < MAX_INSTRUMENTS
-         && config->patch_names[config->mapping[i]] != NULL)
+            && config->patch_names[config->mapping[i]] != NULL)
         {
             fprintf(fstream, "%i %s\n",
                     i, config->patch_names[config->mapping[i]]);
@@ -227,7 +228,7 @@ static boolean WriteTimidityConfig(char *path, gus_config_t *config)
     for (i = 128 + 25; i < MAX_INSTRUMENTS; ++i)
     {
         if (config->mapping[i] >= 0 && config->mapping[i] < MAX_INSTRUMENTS
-         && config->patch_names[config->mapping[i]] != NULL)
+            && config->patch_names[config->mapping[i]] != NULL)
         {
             fprintf(fstream, "%i %s\n",
                     i - 128, config->patch_names[config->mapping[i]]);
@@ -241,19 +242,19 @@ static boolean WriteTimidityConfig(char *path, gus_config_t *config)
     return true;
 }
 
-boolean GUS_WriteConfig(char *path)
+boolean GUS_WriteConfig(char* path)
 {
     boolean result;
-    char *dmxconf;
+    char* dmxconf;
     gus_config_t config;
 
     if (!strcmp(gus_patch_path, ""))
     {
         printf("You haven't configured gus_patch_path.\n");
         printf("gus_patch_path needs to point to the location of "
-               "your GUS patch set.\n"
-               "To get a copy of the \"standard\" GUS patches, "
-               "download a copy of dgguspat.zip.\n");
+            "your GUS patch set.\n"
+            "To get a copy of the \"standard\" GUS patches, "
+            "download a copy of dgguspat.zip.\n");
 
         return false;
     }
@@ -268,4 +269,3 @@ boolean GUS_WriteConfig(char *path)
 
     return result;
 }
-

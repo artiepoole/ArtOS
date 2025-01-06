@@ -8,9 +8,9 @@
 
 #ifndef REGTEST
 
-int getc( struct _PDCLIB_file_t * stream )
+int getc(struct _PDCLIB_file_t* stream)
 {
-    return fgetc( stream );
+    return fgetc(stream);
 }
 
 #endif

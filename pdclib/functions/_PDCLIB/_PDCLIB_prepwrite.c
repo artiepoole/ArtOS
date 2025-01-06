@@ -8,11 +8,11 @@
 
 #ifndef REGTEST
 
-int _PDCLIB_prepwrite( struct _PDCLIB_file_t * stream )
+int _PDCLIB_prepwrite(struct _PDCLIB_file_t* stream)
 {
-    if ( ( stream->bufidx < stream->bufend ) || ( stream->ungetidx > 0 ) ||
-         ( stream->status & ( _PDCLIB_FREAD | _PDCLIB_ERRORFLAG | _PDCLIB_WIDESTREAM | _PDCLIB_EOFFLAG ) ) ||
-         !( stream->status & ( _PDCLIB_FWRITE | _PDCLIB_FAPPEND | _PDCLIB_FRW ) ) )
+    if ((stream->bufidx < stream->bufend) || (stream->ungetidx > 0) ||
+        (stream->status & (_PDCLIB_FREAD | _PDCLIB_ERRORFLAG | _PDCLIB_WIDESTREAM | _PDCLIB_EOFFLAG)) ||
+        !(stream->status & (_PDCLIB_FWRITE | _PDCLIB_FAPPEND | _PDCLIB_FRW)))
     {
         /* Function called on illegal (e.g. input) stream. */
         *_PDCLIB_errno_func() = _PDCLIB_EBADF;

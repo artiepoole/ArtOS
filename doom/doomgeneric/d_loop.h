@@ -37,11 +37,11 @@ typedef struct
     // Given the current input state, fill in the fields of the specified
     // ticcmd_t structure with data for a new tic.
 
-    void (*BuildTiccmd)(ticcmd_t *cmd, int maketic);
+    void (*BuildTiccmd)(ticcmd_t* cmd, int maketic);
 
     // Advance the game forward one tic, using the specified player input.
 
-    void (*RunTic)(ticcmd_t *cmds, boolean *ingame);
+    void (*RunTic)(ticcmd_t* cmds, boolean* ingame);
 
     // Run the menu (runs independently of the game).
 
@@ -49,33 +49,32 @@ typedef struct
 } loop_interface_t;
 
 // Register callback functions for the main loop code to use.
-void D_RegisterLoopCallbacks(loop_interface_t *i);
+void D_RegisterLoopCallbacks(loop_interface_t* i);
 
 // Create any new ticcmds and broadcast to other players.
-void NetUpdate (void);
+void NetUpdate(void);
 
 // Broadcasts special packets to other players
 //  to notify of game exit
-void D_QuitNetGame (void);
+void D_QuitNetGame(void);
 
 //? how many ticks to run?
-void TryRunTics (void);
+void TryRunTics(void);
 
 // Called at start of game loop to initialize timers
 void D_StartGameLoop(void);
 
 // Initialize networking code and connect to server.
 
-boolean D_InitNetGame(net_connect_data_t *connect_data);
+boolean D_InitNetGame(net_connect_data_t* connect_data);
 
 // Start game with specified settings. The structure will be updated
 // with the actual settings for the game.
 
-void D_StartNetGame(net_gamesettings_t *settings,
+void D_StartNetGame(net_gamesettings_t* settings,
                     netgame_startup_callback_t callback);
 
 extern boolean singletics;
 extern int gametic, ticdup;
 
 #endif
-

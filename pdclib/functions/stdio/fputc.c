@@ -14,28 +14,28 @@
 #include <threads.h>
 #endif
 
-int fputc( int c, struct _PDCLIB_file_t * stream )
+int fputc(int c, struct _PDCLIB_file_t* stream)
 {
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( _PDCLIB_prepwrite( stream ) == EOF )
+    if (_PDCLIB_prepwrite(stream) == EOF)
     {
-        _PDCLIB_UNLOCK( stream->mtx );
+        _PDCLIB_UNLOCK(stream->mtx);
         return EOF;
     }
 
-    stream->buffer[stream->bufidx++] = ( char )c;
+    stream->buffer[stream->bufidx++] = (char)c;
 
-    if ( ( stream->bufidx == stream->bufsize )                   /* _IOFBF */
-           || ( ( stream->status & _IOLBF ) && ( ( char )c == '\n' ) ) /* _IOLBF */
-           || ( stream->status & _IONBF )                        /* _IONBF */
-       )
+    if ((stream->bufidx == stream->bufsize) /* _IOFBF */
+        || ((stream->status & _IOLBF) && ((char)c == '\n')) /* _IOLBF */
+        || (stream->status & _IONBF) /* _IONBF */
+    )
     {
         /* buffer filled, unbuffered stream, or end-of-line. */
-        c = ( _PDCLIB_flushbuffer( stream ) == 0 ) ? c : EOF;
+        c = (_PDCLIB_flushbuffer(stream) == 0) ? c : EOF;
     }
 
-    _PDCLIB_UNLOCK( stream->mtx );
+    _PDCLIB_UNLOCK(stream->mtx);
 
     return c;
 }

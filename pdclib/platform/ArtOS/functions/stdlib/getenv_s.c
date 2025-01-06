@@ -14,7 +14,7 @@
 
 #ifndef REGTEST
 
-extern char ** environ;
+extern char** environ;
 
 /* The standard states (7.22.4.6 (3), "the implementation shall behave
    as if no library function calls the getenv function." That is,
@@ -23,28 +23,28 @@ extern char ** environ;
    modify the environment list".
    PDCLib does not provide means of modifying the environment list.
 */
-errno_t getenv_s( size_t * _PDCLIB_restrict len, char * _PDCLIB_restrict value, rsize_t maxsize, const char * _PDCLIB_restrict name )
+errno_t getenv_s(size_t* _PDCLIB_restrict len, char* _PDCLIB_restrict value, rsize_t maxsize, const char* _PDCLIB_restrict name)
 {
     size_t nlen;
     size_t index = 0;
     size_t vlen = 0;
-    char const * environ_value = "";
+    char const* environ_value = "";
     errno_t rc = -1;
 
-    if ( name == NULL || maxsize == 0 || maxsize > RSIZE_MAX || value == NULL )
+    if (name == NULL || maxsize == 0 || maxsize > RSIZE_MAX || value == NULL)
     {
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
-    nlen = strlen( name );
+    nlen = strlen(name);
 
-    while ( environ[ index ] != NULL )
+    while (environ[index] != NULL)
     {
-        if ( strncmp( environ[ index ], name, nlen ) == 0 )
+        if (strncmp(environ[index], name, nlen) == 0)
         {
-            environ_value = environ[ index ] + nlen + 1;
-            vlen = strlen( environ_value );
+            environ_value = environ[index] + nlen + 1;
+            vlen = strlen(environ_value);
             rc = 0;
             break;
         }
@@ -52,14 +52,14 @@ errno_t getenv_s( size_t * _PDCLIB_restrict len, char * _PDCLIB_restrict value, 
         index++;
     }
 
-    if ( len != NULL )
+    if (len != NULL)
     {
         *len = vlen;
     }
 
-    if ( vlen < maxsize )
+    if (vlen < maxsize)
     {
-        strcpy( value, environ_value );
+        strcpy(value, environ_value);
     }
 
     return rc;

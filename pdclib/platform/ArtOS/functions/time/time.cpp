@@ -15,11 +15,11 @@
 
 /* See comments in _PDCLIB_config.h on the semantics of time_t. */
 
-time_t time( time_t * timer )
+time_t time(time_t* timer)
 {
     time_t t = get_epoch_time();
 
-    if ( timer != NULL )
+    if (timer != NULL)
     {
         *timer = t;
     }
@@ -27,7 +27,7 @@ time_t time( time_t * timer )
     return t;
 }
 
-struct tm * gmtime( const time_t * timer );
+struct tm* gmtime(const time_t* timer);
 
 #endif
 

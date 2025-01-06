@@ -10,20 +10,20 @@
 
 #ifndef REGTEST
 
-errno_t fopen_s( FILE * _PDCLIB_restrict * _PDCLIB_restrict streamptr, const char * _PDCLIB_restrict filename, const char * _PDCLIB_restrict mode )
+errno_t fopen_s(FILE* _PDCLIB_restrict * _PDCLIB_restrict streamptr, const char* _PDCLIB_restrict filename, const char* _PDCLIB_restrict mode)
 {
-    if ( streamptr == NULL || filename == NULL || mode == NULL )
+    if (streamptr == NULL || filename == NULL || mode == NULL)
     {
-        if ( streamptr != NULL )
+        if (streamptr != NULL)
         {
             *streamptr = NULL;
         }
 
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
-    if ( ( *streamptr = fopen( filename, mode ) ) == NULL )
+    if ((*streamptr = fopen(filename, mode)) == NULL)
     {
         return *_PDCLIB_errno_func();
     }

@@ -10,12 +10,12 @@
 
 #include <locale.h>
 
-int isxdigit( int c )
+int isxdigit(int c)
 {
-    return ( isdigit( c ) ||
-             ( c >= _PDCLIB_lc_ctype->Xdigits_low && c <= _PDCLIB_lc_ctype->Xdigits_high ) ||
-             ( c >= _PDCLIB_lc_ctype->xdigits_low && c <= _PDCLIB_lc_ctype->xdigits_high )
-           );
+    return (isdigit(c) ||
+        (c >= _PDCLIB_lc_ctype->Xdigits_low && c <= _PDCLIB_lc_ctype->Xdigits_high) ||
+        (c >= _PDCLIB_lc_ctype->xdigits_low && c <= _PDCLIB_lc_ctype->xdigits_high)
+    );
 }
 
 #endif

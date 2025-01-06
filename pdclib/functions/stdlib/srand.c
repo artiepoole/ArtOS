@@ -8,7 +8,7 @@
 
 #ifndef REGTEST
 
-void srand( unsigned int seed )
+void srand(unsigned int seed)
 {
     _PDCLIB_seed = seed;
 }

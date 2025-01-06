@@ -10,20 +10,20 @@
 
 #include <stddef.h>
 
-_PDCLIB_bigint_t * _PDCLIB_bigint2( _PDCLIB_bigint_t * bigint, unsigned n )
+_PDCLIB_bigint_t* _PDCLIB_bigint2(_PDCLIB_bigint_t* bigint, unsigned n)
 {
     size_t i;
 
     /* Check which bigint digit will contain the set bit */
-    bigint->size = ( n / _PDCLIB_BIGINT_DIGIT_BITS ) + 1;
+    bigint->size = (n / _PDCLIB_BIGINT_DIGIT_BITS) + 1;
 
     /* Set that bit */
-    bigint->data[ bigint->size - 1 ] = 1 << ( n - ( bigint->size - 1 ) * _PDCLIB_BIGINT_DIGIT_BITS );
+    bigint->data[bigint->size - 1] = 1 << (n - (bigint->size - 1) * _PDCLIB_BIGINT_DIGIT_BITS);
 
     /* Set all lower digits to zero */
-    for ( i = 0; i < bigint->size - 1; ++i )
+    for (i = 0; i < bigint->size - 1; ++i)
     {
-        bigint->data[ i ] = 0;
+        bigint->data[i] = 0;
     }
 
     return bigint;

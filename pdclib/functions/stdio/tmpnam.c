@@ -12,18 +12,18 @@
 
 #include <string.h>
 
-char * tmpnam( char * s )
+char* tmpnam(char* s)
 {
-    static char filename[ L_tmpnam ];
-    FILE * file = tmpfile();
+    static char filename[L_tmpnam];
+    FILE* file = tmpfile();
 
-    if ( s == NULL )
+    if (s == NULL)
     {
         s = filename;
     }
 
-    strcpy( s, file->filename );
-    fclose( file );
+    strcpy(s, file->filename);
+    fclose(file);
     return s;
 }
 

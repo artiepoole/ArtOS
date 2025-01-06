@@ -14,7 +14,7 @@ _Thread_local int _PDCLIB_errno = 0;
 static int _PDCLIB_errno = 0;
 #endif
 
-int * _PDCLIB_errno_func()
+int* _PDCLIB_errno_func()
 {
     return &_PDCLIB_errno;
 }

@@ -12,7 +12,7 @@
 
 #ifndef REGTEST
 
-extern char ** environ;
+extern char** environ;
 
 /* The standard states (7.22.4.6 (3), "the implementation shall behave
    as if no library function calls the getenv function." That is,
@@ -21,16 +21,16 @@ extern char ** environ;
    modify the environment list".
    PDCLib does not provide means of modifying the environment list.
 */
-char * getenv( const char * name )
+char* getenv(const char* name)
 {
-    size_t len = strlen( name );
+    size_t len = strlen(name);
     size_t index = 0;
 
-    while ( environ[ index ] != NULL )
+    while (environ[index] != NULL)
     {
-        if ( strncmp( environ[ index ], name, len ) == 0 )
+        if (strncmp(environ[index], name, len) == 0)
         {
-            return environ[ index ] + len + 1;
+            return environ[index] + len + 1;
         }
 
         index++;

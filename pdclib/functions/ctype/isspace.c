@@ -10,9 +10,9 @@
 
 #include <locale.h>
 
-int isspace( int c )
+int isspace(int c)
 {
-    return ( _PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_SPACE );
+    return (_PDCLIB_lc_ctype->entry[c].flags & _PDCLIB_CTYPE_SPACE);
 }
 
 #endif

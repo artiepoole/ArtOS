@@ -17,21 +17,21 @@
 extern mtx_t _PDCLIB_filelist_mtx;
 #endif
 
-extern struct _PDCLIB_file_t * _PDCLIB_filelist;
+extern struct _PDCLIB_file_t* _PDCLIB_filelist;
 
-int rename( const char * oldpath, const char * newpath )
+int rename(const char* oldpath, const char* newpath)
 {
-    _PDCLIB_LOCK( _PDCLIB_filelist_mtx );
+    _PDCLIB_LOCK(_PDCLIB_filelist_mtx);
 
     {
-        struct _PDCLIB_file_t * current = _PDCLIB_filelist;
+        struct _PDCLIB_file_t* current = _PDCLIB_filelist;
 
-        while ( current != NULL )
+        while (current != NULL)
         {
-            if ( ( current->filename != NULL ) && ( strcmp( current->filename, oldpath ) == 0 ) )
+            if ((current->filename != NULL) && (strcmp(current->filename, oldpath) == 0))
             {
                 /* File of that name currently open. Do not rename. */
-                _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
+                _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
                 return EOF;
             }
 
@@ -39,8 +39,8 @@ int rename( const char * oldpath, const char * newpath )
         }
     }
 
-    _PDCLIB_UNLOCK( _PDCLIB_filelist_mtx );
-    return _PDCLIB_rename( oldpath, newpath );
+    _PDCLIB_UNLOCK(_PDCLIB_filelist_mtx);
+    return _PDCLIB_rename(oldpath, newpath);
 }
 
 #endif

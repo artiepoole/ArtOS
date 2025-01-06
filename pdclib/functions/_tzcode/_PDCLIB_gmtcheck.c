@@ -13,27 +13,27 @@
 extern mtx_t _PDCLIB_time_mtx;
 #endif
 
-static void gmtload( struct state * sp )
+static void gmtload(struct state* sp)
 {
-    if ( _PDCLIB_tzload( gmt, sp, true ) != 0 )
+    if (_PDCLIB_tzload(gmt, sp, true) != 0)
     {
-        _PDCLIB_tzparse( gmt, sp, true );
+        _PDCLIB_tzparse(gmt, sp, true);
     }
 }
 
-void _PDCLIB_gmtcheck( void )
+void _PDCLIB_gmtcheck(void)
 {
     static bool gmt_is_set;
 
-    _PDCLIB_LOCK( _PDCLIB_time_mtx );
+    _PDCLIB_LOCK(_PDCLIB_time_mtx);
 
-    if ( ! gmt_is_set )
+    if (!gmt_is_set)
     {
-        gmtload( &_PDCLIB_gmtmem );
+        gmtload(&_PDCLIB_gmtmem);
         gmt_is_set = true;
     }
 
-    _PDCLIB_UNLOCK( _PDCLIB_time_mtx );
+    _PDCLIB_UNLOCK(_PDCLIB_time_mtx);
 }
 
 #endif

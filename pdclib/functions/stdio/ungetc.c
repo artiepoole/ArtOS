@@ -12,22 +12,22 @@
 #include <threads.h>
 #endif
 
-int ungetc( int c, struct _PDCLIB_file_t * stream )
+int ungetc(int c, struct _PDCLIB_file_t* stream)
 {
     int rc;
 
-    _PDCLIB_LOCK( stream->mtx );
+    _PDCLIB_LOCK(stream->mtx);
 
-    if ( c == EOF || stream->ungetidx == _PDCLIB_UNGETCBUFSIZE )
+    if (c == EOF || stream->ungetidx == _PDCLIB_UNGETCBUFSIZE)
     {
         rc = -1;
     }
     else
     {
-        rc = stream->ungetbuf[stream->ungetidx++] = ( unsigned char ) c;
+        rc = stream->ungetbuf[stream->ungetidx++] = (unsigned char)c;
     }
 
-    _PDCLIB_UNLOCK( stream->mtx );
+    _PDCLIB_UNLOCK(stream->mtx);
 
     return rc;
 }

@@ -11,19 +11,19 @@
 
 #ifndef REGTEST
 
-errno_t tmpfile_s( FILE * _PDCLIB_restrict * _PDCLIB_restrict streamptr )
+errno_t tmpfile_s(FILE* _PDCLIB_restrict * _PDCLIB_restrict streamptr)
 {
-    if ( streamptr == NULL )
+    if (streamptr == NULL)
     {
-        _PDCLIB_constraint_handler( _PDCLIB_CONSTRAINT_VIOLATION( _PDCLIB_EINVAL ) );
+        _PDCLIB_constraint_handler(_PDCLIB_CONSTRAINT_VIOLATION(_PDCLIB_EINVAL));
         return _PDCLIB_EINVAL;
     }
 
     *streamptr = tmpfile();
 
-    if ( *streamptr == NULL )
+    if (*streamptr == NULL)
     {
-        assert( *_PDCLIB_errno_func() != 0 );
+        assert(*_PDCLIB_errno_func() != 0);
         return *_PDCLIB_errno_func();
     }
 
