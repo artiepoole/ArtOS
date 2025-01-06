@@ -18,30 +18,18 @@ extern "C" {
 #include "Terminal.h"
 #include "EventQueue.h"
 
-Shell* shell_instance = nullptr;
-
-u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
-size_t cmd_buffer_idx = 0;
-char cmd_buffer[cmd_buffer_size];
 
 Shell::Shell()
 {
-    shell_instance = this;
-}
-
-Shell::~Shell()
-{
-    shell_instance = nullptr;
-}
-
-Shell& Shell::get()
-{
-    return *shell_instance;
+    for (char& i : cmd_buffer)
+    {
+        i = 0;
+    }
 }
 
 void Shell::run()
 {
-    LOG("Shell started");
+    Terminal::get().write("Shell started\n");
     while (true)
     {
         if (probe_pending_events())

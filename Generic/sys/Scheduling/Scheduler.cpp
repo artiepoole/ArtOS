@@ -81,6 +81,9 @@ void Scheduler::execf(void (*func)(), const char* name) // if user mode then the
     context.esp = reinterpret_cast<u32>(stack_top);
     context.cs = kernel_cs_offset;
     context.ds = kernel_ds_offset;
+    context.es = kernel_ds_offset;
+    context.fs = kernel_ds_offset;
+    context.gs = kernel_ds_offset;
     context.ss = kernel_ds_offset;
     context.eip = reinterpret_cast<u32>(func);
     context.eflags = default_eflags;
@@ -100,7 +103,7 @@ void Scheduler::switch_process(cpu_registers_t* const r, const size_t new_PID)
         kyield();
     }
     // TODO: is r here editable to replace data on the stack?!
-    convert_current_context(r, current_process_id);
+    if (processes[current_process_id].state != Process::STATE_DEAD) convert_current_context(r, current_process_id);
     current_process_id = new_PID;
     const auto priority = processes[current_process_id].priority;
     start_oneshot(context_switch_period_ms * priority);
@@ -139,9 +142,8 @@ void Scheduler::clean_up_exited_threads()
     {
         if (processes[i].state == Process::STATE_EXITED)
         {
-            auto local = processes[i];
+            aligned_free(processes[i].stack);
             processes[i].reset(); // cleans up event queue.
-            aligned_free(local.stack);
         }
     }
 }

@@ -48,5 +48,8 @@ void Process::start(const size_t parent_id, const cpu_registers_t& new_context, 
 
 Process::~Process()
 {
-    delete eventQueue;
+    if (eventQueue != NULL)
+    {
+        delete eventQueue;
+    }
 }

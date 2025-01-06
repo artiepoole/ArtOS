@@ -22,7 +22,7 @@ void keyboardHandler()
     EventQueue* queue = Scheduler::getCurrentProcessEventQueue();
 
     /* Read from the keyboard's data buffer */
-
+    if (queue == NULL) return;
 
     if (const u32 scancode = inb(KEYB_DATA); scancode & 0x80) // key down event
     {

@@ -10,25 +10,27 @@
 class EventQueue;
 class Terminal;
 
-constexpr size_t cmd_buffer_size = 1024;
+constexpr size_t cmd_buffer_size = 128;
 
 class Shell
 {
 public:
-    explicit Shell();
-    ~Shell();
-    static Shell& get();
-
-    static void run();
+    Shell();
+    void run();
 
 private:
-    static int process_cmd();
+    int process_cmd();
+    u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
+    size_t cmd_buffer_idx = 0;
+    char cmd_buffer[cmd_buffer_size];
 };
 
 
 inline void shell_run()
 {
-    Shell::get().run();
+    // Init and load the shell. Shell draws directly to the terminal by using static methods.
+    Shell shell;
+    shell.run();
 }
 
 

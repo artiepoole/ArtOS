@@ -276,14 +276,13 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
     LOG("LOADED OS. Entering event loop.");
 
-#if !ENABLE_TERMINAL_LOGGING
-    Terminal::write("Loading done.\n");
-#endif
+    // #if !ENABLE_TERMINAL_LOGGING
+    //     Terminal::write("Loading done.\n");
+    // #endif
 
 
-    // Init and load the shell. Shell draws directly to the terminal by using static methods.
-    Shell shell();
     // TODO: the shell should not be singleton!
+    // Stores kernel/scheduler as PID 0. This then starts the kernel shell as PID 1. The shell can then be used to run doom :)
     [[maybe_unused]] auto scheduler = new Scheduler(shell_run, "shell", local_apic, &kernel_events);
 
     while (true);
