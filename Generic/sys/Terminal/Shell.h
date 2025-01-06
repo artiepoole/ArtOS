@@ -5,6 +5,7 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#include "types.h"
 
 class EventQueue;
 class Terminal;
