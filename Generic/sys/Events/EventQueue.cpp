@@ -3,24 +3,23 @@
 //
 
 #include "EventQueue.h"
+
+#include <Scheduler.h>
+
 #include "ports.h"
 #include "key_maps.h"
 #include "logging.h"
-
-
-static EventQueue* instance{nullptr};
-
 
 /* US Keyboard Layout. This is a scancode table
 *  used to layout a standard US keyboard. I have left some
 *  comments in to give you an idea of what key is what, even
 *  though I set it's array index to 0. */
 
-
+size_t DEF_MAX_EVENTS = 32;
 /* Handles the keyboard interrupt */
 void keyboardHandler()
 {
-    auto& queue = EventQueue::getInstance();
+    EventQueue* queue = Scheduler::getCurrentProcessEventQueue();
 
     /* Read from the keyboard's data buffer */
 
@@ -28,41 +27,51 @@ void keyboardHandler()
     if (const u32 scancode = inb(KEYB_DATA); scancode & 0x80) // key down event
     {
         const auto ku = event_t{KEY_UP, event_data_t{scancode - 0x80, 0}};
-        queue.addEvent(ku);
+        queue->addEvent(ku);
         /* You can use this one to see if the user released the
         *  shift, alt, or control keys... */
     }
     else // key release event
     {
         const auto kd = event_t{KEY_DOWN, event_data_t{scancode, 0}};
-        queue.addEvent(kd);
+        queue->addEvent(kd);
     }
 }
 
 EventQueue::EventQueue()
 {
     LOG("Initialising EventQueue");
-    instance = this;
     _unread_counter = 0;
     _write_index = 0;
     _read_index = 0;
-
-    for (auto& i : _event_queue)
+    _event_queue = new event_t[DEF_MAX_EVENTS];
+    if (_event_queue == nullptr) return;
+    for (size_t i = 0; i < DEF_MAX_EVENTS; i++)
     {
-        i = event_t{NULL_EVENT, event_data_t{0, 0}};
+        _event_queue[i] = event_t{NULL_EVENT, event_data_t{0, 0}};
     }
     LOG("EventQueue initialised");
 }
 
 EventQueue::~EventQueue()
 {
-    instance = nullptr;
-    _write_index = 0;
+    delete[] _event_queue;
 }
 
-EventQueue& EventQueue::getInstance()
+EventQueue::EventQueue(const size_t max_items)
 {
-    return *instance;
+    LOG("Initialising EventQueue");
+    _unread_counter = 0;
+    _write_index = 0;
+    _read_index = 0;
+
+    _event_queue = new event_t[max_items];
+    if (_event_queue == nullptr) return;
+    for (size_t i = 0; i < max_items; i++)
+    {
+        _event_queue[i] = event_t{NULL_EVENT, event_data_t{0, 0}};
+    }
+    LOG("EventQueue initialised");
 }
 
 void EventQueue::addEvent(const event_t& event)

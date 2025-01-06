@@ -26,7 +26,6 @@ void write_error([[maybe_unused]] const char* buffer, [[maybe_unused]] unsigned 
     // auto& term = Terminal::get();
     // term.write(buffer, len, COLOR_RED);
 
-
     WRITE(buffer, len);
 }
 
@@ -116,14 +115,14 @@ void pause_exec(const u32 ms)
 
 bool probe_pending_events()
 {
-    return EventQueue::getInstance().pendingEvents();
+    return Scheduler::getCurrentProcessEventQueue()->pendingEvents();
 }
 
 event_t get_next_event()
 {
     // TODO: this should only get events associated with the correct event queue.
     // There should not be a generic system event queue but instead there should be one associated with each processes
-    return EventQueue::getInstance().getEvent();
+    return Scheduler::getCurrentProcessEventQueue()->getEvent();
 }
 
 void draw_screen_region(const u32* frame_buffer)

@@ -15,7 +15,7 @@ constexpr size_t cmd_buffer_size = 1024;
 class Shell
 {
 public:
-    explicit Shell(EventQueue* e);
+    explicit Shell();
     ~Shell();
     static Shell& get();
 

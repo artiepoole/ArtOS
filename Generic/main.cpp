@@ -153,7 +153,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
     Terminal terminal(45 + 5, 3 * frame_info->framebuffer_height / 5 + 5, frame_info->framebuffer_width - 100, 2 * frame_info->framebuffer_height / 5 - 55);
     vga.incrementProgressBarChunk(bar);
-    EventQueue events;
+    EventQueue kernel_events;
     vga.incrementProgressBarChunk(bar);
 
 
@@ -282,11 +282,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
 
     // Init and load the shell. Shell draws directly to the terminal by using static methods.
-    Shell shell(&events);
-    // io_apic->disable_IRQ(2); // PIT moved to pin2 on APIC. 0 is taken for something else
-    // io_apic->disable_IRQ(8); // disable rtc
-    [[maybe_unused]] auto scheduler = new Scheduler(shell_run, "shell", local_apic);
-
+    Shell shell();
+    // TODO: the shell should not be singleton!
+    [[maybe_unused]] auto scheduler = new Scheduler(shell_run, "shell", local_apic, &kernel_events);
 
     while (true);
     WRITE("ERROR: Left main loop.");

@@ -16,7 +16,8 @@ struct Process
 {
     Process();
     void reset();
-    ~Process() = default;
+    void start(size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name);
+    ~Process();
 
     enum State_t
     {
@@ -48,37 +49,7 @@ struct Process
     EventQueue* eventQueue;
 };
 
-inline Process::Process()
-{
-    state = STATE_DEAD;
-    parent_pid = -1;
-    priority = PRIORITY_NORMAL;
-    last_executed = 0;
-    context = cpu_registers_t{};
-    stack = NULL;
-    name[0] = '\0';
-    eventQueue = NULL;
-}
 
-inline void Process::reset()
-{
-    state = STATE_DEAD;
-    parent_pid = -1;
-    priority = PRIORITY_NORMAL;
-    last_executed = 0;
-    context = cpu_registers_t{};
-    stack = NULL;
-    name[0] = '\0';
-    eventQueue = NULL;
-}
-
-
-extern "C" {
-#endif
-
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif //PROCESS_H

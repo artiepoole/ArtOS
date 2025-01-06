@@ -13,12 +13,14 @@
 inline size_t stack_size = 1024 * 1024; // 1MB stack default. Probably not enough.
 constexpr size_t max_processes = 255;
 
+class EventQueue;
+
 #ifdef __cplusplus
 
 class Scheduler
 {
 public:
-    Scheduler(void (*main_func)(), char* name, LocalAPIC* timer);
+    Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQueue* kernel_queue);
     ~Scheduler();
     static Scheduler& get();
     // void start(size_t PID);
@@ -34,7 +36,8 @@ public:
     static void exit(int status);
 
     static void clean_up_exited_threads();
-    // size_t getCurrentProcessID();
+    static size_t getCurrentProcessID();
+    static EventQueue* getCurrentProcessEventQueue();
     static size_t getNextProcessID();
 
     static void start_oneshot(u32 time_ms);

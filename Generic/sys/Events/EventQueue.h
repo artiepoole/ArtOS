@@ -20,14 +20,14 @@ class EventQueue
 public:
     EventQueue();
     ~EventQueue();
-    static EventQueue& getInstance();
+    explicit EventQueue(size_t max_items);
     void addEvent(const event_t& event);
-    bool pendingEvents() const;
+    [[nodiscard]] bool pendingEvents() const;
     event_t getEvent();
 
 private:
     static constexpr size_t max_len = 1024;
-    event_t _event_queue[max_len];
+    event_t* _event_queue;
     size_t _unread_counter;
     size_t _write_index;
     size_t _read_index;

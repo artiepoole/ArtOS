@@ -13,13 +13,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <TSC.h>
-#include <doomgeneric/doomkeys.h>
 
 #include "CPUID.h"
 #include "kernel.h"
 #include "memory.h"
 #include "LinkedList.h"
-#include "PIT.h"
+#include "EventQueue.h"
 
 
 struct sleep_timer_t
@@ -45,7 +44,7 @@ LocalAPIC* lapic_timer = nullptr;
 LinkedList<sleep_timer_t> sleep_timers;
 
 
-Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer)
+Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQueue* kernel_queue)
 {
     // Store current state in process[0]
     // Set up first Lapic one shot
@@ -55,6 +54,7 @@ Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer)
     const auto nm = "scheduler";
     strncpy(processes[0].name, nm, MIN(32, strlen(nm)));
     processes[0].state = Process::STATE_PARKED;
+    processes[0].eventQueue = kernel_queue;
     execution_counter = TSC_get_ticks();
     execf(main_func, name);
 }
@@ -69,22 +69,26 @@ Scheduler& Scheduler::get()
     return *scheduler_instance;
 }
 
-// TODO: THIS IS DUMB! The execf call to this stores the wrong timing.
-// void Scheduler::switch_process(size_t new_PID)
-// {
-//     // This should simply pop the stack and then push to the stack before returning.
-//     if (new_PID == 0)
-//     {
-//         new_PID = 1;
-//         processes[new_PID].state = Process::STATE_READY; // revive shell.
-//     }
-//     current_process_id = new_PID;
-//     const auto priority = processes[current_process_id].priority;
-//     start_oneshot(context_switch_period_ms * priority);
-//     execution_counter = TSC_get_ticks();
-//
-//     set_current_context(new_PID);
-// }
+// Create new process
+void Scheduler::execf(void (*func)(), const char* name) // if user mode then the CS and DS should be different
+{
+    size_t next_process_id = getNextFreeProcessID();
+    if (next_process_id + 1 >= max_processes) return; // TODO: Error
+    void* proc_stack = aligned_malloc(stack_size, stack_alignment);
+    void* stack_top = static_cast<u8*>(proc_stack) + stack_size;
+    LOG("Starting Process: ", name, " PID: ", next_process_id);
+    cpu_registers_t context{};
+    context.esp = reinterpret_cast<u32>(stack_top);
+    context.cs = kernel_cs_offset;
+    context.ds = kernel_ds_offset;
+    context.ss = kernel_ds_offset;
+    context.eip = reinterpret_cast<u32>(func);
+    context.eflags = default_eflags;
+    auto* proc = &processes[next_process_id];
+    proc->start(current_process_id, context, proc_stack, name);
+    processes[current_process_id].state = Process::STATE_PARKED;
+    kyield();
+}
 
 
 void Scheduler::switch_process(cpu_registers_t* const r, const size_t new_PID)
@@ -128,18 +132,6 @@ size_t Scheduler::getMaxAliveProcessID()
 // {
 // }
 
-void Scheduler::exit(int status)
-{
-    LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", status);
-    processes[current_process_id].state = Process::STATE_EXITED;
-    auto parent_id = processes[current_process_id].parent_pid;
-    if (processes[parent_id].state == Process::STATE_PARKED)
-    {
-        processes[parent_id].state = Process::STATE_READY;
-        // no return
-    }
-    kyield();
-}
 
 void Scheduler::clean_up_exited_threads()
 {
@@ -148,10 +140,20 @@ void Scheduler::clean_up_exited_threads()
         if (processes[i].state == Process::STATE_EXITED)
         {
             auto local = processes[i];
-            processes[i].reset();
+            processes[i].reset(); // cleans up event queue.
             aligned_free(local.stack);
         }
     }
+}
+
+size_t Scheduler::getCurrentProcessID()
+{
+    return current_process_id;
+}
+
+EventQueue* Scheduler::getCurrentProcessEventQueue()
+{
+    return processes[current_process_id].eventQueue;
 }
 
 
@@ -231,33 +233,6 @@ void Scheduler::schedule(cpu_registers_t* const r)
     switch_process(r, next_id);
 }
 
-// Create new process
-void Scheduler::execf(void (*func)(), const char* name) // if user mode then the CS and DS should be different
-{
-    size_t next_process_id = getNextFreeProcessID();
-    if (next_process_id + 1 >= max_processes) return; // TODO: Error
-    void* proc_stack = aligned_malloc(stack_size, stack_alignment);
-    void* stack_top = static_cast<u8*>(proc_stack) + stack_size;
-    LOG("Starting Process: ", name, " PID: ", next_process_id);
-    cpu_registers_t context{};
-    context.esp = reinterpret_cast<u32>(stack_top);
-    context.cs = kernel_cs_offset;
-    context.ds = kernel_ds_offset;
-    context.ss = kernel_ds_offset;
-    context.eip = reinterpret_cast<u32>(func);
-    context.eflags = default_eflags;
-    auto* proc = &processes[next_process_id];
-    proc->parent_pid = current_process_id;
-    proc->state = Process::STATE_READY;
-    proc->priority = Process::PRIORITY_NORMAL;
-    proc->last_executed = 0;
-    proc->context = context;
-    proc->stack = proc_stack;
-    strncpy(proc->name, name, MIN(32, strlen(name)));
-    processes[current_process_id].state = Process::STATE_PARKED;
-    kyield();
-}
-
 
 void LAPIC_handler(cpu_registers_t* const r)
 {
@@ -271,4 +246,18 @@ int kyield()
     constexpr u8 irq = LAPIC_IRQ + 32; // Example dynamic value
     __asm__ __volatile__("int %0" :: "i"(irq));
     return 0;
+}
+
+
+void Scheduler::exit(int status)
+{
+    LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", status);
+    processes[current_process_id].state = Process::STATE_EXITED;
+    auto parent_id = processes[current_process_id].parent_pid;
+    if (processes[parent_id].state == Process::STATE_PARKED)
+    {
+        processes[parent_id].state = Process::STATE_READY;
+        // no return
+    }
+    kyield();
 }

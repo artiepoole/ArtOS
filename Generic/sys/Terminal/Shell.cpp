@@ -19,15 +19,13 @@ extern "C" {
 #include "EventQueue.h"
 
 Shell* shell_instance = nullptr;
-EventQueue* events = nullptr;
 
 u8 keyboard_modifiers = 0; // caps, ctrl, alt, shift  -> C ! ^ *
 size_t cmd_buffer_idx = 0;
 char cmd_buffer[cmd_buffer_size];
 
-Shell::Shell(EventQueue* e)
+Shell::Shell()
 {
-    events = e;
     shell_instance = this;
 }
 
@@ -44,12 +42,11 @@ Shell& Shell::get()
 void Shell::run()
 {
     LOG("Shell started");
-    if (shell_instance == nullptr) return;
     while (true)
     {
-        if (events->pendingEvents())
+        if (probe_pending_events())
         {
-            auto [type, data] = events->getEvent();
+            auto [type, data] = get_next_event();
             // LOG("Found event. Type: ", static_cast<int>(type), " lower: ", data.lower_data, " upper: ",data.upper_data);
             switch (type)
             {
