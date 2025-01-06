@@ -1,16 +1,13 @@
-#include <EventQueue.h>
-#include <logging.h>
-#include <ports.h>
+#include "EventQueue.h"
+#include "ports.h"
 
 #include "../doom/doomgeneric/doomkeys.h"
 #include "types.h"
 
+#include "sys/kernel.h"
+
 extern "C" {
 #include "../doom/doomgeneric/doomgeneric.h"
-}
-
-
-#include "sys/kernel.h"
 
 
 u8 doom_key_map[128] =
@@ -54,36 +51,33 @@ u8 doom_key_map[128] =
 };
 
 
-extern "C"
 void DG_Init()
 {
     // Nothing to do here but maybe this should prep the FS if not init.
 }
 
-extern "C"
 void DG_DrawFrame()
 {
     draw_screen_region(DG_ScreenBuffer);
 }
 
-extern "C"
 void DG_SleepMs(const uint32_t ms)
 {
     sleep_ms(ms);
 }
 
-extern "C"
 uint32_t DG_GetTicksMs()
 {
     return get_tick_ms();
 }
 
-extern "C"
 int DG_GetKey(int* pressed, unsigned char* key)
 {
     // should return 0 if no events
     // should update just one keypress if keypress
     // should skip to next event if not keypress
+
+    // TODO: implement syscall for get events.
     auto& queue = EventQueue::getInstance();
     if (!queue.pendingEvents()) return 0; // no events
 
@@ -103,13 +97,11 @@ int DG_GetKey(int* pressed, unsigned char* key)
     return 1;
 }
 
-extern "C"
 void DG_SetWindowTitle(const char*)
 {
     // No window to set title on.
 }
 
-extern "C"
 int run_doom()
 {
     doomgeneric_Create(0, nullptr);
@@ -120,7 +112,6 @@ int run_doom()
     return 0;
 }
 
-extern "C"
 /* I have not implemented generic handling of functions as executable files yet, so I needed to create a different entry point for doom. */
 void run_doom_noret()
 {
@@ -129,4 +120,5 @@ void run_doom_noret()
     while (doomgeneric_Tick());
 
     exit(0); // should be unreachable.
+}
 }
