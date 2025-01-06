@@ -8,6 +8,8 @@
 #include "types.h"
 #include "CPU.h"
 
+class EventQueue;
+
 #ifdef __cplusplus
 //https://en.wikipedia.org/wiki/Task_state_segment
 struct Process
@@ -43,6 +45,7 @@ struct Process
     //    u32 base_vaddr;
     char name[32]; //this can be stored in an equivalent of proc?
     void* stack;
+    EventQueue* eventQueue;
 };
 
 inline Process::Process()
@@ -54,6 +57,7 @@ inline Process::Process()
     context = cpu_registers_t{};
     stack = NULL;
     name[0] = '\0';
+    eventQueue = NULL;
 }
 
 inline void Process::reset()
@@ -65,6 +69,7 @@ inline void Process::reset()
     context = cpu_registers_t{};
     stack = NULL;
     name[0] = '\0';
+    eventQueue = NULL;
 }
 
 

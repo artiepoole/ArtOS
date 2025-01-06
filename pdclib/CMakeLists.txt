@@ -321,7 +321,7 @@ target_include_directories(pdclib PUBLIC
         ../Generic/sys
         ../Generic/sys/Constants
         ../Generic/sys/FileSystem
-        ../Generic/sys/Types
+        ../Generic/sys/ComponentTypes
         ../Generic/sys/Logging
         ../Generic/sys/Memory
         ../Generic/sys/Storage

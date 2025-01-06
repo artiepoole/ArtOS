@@ -5,6 +5,8 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include "event.h"
+
 #include "types.h"
 #include "Terminal.h"
 #include "RTC.h"
@@ -48,7 +50,7 @@ void print_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
     term.newLine();
 }
 
-extern "C"
+extern "C" {
 void _exit(int status);
 
 tm* get_time();
@@ -68,7 +70,10 @@ void sleep_ns(u32 ns);
 void get_clock_ms();
 void pause_exec(const u32 ms);
 
-void draw_screen_region(const u32* frame_buffer);
+bool probe_pending_events();
+event_t get_next_event();
 
+void draw_screen_region(const u32* frame_buffer);
+}
 
 #endif //KERNEL_H

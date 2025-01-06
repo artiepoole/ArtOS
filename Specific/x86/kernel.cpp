@@ -4,6 +4,7 @@
 
 #include "kernel.h"
 
+#include <EventQueue.h>
 #include <Scheduler.h>
 #include "SMBIOS.h"
 
@@ -111,6 +112,18 @@ void sleep_us(const u32 us)
 void pause_exec(const u32 ms)
 {
     Scheduler::sleep_ms(ms);
+}
+
+bool probe_pending_events()
+{
+    return EventQueue::getInstance().pendingEvents();
+}
+
+event_t get_next_event()
+{
+    // TODO: this should only get events associated with the correct event queue.
+    // There should not be a generic system event queue but instead there should be one associated with each processes
+    return EventQueue::getInstance().getEvent();
 }
 
 void draw_screen_region(const u32* frame_buffer)

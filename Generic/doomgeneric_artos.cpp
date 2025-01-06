@@ -1,4 +1,3 @@
-#include "EventQueue.h"
 #include "ports.h"
 
 #include "../doom/doomgeneric/doomkeys.h"
@@ -78,11 +77,9 @@ int DG_GetKey(int* pressed, unsigned char* key)
     // should skip to next event if not keypress
 
     // TODO: implement syscall for get events.
-    auto& queue = EventQueue::getInstance();
-    if (!queue.pendingEvents()) return 0; // no events
+    if (!probe_pending_events()) return 0; // no events
 
-
-    switch (const auto latest = queue.getEvent(); latest.type)
+    switch (const auto latest = get_next_event(); latest.type)
     {
     case KEY_DOWN:
         *pressed = 1;

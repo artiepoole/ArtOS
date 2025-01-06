@@ -47,13 +47,13 @@ target_include_directories(
         Generic/sys/DataTypes
         Generic/sys/Events
         Generic/sys/FileSystem
-        Generic/sys/Types
+        Generic/sys/ComponentTypes
         Generic/sys/Logging
         Generic/sys/Memory
         Generic/sys/Storage
         Generic/sys/Terminal
         Generic/sys/Scheduling
-        )
+)
 
 
 target_include_directories(
