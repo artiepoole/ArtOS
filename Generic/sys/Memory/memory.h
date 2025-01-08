@@ -38,9 +38,6 @@ union page_table_entry_t
 struct multiboot2_tag_mmap; // forward dec - multiboot2.h
 extern unsigned char* kernel_brk; // TODO: needed by paging.cpp. Better practice?
 
-// implemented in
-void* sbrk(long increment);
-
 // implemented in Specific/<arc>/memory/<paging or similar>.cpp
 void mmap_init(struct multiboot2_tag_mmap* mmap);
 
