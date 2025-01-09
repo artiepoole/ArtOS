@@ -224,6 +224,11 @@ void div_0()
     );
 }
 
+void user_test()
+{
+    LOG("User space should not work.");
+}
+
 int Shell::process_cmd()
 {
     // TODO: implement actual command lookup of executables.
@@ -235,10 +240,17 @@ int Shell::process_cmd()
         Terminal::resume_drawing();
         Terminal::refresh();
     }
-    else if (strncasecmp(cmd_buffer, "div0", 4) == 0)
+    else if (strncasecmp(cmd_buffer, "div0", 5) == 0)
     {
         Terminal::stop_drawing();
         Scheduler::execf(div_0, "div0");
+        Terminal::resume_drawing();
+        Terminal::refresh();
+    }
+    else if (strncasecmp(cmd_buffer, "test", 5) == 0)
+    {
+        Terminal::stop_drawing();
+        Scheduler::execf(user_test, "test", true);
         Terminal::resume_drawing();
         Terminal::refresh();
     }
@@ -250,5 +262,3 @@ int Shell::process_cmd()
     }
     return 0;
 }
-
-

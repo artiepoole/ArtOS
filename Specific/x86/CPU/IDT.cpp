@@ -40,6 +40,7 @@ static bool idt_vectors[IDT_STUB_COUNT];
 static idt_ptr_t idt_pointer;
 static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
 
+bool already_killing = false;
 
 inline constexpr char exception_messages[][40] =
 {
@@ -146,7 +147,11 @@ extern "C"
 void exception_handler(cpu_registers_t* const r)
 {
     log_registers(r);
-
+    if (already_killing)
+    {
+        WRITE("Recursive error. System Halted!");
+        while (true);
+    }
     WRITE("Exception: ");
 
 
@@ -167,7 +172,9 @@ void exception_handler(cpu_registers_t* const r)
         case 14:
         case 17:
             WRITE("Attempting to kill process.\n");
+            already_killing = true;
             Scheduler::kill(r);
+            already_killing = false;
             break;
         default:
             WRITE("Unhandled exception. System Halted!");

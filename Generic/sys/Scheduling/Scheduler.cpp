@@ -343,7 +343,8 @@ void Scheduler::kill(cpu_registers_t* const r)
     {
         processes[parent_id].state = Process::STATE_READY;
     }
-    switch_process(r, getNextProcessID());
+    // switch_process(r, getNextProcessID());
+    kyield();
 }
 
 void Scheduler::create_idle_task()
