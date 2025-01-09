@@ -9,6 +9,7 @@ ENABLE_LANGUAGE(ASM)
 
 set(KERNEL_BIN "ArtOS.bin")
 set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
+set(KERNEL_LIB "kernel_lib")
 
 
 ### Find all source files
@@ -37,9 +38,10 @@ file(GLOB_RECURSE Generic
 add_subdirectory(pdclib)
 add_subdirectory(doom)
 add_subdirectory(ArtOSTypes)
+add_subdirectory(helloworld)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
-
+add_library(${KERNEL_LIB} Specific/kernel.cpp)
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
         Generic/
@@ -95,14 +97,18 @@ target_compile_definitions(${KERNEL_BIN}
 )
 
 target_link_libraries(${KERNEL_BIN} pdclib doom ArtOSTypes)
-
+target_include_directories(${KERNEL_LIB} PRIVATE
+        Generic/sys
+        Generic/sys/ComponentTypes/
+        ArtOSTypes/
+)
 
 ### Generating the ISO file
 add_custom_target(${KERNEL_ISO}
         COMMAND ../cmake-iso.sh
         COMMENT "Generating the kernel bootable iso file"
         BYPRODUCTS ${KERNEL_ISO})
-add_dependencies(ArtOS.iso ArtOS.bin)
+add_dependencies(ArtOS.iso ArtOS.bin hello.elf)
 add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/

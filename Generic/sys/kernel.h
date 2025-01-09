@@ -4,12 +4,30 @@
 
 #ifndef KERNEL_H
 #define KERNEL_H
+
+
 #include "types.h"
-#include "time.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+enum class SYSCALL_t
+{
+    WRITE,
+    READ,
+    OPEN,
+    CLOSE,
+    EXIT,
+    SLEEP_MS,
+    GET_TICK_MS,
+    PROBE_EVENTS,
+    GET_EVENT,
+    DRAW_REGION,
+    GET_TIME,
+    GET_EPOCH
+};
 
 typedef struct tm tm;
 typedef struct event_t event_t;
@@ -24,7 +42,7 @@ void _exit(int status);
 void sleep_ms(u32 ms);
 uint32_t get_tick_ms();
 int get_time(tm* dest);
-time_t get_epoch_time();
+long get_epoch_time();
 
 // events
 bool probe_pending_events();

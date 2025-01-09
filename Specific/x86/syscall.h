@@ -11,21 +11,6 @@
 #include "Terminal.h"
 #include "RTC.h"
 
-enum class SYSCALL_t
-{
-    WRITE,
-    READ,
-    OPEN,
-    CLOSE,
-    EXIT,
-    SLEEP_MS,
-    GET_TICK_MS,
-    PROBE_EVENTS,
-    GET_EVENT,
-    DRAW_REGION,
-    GET_TIME,
-    GET_EPOCH
-};
 
 void kwrite_standard(const char* buffer, unsigned long len);
 

@@ -3,9 +3,6 @@
 //
 
 #include "kernel.h"
-
-#include "syscall.h"
-
 #include "event.h"
 
 
@@ -123,9 +120,9 @@ int get_time(tm* dest)
     return result;
 }
 
-time_t get_epoch_time()
+long get_epoch_time()
 {
-    time_t result;
+    long result;
     asm volatile(
         "int $50" // Trigger software interrupt
         : "=a"(result)

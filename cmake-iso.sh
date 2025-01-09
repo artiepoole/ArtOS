@@ -2,6 +2,7 @@
 
 GRUB_SRC="../grub.cfg"
 DOOMWAD_SRC="../external_resources/doomwad/doom1.wad"
+HELLO_SRC="helloworld/hello.elf"
 
 if grub-file --is-x86-multiboot2 ArtOS.bin; then
   if test -f $GRUB_SRC; then
@@ -11,6 +12,7 @@ if grub-file --is-x86-multiboot2 ArtOS.bin; then
     cp ArtOS.bin isodir/boot/ArtOS.bin
     cp $GRUB_SRC isodir/boot/grub/grub.cfg
     cp $DOOMWAD_SRC isodir/fs/doom1.wad
+    cp $HELLO_SRC isodir/fs/hello.elf
     grub-mkrescue -o ArtOS.iso isodir
 #    rm -rf isodir
   else
