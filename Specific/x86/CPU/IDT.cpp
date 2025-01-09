@@ -35,6 +35,8 @@ struct idt_ptr_t
     u32 base;
 } __attribute__((packed));
 
+// TODO: I want to make IDT stuff re-mappable etc because this way of hard coding everything is disgusting and hard to fix.
+//  I can simply write the stubs in C++ instead of ASM as inline anyway so why am I not?
 
 extern void* isr_stub_table[];
 static bool idt_vectors[IDT_STUB_COUNT];
@@ -277,7 +279,12 @@ IDT::IDT()
 
     for (u8 idt_index = 0; idt_index < IDT_STUB_COUNT; idt_index++)
     {
-        _setDescriptor(idt_index, 0x8E);
+        if (idt_index != SYSCALL_ID)
+        {
+            _setDescriptor(idt_index, 0x8E);
+        }
+        else _setDescriptor(idt_index, 0xEE); // CPL3 accessible.
+
         idt_vectors[idt_index] = true;
     }
 
