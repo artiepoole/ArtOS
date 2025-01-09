@@ -231,14 +231,14 @@ int Shell::process_cmd()
     if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
     {
         Terminal::stop_drawing();
-        Scheduler::execf(run_doom_noret, "doom", false);
+        Scheduler::execf(run_doom_noret, "doom");
         Terminal::resume_drawing();
         Terminal::refresh();
     }
     else if (strncasecmp(cmd_buffer, "div0", 4) == 0)
     {
         Terminal::stop_drawing();
-        Scheduler::execf(div_0, "div0", false);
+        Scheduler::execf(div_0, "div0");
         Terminal::resume_drawing();
         Terminal::refresh();
     }

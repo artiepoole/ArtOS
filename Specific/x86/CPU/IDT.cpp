@@ -110,6 +110,10 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(r->ebx, true);
     WRITE(", ");
     WRITE(r->edx, true);
+    WRITE(", ");
+    WRITE(r->ecx, true);
+    WRITE(", ");
+    WRITE(r->eax, true);
 
     NEWLINE();
 
@@ -151,7 +155,7 @@ void exception_handler(cpu_registers_t* const r)
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
-        (exception_messages[r->int_no]);
+        WRITE(exception_messages[r->int_no]);
         NEWLINE();
         switch (r->int_no)
         {
@@ -162,9 +166,9 @@ void exception_handler(cpu_registers_t* const r)
         case 13:
         case 14:
         case 17:
-            WRITE("Attempting to kill process.\n");
-            Scheduler::kill(r);
-            break;
+            // WRITE("Attempting to kill process.\n");
+            // Scheduler::kill(r);
+            // break;
         default:
             WRITE("Unhandled exception. System Halted!");
             while (true);

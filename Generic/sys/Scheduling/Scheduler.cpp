@@ -43,12 +43,16 @@ LocalAPIC* lapic_timer = nullptr;
 
 LinkedList<sleep_timer_t> sleep_timers;
 
+void idle_task()
+{
+    LOG("Starting idle task");
+}
 
 Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQueue* kernel_queue)
 {
     // Store current state in process[0]
     // Set up first Lapic one shot
-
+    disable_interrupts();
     scheduler_instance = this;
     lapic_timer = timer;
     const auto nm = "scheduler";
@@ -56,6 +60,7 @@ Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQue
     processes[0].state = Process::STATE_PARKED;
     processes[0].eventQueue = kernel_queue;
     execution_counter = TSC_get_ticks();
+    create_idle_task();
     execf(main_func, name);
 }
 
@@ -72,6 +77,7 @@ Scheduler& Scheduler::get()
 // Create new process
 void Scheduler::execf(void (*func)(), const char* name) // if user mode then the CS and DS should be different
 {
+    disable_interrupts();
     size_t next_process_id = getNextFreeProcessID();
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
     void* proc_stack = aligned_malloc(stack_size, stack_alignment);
@@ -90,6 +96,7 @@ void Scheduler::execf(void (*func)(), const char* name) // if user mode then the
     auto* proc = &processes[next_process_id];
     proc->start(current_process_id, context, proc_stack, name);
     processes[current_process_id].state = Process::STATE_PARKED;
+    enable_interrupts();
     kyield();
 }
 
@@ -144,6 +151,10 @@ void Scheduler::clean_up_exited_threads()
         {
             aligned_free(processes[i].stack);
             processes[i].reset(); // cleans up event queue.
+            if (i == highest_assigned_pid)
+            {
+                highest_assigned_pid = getMaxAliveProcessID();
+            }
         }
     }
 }
@@ -262,4 +273,33 @@ void Scheduler::exit(int status)
         // no return
     }
     kyield();
+}
+
+void Scheduler::create_idle_task()
+{
+    const size_t next_process_id = getNextFreeProcessID();
+    if (next_process_id + 1 >= max_processes) return; // TODO: Error
+
+    auto* proc = &processes[next_process_id];
+    cpu_registers_t context{};
+
+    context.cs = kernel_cs_offset;
+    context.ds = kernel_ds_offset;
+    context.es = kernel_ds_offset;
+    context.fs = kernel_ds_offset;
+    context.gs = kernel_ds_offset;
+    context.ss = kernel_ds_offset;
+
+    context.eip = reinterpret_cast<u32>(&idle_task);
+    context.eflags = default_eflags;
+
+    proc->state = Process::STATE_PARKED;
+    proc->parent_pid = 0;
+    proc->stack = NULL;
+    proc->last_executed = 0;
+    proc->priority = Process::PRIORITY_LOW;
+    const auto nm = "idle_task";
+    strncpy(proc->name, nm, MIN(32, strlen(nm)));
+    proc->context = context;
+    proc->eventQueue = new EventQueue();
 }

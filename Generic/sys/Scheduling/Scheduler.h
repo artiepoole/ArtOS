@@ -34,6 +34,7 @@ public:
 
     // static void fork();
     static void exit(int status);
+    static void create_idle_task();
 
     static void clean_up_exited_threads();
     static size_t getCurrentProcessID();
