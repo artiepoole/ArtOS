@@ -166,9 +166,9 @@ void exception_handler(cpu_registers_t* const r)
         case 13:
         case 14:
         case 17:
-            // WRITE("Attempting to kill process.\n");
-            // Scheduler::kill(r);
-            // break;
+            WRITE("Attempting to kill process.\n");
+            Scheduler::kill(r);
+            break;
         default:
             WRITE("Unhandled exception. System Halted!");
             while (true);

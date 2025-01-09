@@ -43,10 +43,15 @@ LocalAPIC* lapic_timer = nullptr;
 
 LinkedList<sleep_timer_t> sleep_timers;
 
+
+extern u8 kernel_stack_top;
+extern u8 kernel_stack_bottom;
+
 void idle_task()
 {
     LOG("Starting idle task");
 }
+
 
 Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQueue* kernel_queue)
 {
@@ -59,9 +64,10 @@ Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQue
     strncpy(processes[0].name, nm, MIN(32, strlen(nm)));
     processes[0].state = Process::STATE_PARKED;
     processes[0].eventQueue = kernel_queue;
+    processes[0].stack = &kernel_stack_top;
     execution_counter = TSC_get_ticks();
     create_idle_task();
-    execf(main_func, name);
+    execf(main_func, name, false);
 }
 
 Scheduler::~Scheduler()
@@ -74,40 +80,68 @@ Scheduler& Scheduler::get()
     return *scheduler_instance;
 }
 
-// Create new process
-void Scheduler::execf(void (*func)(), const char* name) // if user mode then the CS and DS should be different
+// Create new process. This can only be user mode if the code and data for the function are contained in user-accessible pages
+void Scheduler::execf(void (*func)(), const char* name, const bool user)
 {
     disable_interrupts();
     size_t next_process_id = getNextFreeProcessID();
+    const size_t parent_process_id = current_process_id;
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
-    void* proc_stack = aligned_malloc(stack_size, stack_alignment);
-    void* stack_top = static_cast<u8*>(proc_stack) + stack_size;
-    LOG("Starting Process: ", name, " PID: ", next_process_id);
+
+    auto* proc = &processes[next_process_id];
     cpu_registers_t context{};
+    proc->user = user;
+    void* proc_stack;
+    void* stack_top;
+    if (user)
+    {
+        proc_stack = kaligned_malloc(stack_size, stack_alignment, next_process_id); // TODO: this malloc call is not correctly detecting user vs kernel space because currentprocID is used in malloc.
+        stack_top = static_cast<u8*>(proc_stack) + stack_size;
+    }
+    else
+    {
+        proc_stack = &kernel_stack_bottom;
+        stack_top = &kernel_stack_top;
+    }
+    LOG("Starting Process: ", name, " PID: ", next_process_id);
     context.esp = reinterpret_cast<u32>(stack_top);
-    context.cs = kernel_cs_offset;
-    context.ds = kernel_ds_offset;
-    context.es = kernel_ds_offset;
-    context.fs = kernel_ds_offset;
-    context.gs = kernel_ds_offset;
-    context.ss = kernel_ds_offset;
+
+    if (user)
+    {
+        context.cs = user_cs_offset | RPL_USER;
+        context.ds = user_ds_offset | RPL_USER;
+        context.es = user_ds_offset | RPL_USER;
+        context.fs = user_ds_offset | RPL_USER;
+        context.gs = user_ds_offset | RPL_USER;
+        context.ss = user_ds_offset | RPL_USER;
+    }
+    else
+    {
+        context.cs = kernel_cs_offset;
+        context.ds = kernel_ds_offset;
+        context.es = kernel_ds_offset;
+        context.fs = kernel_ds_offset;
+        context.gs = kernel_ds_offset;
+        context.ss = kernel_ds_offset;
+    }
     context.eip = reinterpret_cast<u32>(func);
     context.eflags = default_eflags;
-    auto* proc = &processes[next_process_id];
-    proc->start(current_process_id, context, proc_stack, name);
-    processes[current_process_id].state = Process::STATE_PARKED;
+
+
+    proc->start(parent_process_id, context, proc_stack, name, user);
+
+    processes[parent_process_id].state = Process::STATE_PARKED;
     enable_interrupts();
     kyield();
 }
 
 
-void Scheduler::switch_process(cpu_registers_t* const r, const size_t new_PID)
+void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
 {
     // This should just pop the stack and push to it to replace next process. If process is 0 idk what to do.
     if (new_PID == 0)
     {
-        start_oneshot(context_switch_period_ms);
-        kyield();
+        new_PID = 1;
     }
     // TODO: is r here editable to replace data on the stack?!
     if (processes[current_process_id].state != Process::STATE_DEAD) convert_current_context(r, current_process_id);
@@ -127,6 +161,7 @@ size_t Scheduler::getNextFreeProcessID()
     return ret_id;
 }
 
+// Returns the id of the process which is parked or alive which has the highest id.
 size_t Scheduler::getMaxAliveProcessID()
 {
     size_t ret_id = 0;
@@ -169,6 +204,15 @@ EventQueue* Scheduler::getCurrentProcessEventQueue()
     return processes[current_process_id].eventQueue;
 }
 
+bool Scheduler::isCurrentProcessUser()
+{
+    return processes[current_process_id].user;
+}
+
+bool Scheduler::isProcessUser(size_t PID)
+{
+    return processes[PID].user;
+}
 
 // files.find_if([filename](ArtFile f) { return strcmp(f.get_name(), filename) == 0; });
 // iterate([device](ArtDirectory* dir) { device->populate_directory_recursive(dir); });
@@ -211,7 +255,7 @@ size_t Scheduler::getNextProcessID()
 {
     clean_up_exited_threads();
     handle_expired_timers();
-    size_t next = get_oldest_process();
+    const size_t next = get_oldest_process(); // dec and return split here for debugging purposes.
     return next;
 }
 
@@ -220,7 +264,7 @@ void Scheduler::start_oneshot(u32 time_ms)
     lapic_timer->start_timer(time_ms);
 }
 
-
+//TODO: refactor. this no longer converts
 void Scheduler::convert_current_context(cpu_registers_t* r, const size_t PID)
 {
     memcpy(&processes[PID].context, r, sizeof(cpu_registers_t));
@@ -229,6 +273,15 @@ void Scheduler::convert_current_context(cpu_registers_t* r, const size_t PID)
 void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
 {
     memcpy(r, &processes[PID].context, sizeof(cpu_registers_t));
+
+    // TODO: This contained logic here may be incorrect.
+    // When going from CPL3 to CPL3, I am not sure that overwriting user_esp is correct.
+    // It could be better to only memcpy 8 fewer bytes to preserve useresp and ss?
+    // we only really need to store the new EIP value or the new cs, eflags, user_esp and new ss for a user mode switch.
+    if (r->cs & RPL_USER) // If returning to CPL!=0 then user_esp must be set.
+    {
+        r->user_esp = r->esp;
+    }
 }
 
 void Scheduler::sleep_ms(const u32 ms)
@@ -275,6 +328,24 @@ void Scheduler::exit(int status)
     kyield();
 }
 
+// triggered by interrupt
+void Scheduler::kill(cpu_registers_t* const r)
+{
+    WRITE("Killing ");
+    WRITE(processes[current_process_id].name);
+    WRITE(" PID: ");
+    WRITE(current_process_id);
+    WRITE(" due to fault_id: ");
+    WRITE((u32)(r->int_no));
+    processes[current_process_id].state = Process::STATE_EXITED;
+    auto parent_id = processes[current_process_id].parent_pid;
+    if (processes[parent_id].state == Process::STATE_PARKED)
+    {
+        processes[parent_id].state = Process::STATE_READY;
+    }
+    switch_process(r, getNextProcessID());
+}
+
 void Scheduler::create_idle_task()
 {
     const size_t next_process_id = getNextFreeProcessID();
@@ -295,6 +366,7 @@ void Scheduler::create_idle_task()
 
     proc->state = Process::STATE_PARKED;
     proc->parent_pid = 0;
+    proc->user = false;
     proc->stack = NULL;
     proc->last_executed = 0;
     proc->priority = Process::PRIORITY_LOW;
@@ -303,3 +375,5 @@ void Scheduler::create_idle_task()
     proc->context = context;
     proc->eventQueue = new EventQueue();
 }
+
+

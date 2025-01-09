@@ -18,6 +18,7 @@ Process::Process()
     stack = NULL;
     name[0] = '\0';
     eventQueue = NULL;
+    user = false;
 }
 
 void Process::reset()
@@ -29,21 +30,33 @@ void Process::reset()
     context = cpu_registers_t{};
     stack = NULL;
     name[0] = '\0';
-    delete eventQueue;
-    eventQueue = NULL;
+    if (eventQueue != NULL)
+    {
+        delete eventQueue;
+        eventQueue = NULL;
+    }
+    user = false;
 }
 
 
-void Process::start(const size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name)
+void Process::start(const size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name, const bool is_user)
 {
     parent_pid = parent_id;
     state = STATE_READY;
     priority = PRIORITY_NORMAL;
     last_executed = 0;
     context = new_context;
-    stack = new_stack;
+    if (is_user)
+    {
+        stack = new_stack;
+    }
+    else
+    {
+        stack = NULL;
+    }
     eventQueue = new EventQueue();
     strncpy(name, new_name, MIN(32, strlen(name)));
+    user = is_user;
 }
 
 Process::~Process()

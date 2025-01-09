@@ -30,15 +30,18 @@ public:
     static size_t getNextFreeProcessID();
     static size_t getMaxAliveProcessID();
     // Only takes void foo() types atm. No support for input variables
-    static void execf(void (*func)(), const char* name);
+    static void execf(void (*func)(), const char* name, bool user = false);
 
     // static void fork();
     static void exit(int status);
+    static void kill(cpu_registers_t* r);
     static void create_idle_task();
 
     static void clean_up_exited_threads();
     static size_t getCurrentProcessID();
     static EventQueue* getCurrentProcessEventQueue();
+    static bool isCurrentProcessUser();
+    static bool isProcessUser(size_t PID);
     static size_t getNextProcessID();
 
     static void start_oneshot(u32 time_ms);

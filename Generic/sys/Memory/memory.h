@@ -46,12 +46,16 @@ int munmap(void* addr, size_t length);
 
 void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);
 uintptr_t paging_get_phys_addr(uintptr_t vaddr);
+void paging_set_target_pid(size_t pid);
 
 
 void* aligned_malloc(size_t size, size_t alignment);
 
 void aligned_free(void* ptr);
 
+void* kaligned_malloc(size_t size, size_t alignment, size_t target_process_id);
+
+void kaligned_free(void* ptr);
 
 #ifdef __cplusplus
 page_table_entry_t paging_check_contents(uintptr_t vaddr);

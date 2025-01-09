@@ -2,6 +2,8 @@
 // Created by artypoole on 18/11/24.
 //
 
+#include <Scheduler.h>
+
 #include "errno.h"
 
 #include "memory.h"
@@ -61,6 +63,7 @@ uintptr_t main_region_end;
 size_t last_physical_idx;
 page_directory_4kb_t paging_directory[page_table_size]__attribute__((aligned(page_alignment)));
 page_table paging_tables[page_table_size]__attribute__((aligned(page_alignment)));
+uintptr_t user_base_address = 256 * 1024 * 1024; // 256MB of kernel space?
 
 // bitmaps used to keep track of the next virtual and physical pages available.
 // These are the same during identity mapping, but diverge when user space programs make malloc calls
@@ -72,9 +75,10 @@ u64 paging_virt_bitmap_array[n_DBs];
 
 DenseBooleanArray<u64> page_available_physical_bitmap;
 DenseBooleanArray<u64> page_available_virtual_bitmap;
-//
-// bool page_available_physical_bitmap[max_n_pages] = {false};
-// bool page_available_virtual_bitmap[max_n_pages] = {false};
+
+// TODO: replace target_pid workaround with proper file_descriptor handling in malloc.
+size_t target_pid = -1; // for use with kmalloc only. Allows scheduler to allocate userspace memory.
+
 
 // TODO: helper functions like converters between addresses and page numbers?
 
@@ -244,6 +248,23 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
     // mmap should return a contiguous chunk of virtual memory, so some checks should be done first.
     // if (addr < main_region_start) addr = main_region_start;
 
+
+    bool is_user = false;
+    if (target_pid != -1)
+    {
+        is_user = Scheduler::isProcessUser(target_pid);
+        target_pid = -1;
+    }
+    else
+    {
+        is_user = Scheduler::isCurrentProcessUser();
+    }
+
+    if (is_user)
+    {
+        addr = MAX(addr, user_base_address); // start trying to allocate at user base address for user applications.
+    }
+
     const size_t first_page = addr >> base_address_shift;
     const size_t num_pages = (length + page_alignment - 1) >> base_address_shift;
 
@@ -254,7 +275,7 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
         if (!paging_directory[working_addr.page_directory_index].present)
         {
             // TODO: handle flag ints as bools here
-            assign_page_directory_entry(working_addr.page_directory_index, true, false);
+            assign_page_directory_entry(working_addr.page_directory_index, true, is_user);
         }
 
 
@@ -264,7 +285,7 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
                 phys_addr,
                 working_addr,
                 true,
-                false
+                is_user
             );
         }
         else
@@ -307,6 +328,12 @@ page_table_entry_t paging_check_contents(uintptr_t vaddr)
         return entry;
     }
     return page_table_entry_t{};
+}
+
+
+void paging_set_target_pid(size_t pid)
+{
+    target_pid = pid;
 }
 
 // uintptr_t paging_check_contents(void* vaddr)

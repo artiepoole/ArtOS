@@ -16,7 +16,7 @@ struct Process
 {
     Process();
     void reset();
-    void start(size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name);
+    void start(size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name, bool is_user);
     ~Process();
 
     enum State_t
@@ -47,6 +47,7 @@ struct Process
     char name[32]; //this can be stored in an equivalent of proc?
     void* stack;
     EventQueue* eventQueue;
+    bool user;
 };
 
 
