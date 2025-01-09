@@ -45,6 +45,7 @@ EventQueue::EventQueue()
     _write_index = 0;
     _read_index = 0;
     _event_queue = new event_t[DEF_MAX_EVENTS];
+    max_len = DEF_MAX_EVENTS;
     if (_event_queue == nullptr) return;
     for (size_t i = 0; i < DEF_MAX_EVENTS; i++)
     {
@@ -66,6 +67,7 @@ EventQueue::EventQueue(const size_t max_items)
     _read_index = 0;
 
     _event_queue = new event_t[max_items];
+    max_len = max_items;
     if (_event_queue == nullptr) return;
     for (size_t i = 0; i < max_items; i++)
     {

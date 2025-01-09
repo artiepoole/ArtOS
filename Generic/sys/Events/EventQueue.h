@@ -26,7 +26,7 @@ public:
     event_t getEvent();
 
 private:
-    static constexpr size_t max_len = 1024;
+    size_t max_len = 0;
     event_t* _event_queue;
     size_t _unread_counter;
     size_t _write_index;
