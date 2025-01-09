@@ -8,6 +8,7 @@ project(ArtOS)
 ENABLE_LANGUAGE(ASM)
 
 set(KERNEL_BIN "ArtOS.bin")
+set(KERNEL_LIB "ArtOS.lib")
 set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
 
 ### Find all source files
@@ -37,7 +38,7 @@ add_subdirectory(doom)
 add_subdirectory(ArtOSTypes)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
-
+add_library(${KERNEL_LIB} STATIC Specific/x86/kernel.cpp)
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
         Generic/
@@ -76,6 +77,7 @@ target_include_directories(
         Specific/x86/Timers
 )
 
+
 set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
 add_custom_command(
@@ -93,6 +95,7 @@ target_compile_definitions(${KERNEL_BIN}
 )
 
 target_link_libraries(${KERNEL_BIN} pdclib doom ArtOSTypes)
+target_link_libraries(${KERNEL_LIB})
 
 
 ### Generating the ISO file
