@@ -5,7 +5,7 @@
 .extern exception_handler
 .extern irq_handler
 
-#define KERNEL_DS 0x18
+#define KERNEL_DS 0x10
 
 .macro isr_err_stub_ i
     isr_stub_\i:
@@ -158,6 +158,7 @@ irq_stub 46 // IRQ14
 irq_stub 47 // IRQ15
 irq_stub 48 // LAPIC
 irq_stub 49 // LAPIC_Calibrate
+irq_stub 50 // syscall interrupts
 irq_stub 240 // IRQ16 - spurious
 
 .section	.data
@@ -213,4 +214,5 @@ isr_stub_table:
     .long isr_stub_47
     .long isr_stub_48
     .long isr_stub_49
+    .long isr_stub_50
     .long isr_stub_240

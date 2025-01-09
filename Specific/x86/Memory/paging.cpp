@@ -2,17 +2,16 @@
 // Created by artypoole on 18/11/24.
 //
 
-#include <Scheduler.h>
-
+#include "memory.h"
 #include "errno.h"
 
-#include "memory.h"
 #include "multiboot2.h"
 #include "logging.h"
 #include "string.h"
 #include "cmp_int.h"
-#include "DenseBoolean.h"
 #include "DenseBooleanArray.h"
+#include "Scheduler.h"
+
 
 constexpr size_t base_address_shift = 12;
 constexpr size_t page_alignment = 4096;

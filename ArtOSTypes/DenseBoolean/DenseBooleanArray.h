@@ -4,7 +4,8 @@
 
 #ifndef DENSEBOOLEANARRAY_H
 #define DENSEBOOLEANARRAY_H
-// #include "DenseBoolean.h"
+
+#include "CPPMemory.h"
 
 inline size_t DBA_ERR_IDX = -1;
 

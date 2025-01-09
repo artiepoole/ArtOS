@@ -55,7 +55,7 @@ void Process::start(const size_t parent_id, const cpu_registers_t& new_context, 
         stack = NULL;
     }
     eventQueue = new EventQueue();
-    strncpy(name, new_name, MIN(32, strlen(name)));
+    strncpy(name, new_name, MIN(32, strlen(new_name)));
     user = is_user;
 }
 

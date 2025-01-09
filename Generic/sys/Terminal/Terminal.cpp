@@ -423,7 +423,9 @@ void Terminal::resume_drawing()
 
 void Terminal::time_stamp()
 {
-    write(asctime(RTC::get().getTime()));
+    tm time{};
+    RTC::get().getTime(&time);
+    write(asctime(&time));
 }
 
 // used to add and remove cursor

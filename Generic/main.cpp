@@ -2,21 +2,18 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-
+#include "CPPMemory.h"
 #include "Serial.h"
 #include "types.h"
-#include "multiboot_header.h"
 #include "VideoGraphicsArray.h"
 #include "IDT.h"
 #include "PIC.h"
 #include "Terminal.h"
-// #include "stdlib.h"
-// #include "malloc.c"
+#include "syscall.h"
 
 #include "SIMD.h"
 
-#include "CPPMemory.h"
+
 #include "icxxabi.h"
 
 #include "LocalAPIC.h"
@@ -36,7 +33,6 @@
 #include "ATA.h"
 #include "BusMasterController.h"
 #include "CPUID.h"
-#include "kernel.h"
 #include "logging.h"
 #include "memory.h"
 #include "Scheduler.h"
@@ -44,6 +40,7 @@
 #include "GDT.h"
 #include "Terminal.h"
 #include "Serial.h"
+#include "CPPMemory.h"
 
 #if FORLAPTOP
 #include "CPUID.h"
@@ -271,7 +268,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
 
 
-    sleep_s(1);
+    ksleep_s(1);
     // vga.draw();
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
     LOG("LOADED OS. Entering event loop.");

@@ -142,7 +142,9 @@ void Serial::_write_buffer(const char* data, const size_t size)
 
 void Serial::time_stamp()
 {
-    write(asctime(RTC::get().getTime()));
+    tm time{};
+    RTC::get().getTime(&time);
+    write(asctime(&time));
 }
 
 u32 Serial::com_read(char* dest, const u32 count)

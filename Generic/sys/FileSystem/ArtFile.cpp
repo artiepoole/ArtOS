@@ -25,7 +25,7 @@ ArtFile::ArtFile(StorageDevice* dev, char* tmp_filename): device(dev)
 {
     first_byte = 0;
     size = -1; // bytes
-    datetime = *RTC::get().getTime();
+    RTC::get().getTime(&datetime);
     file_name_length = strlen(tmp_filename);
     filename = strdup(tmp_filename);
 }

@@ -6,7 +6,7 @@
 
 #include <Files.h>
 #include <IDE_handler.h>
-#include <kernel.h>
+#include <syscall.h>
 #include <stdlib.h>
 
 #include "Errors.h"
@@ -194,7 +194,7 @@ void ATA_select_drive(IDE_drive_info_t* drive_info)
 {
     outb(drive_info->base_port + DRIVE_SEL_OFFSET, drive_info->drive_data);
     last_drive_info = drive_info;
-    sleep_ns(500);
+    ksleep_ns(500);
 }
 
 void ATA_reset_device(IDE_drive_info_t* drive_info)
@@ -212,7 +212,7 @@ void ATA_reset_device(IDE_drive_info_t* drive_info)
     {
         outb(PRIMARY_CONTROL_PORT, RESET_CONTROL);
     }
-    sleep_ns(500); // wait after issuing reset then clear reset command.
+    ksleep_ns(500); // wait after issuing reset then clear reset command.
     if (drive_info->controller_id)
     {
         outb(SECONDARY_CONTROL_PORT, 0x00);

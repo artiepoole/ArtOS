@@ -6,6 +6,7 @@
 
 #include <GDT.h>
 #include <Scheduler.h>
+#include <syscall.h>
 
 #include "IDE_handler.h"
 
@@ -235,6 +236,9 @@ void irq_handler(cpu_registers_t* const r)
         case LAPIC_CALIBRATE_IRQ:
             LAPIC_calibrate_handler();
             break;
+        case SYSCALL_IRQ:
+            syscall_handler(r);
+            break;
         case SPURIOUS_IRQ:
             LOG("Spurious Interrupt");
             break;
@@ -247,18 +251,19 @@ void irq_handler(cpu_registers_t* const r)
     LAPIC_EOI();
 }
 
-
-void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
+// TODO: The location in the table specifies the interrupt vector so even tho i've called it "isr_stub_255"
+// for the spurious vector, this is not actually going to be called unless the table is properly filled.
+void IDT::_setDescriptor(const u8 idt_index, const u8 flags)
 {
     idt_entry_t* descriptor = &idt_entries[idt_index];
-
-    descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
+    u32 isr_addr = reinterpret_cast<u32>(isr_stub_table[idt_index]);
+    descriptor->isr_low = isr_addr & 0xFFFF;
     descriptor->kernel_cs = kernel_cs_offset;
 
     // this value can be whatever offset your sys code selector is in your GDT.
     // My entry point is 0x001005e0 so the offset is 0x0010(XXXX) (because of GRUB)
     descriptor->attributes = flags;
-    descriptor->isr_high = reinterpret_cast<u32>(isr_stub) >> 16;
+    descriptor->isr_high = isr_addr >> 16;
     descriptor->reserved = 0;
 }
 
@@ -272,9 +277,10 @@ IDT::IDT()
 
     for (u8 idt_index = 0; idt_index < IDT_STUB_COUNT; idt_index++)
     {
-        _setDescriptor(idt_index, isr_stub_table[idt_index], 0x8E);
+        _setDescriptor(idt_index, 0x8E);
         idt_vectors[idt_index] = true;
     }
+
     TIMESTAMP();
     WRITE("\tSetting IDT base and limit. ");
     WRITE("Base: ");

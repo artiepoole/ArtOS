@@ -326,7 +326,8 @@ target_include_directories(pdclib PUBLIC
         ../Generic/sys/Memory
         ../Generic/sys/Storage
         ../Generic/sys/Terminal
-
+        ../Specific/
+        ../Specific/x86
         ../Specific/x86/CPU
         ../Specific/x86/Timers
         ../Specific/multiboot2

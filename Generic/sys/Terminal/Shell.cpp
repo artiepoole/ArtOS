@@ -5,7 +5,7 @@
 #include "Shell.h"
 
 #include <IDT.h>
-#include <kernel.h>
+#include <syscall.h>
 #include <logging.h>
 #include <string.h>
 
@@ -32,9 +32,9 @@ void Shell::run()
     Terminal::get().write("Shell started\n");
     while (true)
     {
-        if (probe_pending_events())
+        if (kprobe_pending_events())
         {
-            auto [type, data] = get_next_event();
+            auto [type, data] = kget_next_event();
             // LOG("Found event. Type: ", static_cast<int>(type), " lower: ", data.lower_data, " upper: ",data.upper_data);
             switch (type)
             {
@@ -212,7 +212,7 @@ void Shell::run()
             }
         }
         // else
-        pause_exec(100);
+        kpause_exec(100);
     }
 }
 

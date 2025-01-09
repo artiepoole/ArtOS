@@ -10,6 +10,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
+#include "Files.h"
 
 #ifndef REGTEST
 
@@ -18,7 +19,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern int close(size_t fd);
 
 #ifdef __cplusplus
 }
@@ -26,7 +26,7 @@ extern int close(size_t fd);
 
 int _PDCLIB_close(int fd)
 {
-    return close(fd);
+    return art_close(fd);
 }
 
 #endif

@@ -1,9 +1,11 @@
+#include "kernel.h"
 #include "ports.h"
+#include "syscall.h"
 
 #include "../doom/doomgeneric/doomkeys.h"
 #include "types.h"
 
-#include "sys/kernel.h"
+// #include "sys/kernel.h"
 
 extern "C" {
 #include "../doom/doomgeneric/doomgeneric.h"

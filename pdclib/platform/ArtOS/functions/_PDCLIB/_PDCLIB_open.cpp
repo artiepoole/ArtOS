@@ -11,6 +11,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "kernel.h"
+
 
 #ifndef REGTEST
 
@@ -78,11 +80,9 @@
 
 #include "Files.h"
 
-extern _PDCLIB_fd_t open(const char* const filename, unsigned int mode);
-
 _PDCLIB_fd_t _PDCLIB_open(const char* const filename, unsigned int mode)
 {
-    return open(filename, mode);
+    return art_open(filename, mode);
 }
 
 #endif

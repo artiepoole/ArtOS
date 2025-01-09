@@ -6,6 +6,7 @@
 #define STORAGEDEVICE_H
 
 #include "types.h"
+#include "CPPMemory.h"
 class ArtFile;
 
 class StorageDevice

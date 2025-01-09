@@ -5,6 +5,7 @@
 */
 
 #include "time.h"
+#include "syscall.h"
 
 #ifndef REGTEST
 
@@ -12,7 +13,7 @@
 
 clock_t clock()
 {
-    return get_current_clock();
+    return kget_current_clock();
 }
 
 #endif

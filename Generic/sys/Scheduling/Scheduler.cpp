@@ -19,6 +19,7 @@
 #include "memory.h"
 #include "LinkedList.h"
 #include "EventQueue.h"
+#include "Process.h"
 
 
 struct sleep_timer_t
@@ -50,6 +51,15 @@ extern u8 kernel_stack_bottom;
 void idle_task()
 {
     LOG("Starting idle task");
+    while (true);
+}
+
+int kyield()
+{
+    // TODO: this should mark the thread as yielded somehow.
+    constexpr u8 irq = LAPIC_IRQ + 32; // Example dynamic value
+    __asm__ __volatile__("int %0" :: "i"(irq));
+    return 0;
 }
 
 
@@ -227,7 +237,7 @@ void handle_expired_timers()
         if (timer == nullptr) return;
         size_t pid = timer->pid;
         sleep_timers.remove(timer);
-        if (processes[pid].state == Process::STATE_PARKED)
+        if (processes[pid].state == Process::STATE_SLEEPING)
         {
             processes[pid].state = Process::STATE_READY;
         }
@@ -287,7 +297,7 @@ void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
 void Scheduler::sleep_ms(const u32 ms)
 {
     sleep_timers.append(sleep_timer_t{current_process_id, ms});
-    processes[current_process_id].state = Process::STATE_PARKED;
+    processes[current_process_id].state = Process::STATE_SLEEPING;
     start_oneshot(MIN(ms, context_switch_period_ms));
     kyield();
 }
@@ -304,14 +314,6 @@ void LAPIC_handler(cpu_registers_t* const r)
 {
     Scheduler::schedule(r);
     // TODO: implement scheduler
-}
-
-int kyield()
-{
-    // TODO: this should mark the thread as yielded somehow.
-    constexpr u8 irq = LAPIC_IRQ + 32; // Example dynamic value
-    __asm__ __volatile__("int %0" :: "i"(irq));
-    return 0;
 }
 
 
@@ -337,6 +339,7 @@ void Scheduler::kill(cpu_registers_t* const r)
     WRITE(current_process_id);
     WRITE(" due to fault_id: ");
     WRITE((u32)(r->int_no));
+    NEWLINE();
     processes[current_process_id].state = Process::STATE_EXITED;
     auto parent_id = processes[current_process_id].parent_pid;
     if (processes[parent_id].state == Process::STATE_PARKED)
@@ -344,7 +347,7 @@ void Scheduler::kill(cpu_registers_t* const r)
         processes[parent_id].state = Process::STATE_READY;
     }
     // switch_process(r, getNextProcessID());
-    kyield();
+    // kyield();
 }
 
 void Scheduler::create_idle_task()

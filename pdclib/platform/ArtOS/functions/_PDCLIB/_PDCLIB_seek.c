@@ -8,6 +8,7 @@
    kernels.
  */
 
+#include <Files.h>
 #ifndef REGTEST
 
 #include "stdio.h"
@@ -31,7 +32,7 @@ extern long lseek(int fd, long offset, int whence);
 _PDCLIB_int_least64_t _PDCLIB_seek(struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence)
 {
     _PDCLIB_int_least64_t rc;
-    rc = seek(stream, offset, whence);
+    rc = art_seek(stream, offset, whence);
 
     if (rc != EOF)
     {

@@ -8,14 +8,12 @@
 #include <LocalAPIC.h>
 
 #include  "types.h"
-#include "Process.h"
 
 inline size_t stack_size = 1024 * 1024; // 1MB stack default. Probably not enough.
 constexpr size_t max_processes = 255;
 
 class EventQueue;
 
-#ifdef __cplusplus
 
 class Scheduler
 {
@@ -54,20 +52,6 @@ public:
 
     static void sleep_ms(u32 ms);
 };
-
-
-extern "C" {
-#endif
-
-// int kexecf(void (*main_func)(), bool user);
-int kfork();
-int kyield();
-int kexit(size_t pid);
-
-
-#ifdef __cplusplus
-}
-#endif
 
 
 #endif //PROCESS_H

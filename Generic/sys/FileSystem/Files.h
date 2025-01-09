@@ -104,15 +104,15 @@ enum mmap_flags
 };
 
 
-void close_file_handle(size_t fd);
+int art_close(size_t fd);
 
-int open(const char* filename, unsigned int mode);
+int art_open(const char* filename, unsigned int mode);
 
-size_t write(int fd, const char* buf, unsigned long count);
+int art_write(int fd, const char* buf, unsigned long count);
 
-size_t read(int fd, char* buf, size_t count);
+int art_read(int fd, char* buf, size_t count);
 
-_PDCLIB_int_least64_t seek(const struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence);
+_PDCLIB_int_least64_t art_seek(const struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence);
 
 
 #ifdef __cplusplus

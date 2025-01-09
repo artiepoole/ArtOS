@@ -44,14 +44,14 @@ RTC& RTC::get()
     return *rtc_instance;
 }
 
-tm* RTC::getTime()
+int RTC::getTime(tm* dest)
 {
     if (rtc_instance)
     {
-        return &current_time;
+        memcpy(dest, &current_time, sizeof(tm));
+        return 0;
     }
-
-    return &empty_time;
+    return -1;
 }
 
 time_t RTC::epochTime()

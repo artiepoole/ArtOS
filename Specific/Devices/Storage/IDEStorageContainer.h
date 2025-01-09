@@ -5,6 +5,7 @@
 #ifndef IDE_DEVICE_H
 #define IDE_DEVICE_H
 
+#include "CPPMemory.h"
 #include "ArtDirectory.h"
 #include "iso_fs.h"
 

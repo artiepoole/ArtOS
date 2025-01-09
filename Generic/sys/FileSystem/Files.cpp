@@ -4,10 +4,10 @@
 
 #include "Files.h"
 
-
+//
 #include "ArtFile.h"
 #include "LinkedList.h"
-
+//
 #include "Serial.h"
 #include "logging.h"
 #include <stdio.h>
@@ -76,7 +76,7 @@ int register_file_handle(size_t file_id, ArtFile* file)
 }
 
 extern "C"
-int open(const char* filename, [[maybe_unused]] unsigned int mode)
+int art_open(const char* filename, [[maybe_unused]] unsigned int mode)
 {
     // TODO this is unfinished. This should take a path or a working dir
 
@@ -104,7 +104,7 @@ int open(const char* filename, [[maybe_unused]] unsigned int mode)
 }
 
 extern "C"
-int close(size_t file_id)
+int art_close(size_t file_id)
 {
     if (handles[file_id] != NULL)
     {
@@ -115,7 +115,7 @@ int close(size_t file_id)
 
 
 extern "C"
-size_t write(const int fd, const char* buf, const unsigned long count)
+int art_write(const int fd, const char* buf, const unsigned long count)
 {
     ArtFile* h = get_file_handle(fd);
     if (h == NULL)
@@ -127,7 +127,7 @@ size_t write(const int fd, const char* buf, const unsigned long count)
 }
 
 extern "C"
-size_t read(const int file_id, char* buf, const size_t count)
+int art_read(const int file_id, char* buf, const size_t count)
 {
     ArtFile* h = get_file_handle(file_id);
     if (h == NULL)
@@ -139,7 +139,7 @@ size_t read(const int file_id, char* buf, const size_t count)
 }
 
 extern "C"
-i64 seek(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, const int whence)
+_PDCLIB_int_least64_t art_seek(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, const int whence)
 {
     //TODO: implement device seek_pos changes.
     if (ArtFile* h = handles[stream->handle])

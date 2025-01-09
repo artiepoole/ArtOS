@@ -23,6 +23,7 @@ struct Process
     {
         STATE_DEAD,
         STATE_EXITED,
+        STATE_SLEEPING,
         STATE_PARKED,
         STATE_READY,
     };

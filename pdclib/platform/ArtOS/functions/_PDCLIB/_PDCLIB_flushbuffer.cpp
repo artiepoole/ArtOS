@@ -8,16 +8,16 @@
    use with POSIX kernels.
 */
 
+#include <Files.h>
+
 #include "stdio.h"
 #include "string.h"
 
 #ifndef REGTEST
 
 #include "_PDCLIB_glue.h"
-
-
 #include "errno.h"
-#include "Files.h"
+#include "kernel.h"
 
 // #ifdef __cplusplus
 // extern "C" {
@@ -54,7 +54,7 @@ int _PDCLIB_flushbuffer(struct _PDCLIB_file_t* stream)
     */
     for (retries = _PDCLIB_IO_RETRIES; retries > 0; --retries)
     {
-        int rc = write(stream->handle, stream->buffer + written, stream->bufidx - written);
+        int rc = art_write(stream->handle, stream->buffer + written, stream->bufidx - written);
 
         if (rc < 0)
         {

@@ -4,6 +4,7 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
+#include <Files.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -15,7 +16,6 @@
 #ifndef __STDC_NO_THREADS__
 #include <threads.h>
 #endif
-extern size_t read(int fd, char* buf, const size_t count);
 
 size_t fread(void* _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PDCLIB_file_t* _PDCLIB_restrict stream)
 {
@@ -54,7 +54,7 @@ size_t fread(void* _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PDCL
     // _PDCLIB_UNLOCK( stream->mtx );
     //
     // return nmemb_i;
-    return read(stream->handle, ptr, nmemb * size);
+    return art_read(stream->handle, ptr, nmemb * size);
 }
 
 #endif
