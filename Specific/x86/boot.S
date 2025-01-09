@@ -106,11 +106,12 @@ multiboot_header:
 multiboot_header_end:
 
 
+.globl kernel_stack_top, kernel_stack_bottom
 .section .bss
 .align 16
-stack_bottom:
+kernel_stack_bottom:
 .skip 1024*1024 # 1MB
-stack_top:
+kernel_stack_top:
 
 .section .text
 .globl  start, _start
@@ -154,7 +155,7 @@ _start:
 	stack since (pushed 0 bytes so far), so the alignment has thus been
 	preserved and the call is well defined.
 	*/
-    mov $stack_top, %esp
+    mov $kernel_stack_top, %esp
 
     /* Reset flags*/
 

@@ -5,6 +5,7 @@
 #include "IDT.h"
 
 #include <GDT.h>
+#include <Scheduler.h>
 
 #include "IDE_handler.h"
 
@@ -112,7 +113,7 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
 
     NEWLINE();
 
-    WRITE("eip, cs, eflags, useresp, ss;");
+    WRITE("eip, cs, eflags, user_esp, ss;");
     NEWLINE();
     WRITE(r->eip, true);
     WRITE(", ");
@@ -120,9 +121,13 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(", ");
     WRITE(r->eflags, true);
     WRITE(", ");
-    WRITE(r->useresp, true);
+    WRITE(r->user_esp, true);
     WRITE(", ");
     WRITE(r->ss, true);
+    NEWLINE();
+
+    WRITE("CR2: ");
+    WRITE(get_cr2(), true);
     NEWLINE();
 }
 
@@ -146,13 +151,20 @@ void exception_handler(cpu_registers_t* const r)
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
-        WRITE(exception_messages[r->int_no]);
+        (exception_messages[r->int_no]);
         NEWLINE();
         switch (r->int_no)
         {
         case 0:
-            WRITE("Unhandled exception. System Halted!");
-            while (true);
+        case 4:
+        case 6:
+        case 12:
+        case 13:
+        case 14:
+        case 17:
+            WRITE("Attempting to kill process.\n");
+            Scheduler::kill(r);
+            break;
         default:
             WRITE("Unhandled exception. System Halted!");
             while (true);

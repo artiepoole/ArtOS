@@ -9,6 +9,7 @@
 
 .macro isr_err_stub_ i
     isr_stub_\i:
+    cli
     // errorcode already pushed and is non-zero
     push $\i
     pusha
@@ -33,6 +34,7 @@
     pop %ds
     popa
     add $8, %esp     // Cleans up the pushed error code and pushed ISR number
+    sti
     iretl
 .endm
 
@@ -43,6 +45,7 @@
 
 .macro isr_no_err_stub_ i
     isr_stub_\i:
+    cli
     push $0x00000000 // no error
     push $\i
     pusha
@@ -67,11 +70,14 @@
     pop %ds
     popa
     add $8, %esp     // Cleans up the pushed error code and pushed ISR number
+    sti
     iretl
 .endm
 
 .macro irq_stub i
     isr_stub_\i:
+    cli
+    // This either already contains the old user_SS, useresp, eflags, cs, eip or only eflags, cs, eip.
     push $0 // no error
     push $\i
     pusha
@@ -96,6 +102,7 @@
     pop %ds
     popa
     add $8, %esp     // Cleans up the pushed error code and pushed ISR number
+    sti
     iretl
 .endm
 

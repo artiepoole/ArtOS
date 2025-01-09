@@ -7,13 +7,33 @@
 
 #include "types.h"
 
+// Ring Privilege Level (RPL). 0 is highest (kernel) and 3 is lowest (user)
+#define RPL_USER 0x03
+#define RPL_KERNEL 0x00
 
 struct cpu_registers_t
 {
-    u32 gs, fs, es, ds; /* pushed the segs last */
-    u32 edi, esi, ebp, esp, ebx, edx, ecx, eax; /* pushed by 'pusha' */
-    u32 int_no, err_code; /* filled by our 'push byte #' and 'push 0' in IDT.S */
-    u32 eip, cs, eflags, useresp, ss; /* pushed by the processor automatically */
+    // Top of the pushed stack
+    u32 gs; //---------------------
+    u32 fs; // Pushed by IDT.S last
+    u32 es; //
+    u32 ds; //---------------------
+    u32 edi; //---------------------
+    u32 esi; //
+    u32 ebp; //
+    u32 esp; // Pushed by 'pusha'
+    u32 ebx; //
+    u32 edx; //
+    u32 ecx; //
+    u32 eax; //---------------------
+    u32 int_no; // Pushed manually
+    u32 err_code; // filled by our 'push byte #' and 'push 0' in IDT.S //
+    u32 eip; //---------------------
+    u32 cs; // pushed by the processor automatically by interrupt
+    u32 eflags; //
+    u32 user_esp; // useresp and ss are only populated if the ring level changes during the interrupt
+    u32 ss; //---------------------
+    // Bottom of the pushed stack
 }__attribute__((packed));
 
 union eflags_t
@@ -90,5 +110,6 @@ extern u32 TEXT_CS;
 u16 get_cs();
 u16 get_ds();
 cr0_t get_cr0();
+u32 get_cr2();
 
 #endif //SYSTEM_H

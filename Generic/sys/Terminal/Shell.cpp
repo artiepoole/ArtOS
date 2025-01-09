@@ -216,13 +216,29 @@ void Shell::run()
     }
 }
 
+void div_0()
+{
+    asm (
+        "mov $0, %eax\n"
+        "div %eax"
+    );
+}
+
 int Shell::process_cmd()
 {
+    // TODO: implement actual command lookup of executables.
     if (cmd_buffer_idx == 0) return -1;
     if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
     {
         Terminal::stop_drawing();
-        Scheduler::execf(run_doom_noret, "doom"); // TODO: implement actual command lookup of executables.
+        Scheduler::execf(run_doom_noret, "doom", false);
+        Terminal::resume_drawing();
+        Terminal::refresh();
+    }
+    else if (strncasecmp(cmd_buffer, "div0", 4) == 0)
+    {
+        Terminal::stop_drawing();
+        Scheduler::execf(div_0, "div0", false);
         Terminal::resume_drawing();
         Terminal::refresh();
     }
@@ -234,3 +250,5 @@ int Shell::process_cmd()
     }
     return 0;
 }
+
+
