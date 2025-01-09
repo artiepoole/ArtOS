@@ -4,27 +4,15 @@
 
 #ifndef KERNEL_H
 #define KERNEL_H
-
-#include "time.h"
 #include "types.h"
-#include "event.h"
+#include "time.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-enum class SYSCALL_t
-{
-    WRITE,
-    READ,
-    OPEN,
-    EXIT,
-    SLEEP_MS,
-    GET_TICK_MS,
-    PROBE_EVENTS,
-    GET_EVENT,
-    DRAW_REGION,
-    GET_TIME,
-    GET_EPOCH
-};
-
+typedef struct tm tm;
+typedef struct event_t event_t;
 
 // files
 int write(int fd, const char* buf, unsigned long count);
@@ -45,4 +33,7 @@ event_t get_next_event();
 //graphics
 void draw_screen_region(const u32* frame_buffer);
 
+#ifdef __cplusplus
+}
+#endif
 #endif //KERNEL_H

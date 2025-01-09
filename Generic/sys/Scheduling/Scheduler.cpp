@@ -316,36 +316,30 @@ void LAPIC_handler(cpu_registers_t* const r)
     // TODO: implement scheduler
 }
 
-
-void Scheduler::exit(int status)
+// Exit is called by the program to tell the OS it is done.
+void Scheduler::exit(cpu_registers_t* const r)
 {
-    LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", status);
+    LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", (u32)r->ebx);
     processes[current_process_id].state = Process::STATE_EXITED;
     auto parent_id = processes[current_process_id].parent_pid;
     if (processes[parent_id].state == Process::STATE_PARKED)
     {
         processes[parent_id].state = Process::STATE_READY;
-        // no return
     }
-    kyield();
+
+    switch_process(r, getNextProcessID());
 }
 
-// triggered by interrupt
-void Scheduler::kill(cpu_registers_t* const r)
+// Kill is supposed to send a command to the process to tell it to exit.
+void Scheduler::kill(size_t target_pid)
 {
-    WRITE("Killing ");
-    WRITE(processes[current_process_id].name);
-    WRITE(" PID: ");
-    WRITE(current_process_id);
-    WRITE(" due to fault_id: ");
-    WRITE((u32)(r->int_no));
-    NEWLINE();
-    processes[current_process_id].state = Process::STATE_EXITED;
+    processes[target_pid].state = Process::STATE_EXITED;
     auto parent_id = processes[current_process_id].parent_pid;
     if (processes[parent_id].state == Process::STATE_PARKED)
     {
         processes[parent_id].state = Process::STATE_READY;
     }
+    // ???? what do here? I cannot switch because then it never returns?
     // switch_process(r, getNextProcessID());
     // kyield();
 }
@@ -379,5 +373,3 @@ void Scheduler::create_idle_task()
     proc->context = context;
     proc->eventQueue = new EventQueue();
 }
-
-

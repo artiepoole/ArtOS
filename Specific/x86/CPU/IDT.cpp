@@ -172,9 +172,9 @@ void exception_handler(cpu_registers_t* const r)
         case 13:
         case 14:
         case 17:
-            WRITE("Attempting to kill process.\n");
+            WRITE("Attempting to exit process.\n");
             already_killing = true;
-            Scheduler::kill(r);
+            Scheduler::exit(r);
             already_killing = false;
             break;
         default:

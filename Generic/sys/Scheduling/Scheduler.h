@@ -31,8 +31,8 @@ public:
     static void execf(void (*func)(), const char* name, bool user = false);
 
     // static void fork();
-    static void exit(int status);
-    static void kill(cpu_registers_t* r);
+    static void exit(cpu_registers_t* r);
+    static void kill(size_t target_pid);
     static void create_idle_task();
 
     static void clean_up_exited_threads();

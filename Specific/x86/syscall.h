@@ -11,6 +11,21 @@
 #include "Terminal.h"
 #include "RTC.h"
 
+enum class SYSCALL_t
+{
+    WRITE,
+    READ,
+    OPEN,
+    CLOSE,
+    EXIT,
+    SLEEP_MS,
+    GET_TICK_MS,
+    PROBE_EVENTS,
+    GET_EVENT,
+    DRAW_REGION,
+    GET_TIME,
+    GET_EPOCH
+};
 
 void kwrite_standard(const char* buffer, unsigned long len);
 
@@ -51,7 +66,7 @@ void kprint_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
 }
 
 extern "C" {
-void kexit(int status);
+void kexit(size_t target_pid);
 
 int kget_time(tm* dest);
 time_t kget_epoch_time();

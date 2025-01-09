@@ -44,9 +44,9 @@ time_t kget_epoch_time()
 }
 
 extern "C"
-void _kexit([[maybe_unused]] int status)
+void _kexit(size_t target_pid)
 {
-    Scheduler::exit(status);
+    Scheduler::kill(target_pid);
 }
 
 u64 kget_clock_rate_hz()
@@ -140,16 +140,22 @@ void syscall_handler(cpu_registers_t* r)
     switch (static_cast<SYSCALL_t>(r->eax))
     {
     case SYSCALL_t::WRITE:
+        // TODO: this is no where near this simple. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
         art_write(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
         break;
     case SYSCALL_t::READ:
+        // TODO: this is no where near this simple. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
         art_read(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
         break;
     case SYSCALL_t::OPEN:
+        // TODO: this is no where near this simple. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
         art_open(reinterpret_cast<char*>(r->ebx), r->ecx);
         break;
+    case SYSCALL_t::CLOSE:
+        art_close(r->ebx);
+        break;
     case SYSCALL_t::EXIT:
-        Scheduler::kill(r);
+        Scheduler::exit(r);
         break;
     case SYSCALL_t::SLEEP_MS:
         ksleep_ms(r->ebx);

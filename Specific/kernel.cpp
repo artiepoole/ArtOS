@@ -4,7 +4,12 @@
 
 #include "kernel.h"
 
-int write(int fd, const char* buf, unsigned long count)
+#include "syscall.h"
+
+#include "event.h"
+
+
+extern "C" int write(int fd, const char* buf, unsigned long count)
 {
     int result;
     asm volatile(
@@ -16,7 +21,7 @@ int write(int fd, const char* buf, unsigned long count)
     return result;
 }
 
-int read(int fd, char* buf, size_t count)
+extern "C" int read(int fd, char* buf, size_t count)
 {
     int result;
     asm volatile(
