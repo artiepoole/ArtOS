@@ -42,7 +42,7 @@ int open(const char* pathname, int flags)
     return result;
 }
 
-void _exit(int status)
+[[noreturn]] void _exit(int status)
 {
     asm volatile(
         "int $50" // Trigger software interrupt
@@ -50,6 +50,7 @@ void _exit(int status)
         : "a"(SYSCALL_t::EXIT), "b"(status)
         : "memory"
     );
+    while (true);
 }
 
 void sleep_ms(u32 ms)
