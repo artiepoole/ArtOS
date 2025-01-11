@@ -114,4 +114,4 @@ add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
 )
 
-
+target_compile_options(hello.elf PRIVATE -O3 -DNDEBUG)

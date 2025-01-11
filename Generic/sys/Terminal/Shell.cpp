@@ -4,6 +4,8 @@
 
 #include "Shell.h"
 
+#include <ELF.h>
+#include <Files.h>
 #include <IDT.h>
 #include <syscall.h>
 #include <logging.h>
@@ -253,6 +255,14 @@ int Shell::process_cmd()
         Scheduler::execf(user_test, "test", true);
         Terminal::resume_drawing();
         Terminal::refresh();
+    }
+    else if (strncasecmp(cmd_buffer, "readelf", 8) == 0)
+    {
+        ELF_header_t elf_header{};
+        const auto fid = art_open("hello.elf", 0);
+        art_read(fid, reinterpret_cast<char*>(&elf_header), sizeof(ELF_header_t));
+        art_exec(fid);
+        LOG("ELF header read: ", elf_header.e_ident.magic);
     }
     else
     {
