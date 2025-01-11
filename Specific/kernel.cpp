@@ -50,6 +50,7 @@ void _exit(int status)
         : "a"(SYSCALL_t::EXIT), "b"(status)
         : "memory"
     );
+    while (true);
 }
 
 void sleep_ms(u32 ms)
