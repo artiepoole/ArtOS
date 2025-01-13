@@ -126,6 +126,8 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
   - I need to keep track of what process was requesting the read so that it can be resumed when the read finishes.
   - Should the IDE exist as a process/daemon so that it can have its own stack etc?
 - [ ] malloc has no concept of user or alignment. Internally, I should implement a new version of this or just use mmap instead of malloc? I think if I fix the paging tables issue, that will be handled better.
+- [ ] I need to create some useful tools for the shell
+  - such as "ls", "cd", "run" etc. This means I need to create the idea of a path/path string within my OS.
 
 ## Tools
 - i686-elf gcc cross-compiler
