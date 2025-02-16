@@ -146,6 +146,8 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
 }
 
 
+// TODO (URGENT): This should swap paging directory. See: https://wiki.osdev.org/Kernel_Multitasking#Kernel_Stack_Per_Task
+// Specifically the `cmp eax,ecx` lines.
 void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
 {
     // This should just pop the stack and push to it to replace next process. If process is 0 idk what to do.
