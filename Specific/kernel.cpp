@@ -42,7 +42,7 @@ int open(const char* pathname, int flags)
     return result;
 }
 
-[[noreturn]] void _exit(int status)
+void _exit(int status)
 {
     asm volatile(
         "int $50" // Trigger software interrupt
