@@ -1,5 +1,7 @@
 .section .rawdata
 .global SPLASH_DATA
 SPLASH_DATA:
-.incbin "/home/artypoole/CLionProjects/ArtOS/external_resources/inkscape/splash_logo_thresh"
+# This assumes the gcc call is from within one deep dir such as with when using cmake. Change as necessary
+.incbin "../external_resources/inkscape/splash_logo_thresh"
+
 

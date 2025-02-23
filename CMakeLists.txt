@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.22)
-
 option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
 option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
@@ -7,10 +6,11 @@ option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 project(ArtOS)
 ENABLE_LANGUAGE(ASM)
 
-set(KERNEL_BIN "ArtOS.bin")
-set(KERNEL_ISO ${CMAKE_PROJECT_NAME}.iso)
-set(KERNEL_LIB "kernel_lib")
 
+set(KERNEL_LIB "kernel_lib")
+set(KERNEL_NAME ${CMAKE_PROJECT_NAME})
+set(KERNEL_BIN ${KERNEL_NAME}.bin)
+set(KERNEL_ISO ${KERNEL_NAME}.iso)
 
 ### Find all source files
 file(GLOB_RECURSE Specific
@@ -104,12 +104,13 @@ target_include_directories(${KERNEL_LIB} PRIVATE
 )
 
 ### Generating the ISO file
-add_custom_target(${KERNEL_ISO}
+add_custom_target(${KERNEL_NAME}
         COMMAND ../cmake-iso.sh
         COMMENT "Generating the kernel bootable iso file"
-        BYPRODUCTS ${KERNEL_ISO})
-add_dependencies(ArtOS.iso ArtOS.bin hello.elf)
-add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD
+        BYPRODUCTS ${KERNEL_ISO}
+)
+add_dependencies(${KERNEL_NAME} ${KERNEL_BIN} hello.elf)
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
 )

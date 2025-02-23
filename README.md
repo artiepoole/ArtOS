@@ -165,3 +165,15 @@ id=disk,file=external_resources/ArtOS_HDD.img,format=raw,if=none
 -device
 ide-hd,drive=disk,bus=ide.0
 ```
+
+## Dependencies
+
+```
+sudo apt-get install 
+grub-pc-bin
+xorriso
+mtools
+```
+
+make a disk image using:
+`qemu-img create external_resources/ArtOS_HDD.img 512M` and change 512M to any size you like.
