@@ -5,21 +5,22 @@ set(CMAKE_SYSTEM_PROCESSOR i686)
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
-set(TOOLS $ENV{HOME}/opt/cross-compiler/)
+set(GCC_VERSION 13.3.0)
+set(TOOLS $ENV{HOME}/opt/cross)
 set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-elf-gcc)
 set(CMAKE_C_COMPILER ${TOOLS}/bin/i686-elf-gcc)
 set(CMAKE_CXX_COMPILER ${TOOLS}/bin/i686-elf-g++)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS " -ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti ") # -Werror
+set(CMAKE_CXX_FLAGS " -ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti") # -Werror
 set(CMAKE_C_FLAGS " -ffreestanding -Wall -Wextra")
 
 
-
-set(CRT_BEGIN /home/artypoole/opt/cross-compiler/lib/gcc/i686-elf/14.1.0/crtbegin.o)
-set(CRT_END /home/artypoole/opt/cross-compiler/lib/gcc/i686-elf/14.1.0/crtend.o)
+set(CRT_BEGIN ${TOOLS}/lib/gcc/i686-elf/${GCC_VERSION}/crtbegin.o)
+set(CRT_END ${TOOLS}/lib/gcc/i686-elf/${GCC_VERSION}/crtend.o)
 
 set(CMAKE_C_LINK_EXECUTABLE
         "<CMAKE_C_COMPILER>  <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> ${CRT_BEGIN} <OBJECTS> ${CRT_END} -o <TARGET> <LINK_LIBRARIES>")
