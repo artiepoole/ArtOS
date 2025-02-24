@@ -127,7 +127,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 qemu-system-i386
 -cdrom
 bin/ArtOS.iso
--serial
+-serial[doom1.wad](external_resources/doomwad/doom1.wad)
 file:serial.log
 -boot
 a
@@ -145,6 +145,10 @@ id=disk,file=external_resources/ArtOS_HDD.img,format=raw,if=none
 -device
 ide-hd,drive=disk,bus=ide.0
 ```
+
+qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -device VGA,vgamem_mb=32 -m 2G -no-reboot
+-smbios type=0 -drive id=disk,file=external_resources/ArtOS_HDD.img,format=raw,if=none -device
+ide-hd,drive=disk,bus=ide.0
 
 ## Dependencies
 
