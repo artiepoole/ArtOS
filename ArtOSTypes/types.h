@@ -116,6 +116,11 @@ concept uint_like = is_uint_like_v<T>;
 template <class T>
 concept sint_like = is_sint_like_v<T>;
 
+struct address_range
+{
+    uintptr_t start, end;
+};
+
 #endif
 
 

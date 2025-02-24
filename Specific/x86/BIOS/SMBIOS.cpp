@@ -28,17 +28,18 @@
 #define MINOR_VERSION = 7;
 
 
-smbios_t* smbios = nullptr;
+bool smbios_read = false;
 smbios_processor_info_t* cpu_info = nullptr;
 u64 clock_rate_hz = 0;
 u64 clock_rate_mhz = 0;
 
 
-smbios_t search_for_SMBIOS()
+// TODO: make this retun the structure table address instead.
+// https://www.dmtf.org/sites/default/files/standards/documents/DSP0130.pdf
+address_range search_for_SMBIOS()
 {
     u8 checksum = 0;
     auto eps = reinterpret_cast<u8*>(0x000F0000);
-
     while (eps <= reinterpret_cast<u8*>(0x000FFFFF))
     {
         /* Check Anchor String (32-bit version) */
@@ -52,16 +53,37 @@ smbios_t search_for_SMBIOS()
                 checksum += eps[i];
 
             if (checksum == 0)
-                /* Done! */
-                break;
+            {
+                auto* smbios_table = reinterpret_cast<smbios_t_32*>(eps);
+                return {smbios_table->structure_table_address, smbios_table->structure_table_length + smbios_table->structure_table_address};
+            }
         }
+        if (const char magic[5] = {'_', 'S', 'M', '3', '_'}; !memcmp(eps, magic, 5))
+        {
+            const u8 length = eps[6];
+            checksum = 0;
 
+            /* Add all bytes */
+            for (size_t i = 0; i < length; i++)
+                checksum += eps[i];
+
+            if (checksum == 0)
+            {
+                auto* smbios_table = reinterpret_cast<smbios_t_64*>(eps);
+                return {
+                    static_cast<uintptr_t>(smbios_table->structure_table_address),
+                    static_cast<uintptr_t>(smbios_table->structure_table_max_size + smbios_table->structure_table_address)
+                };
+            }
+        }
         /* Next 16-byte-aligned address */
         eps += 16;
     }
-
-    smbios = reinterpret_cast<smbios_t*>(eps);
-    return *smbios; // return a copy
+    if (reinterpret_cast<uintptr_t>(eps) == 0x100000)
+    {
+        LOG("ERROR: smbios info not found. Halting.")
+        while (true);
+    }
 }
 
 
@@ -75,14 +97,17 @@ size_t find_real_len(smbios_header_t* hd)
     return hd->length + i + 1;
 }
 
+// TODO: why not parse and save all the smbios information?
+// Also if this is all done in one function, the type of the header cna be ignored
 void SMBIOS_populate_cpu_info()
 {
-    if (smbios == NULL)
+    address_range range;
+    if (!smbios_read)
     {
-        search_for_SMBIOS();
+        range = search_for_SMBIOS();
     }
-    auto address = reinterpret_cast<u8*>(smbios->structure_table_address);
-    for (size_t i = 0; i < smbios->n_structures; i++)
+    uintptr_t address = range.start;
+    while (address < range.end)
     {
         // Load header
         auto* header = reinterpret_cast<smbios_header_t*>(address);
@@ -102,7 +127,7 @@ void SMBIOS_populate_cpu_info()
         }
         // Go to next header
         header = reinterpret_cast<smbios_header_t*>(address);
-        const size_t real_len = find_real_len(header);
+        const uintptr_t real_len = find_real_len(header);
         address += real_len;
     }
 }

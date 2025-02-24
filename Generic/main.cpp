@@ -15,6 +15,7 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 #include <float.h>
+#include <SMBIOS.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

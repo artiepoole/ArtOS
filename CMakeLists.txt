@@ -109,7 +109,7 @@ add_custom_target(${KERNEL_NAME}
         COMMENT "Generating the kernel bootable iso file"
         BYPRODUCTS ${KERNEL_ISO}
 )
-add_dependencies(${KERNEL_NAME} ${KERNEL_BIN} hello.elf)
+add_dependencies(${KERNEL_NAME} ${KERNEL_BIN}) # hello.elf
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
