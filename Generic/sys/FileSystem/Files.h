@@ -128,6 +128,8 @@ int art_write(int fd, const char* buf, unsigned long count);
 
 int art_read(int fd, char* buf, size_t count);
 
+int art_exec(const int fid);
+
 _PDCLIB_int_least64_t art_seek(const struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence);
 
 

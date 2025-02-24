@@ -27,6 +27,8 @@
 #include "Serial.h"
 #include "logging.h"
 #include <stdio.h>
+
+#include "ELF.h"
 #include "StorageDevice.h"
 
 #include "string.h"
@@ -152,6 +154,17 @@ int art_read(const int file_id, char* buf, const size_t count)
         return -1;
     }
     return h->read(buf, count);
+}
+
+
+int art_exec(const int fid)
+{
+    ArtFile* h = get_file_handle(fid);
+    if (auto executable = ELF(h); executable.is_executable())
+    {
+        return executable.execute(); // ideally this would return the exit code.
+    }
+    return -1; // could not execute. Should replace with real error number.
 }
 
 extern "C"

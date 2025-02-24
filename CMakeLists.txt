@@ -6,6 +6,7 @@ option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 project(ArtOS)
 ENABLE_LANGUAGE(ASM)
 
+
 set(KERNEL_LIB "kernel_lib")
 set(KERNEL_NAME ${CMAKE_PROJECT_NAME})
 set(KERNEL_BIN ${KERNEL_NAME}.bin)
@@ -106,11 +107,12 @@ target_include_directories(${KERNEL_LIB} PRIVATE
 add_custom_target(${KERNEL_NAME}
         COMMAND ../cmake-iso.sh
         COMMENT "Generating the kernel bootable iso file"
-        BYPRODUCTS ${KERNEL_ISO})
+        BYPRODUCTS ${KERNEL_ISO}
+)
 add_dependencies(${KERNEL_NAME} ${KERNEL_BIN} hello.elf)
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
 )
 
-
+target_compile_options(hello.elf PRIVATE -O3 -DNDEBUG)
