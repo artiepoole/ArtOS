@@ -34,7 +34,7 @@ u64 clock_rate_hz = 0;
 u64 clock_rate_mhz = 0;
 
 
-// TODO: make this retun the structure table address instead.
+// TODO: process all structures
 // https://www.dmtf.org/sites/default/files/standards/documents/DSP0130.pdf
 address_range search_for_SMBIOS()
 {
@@ -132,6 +132,7 @@ void SMBIOS_populate_cpu_info()
     }
 }
 
+// TODO: add codepath for getting clock rate if smbios is not available.
 u64 SMBIOS_get_CPU_clock_rate_hz()
 {
     if (clock_rate_hz != 0) return clock_rate_hz;
