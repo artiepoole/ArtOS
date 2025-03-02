@@ -1,0 +1,4 @@
+sendkey spc
+sendkey up
+sendkey kp_enter
+sendkey y

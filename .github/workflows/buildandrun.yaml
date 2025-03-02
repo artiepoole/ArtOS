@@ -1,0 +1,32 @@
+name: buildandrun.yaml
+on:
+  push:
+    branches: [ "actionstest" ]
+  pull_request:
+    branches: [ "actionstest" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: install
+        run: |
+          sudo dpkg --add-architecture i386 
+          sudo apt update 
+          sudo apt upgrade
+          sudo apt install -y gcc-multilib g++-multilib libc6:i386 libstdc++6:i386 qemu-system-x86 mtools grub-common grub-pc-bin socat
+
+      - name: build
+        run: . ./.github/scripts/build_artOS.sh
+
+      - name: qemu-test
+        run: . ./.github/scripts/run_qemu_tests.sh
+
+      - name: report_output
+        run: cat serial.log
+
+      - name: check_output
+        run: python3 check_output.py
+

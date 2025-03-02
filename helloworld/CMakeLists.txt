@@ -5,9 +5,9 @@ project(helloworld LANGUAGES CXX)
 ENABLE_LANGUAGE(ASM)
 
 # Set the cross-compiler
-set(CMAKE_CXX_COMPILER i686-elf-g++)
-set(CMAKE_CXX_FLAGS_DEBUG "-O3 -DNDEBUG -ffreestanding -nostdlib")
-set(CMAKE_EXE_LINKER_FLAGS "-T ${CMAKE_SOURCE_DIR}/helloworld/hello_link.ld")
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CXX_FLAGS_DEBUG} -O3 -DNDEBUG")
+set(CMAKE_EXE_LINKER_FLAGS "-T ${CMAKE_CURRENT_SOURCE_DIR}/helloworld/hello_link.ld")
 set(TARGET_BIN "hello.elf")
 # Add sources
 set(SOURCES
