@@ -29,6 +29,6 @@ jobs:
         run: cat serial.log
 
       - name: check_output
-        run: python3 check_output.py
+        run: python3 ./.github/scripts/check_output.py
 
 # TODO: This should test building with and without terminal logging. I currently have a broken build with terminal.
