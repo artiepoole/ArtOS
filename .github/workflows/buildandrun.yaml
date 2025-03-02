@@ -3,7 +3,8 @@ on:
   push:
     branches: [ "actionstest" ]
   pull_request:
-    branches: [ "actionstest" ]
+    branches:
+      - '**'
 jobs:
   build:
     runs-on: ubuntu-latest
