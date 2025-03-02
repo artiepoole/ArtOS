@@ -16,7 +16,7 @@ jobs:
           sudo dpkg --add-architecture i386 
           sudo apt update 
           sudo apt upgrade
-          sudo apt install -y gcc-multilib g++-multilib libc6:i386 libstdc++6:i386 qemu-system-x86 mtools grub-common grub-pc-bin socat
+          sudo apt install -y gcc-multilib g++-multilib libc6:i386 libstdc++6:i386 qemu-system-x86 mtools grub-common grub-pc-bin socat xorriso
 
       - name: build
         run: . ./.github/scripts/build_artOS.sh
@@ -30,3 +30,4 @@ jobs:
       - name: check_output
         run: python3 check_output.py
 
+# TODO: This should test building with and without terminal logging. I currently have a broken build with terminal.
