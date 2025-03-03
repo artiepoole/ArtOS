@@ -1,7 +1,8 @@
 name: buildandrun.yaml
 on:
   push:
-    branches: [ "actionstest" ]
+    branches:
+      - '**'
   pull_request:
     branches:
       - '**'
@@ -32,3 +33,4 @@ jobs:
         run: python3 ./.github/scripts/check_output.py
 
 # TODO: This should test building with and without terminal logging. I currently have a broken build with terminal.
+# TODO: This should also build with debug mode and release mode with terminal and without
