@@ -81,7 +81,7 @@ address_range search_for_SMBIOS()
     }
     if (reinterpret_cast<uintptr_t>(eps) == 0x100000)
     {
-        LOG("ERROR: smbios info not found. Halting.")
+        LOG("ERROR: smbios info not found. Halting.");
         while (true);
     }
 }

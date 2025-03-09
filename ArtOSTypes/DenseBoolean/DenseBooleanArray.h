@@ -21,7 +21,6 @@
 #ifndef DENSEBOOLEANARRAY_H
 #define DENSEBOOLEANARRAY_H
 
-#include "CPPMemory.h"
 
 inline size_t DBA_ERR_IDX = -1;
 

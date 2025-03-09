@@ -22,6 +22,7 @@
 #include "ports.h"
 #include "logging.h"
 #include "mystring.h"
+#include "string.h"
 
 u16 CURRENT_YEAR = 2000;
 RTC* rtc_instance = nullptr;

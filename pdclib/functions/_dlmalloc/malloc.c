@@ -728,7 +728,8 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define MMAP_CLEARS 1
 #endif  /* MMAP_CLEARS */
 #ifndef HAVE_MREMAP
-#ifdef linux
+// #ifdef linux
+#if false
 #define HAVE_MREMAP 1
 #define _GNU_SOURCE /* Turns on mremap() definition */
 #else   /* linux */
@@ -1555,7 +1556,8 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #if HAVE_MMAP
 #ifndef LACKS_SYS_MMAN_H
 /* On some versions of linux, mremap decl in mman.h needs __USE_GNU set */
-#if (defined(linux) && !defined(__USE_GNU))
+// #if (defined(linux) && !defined(__USE_GNU))
+#if false
 #define __USE_GNU 1
 #include <sys/mman.h>    /* for mmap */
 #undef __USE_GNU

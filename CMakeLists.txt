@@ -6,6 +6,10 @@ option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 project(ArtOS)
 ENABLE_LANGUAGE(ASM)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 11)
+
 
 set(KERNEL_LIB "kernel_lib")
 set(KERNEL_NAME ${CMAKE_PROJECT_NAME})
@@ -38,7 +42,7 @@ file(GLOB_RECURSE Generic
 add_subdirectory(pdclib)
 add_subdirectory(doom)
 add_subdirectory(ArtOSTypes)
-add_subdirectory(helloworld)
+#add_subdirectory(helloworld)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
 add_library(${KERNEL_LIB} Specific/kernel.cpp)
@@ -115,4 +119,4 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
 )
 
-target_compile_options(hello.elf PRIVATE -O3 -DNDEBUG)
+#target_compile_options(hello.elf PRIVATE -O3 -DNDEBUG)

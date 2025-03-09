@@ -74,7 +74,7 @@ cpuid_manufacturer_info_t* cpuid_get_manufacturer_info()
 cpuid_ext_manufacturer_info_t* cpuid_print_ext_manufacturer_info()
 {
     asm volatile("mov $0x80000000, %eax");
-    asm volatile("cpuid":"=a"(cpu_ext_manufacturer_info.max_ext_param));
+    asm volatile("cpuid":"=a"(cpu_ext_manufacturer_info.max_ext_param)::"edx","ebx","ecx");
 
     // brand string
     // todo: replace with other getter/setter methods.
