@@ -21,6 +21,7 @@
 #include "types.h"
 #include "GDT.h"
 #include "logging.h"
+#include "string.h"
 
 //TODO: incorrect size. The packing might be the issue. This should just be manual.
 struct TSS_t

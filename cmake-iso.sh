@@ -18,19 +18,37 @@
 #     along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 
-GRUB_SRC="../grub.cfg"
-DOOMWAD_SRC="../external_resources/doomwad/doom1.wad"
-HELLO_SRC="helloworld/hello.elf"
+if ${CMAKE_SOURCE_DIR}; then
+  GRUB_SRC=".${CMAKE_SOURCE_DIR}/../grub.cfg"
+  BIN_SRC=".${CMAKE_BUILD_DIR}/ArtOS.bin"
+  DOOMWAD_SRC=".${CMAKE_SOURCE_DIR}/../external_resources/doomwad/doom1.wad"
+else
+  GRUB_SRC="grub.cfg"
+  BIN_SRC="./ArtOS.bin"
+  DOOMWAD_SRC="./external_resources/doomwad/doom1.wad"
+fi
+echo "Grub source: ${GRUB_SRC}"
+echo "ArtOS bin loc: ${BIN_SRC}"
+echo "DOOMWAD source: ${DOOMWAD_SRC}"
+
+
+
+#HELLO_SRC="${CMAKE_BUILD_DIR+'/.'}helloworld/hello.elf"
+
 
 if grub-file --is-x86-multiboot2 ArtOS.bin; then
   if test -f $GRUB_SRC; then
     echo multiboot2 confirmed
     mkdir -p isodir/boot/grub
     mkdir -p isodir/fs
-    cp ArtOS.bin isodir/boot/ArtOS.bin
-    cp $GRUB_SRC isodir/boot/grub/grub.cfg
-    cp $DOOMWAD_SRC isodir/fs/doom1.wad
-    cp $HELLO_SRC isodir/fs/hello.elf
+    cp "${BIN_SRC}" isodir/boot/ArtOS.bin
+    cp "${GRUB_SRC}" isodir/boot/grub/grub.cfg
+    if test -f "${DOOMWAD_SRC}"; then
+      cp "${DOOMWAD_SRC}" isodir/fs/doom1.wad
+    else
+      wget https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad -O isodir/fs/doom1.wad
+   fi
+#    cp $HELLO_SRC isodir/fs/hello.elf
     grub-mkrescue -o ArtOS.iso isodir
 #    rm -rf isodir
   else

@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: ArtOSTypes CI
 
 on:
   push:
@@ -14,5 +14,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: test
-      run: ./cmake_test.sh
+      run: . ./.github/scripts/cmake_test.sh
 
