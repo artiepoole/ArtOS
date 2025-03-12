@@ -108,6 +108,7 @@ target_include_directories(${KERNEL_LIB} PRIVATE
 )
 
 ### Generating the ISO file
+# TODO: perhaps there is a better way to handle this in cmake
 add_custom_target(${KERNEL_NAME}
         COMMAND ../cmake-iso.sh
         COMMENT "Generating the kernel bootable iso file"

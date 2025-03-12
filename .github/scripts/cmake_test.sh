@@ -18,8 +18,8 @@
 #
 
 # This is used by github to run the tests for Continuous Integration support.
-cmake -S test -B cmake-build-test && cmake --build cmake-build-test && (cd cmake-build-test && ctest)
-
-#| In file included from /home/artiepoole/CLionProjects/ArtOS/test/DenseBooleanArray_test.cpp:22:
-#| /home/artiepoole/CLionProjects/ArtOS/test/../ArtOSTypes/DenseBoolean/DenseBooleanArray.h:24:10: fatal error: CPPMemory.h: No such file or directory
-#|    24 | #include "CPPMemory.h"
+set -e
+cmake -S test -B cmake-build-test
+cmake --build cmake-build-test
+cd cmake-build-test
+ctest

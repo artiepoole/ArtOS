@@ -8,6 +8,8 @@ if __name__ == '__main__':
         print("ERROR: Didn't load GRUB.")
         exit(1)
     if "LOADED OS. Entering event loop." not in data:
+        # TODO: this is highlighting an issue with logging. There should be a better way to handle this.
+        # TODO: https://sematext.com/blog/logging-levels/
         print("ERROR: Failed to load shell")
         exit(1)
     if "Starting Process: doom" not in data:

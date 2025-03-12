@@ -41,10 +41,10 @@ if grub-file --is-x86-multiboot2 ArtOS.bin; then
     echo multiboot2 confirmed
     mkdir -p isodir/boot/grub
     mkdir -p isodir/fs
-    cp ${BIN_SRC} isodir/boot/ArtOS.bin
-    cp ${GRUB_SRC} isodir/boot/grub/grub.cfg
-    if test -f ${DOOMWAD_SRC}; then
-      cp ${DOOMWAD_SRC} isodir/fs/doom1.wad
+    cp "${BIN_SRC}" isodir/boot/ArtOS.bin
+    cp "${GRUB_SRC}" isodir/boot/grub/grub.cfg
+    if test -f "${DOOMWAD_SRC}"; then
+      cp "${DOOMWAD_SRC}" isodir/fs/doom1.wad
     else
       wget https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad -O isodir/fs/doom1.wad
    fi
