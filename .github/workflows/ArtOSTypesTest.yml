@@ -14,5 +14,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: test
-      run: ./.github/scripts/cmake_test.sh
+      run: . ./.github/scripts/cmake_test.sh
 

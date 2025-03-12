@@ -22,10 +22,10 @@ jobs:
           sudo apt install -y gcc-multilib g++-multilib libc6:i386 libstdc++6:i386 qemu-system-x86 mtools grub-common grub-pc-bin socat xorriso
 
       - name: build
-        run: ./.github/scripts/build_artOS.sh
+        run: . ./.github/scripts/build_artOS.sh
 
       - name: qemu-test
-        run: ./.github/scripts/run_qemu_tests.sh
+        run: . ./.github/scripts/run_qemu_tests.sh
 
       - name: report_output
         run: cat serial.log
