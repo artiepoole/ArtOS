@@ -5,7 +5,7 @@ option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 
 project(ArtOS)
 ENABLE_LANGUAGE(ASM)
-
+set(CMAKE_TOOLCHAIN_FILE "./toolchain.cmake")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
@@ -44,7 +44,9 @@ add_subdirectory(doom)
 add_subdirectory(ArtOSTypes)
 #add_subdirectory(helloworld)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
+add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific}
+        Generic/sys/Memory/art_alloc.cpp
+)
 add_library(${KERNEL_LIB} Specific/kernel.cpp)
 target_include_directories(
         ${KERNEL_BIN} PUBLIC

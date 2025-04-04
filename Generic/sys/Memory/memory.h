@@ -51,6 +51,8 @@ union page_table_entry_t
 
 #endif
 
+const size_t page_alignment = 4096; // TODO: can this be constexpr and only in the "if C++" block?
+const size_t base_address_shift = 12;
 struct multiboot2_tag_mmap; // forward dec - multiboot2.h
 extern unsigned char* kernel_brk; // TODO: needed by paging.cpp. Better practice?
 
@@ -72,6 +74,15 @@ void aligned_free(void* ptr);
 void* kaligned_malloc(size_t size, size_t alignment, size_t target_process_id);
 
 void kaligned_free(void* ptr);
+
+// Run once to populate the start and size of the region available to allocate kernel pages to.
+void art_memory_init(void* start, size_t size_bytes);
+
+// Allocate call used by kernel processes
+void* art_alloc(size_t size_bytes, int flags);
+
+// Free call used by kernel processes.
+void art_free(const void* ptr);
 
 #ifdef __cplusplus
 page_table_entry_t paging_check_contents(uintptr_t vaddr);

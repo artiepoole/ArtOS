@@ -29,8 +29,6 @@
 #include "Scheduler.h"
 
 
-constexpr size_t base_address_shift = 12;
-constexpr size_t page_alignment = 4096;
 constexpr size_t max_n_pages = 0x100000;
 
 /// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
@@ -316,14 +314,13 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
     return p;
 }
 
-int munmap(void* addr, const size_t length)
+int munmap(void* addr, const size_t length_bytes)
 {
     // TODO: More checks such as "you don't own this memory"
     return unassign_page_table_entries(
         reinterpret_cast<uintptr_t>(addr) >> base_address_shift,
-        (length + page_alignment - 1) >> base_address_shift);
+        (length_bytes + page_alignment - 1) >> base_address_shift); // this rounds up
 }
-
 
 uintptr_t paging_get_phys_addr(uintptr_t vaddr)
 {

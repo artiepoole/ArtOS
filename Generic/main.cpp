@@ -58,7 +58,6 @@
 #include "Terminal.h"
 #include "Serial.h"
 #include "CPPMemory.h"
-
 #if FORLAPTOP
 #include "CPUID.h"
 #include "SMBIOS.h"
