@@ -57,9 +57,9 @@ namespace art_allocator
 
     bool expand_chunk_array()
     {
-        const size_t new_size = n_chunks * 2;
-        const size_t n_pages = (new_size * sizeof(chunk_t) + page_alignment - 1) / page_alignment or 1;
-
+        size_t new_size = n_chunks * 2;
+        const size_t n_pages = (new_size * sizeof(chunk_t) + page_alignment - 1) / page_alignment;
+        new_size = n_pages * page_alignment / sizeof(chunk_t);
 
         auto* new_chunks = static_cast<chunk_t*>(mmap(0, n_pages * page_alignment, 0, 0, 0, 0));
 
@@ -68,6 +68,10 @@ namespace art_allocator
         memcpy(new_chunks, chunks, sizeof(chunk_t) * n_chunks);
         // NOTE: always a full page so munmap is safe.
         munmap(chunks, sizeof(chunk_t) * n_chunks);
+        for (size_t i = n_chunks; i < new_size; i++)
+        {
+            new_chunks[i].array_free = true;
+        }
         chunks = new_chunks;
         n_chunks = new_size;
         return true;
@@ -90,6 +94,7 @@ namespace art_allocator
                 ++idx;
             }
             expand_chunk_array(); // Expand the array and try again
+            return idx;
         }
     }
 
@@ -177,7 +182,7 @@ namespace art_allocator
 
     void split_chunk(const size_t prior, const size_t size_bytes)
     {
-        // This should probably call append chunk.
+        // TODO: should probably do some rounding or enforcement of minimum 4byte boundaries here.
         void* const new_start = chunks[prior].start + size_bytes;
         const size_t new_size = chunks[prior].size - size_bytes;
         const auto latter = append_chunk(new_start, new_size);
@@ -197,12 +202,6 @@ namespace art_allocator
     }
 }
 
-// Hmmm how do we handle available memory? Do we create one chunk for all memory and then allocate as and
-// when it's free or do we just append new chunks as and when we need them and let mmap do all the hard part?
-
-// NOTE: the chunks will always be in order so best to scan forwards and backwards wherever it makes sense to
-// (once doubly linked is implemented)
-
 using namespace art_allocator;
 
 
@@ -212,7 +211,7 @@ void art_memory_init()
 {
     LOG("Initialising memory allocator");
     constexpr size_t n_pages = 1;
-    constexpr size_t new_size = page_alignment / sizeof(chunk_t);;
+    constexpr size_t new_size = page_alignment / sizeof(chunk_t);
     auto* new_chunks = static_cast<chunk_t*>(mmap(0, n_pages * page_alignment, 0, 0, 0, 0));
 
     if (not new_chunks)
@@ -246,7 +245,7 @@ void* art_alloc(const size_t size_bytes, int flags)
 
     // otherwise data doesn't fill chunk enough.
     split_chunk(chunk_idx, size_bytes);
-    // LOG("Allocated ", size_bytes, " bytes starting at ", reinterpret_cast<uintptr_t>(chunks[chunk_idx].start));
+
     return chunks[chunk_idx].start;
 }
 
@@ -278,7 +277,6 @@ void art_free(const void* ptr)
                 )
             )
             {
-                LOG("Freed memory starting at ", reinterpret_cast<uintptr_t>(ptr));
                 return;
             }
 
