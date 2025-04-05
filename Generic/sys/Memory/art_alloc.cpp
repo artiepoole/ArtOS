@@ -94,9 +94,9 @@ namespace art_allocator
     }
 
     // frees a chunk in the array
-    void deallocate_chunk_entry(size_t idx)
+    void remove_chunk_from_array(size_t idx)
     {
-        memset(&chunks[idx], 0, sizeof(chunk_t));
+        chunks[idx] = chunk_t{nullptr, 0, 0, 0, false, true};
         if (idx < next_free_array_entry) next_free_array_entry = idx;
     }
 
@@ -127,7 +127,7 @@ namespace art_allocator
             return end_chunk_idx;
         }
         // assumes always adding to end:
-        const chunk_t chunk_data = {ptr, got_bytes, end_chunk_idx, next_free_array_entry, true, true};
+        const chunk_t chunk_data = {ptr, got_bytes, end_chunk_idx, next_free_array_entry, true, false};
         const size_t chunk_idx = append_chunk(chunk_data);
         end_chunk_idx = chunk_idx;
 
@@ -147,22 +147,25 @@ namespace art_allocator
         return get_pages_for_new_chunk(size_bytes);
     }
 
-    void split_chunk(const size_t chunk_idx, const size_t size_bytes)
+    void split_chunk(const size_t prior, const size_t size_bytes)
     {
         const size_t latter = get_next_free_array_entry();
-        chunks[latter].next = chunks[chunk_idx].next;
-        chunks[chunk_idx].next = latter;
-        chunks[chunk_idx].memory_free = false;
-        chunks[latter].size = chunks[chunk_idx].size - size_bytes;
-        chunks[chunk_idx].size = size_bytes;
-        chunks[latter].prev = chunk_idx;
+        chunks[latter].next = chunks[prior].next;
+        chunks[prior].next = latter;
+        chunks[prior].memory_free = false;
+        chunks[latter].size = chunks[prior].size - size_bytes;
+        chunks[prior].size = size_bytes;
+        chunks[latter].prev = prior;
+        chunks[latter].start = chunks[prior].start + size_bytes;
+        chunks[latter].memory_free = true;
+        chunks[latter].array_free = false;
     }
 
     void merge_chunk(const size_t prior, const size_t latter)
     {
         chunks[prior].next = chunks[latter].next;
         chunks[prior].size += chunks[latter].size;
-        deallocate_chunk_entry(latter);
+        remove_chunk_from_array(latter);
     }
 }
 
@@ -192,6 +195,11 @@ void art_memory_init()
 
     chunks = new_chunks;
     n_chunks = new_size;
+    chunks[0] = chunk_t{nullptr, 0, 0, 0, false, true};
+    for (size_t i = 0; i < n_chunks; ++i)
+    {
+        chunks[i].array_free = true;
+    }
 }
 
 
@@ -200,10 +208,10 @@ void* art_alloc(const size_t size_bytes, int flags)
 {
     // TODO: process flags to either adjust "size_bytes" or to pass on to "get_suitable_chunk"
     const size_t chunk_idx = get_suitable_chunk(size_bytes); // get suitable chunk may also split in future for alignment reasons
+    chunks[chunk_idx].memory_free = false;
     // if (not chunk) return nullptr;
     if (chunks[chunk_idx].size - size_bytes <= MIN_CHUNK_SIZE)
     {
-        chunks[chunk_idx].memory_free = false;
         return chunks[chunk_idx].start;
     }
 
@@ -223,7 +231,7 @@ void art_free(const void* ptr)
         {
             // chunk_t* chunk = &chunks[idx];
             chunks[idx].memory_free = true;
-            if (chunks[chunks[idx].prev].memory_free)
+            if (chunks[chunks[idx].prev].memory_free & idx != 0)
             {
                 idx = chunks[idx].prev; // swap to prev because current will be deleted
                 merge_chunk(idx, chunks[idx].next);
@@ -232,17 +240,21 @@ void art_free(const void* ptr)
             {
                 merge_chunk(idx, chunks[idx].next);
             }
-            // just collect all whole free pages
-            if (chunks[idx].size < page_alignment) return;
-
-            auto working_addr = reinterpret_cast<uintptr_t>(chunks[idx].start);
-            const uintptr_t end_addr = working_addr + chunks[idx].size;
-            working_addr = (working_addr + (page_alignment - 1)) >> base_address_shift << base_address_shift; // need to verify
-            const uintptr_t first_boundary = working_addr;
-            if (const size_t n_whole_pages = (end_addr - working_addr) / page_alignment; n_whole_pages > 0)
+            // if there are not free whole pages, we are done.
+            if (
+                chunks[idx].size < page_alignment or
+                not(
+                    reinterpret_cast<uintptr_t>(chunks[idx].start) % page_alignment == 0 and
+                    chunks[idx].size % 4096 == 0
+                )
+            )
             {
-                munmap(reinterpret_cast<void*>(first_boundary), n_whole_pages * page_alignment);
+                return;
             }
+
+            // otherwise return those whole pages
+            munmap(chunks[idx].start, chunks[idx].size);
+            remove_chunk_from_array(idx);
             return;
         }
         ++idx;

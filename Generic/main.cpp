@@ -71,6 +71,7 @@ extern "C" {
 IDE_drive_info_t drive_list[4];
 uintptr_t BM_controller_base_port;
 
+
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 {
@@ -121,6 +122,13 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     size_t framebuffer_size_b = frame_info->framebuffer_width * frame_info->framebuffer_height * frame_info->framebuffer_bpp / 8;
     paging_identity_map(frame_info->framebuffer_addr, framebuffer_size_b, true, false);
+    art_memory_init();
+    void* ptr = art_alloc(1024, 0);
+    art_free(ptr);
+    ptr = art_alloc(1024, 0);
+    void* ptr2 = art_alloc(1024, 0);
+    art_free(ptr);
+    art_free(ptr2);
     // And then we want graphics.
     VideoGraphicsArray vga(frame_info);
     vga.draw();

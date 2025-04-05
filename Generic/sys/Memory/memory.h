@@ -75,8 +75,7 @@ void* kaligned_malloc(size_t size, size_t alignment, size_t target_process_id);
 
 void kaligned_free(void* ptr);
 
-// Run once to populate the start and size of the region available to allocate kernel pages to.
-void art_memory_init(void* start, size_t size_bytes);
+void art_memory_init();
 
 // Allocate call used by kernel processes
 void* art_alloc(size_t size_bytes, int flags);
