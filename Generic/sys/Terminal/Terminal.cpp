@@ -16,6 +16,8 @@
 
 #include "Terminal.h"
 
+#include <memory.h>
+
 #include "cmp_int.h"
 #include "ArtFile.h"
 #include "Files.h"
@@ -67,9 +69,9 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
     const size_t n_characters = buffer_width * buffer_height;
-    term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
-    terminal_buffer = static_cast<terminal_char_t*>(malloc(n_characters * sizeof(terminal_char_t)));
-    rendered_buffer = static_cast<terminal_char_t*>(malloc(n_characters * sizeof(terminal_char_t)));
+    term_screen_buffer = static_cast<u32*>(art_alloc(screen_region.h * screen_region.w * sizeof(u32), 0));
+    terminal_buffer = static_cast<terminal_char_t*>(art_alloc(n_characters * sizeof(terminal_char_t), 0));
+    rendered_buffer = static_cast<terminal_char_t*>(art_alloc(n_characters * sizeof(terminal_char_t), 0));
     memset(terminal_buffer, 0, n_characters * sizeof(terminal_char_t));
     memset(rendered_buffer, 1, n_characters * sizeof(terminal_char_t));
 
@@ -172,11 +174,11 @@ void Terminal::setScale(u32 new_scale)
 
         buffer_width = screen_region.w / scaled_char_dim;
         buffer_height = screen_region.h / scaled_char_dim;
-        free(terminal_buffer);
-        free(rendered_buffer);
+        art_free(terminal_buffer);
+        art_free(rendered_buffer);
 
-        terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
-        rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
+        terminal_buffer = static_cast<terminal_char_t*>(art_alloc(buffer_height * buffer_width * sizeof(terminal_char_t), 0));
+        rendered_buffer = static_cast<terminal_char_t*>(art_alloc(buffer_height * buffer_width * sizeof(terminal_char_t), 0));
         memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
 
         // 1 so that it doesn't match terminal buffer clears and redraws whole screen
@@ -195,15 +197,15 @@ void Terminal::setScale(u32 new_scale)
 
 void Terminal::setRegion(const u32 x, const u32 y, const u32 width, const u32 height)
 {
-    free(terminal_buffer);
-    free(rendered_buffer);
-    free(term_screen_buffer);
+    art_free(terminal_buffer);
+    art_free(rendered_buffer);
+    art_free(term_screen_buffer);
     screen_region = {x, y, width + x, height + y, width, height};
     buffer_width = screen_region.w / scaled_char_dim;
     buffer_height = screen_region.h / scaled_char_dim;
-    terminal_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
-    rendered_buffer = static_cast<terminal_char_t*>(malloc(buffer_height * buffer_width * sizeof(terminal_char_t)));
-    term_screen_buffer = static_cast<u32*>(malloc(screen_region.h * screen_region.w * sizeof(u32)));
+    terminal_buffer = static_cast<terminal_char_t*>(art_alloc(buffer_height * buffer_width * sizeof(terminal_char_t), 0));
+    rendered_buffer = static_cast<terminal_char_t*>(art_alloc(buffer_height * buffer_width * sizeof(terminal_char_t), 0));
+    term_screen_buffer = static_cast<u32*>(art_alloc(screen_region.h * screen_region.w * sizeof(u32), 0));
     // TODO: these are all being mapped to the same physical memory.
     memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
     memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t)); // all different

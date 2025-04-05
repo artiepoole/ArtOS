@@ -18,19 +18,12 @@
 // Created by artiepoole on 3/12/25.
 //
 
+#include <logging.h>
 #include <stdlib.h>
 #include <doomgeneric/p_local.h>
 
 #include "LinkedList.h"
 #include "memory.h"
-
-
-enum ART_ALLOC_FLAGS
-{
-    ALIGNED_4 = 1 << 2,
-    ALIGNED_8 = 1 << 3,
-    ALIGNED_4096 = 1 << 9, // full page alignment
-};
 
 
 namespace art_allocator
@@ -54,6 +47,7 @@ namespace art_allocator
     size_t n_chunks = 0;
     size_t next_free_array_entry = 0;
     size_t end_chunk_idx = 0;
+    size_t highest_used_chunk = 0;
 
     size_t idx_from_ptr(const chunk_t* chunk)
     {
@@ -64,7 +58,8 @@ namespace art_allocator
     bool expand_chunk_array()
     {
         const size_t new_size = n_chunks * 2;
-        const size_t n_pages = (new_size * sizeof(chunk_t) + page_alignment - 1) / page_alignment;
+        const size_t n_pages = (new_size * sizeof(chunk_t) + page_alignment - 1) / page_alignment or 1;
+
 
         auto* new_chunks = static_cast<chunk_t*>(mmap(0, n_pages * page_alignment, 0, 0, 0, 0));
 
@@ -79,35 +74,66 @@ namespace art_allocator
     }
 
     // This is for getting where to store the new chunk info after getting new pages, or when splitting a chunk to assign part of a chunk
-    size_t get_next_free_array_entry()
+    size_t get_next_free_array_entry(const size_t start_idx)
     {
-        size_t idx = next_free_array_entry;
+        size_t idx = start_idx;
         while (true)
         {
             while (idx < n_chunks)
             {
-                if (chunks[idx].array_free) return idx;
+                if (chunks[idx].array_free)
+                {
+                    next_free_array_entry = idx;
+                    return idx;
+                }
+
                 ++idx;
             }
             expand_chunk_array(); // Expand the array and try again
         }
     }
 
+    size_t get_highest_used_chunk()
+    {
+        size_t idx = 0;
+
+        while (idx < n_chunks)
+        {
+            if (chunks[idx].array_free)
+            {
+                if (idx == 0) return 0;
+                return idx - 1;
+            }
+            ++idx;
+        }
+        return 0;
+    }
+
     // frees a chunk in the array
     void remove_chunk_from_array(size_t idx)
     {
-        chunks[idx] = chunk_t{nullptr, 0, 0, 0, false, true};
         if (idx < next_free_array_entry) next_free_array_entry = idx;
+        if (idx == end_chunk_idx & end_chunk_idx >= 1) end_chunk_idx = chunks[idx].prev;
+        if (idx == highest_used_chunk & highest_used_chunk >= 1) highest_used_chunk = get_highest_used_chunk();
+        chunks[idx] = chunk_t{nullptr, 0, 0, 0, false, true};
     }
 
 
     // Just stores a new chunk in next available array idx. Returns the index used to store this data
-    size_t append_chunk(chunk_t const& data)
+    size_t append_chunk(void* start, size_t size)
     {
+        // TODO: update next of the prev chunk on append
         // NORMAL BEHAVIOUR:
-        const size_t idx = next_free_array_entry;
-        chunks[idx] = data;
-        next_free_array_entry = get_next_free_array_entry();
+
+        const size_t idx = get_next_free_array_entry(next_free_array_entry);
+        chunks[end_chunk_idx].next = idx; // end chunk idx should be "last assigned"
+        const size_t new_next = get_next_free_array_entry(idx);
+        const chunk_t chunk_data = {start, size, end_chunk_idx, new_next, true, false};
+        chunks[idx] = chunk_data;
+        next_free_array_entry = new_next;
+        // this assumes pages aren't given back so some checks about highest memory loc or something?
+        end_chunk_idx = idx;
+        highest_used_chunk = idx;
         return idx;
     }
 
@@ -121,15 +147,14 @@ namespace art_allocator
         {
             exit(-1);
         }
-        if (chunk_t end_chunk = chunks[end_chunk_idx]; end_chunk.start + end_chunk.size == ptr) // is it contiguous
+        if (chunk_t* end_chunk = &chunks[end_chunk_idx]; end_chunk->start + end_chunk->size == ptr && end_chunk->memory_free) // is it contiguous
         {
-            end_chunk.size += got_bytes;
+            end_chunk->size += got_bytes;
             return end_chunk_idx;
         }
         // assumes always adding to end:
-        const chunk_t chunk_data = {ptr, got_bytes, end_chunk_idx, next_free_array_entry, true, false};
-        const size_t chunk_idx = append_chunk(chunk_data);
-        end_chunk_idx = chunk_idx;
+        const size_t chunk_idx = append_chunk(ptr, got_bytes);
+
 
         return chunk_idx;
     }
@@ -138,9 +163,12 @@ namespace art_allocator
     size_t get_suitable_chunk(const size_t size_bytes)
     {
         size_t idx = 0;
-        while (idx < n_chunks)
+        while (idx <= highest_used_chunk)
         {
-            if (chunks[idx].memory_free & chunks[idx].size >= size_bytes) return idx;
+            if (chunks[idx].memory_free & chunks[idx].size >= size_bytes)
+            {
+                return idx;
+            }
             ++idx;
         }
 
@@ -149,16 +177,16 @@ namespace art_allocator
 
     void split_chunk(const size_t prior, const size_t size_bytes)
     {
-        const size_t latter = get_next_free_array_entry();
-        chunks[latter].next = chunks[prior].next;
+        // This should probably call append chunk.
+        void* const new_start = chunks[prior].start + size_bytes;
+        const size_t new_size = chunks[prior].size - size_bytes;
+        const auto latter = append_chunk(new_start, new_size);
+        chunks[latter].next = chunks[prior].next; // doesn't work if not set >.>
         chunks[prior].next = latter;
         chunks[prior].memory_free = false;
-        chunks[latter].size = chunks[prior].size - size_bytes;
         chunks[prior].size = size_bytes;
         chunks[latter].prev = prior;
-        chunks[latter].start = chunks[prior].start + size_bytes;
         chunks[latter].memory_free = true;
-        chunks[latter].array_free = false;
     }
 
     void merge_chunk(const size_t prior, const size_t latter)
@@ -182,6 +210,7 @@ using namespace art_allocator;
  */
 void art_memory_init()
 {
+    LOG("Initialising memory allocator");
     constexpr size_t n_pages = 1;
     constexpr size_t new_size = page_alignment / sizeof(chunk_t);;
     auto* new_chunks = static_cast<chunk_t*>(mmap(0, n_pages * page_alignment, 0, 0, 0, 0));
@@ -217,7 +246,7 @@ void* art_alloc(const size_t size_bytes, int flags)
 
     // otherwise data doesn't fill chunk enough.
     split_chunk(chunk_idx, size_bytes);
-
+    // LOG("Allocated ", size_bytes, " bytes starting at ", reinterpret_cast<uintptr_t>(chunks[chunk_idx].start));
     return chunks[chunk_idx].start;
 }
 
@@ -249,6 +278,7 @@ void art_free(const void* ptr)
                 )
             )
             {
+                LOG("Freed memory starting at ", reinterpret_cast<uintptr_t>(ptr));
                 return;
             }
 

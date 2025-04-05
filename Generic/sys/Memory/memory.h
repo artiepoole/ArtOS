@@ -51,6 +51,15 @@ union page_table_entry_t
 
 #endif
 
+
+enum ART_ALLOC_FLAGS
+{
+    ALIGNED_4 = 1 << 2,
+    ALIGNED_8 = 1 << 3,
+    ALIGNED_16 = 1 << 4,
+    ALIGNED_4096 = 1 << 9, // full page alignment
+};
+
 const size_t page_alignment = 4096; // TODO: can this be constexpr and only in the "if C++" block?
 const size_t base_address_shift = 12;
 struct multiboot2_tag_mmap; // forward dec - multiboot2.h

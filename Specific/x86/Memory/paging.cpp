@@ -162,13 +162,6 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
 }
 
 
-/**
- * Also acts as paging_init
- * @param phys_addr
- * @param size
- * @param writable
- * @param user
- */
 void paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
 {
     virtual_address_t virtual_address = {.raw = phys_addr};

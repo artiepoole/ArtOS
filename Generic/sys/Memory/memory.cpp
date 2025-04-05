@@ -56,6 +56,7 @@ void aligned_free(void* ptr)
 }
 
 // alignment is in bytes
+// TODO: this is trash. This should be replaced with art_alloc
 void* kaligned_malloc(size_t size, size_t alignment, const size_t target_process_id)
 {
     paging_set_target_pid(target_process_id);

@@ -93,6 +93,12 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // Must populate boot info in order to set up memory handling required to use malloc/new
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     mmap_init(&boot_info->mmap);
+    multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
+
+    size_t framebuffer_size_b = frame_info->framebuffer_width * frame_info->framebuffer_height * frame_info->framebuffer_bpp / 8;
+    paging_identity_map(frame_info->framebuffer_addr, framebuffer_size_b, true, false);
+    art_memory_init();
+
 
     // Then load all the boot information into a usable format.
     LOG("Populated boot info.");
@@ -118,17 +124,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("CR0 CACHE DISABLED?: ", static_cast<bool>(get_cr0().CD));
 #endif
-    multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
 
-    size_t framebuffer_size_b = frame_info->framebuffer_width * frame_info->framebuffer_height * frame_info->framebuffer_bpp / 8;
-    paging_identity_map(frame_info->framebuffer_addr, framebuffer_size_b, true, false);
-    art_memory_init();
-    void* ptr = art_alloc(1024, 0);
-    art_free(ptr);
-    ptr = art_alloc(1024, 0);
-    void* ptr2 = art_alloc(1024, 0);
-    art_free(ptr);
-    art_free(ptr2);
+
     // And then we want graphics.
     VideoGraphicsArray vga(frame_info);
     vga.draw();
