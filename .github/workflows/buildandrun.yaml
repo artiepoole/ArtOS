@@ -1,19 +1,21 @@
-name: buildandrun.yaml
+name: Build ArtOS and run qemu tests
 on:
-  push:
-    branches:
-      - '**'
   pull_request:
-    branches:
-      - '**'
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
 jobs:
-  build:
+  qemu-testing:
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
       - name: install
+
         run: |
           #          TODO: https://github.com/thought-machine/please/tree/master/tools/images#updating-images <- this but maybe lxc
           sudo dpkg --add-architecture i386 

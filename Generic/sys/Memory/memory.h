@@ -29,6 +29,9 @@
 // http://wiki.osdev.org/Detecting_Memory_(x86)#BIOS_Function:_INT_0x15,_EAX_=_0xE820
 #ifdef __cplusplus
 extern "C" {
+constexpr size_t page_alignment = 4096;
+constexpr size_t base_address_shift = 12;
+
 union page_table_entry_t
 {
     struct
@@ -49,7 +52,24 @@ union page_table_entry_t
     u32 raw;
 };
 
+void art_memory_init();
+
+// Allocate call used by kernel processes
+void* art_alloc(size_t size_bytes, size_t alignment_size = 0, int flags = 0);
+
+// Free call used by kernel processes.
+void art_free(const void* ptr);
+
+
 #endif
+
+
+enum ART_ALLOC_FLAGS
+{
+    KERNEL_SPACE,
+    USER_SPACE
+};
+
 
 struct multiboot2_tag_mmap; // forward dec - multiboot2.h
 extern unsigned char* kernel_brk; // TODO: needed by paging.cpp. Better practice?
@@ -64,14 +84,10 @@ void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool u
 uintptr_t paging_get_phys_addr(uintptr_t vaddr);
 void paging_set_target_pid(size_t pid);
 
-
 void* aligned_malloc(size_t size, size_t alignment);
 
 void aligned_free(void* ptr);
 
-void* kaligned_malloc(size_t size, size_t alignment, size_t target_process_id);
-
-void kaligned_free(void* ptr);
 
 #ifdef __cplusplus
 page_table_entry_t paging_check_contents(uintptr_t vaddr);
