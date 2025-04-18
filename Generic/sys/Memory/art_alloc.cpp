@@ -29,6 +29,9 @@
 namespace art_allocator
 {
     size_t MIN_CHUNK_SIZE = 64; // arbitrary
+    /**
+     * nodes and data for a linked list where the nodes are stored in a free list
+     */
     struct chunk_t
     {
         void* start; // address in bytes
@@ -39,22 +42,17 @@ namespace art_allocator
         bool array_free : 1;
     };
 
-    // for the array we need to store the max idx and
-
-    // TODO: Woody says I should rewrite the LL method from scratch to be more suitable for malloc: allow access to prev and next.
-
-    chunk_t* chunks;
-    size_t n_chunks = 0;
-    size_t next_free_array_entry = 0;
-    size_t end_chunk_idx = 0;
-    size_t highest_used_chunk = 0;
-
-    size_t idx_from_ptr(const chunk_t* chunk)
-    {
-        return chunk - chunks;
-    }
+    chunk_t* chunks; // A "free list" of chunks
+    size_t n_chunks = 0; // current size of the chunks free list
+    size_t next_free_array_entry = 0; // the smallest idx in the free list which is free to write to
+    size_t end_chunk_idx = 0; // the index of the chunk which is the "tail" of the linked list
+    size_t highest_used_chunk = 0; // the index of the chunk which has the highest index in the free list (should be equal to n_chunks but might not be?)
 
 
+    /** Doubles the capacity of the chunks free list
+     *
+     * @return true for success and false for failure
+     */
     bool expand_chunk_array()
     {
         size_t new_size = n_chunks * 2;
@@ -78,6 +76,11 @@ namespace art_allocator
     }
 
     // This is for getting where to store the new chunk info after getting new pages, or when splitting a chunk to assign part of a chunk
+    /** Scans the free list to find a suitable place to store a new chunk. This will call function to expand the free list if full
+     *
+     * @param start_idx the index at which to look above, saves time
+     * @return the
+     */
     size_t get_next_free_array_entry(const size_t start_idx)
     {
         size_t idx = start_idx;
@@ -98,6 +101,11 @@ namespace art_allocator
         }
     }
 
+
+    /** Scans the chunks array for the index of the highest used chunk
+     *
+     * @return the index of the highest used chunk or 0 if none are free.
+     */
     size_t get_highest_used_chunk()
     {
         size_t idx = 0;
@@ -114,8 +122,13 @@ namespace art_allocator
         return 0;
     }
 
-    // frees a chunk in the array
-    void remove_chunk_from_array(size_t idx)
+
+    /** When the chunk is merged or otherwise removed from play, this will free an entry in the free list
+     * It also handles updating the tracker items such as next_free_array_entry
+     *
+     * @param idx the index of the chunk entry to be freed
+     */
+    void remove_chunk_from_array(const size_t idx)
     {
         if (idx < next_free_array_entry) next_free_array_entry = idx;
         if (idx == end_chunk_idx & end_chunk_idx >= 1) end_chunk_idx = chunks[idx].prev;
@@ -124,8 +137,13 @@ namespace art_allocator
     }
 
 
-    // Just stores a new chunk in next available array idx. Returns the index used to store this data
-    size_t append_chunk(void* start, size_t size)
+    /** Creates a new chunk struct and stores it in the chunks free list
+     *
+     * @param start the start address of the memory region handled by this chunk
+     * @param size the size of the aforementioned memory region
+     * @return the index of the newly stored chunk
+     */
+    size_t append_chunk(void* start, const size_t size)
     {
         // TODO: update next of the prev chunk on append
         // NORMAL BEHAVIOUR:
@@ -142,7 +160,13 @@ namespace art_allocator
         return idx;
     }
 
-    // This needs to handle writing the chunk info the array
+
+    /** Calls mmap to get new memory from the paging system to be used by the calling process.
+     *
+     * @param size_bytes number of bytes to allocate
+     * @param alignment_size the alignment in bytes
+     * @return the index associated with the chunk which is now at least size_bytes big (can be merged)
+     */
     size_t get_pages_for_new_chunk(const size_t size_bytes, const size_t alignment_size = 1)
     {
         const size_t n_pages = (size_bytes + page_alignment - 1) / page_alignment;
@@ -283,7 +307,14 @@ void art_memory_init()
 }
 
 
-// TODO: do we need to propagate using indices in all returns instead of pointers to handle any non-atomic behaviour here?
+/** Allocate memory for kernel use. Uses entire pages to store chunk information as a hybrid of a linked list with its nodes stored in a "free list" type of array.
+ * When the chunk node array is full, that is reallocated by doubling its size. When chunks are allocated, chunks are split down to a minimum size of 64 bytes.
+ *
+ * @param size_bytes number of bytes to allocate
+ * @param alignment_size level of alignment in bytes - defaults to 1 byte aligned (0 acts as 1)
+ * @param flags optional flags
+ * @return pointer to start of allocated memory in the chunk
+ */
 void* art_alloc(const size_t size_bytes, size_t alignment_size, int flags)
 {
     size_t chunk_idx;
@@ -296,19 +327,25 @@ void* art_alloc(const size_t size_bytes, size_t alignment_size, int flags)
         chunk_idx = get_aligned_suitable_chunk(size_bytes, alignment_size);
     }
     chunks[chunk_idx].memory_free = false;
-    // if (not chunk) return nullptr;
+
+    // if excess space in chunk is too small to split, return it as is
     if (chunks[chunk_idx].size - size_bytes <= MIN_CHUNK_SIZE)
     {
         return chunks[chunk_idx].start;
     }
 
-    // otherwise data doesn't fill chunk enough.
+    // otherwise data doesn't fill chunk enough so we split it and reserve remaining unused memory.
     split_chunk(chunk_idx, size_bytes);
 
     return chunks[chunk_idx].start;
 }
 
 
+/** Frees up previously allocated chunks when ptr is a valid start value of a chunk.
+ * Upon freeing, previous and next chunks are checked to see if they can be merge with the newly freed chunk
+ *
+ * @param ptr address of the chunk allocated using art_alloc.
+ */
 void art_free(const void* ptr)
 {
     size_t idx = 0;
@@ -339,7 +376,7 @@ void art_free(const void* ptr)
                 return;
             }
 
-            // otherwise return those whole pages
+            // otherwise unmap those whole pages
             munmap(chunks[idx].start, chunks[idx].size);
             remove_chunk_from_array(idx);
             return;
