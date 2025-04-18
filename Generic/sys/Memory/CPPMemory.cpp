@@ -26,7 +26,7 @@ void* operator new(size_t size) throw()
 {
     if (size == 0) size = 1;
 
-    return art_alloc(size, 0);
+    return art_alloc(size);
 }
 
 

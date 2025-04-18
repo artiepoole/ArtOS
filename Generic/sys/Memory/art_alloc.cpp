@@ -143,7 +143,7 @@ namespace art_allocator
     }
 
     // This needs to handle writing the chunk info the array
-    size_t get_pages_for_new_chunk(const size_t size_bytes)
+    size_t get_pages_for_new_chunk(const size_t size_bytes, const size_t alignment_size = 1)
     {
         const size_t n_pages = (size_bytes + page_alignment - 1) / page_alignment;
         const size_t got_bytes = n_pages * page_alignment;
@@ -152,7 +152,10 @@ namespace art_allocator
         {
             exit(-1);
         }
-        if (chunk_t* end_chunk = &chunks[end_chunk_idx]; end_chunk->start + end_chunk->size == ptr && end_chunk->memory_free) // is it contiguous
+        if (chunk_t* end_chunk = &chunks[end_chunk_idx];
+            end_chunk->start + end_chunk->size == ptr &&
+            end_chunk->memory_free &&
+            reinterpret_cast<uintptr_t>(end_chunk->start) % alignment_size == 0) // is it contiguous and suitable
         {
             end_chunk->size += got_bytes;
             return end_chunk_idx;
@@ -160,27 +163,17 @@ namespace art_allocator
         // assumes always adding to end:
         const size_t chunk_idx = append_chunk(ptr, got_bytes);
 
-
         return chunk_idx;
     }
 
-    // This gets the next chunk that's big enough or makes a new one
-    size_t get_suitable_chunk(const size_t size_bytes)
-    {
-        size_t idx = 0;
-        while (idx <= highest_used_chunk)
-        {
-            if (chunks[idx].memory_free & chunks[idx].size >= size_bytes)
-            {
-                return idx;
-            }
-            ++idx;
-        }
 
-        return get_pages_for_new_chunk(size_bytes);
-    }
-
-    void split_chunk(const size_t prior, const size_t size_bytes)
+    /**
+     *
+     * @param prior index of the chunk to be split
+     * @param size_bytes the amount of bytes to keep in the first chunk
+     * @return the index of latter chunk which is created
+     */
+    size_t split_chunk(const size_t prior, const size_t size_bytes)
     {
         // TODO: should probably do some rounding or enforcement of minimum 4byte boundaries here.
         void* const new_start = chunks[prior].start + size_bytes;
@@ -192,15 +185,74 @@ namespace art_allocator
         chunks[prior].size = size_bytes;
         chunks[latter].prev = prior;
         chunks[latter].memory_free = true;
+        return latter;
     }
 
+
+    /** Merge two chunks which are contiguous in memory
+     *
+     * @param prior the index of the chunk which is earlier in memory
+     * @param latter the index of the chunk which is later in memory
+     */
     void merge_chunk(const size_t prior, const size_t latter)
     {
         chunks[prior].next = chunks[latter].next;
         chunks[prior].size += chunks[latter].size;
         remove_chunk_from_array(latter);
     }
+
+
+    /** Get the next suitable chunk for memory which must be aligned
+     *
+     * @param size_bytes required number of bytes
+     * @param alignment_size alignment in bytes e.g. 4 for 32bit integer
+     * @return index of first found/created suitable chunk
+     */
+    size_t get_aligned_suitable_chunk(const size_t size_bytes, const size_t alignment_size)
+    {
+        size_t idx = 0;
+        while (idx <= highest_used_chunk)
+        {
+            chunk_t* chunk = &chunks[idx];
+            ++idx;
+            if (!chunk->memory_free) continue;
+            if (chunk->size < size_bytes) continue;
+            if (reinterpret_cast<u32>(chunk->start) % alignment_size + size_bytes >= chunk->size) // if whole
+            {
+                if (reinterpret_cast<u32>(chunk->start) % alignment_size != 0)
+                {
+                }
+                return idx;
+            }
+        }
+        return get_pages_for_new_chunk(size_bytes, alignment_size);
+    }
+
+    /** Get the next suitable chunk for memory which doesn't care about alignment
+     *
+     * @param size_bytes required number of bytes
+     * @return index of first found/created suitable chunk
+     */
+    size_t get_suitable_chunk(const size_t size_bytes)
+    {
+        size_t idx = 0;
+        while (idx <= highest_used_chunk)
+        {
+            if (chunks[idx].memory_free & chunks[idx].size >= size_bytes)
+            {
+                return idx;
+            }
+            ++idx;
+        }
+        // TODO: this could calculate how many /more/ bytes to get instead of always getting enough for the whole object:
+        // i.e. if there are 5000 bytes required, this gets 2 pages but if there are > 4 bytes free at the end of the last
+        // chunk then this should only request one page and append the new page to old chunk. This is complicated to do
+        // without a refactor because the appending of a chunk also merges if possible atm.
+        return get_pages_for_new_chunk(size_bytes);
+    }
+
 }
+
 
 using namespace art_allocator;
 
@@ -232,10 +284,17 @@ void art_memory_init()
 
 
 // TODO: do we need to propagate using indices in all returns instead of pointers to handle any non-atomic behaviour here?
-void* art_alloc(const size_t size_bytes, int flags)
+void* art_alloc(const size_t size_bytes, size_t alignment_size, int flags)
 {
-    // TODO: process flags to either adjust "size_bytes" or to pass on to "get_suitable_chunk"
-    const size_t chunk_idx = get_suitable_chunk(size_bytes); // get suitable chunk may also split in future for alignment reasons
+    size_t chunk_idx;
+    if (alignment_size == 0 or alignment_size == 1)
+    {
+        chunk_idx = get_suitable_chunk(size_bytes);
+    }
+    else
+    {
+        chunk_idx = get_aligned_suitable_chunk(size_bytes, alignment_size);
+    }
     chunks[chunk_idx].memory_free = false;
     // if (not chunk) return nullptr;
     if (chunks[chunk_idx].size - size_bytes <= MIN_CHUNK_SIZE)

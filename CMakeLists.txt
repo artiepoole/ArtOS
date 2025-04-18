@@ -5,7 +5,6 @@ option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 
 project(ArtOS)
 ENABLE_LANGUAGE(ASM)
-set(CMAKE_TOOLCHAIN_FILE "./toolchain.cmake")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)

@@ -122,7 +122,7 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     if (user)
     {
         // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
-        proc_stack = kaligned_malloc(stack_size, stack_alignment, next_process_id); // TODO: this malloc call is not correctly detecting user vs kernel space because currentprocID is used in malloc.
+        proc_stack = art_alloc(stack_size, stack_alignment); // TODO: this malloc call is not correctly detecting user vs kernel space because currentprocID is used in malloc.
         stack_top = static_cast<u8*>(proc_stack) + stack_size;
     }
     else
