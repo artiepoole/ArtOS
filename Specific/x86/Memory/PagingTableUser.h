@@ -15,44 +15,27 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 //
-// Created by artypoole on 13/07/24.
+// Created by artiepoole on 4/21/25.
 //
 
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef PAGINGTABLEUSER_H
+#define PAGINGTABLEUSER_H
 
+#include "PagingTable.h"
 
-#include "types.h"
-
-// http://wiki.osdev.org/Memory_Map_(x86)
-// "Use the BIOS function INT 15h, EAX=0xE820 to get a reliable map of Extended Memory."
-// http://wiki.osdev.org/Detecting_Memory_(x86)#BIOS_Function:_INT_0x15,_EAX_=_0xE820
-#ifdef __cplusplus
-extern "C" {
-void art_memory_init();
-
-// Allocate call used by kernel processes
-void* art_alloc(size_t size_bytes, size_t alignment_size = 0, int flags = 0);
-
-// Free call used by kernel processes.
-void art_free(const void* ptr);
-
-
-#endif
-
-enum ART_ALLOC_FLAGS
+class PagingTableUser : PagingTable
 {
-    KERNEL_SPACE,
-    USER_SPACE
+public:
+    PagingTableUser();
+
+    uintptr_t get_page_table_addr() override;
+    void append_page_table() override;
+
+private:
+    page_directory_4kb_t** paging_table = nullptr; // stores 1024 page tables
+    page_table_entry_t** page_tables = nullptr; // stores 1024 mapping entries
+    size_t n_tables = 0;
 };
 
-struct multiboot2_tag_mmap; // forward dec - multiboot2.h
 
-void* aligned_malloc(size_t size, size_t alignment);
-
-void aligned_free(void* ptr);
-
-#ifdef __cplusplus
-}
-#endif
-#endif //MEMORY_H
+#endif //PAGINGTABLEUSER_H

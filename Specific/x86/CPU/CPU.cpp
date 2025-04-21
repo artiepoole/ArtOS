@@ -89,7 +89,14 @@ cr0_t get_cr0()
 
 u32 get_cr2()
 {
-    u32 cr2{};
+    u32 cr2;
     asm("mov %%cr2,%0" : "=r"(cr2));
     return cr2;
+}
+
+
+
+void set_cr3(uintptr_t addr)
+{
+    asm volatile("mov %0, %%cr3" :: "r"(addr) : "memory");
 }

@@ -15,6 +15,7 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 #include <float.h>
+#include <paging.h>
 #include <SMBIOS.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -29,6 +30,7 @@
 #include "syscall.h"
 
 #include "SIMD.h"
+#include "paging.h"
 
 
 #include "icxxabi.h"

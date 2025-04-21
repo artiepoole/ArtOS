@@ -24,14 +24,15 @@
 #include <IDT.h>
 #include <LocalAPIC.h>
 #include <logging.h>
+#include <PagingTableUser.h>
 #include <SMBIOS.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <TSC.h>
+#include <Memory/PagingTable.h>
 
 #include "CPUID.h"
-#include "kernel.h"
 #include "memory.h"
 #include "LinkedList.h"
 #include "EventQueue.h"
@@ -106,6 +107,14 @@ Scheduler& Scheduler::get()
     return *scheduler_instance;
 }
 
+/*
+ * Create a new page table and directory for the user process (new CR3).
+ * Allocate physical memory for the process’s stack, code, and data.
+ * Map those physical pages into the user-space virtual addresses in the new page table.
+ * Temporarily map those physical pages into the current kernel address space, so you can write to them.
+ * Write values (like initial stack contents, arguments, etc.) via the kernel mapping.
+ * Later, when the process runs, load its CR3, set its initial stack pointer, and iret.
+*/
 // Create new process. This can only be user mode if the code and data for the function are contained in user-accessible pages
 void Scheduler::execf(void (*func)(), const char* name, const bool user)
 {
@@ -115,6 +124,8 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
 
     auto* proc = &processes[next_process_id];
+    proc->paging_table = new PagingTableUser();
+
     cpu_registers_t context{};
     proc->user = user;
     void* proc_stack;
@@ -122,7 +133,9 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     if (user)
     {
         // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
-        proc_stack = art_alloc(stack_size, stack_alignment); // TODO: this malloc call is not correctly detecting user vs kernel space because currentprocID is used in malloc.
+        // TODO: the stack must be part of the user space memory map so this has to be remapped!
+        proc_stack = art_alloc(stack_size, stack_alignment);
+        while (true);
         stack_top = static_cast<u8*>(proc_stack) + stack_size;
     }
     else
@@ -233,15 +246,15 @@ EventQueue* Scheduler::getCurrentProcessEventQueue()
     return processes[current_process_id].eventQueue;
 }
 
-bool Scheduler::isCurrentProcessUser()
-{
-    return processes[current_process_id].user;
-}
+// bool Scheduler::isCurrentProcessUser()
+// {
+//     return processes[current_process_id].user;
+// }
 
-bool Scheduler::isProcessUser(size_t PID)
-{
-    return processes[PID].user;
-}
+// bool Scheduler::isProcessUser(size_t PID)
+// {
+//     return processes[PID].user;
+// }
 
 // files.find_if([filename](ArtFile f) { return strcmp(f.get_name(), filename) == 0; });
 // iterate([device](ArtDirectory* dir) { device->populate_directory_recursive(dir); });
@@ -311,6 +324,8 @@ void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
     {
         r->user_esp = r->esp;
     }
+
+    set_cr3(processes[PID].paging_table->get_page_table_addr());
 }
 
 void Scheduler::sleep_ms(const u32 ms)

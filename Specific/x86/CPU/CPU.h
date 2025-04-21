@@ -127,5 +127,8 @@ u16 get_cs();
 u16 get_ds();
 cr0_t get_cr0();
 u32 get_cr2();
+u32 get_ebp();
+u32 set_ebp(u32 ebp);
+void set_cr3(uintptr_t addr);
 
 #endif //SYSTEM_H

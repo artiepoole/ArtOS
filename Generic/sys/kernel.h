@@ -42,7 +42,9 @@ enum class SYSCALL_t
     GET_EVENT,
     DRAW_REGION,
     GET_TIME,
-    GET_EPOCH
+    GET_EPOCH,
+    MMAP,
+    MUNMAP
 };
 
 typedef struct tm tm;
@@ -64,9 +66,12 @@ long get_epoch_time();
 bool probe_pending_events();
 event_t get_next_event();
 
-//graphics
+// graphics
 void draw_screen_region(const u32* frame_buffer);
 
+// memory
+void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset);
+void munmap(void* addr, size_t length);
 #ifdef __cplusplus
 }
 #endif

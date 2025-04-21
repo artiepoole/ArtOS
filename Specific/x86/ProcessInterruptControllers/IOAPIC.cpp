@@ -20,7 +20,7 @@
 
 #include "IOAPIC.h"
 #include "logging.h"
-#include "memory.h"
+#include "paging.h"
 
 #if FORLAPTOP
     #define TARGET_APIC 2

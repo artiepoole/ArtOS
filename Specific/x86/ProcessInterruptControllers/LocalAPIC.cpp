@@ -24,7 +24,7 @@
 #include <TSC.h>
 
 #include "logging.h"
-#include "memory.h"
+#include "paging.h"
 #include "IDT.h"
 uintptr_t* eoi_addr;
 

@@ -19,6 +19,7 @@
 //
 
 #include "memory.h"
+#include "paging.h"
 #include "errno.h"
 
 #include "multiboot2.h"
@@ -35,37 +36,6 @@ constexpr size_t max_n_pages = 0x100000;
 constexpr size_t page_table_size = 1024;
 
 
-union page_directory_4kb_t
-{
-    struct
-    {
-        u32 present : 1 = true;
-        u32 rw : 1; // read/write if set, read-only otherwise
-        u32 user_access : 1; // user and supervisor if set, supervisor only if not.
-        u32 write_through : 1 = false; // write through caching if set, write-back otherwise
-        u32 cache_disable : 1 = false; // is caching disabled?
-        u32 accessed : 1 = false; // Gets sets on access, has to be cleared manually by OS if used.
-        u32 OS : 1 = false; // free bit available for OS use
-        u32 extended_page_size : 1 = false; // 4MB pages if set, 4KB if not. (Always not set in ArtOS).
-        u32 OS_data : 4 = 0; // free nibble available for OS flags
-        u32 page_table_entry_address : 20; // bits 12-31. 4KiB alignment means first 12 bits are always zero.
-    };
-
-    u32 raw;
-};
-
-union virtual_address_t
-{
-    uintptr_t raw;
-
-    struct
-    {
-        uintptr_t page_offset : 12;
-        uintptr_t page_table_index : 10;
-        uintptr_t page_directory_index : 10;
-    };
-};
-
 struct page_table
 {
     page_table_entry_t table[page_table_size];
@@ -75,13 +45,12 @@ uintptr_t main_region_start;
 uintptr_t main_region_end;
 size_t last_physical_idx;
 page_directory_4kb_t paging_directory[page_table_size]__attribute__((aligned(page_alignment)));
-page_table paging_tables[page_table_size]__attribute__((aligned(page_alignment)));
+page_table kernel_paging_tables[page_table_size]__attribute__((aligned(page_alignment)));
 uintptr_t user_base_address = 256 * 1024 * 1024; // 256MB of kernel space?
 
 // bitmaps used to keep track of the next virtual and physical pages available.
 // These are the same during identity mapping, but diverge when user space programs make malloc calls
 // 4GB worth of 4096 pages. Set all to false. Processing the multiboot2 memory_map will set the necessary bits.
-// TODO: replace with DenseBooleanArray
 constexpr size_t n_DBs = (max_n_pages + (64 - 1)) / 32;
 u64 paging_phys_bitmap_array[n_DBs];
 u64 paging_virt_bitmap_array[n_DBs];
@@ -90,7 +59,7 @@ DenseBooleanArray<u64> page_available_physical_bitmap;
 DenseBooleanArray<u64> page_available_virtual_bitmap;
 
 // TODO: replace target_pid workaround with proper file_descriptor handling in malloc.
-size_t target_pid = -1; // for use with kmalloc only. Allows scheduler to allocate userspace memory.
+// size_t target_pid = -1; // for use with kmalloc only. Allows scheduler to allocate userspace memory.
 
 
 // TODO: helper functions like converters between addresses and page numbers?
@@ -122,7 +91,7 @@ uintptr_t page_get_next_virt_addr(const uintptr_t start_addr)
 void assign_page_directory_entry(size_t dir_idx, const bool writable, const bool user)
 {
     page_directory_4kb_t dir_entry;
-    dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&paging_tables[dir_idx]) >> base_address_shift; // might be wrong.
+    dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&kernel_paging_tables[dir_idx]) >> base_address_shift; // might be wrong.
     dir_entry.rw = writable;
     dir_entry.user_access = user;
     paging_directory[dir_idx] = dir_entry;
@@ -136,7 +105,7 @@ void assign_page_table_entry(const uintptr_t physical_addr, const virtual_addres
     tab_entry.rw = writable;
     tab_entry.user_access = user;
 
-    paging_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
+    kernel_paging_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
 
     page_available_physical_bitmap.set_bit(physical_addr >> base_address_shift, false);
     page_available_virtual_bitmap.set_bit(v_addr.raw >> base_address_shift, false);
@@ -148,7 +117,7 @@ int unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
 {
     for (size_t i = start_idx; i < start_idx + n_pages; i++)
     {
-        auto* tab_entry = &paging_tables[i / 1024].table[i % 1024];
+        auto* tab_entry = &kernel_paging_tables[i / 1024].table[i % 1024];
         if (!tab_entry->present)return -1;
 
         const size_t phys_idx = tab_entry->physical_address;
@@ -175,7 +144,7 @@ void paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writ
         {
             assign_page_directory_entry(virtual_address.page_directory_index, writable, user);
         }
-        if (!paging_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
+        if (!kernel_paging_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
         {
             assign_page_table_entry(phys_addr, virtual_address, writable, user);
         }
@@ -202,9 +171,11 @@ void enable_paging()
  */
 void mmap_init(multiboot2_tag_mmap* mmap)
 {
+    // TODO:  This should call PagingTableKernel() which should do this
     // Iniitalise bitmaps
     page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);
     page_available_physical_bitmap.init(paging_phys_bitmap_array, max_n_pages, false);
+
 
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
@@ -256,27 +227,27 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 }
 
 
-void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset)
+void* kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset)
 {
     // mmap should return a contiguous chunk of virtual memory, so some checks should be done first.
     // if (addr < main_region_start) addr = main_region_start;
+    // This should call PagingTable->mmap
 
+    // bool is_user = false;
+    // if (target_pid != -1)
+    // {
+    //     is_user = Scheduler::isProcessUser(target_pid);
+    //     target_pid = -1;
+    // }
+    // else
+    // {
+    //     is_user = Scheduler::isCurrentProcessUser();
+    // }
 
-    bool is_user = false;
-    if (target_pid != -1)
-    {
-        is_user = Scheduler::isProcessUser(target_pid);
-        target_pid = -1;
-    }
-    else
-    {
-        is_user = Scheduler::isCurrentProcessUser();
-    }
-
-    if (is_user)
-    {
-        addr = MAX(addr, user_base_address); // start trying to allocate at user base address for user applications.
-    }
+    // if (is_user)
+    // {
+    //     addr = MAX(addr, user_base_address); // start trying to allocate at user base address for user applications.
+    // }
 
     const size_t first_page = addr >> base_address_shift;
     const size_t num_pages = (length + page_alignment - 1) >> base_address_shift;
@@ -288,7 +259,7 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
         if (!paging_directory[working_addr.page_directory_index].present)
         {
             // TODO: handle flag ints as bools here
-            assign_page_directory_entry(working_addr.page_directory_index, true, is_user);
+            assign_page_directory_entry(working_addr.page_directory_index, true, false);
         }
 
 
@@ -298,7 +269,7 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
                 phys_addr,
                 working_addr,
                 true,
-                is_user
+                false
             );
         }
         else
@@ -314,7 +285,7 @@ void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t of
     return p;
 }
 
-int munmap(void* addr, const size_t length_bytes)
+int kmunmap(void* addr, const size_t length_bytes)
 {
     // TODO: More checks such as "you don't own this memory"
     return unassign_page_table_entries(
@@ -325,7 +296,7 @@ int munmap(void* addr, const size_t length_bytes)
 uintptr_t paging_get_phys_addr(uintptr_t vaddr)
 {
     const virtual_address_t lookup = {vaddr};
-    if (const auto entry = paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
+    if (const auto entry = kernel_paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
     {
         return entry.physical_address;
     }
@@ -335,18 +306,19 @@ uintptr_t paging_get_phys_addr(uintptr_t vaddr)
 page_table_entry_t paging_check_contents(uintptr_t vaddr)
 {
     const virtual_address_t lookup = {vaddr};
-    if (const auto entry = paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
+    if (const auto entry = kernel_paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
     {
         return entry;
     }
     return page_table_entry_t{};
 }
 
+//
+// void paging_set_target_pid(size_t pid)
+// {
+//     target_pid = pid;
+// }
 
-void paging_set_target_pid(size_t pid)
-{
-    target_pid = pid;
-}
 
 // uintptr_t paging_check_contents(void* vaddr)
 // {

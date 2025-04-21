@@ -43,9 +43,8 @@ add_subdirectory(doom)
 add_subdirectory(ArtOSTypes)
 #add_subdirectory(helloworld)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific}
-        Generic/sys/Memory/art_alloc.cpp
-)
+add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
+
 add_library(${KERNEL_LIB} Specific/kernel.cpp)
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
@@ -80,6 +79,7 @@ target_include_directories(
         Specific/x86/Drivers/Storage
         Specific/x86/IO
         Specific/x86/IO/keymaps
+        Specific/x86/Memory
         Specific/x86/PCI
         Specific/x86/ProcessInterruptControllers
         Specific/x86/Timers

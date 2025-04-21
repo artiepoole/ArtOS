@@ -1,3 +1,19 @@
+// ArtOS - hobby operating system by Artie Poole
+// Copyright (C) 2025 Stuart Forbes Poole <artiepoole>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 //
 // Created by artypoole on 09/01/25.
 //
@@ -131,4 +147,47 @@ long get_epoch_time()
         : "memory"
     );
     return result;
+}
+u32 get_ebp()
+{
+    u32 ebp;
+    asm("mov %%ebp,%0" : "=r"(ebp));
+    return ebp;
+}
+
+u32 set_ebp(u32 ebp)
+{
+    asm volatile("mov %0, %%ebp" :: "r"(ebp));
+}
+
+void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset)
+{
+    u32 old_ebp = get_ebp(); // store old ebp (needed for 6th param)
+
+    set_ebp(offset);
+    void* result;
+    asm volatile(
+        "int $50" // Trigger software interrupt
+        : "=a"(result)
+        : "a"(SYSCALL_t::MMAP), // syscall ID
+        "b"(addr), // arg1 ebx
+        "c"(length), // arg2 ecx
+        "d"(prot), // arg3 edx
+        "S"(flags), // arg4 esi
+        "D"(fd) // arg5 edi
+        : "memory"
+    );
+    set_ebp(old_ebp); // restore ebp
+}
+
+void munmap(void* addr, size_t length)
+{
+    asm volatile(
+        "int $50" // Trigger software interrupt
+        :
+        : "a"(SYSCALL_t::MMAP), // syscall ID
+        "b"(addr),
+        "c"(length)
+        : "memory"
+    );
 }

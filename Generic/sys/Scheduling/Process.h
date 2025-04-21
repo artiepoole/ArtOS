@@ -24,7 +24,9 @@
 #include "types.h"
 #include "CPU.h"
 
+
 class EventQueue;
+class PagingTableUser;
 
 #ifdef __cplusplus
 //https://en.wikipedia.org/wiki/Task_state_segment
@@ -65,6 +67,8 @@ struct Process
     void* stack;
     EventQueue* eventQueue;
     bool user;
+    PagingTableUser* paging_table;
+
 };
 
 

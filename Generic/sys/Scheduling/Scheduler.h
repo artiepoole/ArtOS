@@ -54,8 +54,8 @@ public:
     static void clean_up_exited_threads();
     static size_t getCurrentProcessID();
     static EventQueue* getCurrentProcessEventQueue();
-    static bool isCurrentProcessUser();
-    static bool isProcessUser(size_t PID);
+    // static bool isCurrentProcessUser();
+    // static bool isProcessUser(size_t PID);
     static size_t getNextProcessID();
 
     static void start_oneshot(u32 time_ms);
