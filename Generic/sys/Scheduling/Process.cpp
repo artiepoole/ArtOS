@@ -20,9 +20,9 @@
 #include "Process.h"
 
 #include <cmp_int.h>
-#include <string.h>
 
 #include "EventQueue.h"
+#include "art_string.h"
 
 Process::Process()
 {
@@ -71,7 +71,7 @@ void Process::start(const size_t parent_id, const cpu_registers_t& new_context, 
         stack = NULL;
     }
     eventQueue = new EventQueue();
-    strncpy(name, new_name, MIN(32, strlen(new_name)));
+    art_string::strncpy(name, new_name, MIN(32, art_string::strlen(new_name)));
     user = is_user;
 }
 

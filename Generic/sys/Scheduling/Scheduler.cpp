@@ -26,9 +26,6 @@
 #include <logging.h>
 #include <PagingTableUser.h>
 #include <SMBIOS.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <TSC.h>
 #include <Memory/PagingTable.h>
 
@@ -88,7 +85,7 @@ Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQue
     scheduler_instance = this;
     lapic_timer = timer;
     const auto nm = "scheduler";
-    strncpy(processes[0].name, nm, MIN(32, strlen(nm)));
+    art_string::strncpy(processes[0].name, nm, MIN(32, art_string::strlen(nm)));
     processes[0].state = Process::STATE_PARKED;
     processes[0].eventQueue = kernel_queue;
     processes[0].stack = &kernel_stack_top;
@@ -309,12 +306,12 @@ void Scheduler::start_oneshot(u32 time_ms)
 //TODO: refactor. this no longer converts
 void Scheduler::convert_current_context(cpu_registers_t* r, const size_t PID)
 {
-    memcpy(&processes[PID].context, r, sizeof(cpu_registers_t));
+    art_string::memcpy(&processes[PID].context, r, sizeof(cpu_registers_t));
 }
 
 void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
 {
-    memcpy(r, &processes[PID].context, sizeof(cpu_registers_t));
+    art_string::memcpy(r, &processes[PID].context, sizeof(cpu_registers_t));
 
     // TODO: This contained logic here may be incorrect.
     // When going from CPL3 to CPL3, I am not sure that overwriting user_esp is correct.
@@ -382,7 +379,6 @@ void Scheduler::create_idle_task()
 {
     const size_t next_process_id = getNextFreeProcessID();
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
-
     auto* proc = &processes[next_process_id];
     cpu_registers_t context{};
 
@@ -396,14 +392,14 @@ void Scheduler::create_idle_task()
     context.eip = reinterpret_cast<u32>(&idle_task);
     context.eflags = default_eflags;
 
-    proc->state = Process::STATE_PARKED;
+    proc->state = Process::STATE_READY;
     proc->parent_pid = 0;
     proc->user = false;
-    proc->stack = NULL;
+    proc->stack = art_alloc(stack_size, stack_alignment);
     proc->last_executed = 0;
     proc->priority = Process::PRIORITY_LOW;
     const auto nm = "idle_task";
-    strncpy(proc->name, nm, MIN(32, strlen(nm)));
+    art_string::strncpy(proc->name, nm, MIN(32, art_string::strlen(nm)));
     proc->context = context;
     proc->eventQueue = new EventQueue();
 }

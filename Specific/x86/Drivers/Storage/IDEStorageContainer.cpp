@@ -28,8 +28,8 @@
 #include "iso_fs.h"
 #include "PIT.h"
 #include "ports.h"
-#include "stdlib.h"
-#include "string.h"
+#include "memory.h"
+#include "art_string.h"
 
 #include "IDE_handler.h"
 #include "logging.h"
@@ -41,7 +41,7 @@ constexpr size_t region_size = 65536;
 #define one_block_size this->drive_dev->get_drive_info()->block_size
 
 
-IDEStorageContainer::IDEStorageContainer(IDE_drive_info_t& drive_info, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name): name(strdup(new_name))
+IDEStorageContainer::IDEStorageContainer(IDE_drive_info_t& drive_info, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name): name(art_string::strdup(new_name))
 {
     LOG("Initializing IDEStorageContainer");
     IDE_add_device(this);
@@ -110,7 +110,7 @@ i64 IDEStorageContainer::read(char* dest, const size_t byte_offset, const size_t
 
         const size_t offset_in_store = real_offset - stored_buffer_start; // should calculate the offset from physical region start.
         const i64 available_bytes = MIN(n_bytes - n_read, region_size - offset_in_store); // either all remaining bytes or from first byte to end of region
-        memcpy(&dest[n_read], &bm_dev->physical_region[offset_in_store], static_cast<size_t>(available_bytes));
+        art_string::memcpy(&dest[n_read], &bm_dev->physical_region[offset_in_store], static_cast<size_t>(available_bytes));
         n_read += available_bytes;
         real_offset = byte_offset + n_read;
     }
@@ -366,10 +366,10 @@ size_t IDEStorageContainer::get_dir_entry_size(ArtDirectory*& target_dir)
 
 u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name_length, const size_t ext_length, char*& filename) const
 {
-    filename = strndup(sub_data, expected_name_length);
-    if (strncmp(filename, "", expected_name_length) == 0 || strncmp(filename, "\1", expected_name_length) == 0)
+    filename = art_string::strndup(sub_data, expected_name_length);
+    if (art_string::strncmp(filename, "", expected_name_length) == 0 || art_string::strncmp(filename, "\1", expected_name_length) == 0)
     {
-        free(filename);
+        art_free(filename);
         return 0;
     }
     size_t extension_pos = 0;
@@ -381,10 +381,10 @@ u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name
             continue;
         }
         auto [tag, len] = *reinterpret_cast<file_id_ext_header*>(&sub_data[expected_name_length + extension_pos]);
-        if (strncmp(tag, "NM", 2) == 0)
+        if (art_string::strncmp(tag, "NM", 2) == 0)
         {
-            free(filename);
-            filename = strndup(&sub_data[expected_name_length + extension_pos + 5], len - 5);
+            art_free(filename);
+            filename = art_string::strndup(&sub_data[expected_name_length + extension_pos + 5], len - 4);
             return len;
         }
         if (len > 0)
@@ -459,7 +459,7 @@ ArtDirectory* IDEStorageContainer::make_root_directory(const iso_path_table_entr
 {
     char first_sector_data[one_sector_size];
     read_lba(&first_sector_data, p_t_r.extent_loc, one_sector_size);
-    char* root_dir_name = strdup("/");
+    char* root_dir_name = art_string::strdup("/");
     const auto dir_record = *reinterpret_cast<iso_directory_record_header*>(&first_sector_data[0]);
     return new ArtDirectory{
         nullptr,

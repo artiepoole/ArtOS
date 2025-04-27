@@ -20,10 +20,10 @@
 #include "ArtDirectory.h"
 
 #include "StorageDevice.h"
-#include "string.h"
 
 #include "Files.h"
 #include "ArtFile.h"
+#include "art_string.h"
 
 ArtDirectory::ArtDirectory(ArtDirectory* parent, const DirectoryData& data): parent_directory(parent)
 {
@@ -54,7 +54,7 @@ int ArtDirectory::add_subdir(ArtDirectory* parent, const DirectoryData& data)
 /* Returns pointer to file if found in this directory or nullptr */
 ArtFile* ArtDirectory::search(const char* filename)
 {
-    return files.find_if([filename](ArtFile f) { return strcmp(f.get_name(), filename) == 0; });
+    return files.find_if([filename](ArtFile f) { return art_string::strcmp(f.get_name(), filename) == 0; });
 }
 
 /* Returns pointer to file if found in this directory or any of its subdirs searched recursively, or nullptr */

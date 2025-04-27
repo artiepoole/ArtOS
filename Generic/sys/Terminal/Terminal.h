@@ -22,7 +22,7 @@
 
 #include "types.h"
 #include "colours.h"
-#include "mystring.h"
+#include "art_string.h"
 
 struct terminal_char_t
 {
@@ -95,11 +95,11 @@ public:
         char out_str[255];
         if (hex)
         {
-            hex_from_int(val, out_str, sizeof(val));
+            art_string::hex_from_int(val, out_str, sizeof(val));
         }
         else
         {
-            string_from_int(val, out_str);
+            art_string::string_from_int(val, out_str);
         }
         write(out_str, colour);
     }

@@ -38,6 +38,7 @@ enum class SYSCALL_t
     EXIT,
     SLEEP_MS,
     GET_TICK_MS,
+    GET_CURRENT_CLOCK,
     PROBE_EVENTS,
     GET_EVENT,
     DRAW_REGION,
@@ -61,6 +62,7 @@ void sleep_ms(u32 ms);
 uint32_t get_tick_ms();
 int get_time(tm* dest);
 long get_epoch_time();
+u64 get_current_clock();
 
 // events
 bool probe_pending_events();

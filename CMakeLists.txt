@@ -43,7 +43,8 @@ add_subdirectory(doom)
 add_subdirectory(ArtOSTypes)
 #add_subdirectory(helloworld)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific})
+add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific}
+)
 
 add_library(${KERNEL_LIB} Specific/kernel.cpp)
 target_include_directories(
@@ -61,6 +62,7 @@ target_include_directories(
         Generic/sys/Storage
         Generic/sys/Terminal
         Generic/sys/Scheduling
+        Generic/Utility
 )
 
 

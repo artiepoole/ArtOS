@@ -20,11 +20,14 @@
 
 #include "ArtDirectory.h"
 #include "ArtFile.h"
+
+#include <memory.h>
+
 #include "Files.h"
 #include <RTC.h>
 #include <stdio.h>
 #include <StorageDevice.h>
-#include <string.h>
+#include "art_string.h"
 
 
 ArtFile::ArtFile(ArtDirectory* parent, const FileData& data) : parent_directory(parent)
@@ -42,8 +45,9 @@ ArtFile::ArtFile(StorageDevice* dev, char* tmp_filename): device(dev)
     first_byte = 0;
     size = -1; // bytes
     RTC::get().getTime(&datetime);
-    file_name_length = strlen(tmp_filename);
-    filename = strdup(tmp_filename);
+    file_name_length = art_string::strlen(tmp_filename);
+    filename = static_cast<char*>(art_alloc(file_name_length + 1));
+    art_string::strcpy(filename, tmp_filename);
 }
 
 /* return number of bytes read or <0 = error */

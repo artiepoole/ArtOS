@@ -20,12 +20,10 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
-#include <StorageDevice.h>
-#include <string.h>
-
-#include "mystring.h"
 #include "types.h"
-// TODO: Use stdlib "string.h" instead.
+#include <StorageDevice.h>
+#include "art_string.h"
+
 
 class ArtFile;
 
@@ -73,7 +71,7 @@ public:
 
     ArtFile* find_file([[maybe_unused]] const char* filename) override
     {
-        if (strcmp(filename, "/dev/com1") == 0) return get_file();
+        if (art_string::strcmp(filename, "/dev/com1") == 0) return get_file();
         else return nullptr;
     }
 
@@ -92,11 +90,11 @@ public:
         char out_str[255];
         if (hex)
         {
-            hex_from_int(val, out_str, sizeof(val));
+            art_string::hex_from_int(val, out_str, sizeof(val));
         }
         else
         {
-            string_from_int(val, out_str);
+            art_string::string_from_int(val, out_str);
         }
         write(out_str);
     }
@@ -122,7 +120,7 @@ public:
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
     void logHex(int_like val, const char* val_name = "")
     {
-        if (mystrlen(val_name) > 0)
+        if (art_string::strlen(val_name) > 0)
         {
             write(val_name);
             write(": ");

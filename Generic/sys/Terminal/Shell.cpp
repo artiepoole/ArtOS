@@ -22,10 +22,8 @@
 
 #include <ELF.h>
 #include <Files.h>
-#include <IDT.h>
 #include <syscall.h>
 #include <logging.h>
-#include <string.h>
 
 #include "Scheduler.h"
 

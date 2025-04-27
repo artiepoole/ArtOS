@@ -23,7 +23,6 @@
 #include "Files.h"
 #include "RTC.h"
 #include "stdlib.h"
-#include "string.h"
 #include "time.h"
 
 
@@ -72,8 +71,8 @@ Terminal::Terminal(const u32 x, const u32 y, const u32 width, const u32 height)
     term_screen_buffer = static_cast<u32*>(art_alloc(screen_region.h * screen_region.w * sizeof(u32), 0));
     terminal_buffer = static_cast<terminal_char_t*>(art_alloc(n_characters * sizeof(terminal_char_t), 0));
     rendered_buffer = static_cast<terminal_char_t*>(art_alloc(n_characters * sizeof(terminal_char_t), 0));
-    memset(terminal_buffer, 0, n_characters * sizeof(terminal_char_t));
-    memset(rendered_buffer, 1, n_characters * sizeof(terminal_char_t));
+    art_string::memset(terminal_buffer, 0, n_characters * sizeof(terminal_char_t));
+    art_string::memset(rendered_buffer, 1, n_characters * sizeof(terminal_char_t));
 
     term_instance = this;
 
@@ -179,10 +178,10 @@ void Terminal::setScale(u32 new_scale)
 
         terminal_buffer = static_cast<terminal_char_t*>(art_alloc(buffer_height * buffer_width * sizeof(terminal_char_t), 0));
         rendered_buffer = static_cast<terminal_char_t*>(art_alloc(buffer_height * buffer_width * sizeof(terminal_char_t), 0));
-        memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+        art_string::memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
 
         // 1 so that it doesn't match terminal buffer clears and redraws whole screen
-        memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t));
+        art_string::memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t));
         time_stamp();
         write("Font scale set to: ");
         write(font_scale, false);
@@ -207,9 +206,9 @@ void Terminal::setRegion(const u32 x, const u32 y, const u32 width, const u32 he
     rendered_buffer = static_cast<terminal_char_t*>(art_alloc(buffer_height * buffer_width * sizeof(terminal_char_t), 0));
     term_screen_buffer = static_cast<u32*>(art_alloc(screen_region.h * screen_region.w * sizeof(u32), 0));
     // TODO: these are all being mapped to the same physical memory.
-    memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
-    memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t)); // all different
-    memset(term_screen_buffer, 2, screen_region.h * screen_region.w * sizeof(u32));
+    art_string::memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+    art_string::memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t)); // all different
+    art_string::memset(term_screen_buffer, 2, screen_region.h * screen_region.w * sizeof(u32));
     terminal_row = 0;
     terminal_column = 1;
     VideoGraphicsArray::get().fillRectangle(screen_region.x1, screen_region.y1, screen_region.w, screen_region.h, colour_bkgd);
@@ -341,7 +340,7 @@ u32 Terminal::write(bool b)
 
 u32 Terminal::write(const char* data, PALETTE_t colour)
 {
-    const size_t len = mystrlen(data);
+    const size_t len = art_string::strlen(data);
     // put data into the text buffer
     _write_to_screen(data, len, colour);
     return len;
@@ -422,10 +421,10 @@ void Terminal::backspace()
 void Terminal::clear()
 {
     if (!term_instance) return;
-    memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
+    art_string::memset(terminal_buffer, 0, buffer_height * buffer_width * sizeof(terminal_char_t));
 
     // 1 so that it doesn't match terminal buffer clears and redraws whole screen
-    memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t));
+    art_string::memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t));
     _draw_changes();
 }
 
@@ -498,11 +497,11 @@ TermFileWrapper::TermFileWrapper(const bool stderr): is_stderr(stderr)
 {
     if (is_stderr)
     {
-        strcpy(name, "stderr");
+        art_string::strcpy(name, "stderr");
     }
     else
     {
-        strcpy(name, "stdout");
+        art_string::strcpy(name, "stdout");
     }
 
     file = ArtFile{this, name};
@@ -524,9 +523,9 @@ ArtFile* TermFileWrapper::find_file(const char* filename)
 {
     if (is_stderr)
     {
-        if (constexpr char this_name[7] = "stderr"; strcmp(filename, this_name) == 0) return &file;
+        if (constexpr char this_name[7] = "stderr"; art_string::strcmp(filename, this_name) == 0) return &file;
     }
-    if (constexpr char this_name[7] = "stdout"; strcmp(filename, this_name) == 0) return &file;
+    if (constexpr char this_name[7] = "stdout"; art_string::strcmp(filename, this_name) == 0) return &file;
     return nullptr;
 }
 

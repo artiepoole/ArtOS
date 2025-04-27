@@ -96,7 +96,7 @@ void Serial::write(const char c)
 
 void Serial::write(const char* data)
 {
-    _write_buffer(data, mystrlen(data));
+    _write_buffer(data, art_string::strlen(data));
 }
 
 void Serial::write(const char* data, const size_t len)

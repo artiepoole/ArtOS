@@ -155,6 +155,7 @@ void kdraw_screen_region(const u32* frame_buffer)
 
 void syscall_handler(cpu_registers_t* r)
 {
+    u64 large_res;
     switch (static_cast<SYSCALL_t>(r->eax))
     {
     case SYSCALL_t::WRITE:
@@ -206,6 +207,11 @@ void syscall_handler(cpu_registers_t* r)
         break;
     case SYSCALL_t::MUNMAP:
         kmunmap(reinterpret_cast<void*>(r->ebx), r->ecx);
+        break;
+    case SYSCALL_t::GET_CURRENT_CLOCK:
+        large_res = kget_current_clock();
+        r->eax = static_cast<u32>(large_res);
+        r->ebx = static_cast<u32>(large_res>>32);
         break;
     default:
         LOG("Unhandled Syscall.");

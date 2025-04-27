@@ -47,7 +47,6 @@
 #include "RTC.h"
 #include "PIT.h"
 #include "EventQueue.h"
-#include "string.h"
 #include "IDEStorageContainer.h"
 #include "ATA.h"
 #include "BusMasterController.h"
@@ -209,10 +208,11 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
     register_file_handle(2, Serial::get_file()); // stderr
     vga.incrementProgressBarChunk(bar);
-    FILE* com = fopen("/dev/com1", "w");
+    int com = art_open("/dev/com1", 0);
+    art_write(com, "This should print to com0 via art_write.\0", 42);
     vga.incrementProgressBarChunk(bar);
-    fprintf(com, "%s\n", "This should print to com0 via fprintf");
-    printf("This should print to com0 via printf\n");
+    // fprintf(com, "%s\n", "This should print to com0 via fprintf");
+    // printf("This should print to com0 via printf\n");
 #elif ENABLE_TERMINAL_LOGGING
     // TODO: handle terminal file wrapper also.
     register_file_handle(0, nullptr); // stdin

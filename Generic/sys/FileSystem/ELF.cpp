@@ -25,7 +25,6 @@
 #include "logging.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "string.h"
 
 ELF::ELF(ArtFile* parent_file) : file(parent_file)
 {
@@ -88,7 +87,7 @@ err_string_table_read:
 err_section_read:
     art_free(program_header_table);
 err_program_read:
-    memset(&elf_header, 0, sizeof(ELF_header_t));
+    art_string::memset(&elf_header, 0, sizeof(ELF_header_t));
 }
 
 int ELF::execute()

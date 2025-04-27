@@ -148,6 +148,7 @@ long get_epoch_time()
     );
     return result;
 }
+
 u32 get_ebp()
 {
     u32 ebp;
@@ -190,4 +191,16 @@ void munmap(void* addr, size_t length)
         "c"(length)
         : "memory"
     );
+}
+
+u64 get_current_clock()
+{
+    int low, high;
+    asm volatile(
+        "int $50" // Trigger software interrupt
+        : "=a"(low), "=b"(high)
+        : "a"(SYSCALL_t::GET_CURRENT_CLOCK)
+        : "memory"
+    );
+    return low | (high << 32);
 }

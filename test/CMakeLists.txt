@@ -25,7 +25,7 @@ enable_testing()
 
 include(GoogleTest)
 
-add_executable(string_test string_test.cpp ../Generic/sys/ComponentTypes/mystring.cpp)
+add_executable(string_test string_test.cpp)
 target_link_libraries(string_test GTest::gtest_main)
 target_include_directories(string_test PRIVATE ../Generic/sys/ComponentTypes)
 gtest_discover_tests(string_test)
