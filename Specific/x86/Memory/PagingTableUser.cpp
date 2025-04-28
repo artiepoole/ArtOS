@@ -20,14 +20,26 @@
 
 #include "PagingTableUser.h"
 
-#include <stdint.h>
+#include <memory.h>
 
 PagingTableUser::PagingTableUser()
 {
     page_available_virtual_bitmap_instance.init(paging_virt_bitmap_array, max_n_pages, true);
     page_available_virtual_bitmap = &page_available_virtual_bitmap_instance;
-    paging_directory = art_alloc();
-    paging_tables = art_alloc();
+    paging_directory = static_cast<page_directory_4kb_t*>(art_alloc(4096, page_alignment));
+    paging_tables = static_cast<page_table*>(art_alloc(sizeof(page_table), page_alignment));
+    paging_directory[0] = {
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        reinterpret_cast<u32>(&paging_tables[0]) >> base_address_shift,
+    };
 }
 
 

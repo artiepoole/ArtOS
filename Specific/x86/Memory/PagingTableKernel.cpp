@@ -50,7 +50,7 @@ void PagingTableKernel::late_init()
 }
 
 
-void PagingTableKernel::assign_page_directory_entry(size_t dir_idx, const bool writable, const bool user)
+void PagingTableKernel::assign_page_directory_entry(const size_t dir_idx, const bool writable, const bool user)
 {
     page_directory_4kb_t dir_entry;
     dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&paging_tables[dir_idx]) >> base_address_shift; // might be wrong.
