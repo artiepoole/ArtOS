@@ -24,12 +24,12 @@
 
 PagingTableUser::PagingTableUser()
 {
+    page_available_virtual_bitmap_instance.init(paging_virt_bitmap_array, max_n_pages, true);
+    page_available_virtual_bitmap = &page_available_virtual_bitmap_instance;
+    paging_directory = art_alloc();
+    paging_tables = art_alloc();
 }
 
-uintptr_t PagingTableUser::get_page_table_addr()
-{
-    return 0;
-}
 
 void PagingTableUser::append_page_table(const bool writable)
 {

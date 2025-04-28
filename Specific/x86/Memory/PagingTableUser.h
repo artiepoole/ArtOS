@@ -23,18 +23,17 @@
 
 #include "PagingTable.h"
 
-class PagingTableUser : PagingTable
+class PagingTableUser : public PagingTable
 {
 public:
     PagingTableUser();
-
-    uintptr_t get_page_table_addr() override;
-    void append_page_table(bool writable) override;
+    void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override { return nullptr; }
+    int munmap(void* addr, size_t length_bytes) override { return 0; }
+    void append_page_table(bool writable);
 
 private:
-    page_directory_4kb_t** paging_table = nullptr; // stores 1024 page tables
-    page_table_entry_t** page_tables = nullptr; // stores 1024 mapping entries
-    size_t n_tables = 0;
+    u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
+    DenseBooleanArray<u64> page_available_virtual_bitmap_instance;
 };
 
 

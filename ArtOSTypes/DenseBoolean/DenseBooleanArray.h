@@ -21,6 +21,9 @@
 #ifndef DENSEBOOLEANARRAY_H
 #define DENSEBOOLEANARRAY_H
 
+#include "types.h"
+
+// TODO: create expand and shrink functionality?
 
 inline size_t DBA_ERR_IDX = -1;
 

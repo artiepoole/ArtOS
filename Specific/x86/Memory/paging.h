@@ -25,6 +25,12 @@
 
 constexpr size_t page_alignment = 4096;
 constexpr size_t base_address_shift = 12;
+/// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
+constexpr size_t page_table_len = 1024;
+
+constexpr size_t max_n_pages = 0x100000;
+
+constexpr size_t paging_bitmap_n_DBs = (max_n_pages + (64 - 1)) / 32;
 
 
 union page_directory_4kb_t
@@ -80,6 +86,11 @@ union page_table_entry_t
 
 page_table_entry_t paging_check_contents(uintptr_t vaddr);
 
+struct page_table
+{
+    page_table_entry_t table[page_table_len]; // u32
+};
+
 void mmap_init(multiboot2_tag_mmap* mmap);
 //
 void* kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset);
@@ -88,6 +99,12 @@ int kmunmap(void* addr, size_t length);
 void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);
 // uintptr_t paging_get_phys_addr(uintptr_t vaddr);
 void paging_set_target_pid(size_t pid);
+
+uintptr_t page_get_next_phys_addr();
+
+void set_physical_bitmap_addr(uintptr_t physical_addr, bool state);
+void set_physical_bitmap_idx(size_t phys_idx, bool state);
+
 
 extern unsigned char* kernel_brk;
 

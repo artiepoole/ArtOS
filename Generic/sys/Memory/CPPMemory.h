@@ -23,13 +23,18 @@
 
 #include "types.h"
 
+namespace std {
+    enum class align_val_t : size_t {}; // define std::align_val_t if missing
+}
+
+
 void* operator new(size_t size);
 
 void* operator new[](size_t size);
 
 void operator delete(void* p);
 void operator delete(void* p, size_t);
-
+void operator delete(void* p, size_t, std::align_val_t);
 
 void operator delete[](void* p);
 

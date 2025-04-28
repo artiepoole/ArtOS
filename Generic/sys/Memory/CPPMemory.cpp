@@ -43,7 +43,13 @@ void operator delete(void* p) throw()
     if (p) art_free(p);
 }
 
-void operator delete(void* p, size_t) throw()
+
+void operator delete(void* ptr, size_t ) noexcept {
+    // optional — if alignment matters, handle here
+    operator delete(ptr);
+}
+
+void operator delete(void* p, size_t, std::align_val_t) throw()
 {
     if (p) art_free(p);
 }

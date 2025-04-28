@@ -20,15 +20,14 @@
 
 #include "PagingTableKernel.h"
 
-#include <memory.h>
-#include <string.h>
+#include <art_string.h>
+#include <PagingTable.h>
 
-#include "logging.h"
 
 // constexpr size_t max_n_pages = 0x100000;
 
-/// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
-constexpr size_t page_table_size = 1024;
+
+uintptr_t user_base_address = 256 * 1024 * 1024; // 256MB of kernel space?
 
 // bitmaps used to keep track of the next virtual and physical pages available.
 // These are the same during identity mapping, but diverge when user space programs make malloc calls
@@ -41,38 +40,94 @@ constexpr size_t page_table_size = 1024;
 //     return processes[PID].user;
 // }
 
-PagingTableKernel::PagingTableKernel(multiboot2_tag_mmap* mmap)
+
+void PagingTableKernel::late_init()
 {
-    paging_table = reinterpret_cast<page_directory_4kb_t**>(art_alloc(sizeof(page_directory_4kb_t) * page_table_size), page_alignment);
-    memset(paging_table, 0, page_table_size * sizeof(page_directory_4kb_t));
-    n_tables = 0;
-    n_entries = 0;
-    // PagingTableKernel::append_page_table(true);
+    page_available_virtual_bitmap_instance.init(paging_virt_bitmap_array, max_n_pages, true);
+    page_available_virtual_bitmap = &page_available_virtual_bitmap_instance;
+    paging_directory = paging_directory_data;
+    paging_tables = paging_table_data;
 }
 
-uintptr_t PagingTableKernel::get_page_table_addr()
+
+void PagingTableKernel::assign_page_directory_entry(size_t dir_idx, const bool writable, const bool user)
 {
-    return reinterpret_cast<uintptr_t>(paging_table);
+    page_directory_4kb_t dir_entry;
+    dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&paging_tables[dir_idx]) >> base_address_shift; // might be wrong.
+    dir_entry.rw = writable;
+    dir_entry.user_access = user;
+    paging_directory[dir_idx] = dir_entry;
 }
 
-page_table_entry_t* PagingTableKernel::append_page_table(const bool writable)
+
+void* PagingTableKernel::mmap(const uintptr_t addr, const size_t length, int prot, int flags, int fd, size_t offset)
 {
-    // auto new_table_entry = art_alloc();
-    memset(new_table_entry, 0, sizeof(page_table_entry_t));
-    size_t target_idx = 0;
-    while (target_idx < 1024 & paging_table[target_idx]->present)
+    const size_t first_page = addr >> base_address_shift;
+    const size_t num_pages = (length + page_alignment - 1) >> base_address_shift;
+
+    const virtual_address_t ret_addr = {page_get_next_virtual_chunk(first_page, num_pages)};
+    virtual_address_t working_addr = ret_addr;
+    for (size_t i = 0; i < num_pages; i++)
     {
-        target_idx++;
-    }
-    if (target_idx >= 1024)
-    {
-        // TODO: THIS IS OUT OF MEMORY
-        for (;;);
+        if (!dir_entry_present(working_addr.page_directory_index))
+        {
+            // TODO: handle flag ints as bools here
+            assign_page_directory_entry(working_addr.page_directory_index, true, false);
+        }
+
+
+        if (const auto phys_addr = page_get_next_phys_addr(); phys_addr != 0)
+        {
+            assign_page_table_entry(
+                phys_addr,
+                working_addr,
+                true,
+                false
+            );
+        }
+        else
+        {
+            return nullptr;
+        }
+
+        working_addr.raw += page_alignment;
     }
 
-    auto dir_entry = paging_table[target_idx];
-    dir_entry->page_table_entry_address = reinterpret_cast<u32>(new_table_entry) >> base_address_shift;
-    dir_entry->rw = writable;
-    dir_entry->user_access = false;
-    dir_entry->present = true;
+    const auto p = reinterpret_cast<void*>(ret_addr.raw);
+    art_string::memset(p, 0, length);
+    return p;
 }
+
+
+void PagingTableKernel::paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
+{
+    virtual_address_t virtual_address = {.raw = phys_addr};
+
+    const size_t num_pages = (size + page_alignment - 1) >> base_address_shift;
+    for (size_t i = 0; i < num_pages; i++)
+    {
+        // Every 1024 table entries requires a new dir entry.
+
+        if (!paging_directory[virtual_address.page_directory_index].present)
+        {
+            assign_page_directory_entry(virtual_address.page_directory_index, writable, user);
+        }
+        if (!paging_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
+        {
+            assign_page_table_entry(phys_addr, virtual_address, writable, user);
+        }
+
+        phys_addr += page_alignment;
+        virtual_address.raw = phys_addr;
+        if (virtual_address.raw >> 12 >= max_n_pages) return;
+    }
+}
+
+// TODO: More checks such as "you don't own this memory"
+int PagingTableKernel::munmap(void* addr, const size_t length_bytes)
+{
+    return unassign_page_table_entries(
+        reinterpret_cast<uintptr_t>(addr) >> base_address_shift,
+        (length_bytes + page_alignment - 1) >> base_address_shift); // this rounds up
+}
+
