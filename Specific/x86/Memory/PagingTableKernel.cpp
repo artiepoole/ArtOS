@@ -21,6 +21,8 @@
 #include "PagingTableKernel.h"
 
 #include <memory.h>
+#include <string.h>
+
 #include "logging.h"
 
 // constexpr size_t max_n_pages = 0x100000;
@@ -42,60 +44,10 @@ constexpr size_t page_table_size = 1024;
 PagingTableKernel::PagingTableKernel(multiboot2_tag_mmap* mmap)
 {
     paging_table = reinterpret_cast<page_directory_4kb_t**>(art_alloc(sizeof(page_directory_4kb_t) * page_table_size), page_alignment);
-    PagingTableKernel::append_page_table();
-    // TODO: create (virtual and ?) physical bitmaps
-    // TODO: populate with the map like mmap init used to
-    // page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);
-    // page_available_physical_bitmap.init(paging_phys_bitmap_array, max_n_pages, false);
-    //
-    //
-    // const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
-    // const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
-    // const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift; // first page after kernel image.
-    // uintptr_t last_end = 0;
-    //
-    // // Loop through all entries and map appropriately
-    // for (size_t i = 0; i < n_entries; i++)
-    // {
-    //     multiboot2_mmap_entry const* entry = mmap->entries[i];
-    //     if (entry->addr > last_end)
-    //     {
-    //         // fill holes
-    //         paging_identity_map(last_end, entry->addr - last_end, true, false);
-    //     }
-    //
-    //     if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc)
-    //     {
-    //         // contains kernel
-    //         // only map used kernel region.
-    //         paging_identity_map(entry->addr, brk_loc - entry->addr, entry->type == 1 && entry->addr > 0, false);
-    //         main_region_start = entry->addr;
-    //         main_region_end = entry->addr + entry->len;
-    //         last_physical_idx = main_region_end >> base_address_shift;
-    //     }
-    //     else
-    //     {
-    //         paging_identity_map(entry->addr, entry->len, entry->type == 1 && entry->addr > 0, false);
-    //     }
-    //
-    //     last_end = entry->addr + entry->len;
-    // }
-    //
-    // // Protect kernel and init identity map
-    // // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
-    // paging_identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
-    //
-    // // set upper limit in physical bitmap to extents of the avaialble
-    // page_available_physical_bitmap.set_range(
-    //     post_kernel_page >> base_address_shift,
-    //     (main_region_end - post_kernel_page) >> base_address_shift,
-    //     true
-    // );
-    //
-    //
-    // LOG("Paging: memory map processed.");
-    // enable_paging();
-    // LOG("Paging: paging enabled.");
+    memset(paging_table, 0, page_table_size * sizeof(page_directory_4kb_t));
+    n_tables = 0;
+    n_entries = 0;
+    // PagingTableKernel::append_page_table(true);
 }
 
 uintptr_t PagingTableKernel::get_page_table_addr()
@@ -103,6 +55,24 @@ uintptr_t PagingTableKernel::get_page_table_addr()
     return reinterpret_cast<uintptr_t>(paging_table);
 }
 
-void PagingTableKernel::append_page_table()
+page_table_entry_t* PagingTableKernel::append_page_table(const bool writable)
 {
+    // auto new_table_entry = art_alloc();
+    memset(new_table_entry, 0, sizeof(page_table_entry_t));
+    size_t target_idx = 0;
+    while (target_idx < 1024 & paging_table[target_idx]->present)
+    {
+        target_idx++;
+    }
+    if (target_idx >= 1024)
+    {
+        // TODO: THIS IS OUT OF MEMORY
+        for (;;);
+    }
+
+    auto dir_entry = paging_table[target_idx];
+    dir_entry->page_table_entry_address = reinterpret_cast<u32>(new_table_entry) >> base_address_shift;
+    dir_entry->rw = writable;
+    dir_entry->user_access = false;
+    dir_entry->present = true;
 }

@@ -29,7 +29,7 @@ public:
     PagingTableUser();
 
     uintptr_t get_page_table_addr() override;
-    void append_page_table() override;
+    void append_page_table(bool writable) override;
 
 private:
     page_directory_4kb_t** paging_table = nullptr; // stores 1024 page tables

@@ -39,7 +39,7 @@ class PagingTable
 public:
     virtual ~PagingTable() = default;
     virtual uintptr_t get_page_table_addr() = 0;
-    virtual void append_page_table() = 0;
+    virtual page_table_entry_t* append_page_table(bool writable) = 0;
 };
 
 

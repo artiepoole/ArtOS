@@ -31,6 +31,6 @@ uintptr_t PagingTableUser::get_page_table_addr()
     return 0;
 }
 
-void PagingTableUser::append_page_table()
+void PagingTableUser::append_page_table(const bool writable)
 {
 }
