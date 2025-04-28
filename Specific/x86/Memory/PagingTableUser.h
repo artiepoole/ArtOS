@@ -31,6 +31,9 @@ public:
     int munmap(void* addr, size_t length_bytes) override { return 0; }
     void append_page_table(bool writable);
 
+    // TODO: WAIT I PROBABLY DON'T WANT A DBA FOR USER SPACE APPS!!!!!!!!!!!!!!!
+    // TODO: This means I need to move the generic logic in PagingTable.h/.cpp to implementation specific stuff.
+
 private:
     u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
     DenseBooleanArray<u64> page_available_virtual_bitmap_instance;
