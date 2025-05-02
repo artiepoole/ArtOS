@@ -38,7 +38,6 @@ constexpr size_t page_table_size = 1024;
 
 PagingTableKernel kernel_pages;
 
-
 uintptr_t main_region_start;
 uintptr_t main_region_end;
 size_t last_physical_idx;

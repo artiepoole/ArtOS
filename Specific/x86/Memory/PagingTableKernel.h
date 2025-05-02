@@ -31,7 +31,6 @@ class PagingTableKernel : public PagingTable
 {
 public:
     PagingTableKernel() = default;
-
     void late_init();
     void assign_page_directory_entry(size_t dir_idx, bool writable, bool user);
     void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
@@ -47,11 +46,6 @@ public:
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
     void direct_map(uintptr_t sector_start, size_t sector_size, u8 permissions);
 
-private:
-    DenseBooleanArray<u64> page_available_virtual_bitmap;
-    page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
-    page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
-    u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
 };
 
 

@@ -23,23 +23,13 @@
 #include <art_string.h>
 #include <PagingTable.h>
 
-
-// constexpr size_t max_n_pages = 0x100000;
-
-
 uintptr_t user_base_address = 256 * 1024 * 1024; // 256MB of kernel space?
 
-// bitmaps used to keep track of the next virtual and physical pages available.
-// These are the same during identity mapping, but diverge when user space programs make malloc calls
-// 4GB worth of 4096 pages. Set all to false. Processing the multiboot2 memory_map will set the necessary bits.
-// constexpr size_t n_DBs = (max_n_pages + (64 - 1)) / 32;
-// u64 paging_phys_bitmap_array[n_DBs];
-// u64 paging_virt_bitmap_array[n_DBs];
-// bool Scheduler::isProcessUser(size_t PID)
-// {
-//     return processes[PID].user;
-// }
+DenseBooleanArray<u64> page_available_virtual_bitmap;
+u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
 
+page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
+page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
 
 void PagingTableKernel::late_init()
 {
@@ -177,7 +167,7 @@ page_table_entry_t PagingTableKernel::check_vmap_contents(const uintptr_t v_addr
 void PagingTableKernel::assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable, const bool user)
 {
     // TODO: This should definitely be a method of the class.
-    page_table_entry_t tab_entry = {};
+    page_table_entry_t tab_entry;
     tab_entry.present = true;
     tab_entry.physical_address = physical_addr >> base_address_shift;
     tab_entry.rw = writable;
