@@ -31,10 +31,10 @@ u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
 page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
 page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
 
-void PagingTableKernel::late_init()
-{
-    page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);
-}
+// void PagingTableKernel::late_init()
+// {
+//
+// }
 
 
 void PagingTableKernel::assign_page_directory_entry(const size_t dir_idx, const bool writable, const bool user)
@@ -94,15 +94,15 @@ void PagingTableKernel::paging_identity_map(uintptr_t phys_addr, const size_t si
     for (size_t i = 0; i < num_pages; i++)
     {
         // Every 1024 table entries requires a new dir entry.
-
-        if (!paging_directory[virtual_address.page_directory_index].present)
-        {
-            assign_page_directory_entry(virtual_address.page_directory_index, writable, user);
-        }
         if (!paging_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
         {
             assign_page_table_entry(phys_addr, virtual_address, writable, user);
         }
+        if (!paging_directory[virtual_address.page_directory_index].present)
+        {
+            assign_page_directory_entry(virtual_address.page_directory_index, writable, user);
+        }
+
 
         phys_addr += page_alignment;
         virtual_address.raw = phys_addr;
@@ -194,4 +194,10 @@ int PagingTableKernel::unassign_page_table_entries(const size_t start_idx, const
     page_available_virtual_bitmap.set_range(start_idx, n_pages, true);
 
     return 0;
+}
+
+PagingTableKernel& get_kernel_pages()
+{
+    static PagingTableKernel instance;
+    return instance;
 }

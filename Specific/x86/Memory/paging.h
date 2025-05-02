@@ -40,7 +40,7 @@ union page_directory_4kb_t
 {
     struct
     {
-        u32 present : 1 = true;
+        u32 present : 1 = false;
         u32 rw : 1; // read/write if set, read-only otherwise
         u32 user_access : 1; // user and supervisor if set, supervisor only if not.
         u32 write_through : 1 = false; // write through caching if set, write-back otherwise
@@ -71,7 +71,7 @@ union page_table_entry_t
 {
     struct
     {
-        u32 present : 1 = true;
+        u32 present : 1 = false;
         u32 rw : 1; // read write if set, read only otherwise
         u32 user_access : 1; // user and supervisor if set, supervisor only if not.
         u32 write_through : 1 = false; // write through caching if set, write-back otherwise

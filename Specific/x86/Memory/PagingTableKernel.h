@@ -30,9 +30,10 @@
 class PagingTableKernel : public PagingTable
 {
 public:
-    PagingTableKernel() = default;
-    void late_init();
-    void assign_page_directory_entry(size_t dir_idx, bool writable, bool user);
+    PagingTableKernel()  {  page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);}
+
+    // void late_init();
+
     void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
     void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);
     int munmap(void* addr, size_t length_bytes) override;
@@ -43,11 +44,19 @@ public:
     uintptr_t get_phys_from_virtual(uintptr_t v_addr) override;
     page_table_entry_t check_vmap_contents(uintptr_t v_addr) override;
     void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user) override;
+    void assign_page_directory_entry(size_t dir_idx, bool writable, bool user);
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
     void direct_map(uintptr_t sector_start, size_t sector_size, u8 permissions);
 
+private:
+    DenseBooleanArray<u64> page_available_virtual_bitmap;
+    page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
+    page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
+    u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
 };
 
+
+PagingTableKernel& get_kernel_pages();
 
 // TODO: you can mark all tables as present and identity map all of memory for the kernel and instead keep track of allocated memory another way if you want.
 // This takesthe smae amount of space and time as doing it how I do it but allocating new pages for use in kernel is quick.

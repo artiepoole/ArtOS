@@ -38,7 +38,7 @@ public:
     int munmap(void* addr, size_t length_bytes) override;
 
     page_table* append_page_table(bool writable);
-    void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user) override;
+    void assign_page_table_entry(u32 physical_addr, virtual_address_t v_addr, bool writable, bool user) override;
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
 
     // TODO: WAIT I PROBABLY DON'T WANT A DBA FOR USER SPACE APPS!!!!!!!!!!!!!!!

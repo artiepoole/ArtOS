@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE 1)
 
 set(CMAKE_ASM_FLAGS "-m32 -no-pie")
 set(CMAKE_LINK_FLAGS "-m32 -no-pie")
-set(CMAKE_CXX_FLAGS "-ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti -m32 -no-pie") # -Werror
+set(CMAKE_CXX_FLAGS "-ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti -m32 -no-pie -fno-threadsafe-statics") # -Werror
 set(CMAKE_C_FLAGS "-ffreestanding -Wall -Wextra -m32 -no-pie")
 set(CMAKE_POSITION_INDEPENDENT_CODE 1)
 #
