@@ -26,17 +26,27 @@
 class PagingTableUser : public PagingTable
 {
 public:
-    PagingTableUser();
-    void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override { return nullptr; }
-    int munmap(void* addr, size_t length_bytes) override { return 0; }
-    void append_page_table(bool writable);
+    PagingTableUser() = default;
+
+    virtual_address_t get_next_virtual_addr(uintptr_t start_addr);
+    virtual_address_t get_next_virtual_chunk(uintptr_t addr, size_t n_pages);
+    uintptr_t get_phys_from_virtual(uintptr_t v_addr) override;
+    page_table_entry_t check_vmap_contents(uintptr_t v_addr) override;
+    bool dir_entry_present(size_t idx) override;
+    uintptr_t get_page_table_addr() override;
+    void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
+    int munmap(void* addr, size_t length_bytes) override;
+
+    page_table* append_page_table(bool writable);
+    void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user) override;
+    int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
 
     // TODO: WAIT I PROBABLY DON'T WANT A DBA FOR USER SPACE APPS!!!!!!!!!!!!!!!
     // TODO: This means I need to move the generic logic in PagingTable.h/.cpp to implementation specific stuff.
 
 private:
-    u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
-    DenseBooleanArray<u64> page_available_virtual_bitmap_instance;
+    page_directory_4kb_t paging_directory[page_table_len];
+    bool v_addr_is_used(virtual_address_t v_addr);
 };
 
 

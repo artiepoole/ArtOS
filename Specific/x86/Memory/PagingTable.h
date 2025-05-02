@@ -38,22 +38,17 @@ class PagingTable
      *
     */
 public:
-    virtual ~PagingTable() = default;
+    // virtual ~PagingTable() = default;
+    PagingTable() = default;
+    ~PagingTable() = default;
     virtual void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) = 0;
     virtual int munmap(void* addr, size_t length_bytes) = 0;
-    uintptr_t get_page_table_addr();
-    uintptr_t page_get_next_virtual_chunk(size_t idx, size_t n_pages);
-    uintptr_t page_get_next_virtual_addr(uintptr_t start_addr);
-    bool dir_entry_present(size_t idx);
-    uintptr_t get_phys_from_virtual(uintptr_t v_addr);
-    page_table_entry_t check_vmap_contents(uintptr_t v_addr);
-    void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user);
-    int unassign_page_table_entries(size_t start_idx, size_t n_pages);
-
-protected:
-    DenseBooleanArray<u64>* page_available_virtual_bitmap;
-    page_directory_4kb_t* paging_directory = nullptr;
-    page_table* paging_tables = nullptr;
+    virtual uintptr_t get_page_table_addr() = 0;
+    virtual bool dir_entry_present(size_t idx) = 0;
+    virtual uintptr_t get_phys_from_virtual(uintptr_t v_addr) = 0;
+    virtual page_table_entry_t check_vmap_contents(uintptr_t v_addr) = 0;
+    virtual void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user) = 0;
+    virtual int unassign_page_table_entries(size_t start_idx, size_t n_pages) = 0;
 };
 
 

@@ -18,6 +18,7 @@
 // Created by artiepoole on 4/21/25.
 //
 
+#pragma once
 #ifndef PAGING_H
 #define PAGING_H
 #include "types.h"
@@ -27,8 +28,10 @@ constexpr size_t page_alignment = 4096;
 constexpr size_t base_address_shift = 12;
 /// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
 constexpr size_t page_table_len = 1024;
-
 constexpr size_t max_n_pages = 0x100000;
+constexpr uintptr_t max_memory_addr = max_n_pages * page_alignment;
+extern uintptr_t main_region_end;
+
 
 constexpr size_t paging_bitmap_n_DBs = (max_n_pages + (64 - 1)) / 32;
 

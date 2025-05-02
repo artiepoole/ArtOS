@@ -37,14 +37,21 @@ public:
     void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
     void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);
     int munmap(void* addr, size_t length_bytes) override;
+    uintptr_t get_page_table_addr() override;
+    uintptr_t page_get_next_virtual_chunk(size_t idx, size_t n_pages);
+    uintptr_t get_next_virtual_addr(uintptr_t start_addr);
+    bool dir_entry_present(size_t idx) override;
+    uintptr_t get_phys_from_virtual(uintptr_t v_addr) override;
+    page_table_entry_t check_vmap_contents(uintptr_t v_addr) override;
+    void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user) override;
+    int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
     void direct_map(uintptr_t sector_start, size_t sector_size, u8 permissions);
-    // void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset);
-    // int munmap(void* addr, size_t length);
+
 private:
-    page_directory_4kb_t paging_directory_data[page_table_len]__attribute__((aligned(page_alignment)));
-    page_table paging_table_data[page_table_len]__attribute__((aligned(page_alignment)));
+    DenseBooleanArray<u64> page_available_virtual_bitmap;
+    page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
+    page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
     u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
-    DenseBooleanArray<u64> page_available_virtual_bitmap_instance;
 };
 
 
