@@ -196,8 +196,4 @@ int PagingTableKernel::unassign_page_table_entries(const size_t start_idx, const
     return 0;
 }
 
-PagingTableKernel& get_kernel_pages()
-{
-    static PagingTableKernel instance;
-    return instance;
-}
+

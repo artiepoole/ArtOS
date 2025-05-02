@@ -64,11 +64,7 @@
 #include "SMBIOS.h"
 #endif
 
-extern "C" {
-#include "doomgeneric/doomgeneric.h"
-}
 
-// VideoGraphicsArray* vgap;
 IDE_drive_info_t drive_list[4];
 uintptr_t BM_controller_base_port;
 

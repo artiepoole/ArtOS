@@ -38,6 +38,12 @@ constexpr size_t page_table_size = 1024;
 
 // PagingTableKernel kernel_pages;
 
+PagingTableKernel& kernel_pages()
+{
+    static PagingTableKernel instance;
+    return instance;
+}
+
 uintptr_t main_region_start;
 uintptr_t main_region_end;
 size_t last_physical_idx;
@@ -71,7 +77,7 @@ void set_physical_bitmap_idx(const size_t phys_idx, const bool state)
 
 void enable_paging()
 {
-    auto addr = get_kernel_pages().get_page_table_addr() | 0xFFF;
+    auto addr = kernel_pages().get_page_table_addr() | 0xFFF;
     __asm__ volatile ("mov %0, %%cr3" : : "r"(addr)); // set the cr3 to the paging_directory physical address
     u32 cr0 = 0;
     __asm__ volatile ("mov %%cr0, %0" : "=r"(cr0));
@@ -105,21 +111,21 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         if (entry->addr > last_end)
         {
             // fill holes
-            get_kernel_pages().paging_identity_map(last_end, entry->addr - last_end, true, false);
+            kernel_pages().paging_identity_map(last_end, entry->addr - last_end, true, false);
         }
 
         if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc)
         {
             // contains kernel
             // only map used kernel region.
-            get_kernel_pages().paging_identity_map(entry->addr, brk_loc - entry->addr, entry->type == 1 && entry->addr > 0, false);
+            kernel_pages().paging_identity_map(entry->addr, brk_loc - entry->addr, entry->type == 1 && entry->addr > 0, false);
             main_region_start = entry->addr;
             main_region_end = entry->addr + entry->len;
             last_physical_idx = main_region_end >> base_address_shift;
         }
         else
         {
-            get_kernel_pages().paging_identity_map(entry->addr, entry->len, entry->type == 1 && entry->addr > 0, false);
+            kernel_pages().paging_identity_map(entry->addr, entry->len, entry->type == 1 && entry->addr > 0, false);
         }
 
         last_end = entry->addr + entry->len;
@@ -127,7 +133,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 
     // Protect kernel and init identity map
     // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
-    get_kernel_pages().paging_identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
+    kernel_pages().paging_identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
 
     // set upper limit in physical bitmap to extents of the avaialble
     page_available_physical_bitmap.set_range(
@@ -145,15 +151,15 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 
 void* kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset)
 {
-    return get_kernel_pages().mmap(addr, length, prot, flags, fd, offset);
+    return kernel_pages().mmap(addr, length, prot, flags, fd, offset);
 }
 
 int kmunmap(void* addr, const size_t length_bytes)
 {
-    return get_kernel_pages().munmap(addr, length_bytes);
+    return kernel_pages().munmap(addr, length_bytes);
 }
 
 void paging_identity_map(const uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
 {
-    get_kernel_pages().paging_identity_map(phys_addr, size, writable, user);
+    kernel_pages().paging_identity_map(phys_addr, size, writable, user);
 }

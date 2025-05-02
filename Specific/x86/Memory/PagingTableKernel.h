@@ -56,8 +56,6 @@ private:
 };
 
 
-PagingTableKernel& get_kernel_pages();
-
 // TODO: you can mark all tables as present and identity map all of memory for the kernel and instead keep track of allocated memory another way if you want.
 // This takesthe smae amount of space and time as doing it how I do it but allocating new pages for use in kernel is quick.
 // TODO: The paging table is ALWAYS stored in kernel memory.
