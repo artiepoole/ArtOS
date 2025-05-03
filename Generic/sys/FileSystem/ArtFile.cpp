@@ -58,8 +58,9 @@ size_t ArtFile::read(char* dest, size_t byte_count)
     if (seek_pos + byte_count > size) { byte_count = size - seek_pos; }
     if (byte_count == 0) { return 0; }
     // TODO: figure out what this should return.
-    size_t rc = device->read(dest, first_byte + seek_pos, byte_count);
-    seek_pos += byte_count;
+    // calculates position in disk from start position of file + seek pos
+    const size_t rc = device->read(dest, first_byte + seek_pos, byte_count);
+    seek_pos += rc;
     return rc;
 }
 

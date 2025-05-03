@@ -41,9 +41,10 @@ private:
 
 public:
     Serial();
-    ~Serial();
+    void link_file();
+    // ~Serial();
 
-    static Serial& get();
+    // static Serial& get();
     static ArtFile*& get_file();
 
     // remove copy functionality
@@ -130,5 +131,6 @@ public:
     };
 };
 
+Serial& get_serial();
 
 #endif //SERIAL_H

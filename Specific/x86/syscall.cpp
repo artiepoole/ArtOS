@@ -204,7 +204,8 @@ void syscall_handler(cpu_registers_t* r)
         r->eax = kget_epoch_time();
         break;
     case SYSCALL_t::MMAP:
-        r->eax = reinterpret_cast<u32>(kmmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, *reinterpret_cast<u32*>(r->ebp) + 7));
+        // *reinterpret_cast<u32*>(r->ebp) + 7)
+        r->eax = reinterpret_cast<u32>(kmmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, 0));
         break;
     case SYSCALL_t::MUNMAP:
         kmunmap(reinterpret_cast<void*>(r->ebx), r->ecx);

@@ -103,7 +103,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Load serial early for logging.
 #if ENABLE_SERIAL_LOGGING
-    auto serial = Serial();
+    // auto serial = Serial();
+    auto& serial = get_serial();
+    serial.link_file();
 #endif
 
     // We want time-stamping to work asap.

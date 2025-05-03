@@ -22,8 +22,9 @@
 #include "ports.h"
 #include "RTC.h"
 #include "logging.h"
+#include "Terminal.h"
 
-static Serial* instance{nullptr};
+// static Serial* instance{nullptr};
 static ArtFile* file_wrapper{nullptr};
 
 #define RECEIVE_OFFSET 0x0
@@ -39,7 +40,7 @@ static ArtFile* file_wrapper{nullptr};
 
 Serial::Serial()
 {
-    instance = this;
+    // instance = this;
     outb(PORT + INTERRUPT_REG_OFFSET, 0x00); // Disable all interrupts
     outb(PORT + LINE_CONTROL_OFFSET, 0x80); // Enable DLAB (set baud rate divisor)
     outb(PORT + SEND_OFFSET, 0x03); // Set divisor to 3 (lo byte) 38400 baud
@@ -62,21 +63,27 @@ Serial::Serial()
     outb(PORT + MODEM_CONTROL_OFFSET, 0x0F);
     connected = true;
 
-    WRITE("Sun Jan  0 00:00:00 1900\tSerial connected\n");
+    Terminal::get().write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
+    write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
+}
+
+void Serial::link_file()
+{
     char name[] = "/dev/com1";
     file_wrapper = new ArtFile{this, name};
 }
 
 
-Serial::~Serial()
-{
-    instance = nullptr;
-}
+// Serial::~Serial()
+// {
+//     instance = nullptr;
+// }
 
-Serial& Serial::get()
-{
-    return *instance;
-}
+// Serial& Serial::get()
+// {
+//     static Serial instance;
+//     return instance;
+// }
 
 ArtFile*& Serial::get_file()
 {
@@ -176,4 +183,10 @@ u32 Serial::com_write(const char* data, const u32 count)
 {
     _write_buffer(data, count);
     return count;
+}
+
+Serial& get_serial()
+{
+    static Serial instance;
+    return instance;
 }

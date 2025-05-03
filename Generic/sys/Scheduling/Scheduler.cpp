@@ -193,6 +193,7 @@ void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
     const auto priority = processes[current_process_id].priority;
     start_oneshot(context_switch_period_ms * priority);
     execution_counter = TSC_get_ticks();
+    LOG("Switching to ", processes[current_process_id].name);
     set_current_context(r, current_process_id);
 }
 
@@ -373,8 +374,9 @@ void Scheduler::exit(cpu_registers_t* const r)
     {
         processes[parent_id].state = Process::STATE_READY;
     }
-
-    switch_process(r, getNextProcessID());
+    size_t next = getNextProcessID();
+    LOG("Post-exit process ID:", next);
+    switch_process(r, next);
 }
 
 // Kill is supposed to send a command to the process to tell it to exit.
