@@ -132,7 +132,7 @@ void ksleep_us(const u32 us)
 
 void kpause_exec(const u32 ms)
 {
-    Scheduler::sleep_ms(ms);
+    PIT_sleep_ms(ms);
 }
 
 bool kprobe_pending_events()
@@ -204,7 +204,6 @@ void syscall_handler(cpu_registers_t* r)
         r->eax = kget_epoch_time();
         break;
     case SYSCALL_t::MMAP:
-
         r->eax = reinterpret_cast<u32>(kmmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, *reinterpret_cast<u32*>(r->ebp) + 7));
         break;
     case SYSCALL_t::MUNMAP:

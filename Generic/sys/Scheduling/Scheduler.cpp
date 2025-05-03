@@ -172,6 +172,7 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     proc->start(parent_process_id, context, proc_stack, name, user);
 
     processes[parent_process_id].state = Process::STATE_PARKED;
+    LOG("Yielding");
     enable_interrupts();
     kyield();
 }

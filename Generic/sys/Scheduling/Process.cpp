@@ -20,6 +20,7 @@
 #include "Process.h"
 
 #include <cmp_int.h>
+#include <logging.h>
 
 #include "EventQueue.h"
 #include "art_string.h"
@@ -57,12 +58,12 @@ void Process::reset()
 
 void Process::start(const size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name, const bool is_user)
 {
+    LOG("Starting ", new_name);
     parent_pid = parent_id;
     state = STATE_READY;
     priority = PRIORITY_NORMAL;
     last_executed = 0;
     context = new_context;
-
     stack = new_stack;
     // TODO: I could map an event queue into the user space memory and then my event processor could populate queues based on target process
     eventQueue = new EventQueue();

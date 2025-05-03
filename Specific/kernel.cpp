@@ -166,7 +166,7 @@ void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset
     // u32 old_ebp;
 
     void* result;
-    asm volatile( "push %0"::"r"(offset):"memory");
+    // asm volatile( "push %0"::"r"(offset):"memory");
     asm volatile(
         "int $50" // Trigger software interrupt
         : "=a"(result)
