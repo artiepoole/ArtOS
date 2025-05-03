@@ -116,9 +116,10 @@ Scheduler& Scheduler::get()
  * Later, when the process runs, load its CR3, set its initial stack pointer, and iret.
 */
 // Create new process. This can only be user mode if the code and data for the function are contained in user-accessible pages
-void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name, const bool user)
+void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name_loc, const bool user)
 {
-    disable_interrupts();
+    auto name = reinterpret_cast<const char*>(name_loc);
+    // Should copy stack contents but I am not sure if they are already ruined by this.R=
     size_t next_process_id = getNextFreeProcessID();
     const size_t parent_process_id = current_process_id;
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
@@ -170,13 +171,10 @@ void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name, const bool u
     context.eflags = default_eflags;
 
 
-    proc->start(parent_process_id, context, proc_stack, reinterpret_cast<char*>(name), user);
+    proc->start(parent_process_id, context, proc_stack, name, user);
 
     processes[parent_process_id].state = Process::STATE_PARKED;
     schedule(r);
-    // LOG("Yielding");
-    // enable_interrupts();
-    // kyield();
 }
 
 
