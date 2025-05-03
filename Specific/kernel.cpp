@@ -206,3 +206,16 @@ u64 get_current_clock()
     );
     return low | (static_cast<u64>(high) << 32);
 }
+
+void execf(void (*func)(), const char* name, bool user)
+{
+    asm volatile(
+        "int $50" // Trigger software interrupt
+        :
+        : "a"(SYSCALL_t::EXECF), // syscall ID
+        "b"(func),
+        "c"(name),
+        "d"(user)
+        : "memory"
+    );
+}

@@ -22,6 +22,7 @@
 
 #include <ELF.h>
 #include <Files.h>
+#include <kernel.h>
 #include <syscall.h>
 #include <logging.h>
 
@@ -255,21 +256,21 @@ int Shell::process_cmd()
     if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
     {
         get_terminal().stop_drawing();
-        Scheduler::execf(run_doom_noret, "doom");
+        execf(run_doom_noret, "doom", false);
         get_terminal().resume_drawing();
         get_terminal().refresh();
     }
     else if (strncasecmp(cmd_buffer, "div0", 5) == 0)
     {
         get_terminal().stop_drawing();
-        Scheduler::execf(div_0, "div0");
+        execf(div_0, "div0", false);
         get_terminal().resume_drawing();
         get_terminal().refresh();
     }
     else if (strncasecmp(cmd_buffer, "test", 5) == 0)
     {
         get_terminal().stop_drawing();
-        Scheduler::execf(user_test, "test", true);
+        execf(user_test, "test", true);
         get_terminal().resume_drawing();
         get_terminal().refresh();
     }

@@ -22,6 +22,7 @@
 #include <cmp_int.h>
 #include <GDT.h>
 #include <IDT.h>
+#include <IOAPIC.h>
 #include <kernel.h>
 #include <LocalAPIC.h>
 #include <logging.h>
@@ -53,7 +54,7 @@ u32 execution_counter = 0;
 size_t current_process_id = 0;
 size_t highest_assigned_pid = 0;
 // size_t next_process_id = 1;
-size_t context_switch_period_ms = 1000;
+size_t context_switch_period_ms = 1;
 Process processes[max_processes];
 LocalAPIC* lapic_timer = nullptr;
 
@@ -79,7 +80,7 @@ int kyield()
 }
 
 
-Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQueue* kernel_queue)
+Scheduler::Scheduler(LocalAPIC* timer, EventQueue* kernel_queue)
 {
     // Store current state in process[0]
     // Set up first Lapic one shot
@@ -93,7 +94,7 @@ Scheduler::Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQue
     processes[0].stack = &kernel_stack_top;
     execution_counter = TSC_get_ticks();
     create_idle_task();
-    execf(main_func, name, false);
+    // execf(, main_func, name, false);
 }
 
 Scheduler::~Scheduler()
@@ -115,7 +116,7 @@ Scheduler& Scheduler::get()
  * Later, when the process runs, load its CR3, set its initial stack pointer, and iret.
 */
 // Create new process. This can only be user mode if the code and data for the function are contained in user-accessible pages
-void Scheduler::execf(void (*func)(), const char* name, const bool user)
+void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name, const bool user)
 {
     disable_interrupts();
     size_t next_process_id = getNextFreeProcessID();
@@ -169,12 +170,13 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     context.eflags = default_eflags;
 
 
-    proc->start(parent_process_id, context, proc_stack, name, user);
+    proc->start(parent_process_id, context, proc_stack, reinterpret_cast<char*>(name), user);
 
     processes[parent_process_id].state = Process::STATE_PARKED;
-    LOG("Yielding");
-    enable_interrupts();
-    kyield();
+    schedule(r);
+    // LOG("Yielding");
+    // enable_interrupts();
+    // kyield();
 }
 
 
@@ -188,7 +190,8 @@ void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
         new_PID = 1;
     }
     // TODO: is r here editable to replace data on the stack?!
-    if (processes[current_process_id].state != Process::STATE_DEAD && processes[current_process_id].state != Process::STATE_EXITED) store_current_context(r, current_process_id);
+    // if (processes[current_process_id].state != Process::STATE_DEAD && processes[current_process_id].state != Process::STATE_EXITED)
+    store_current_context(r, current_process_id);
     current_process_id = new_PID;
     const auto priority = processes[current_process_id].priority;
     // LOG("Switching to ", processes[current_process_id].name);
@@ -301,8 +304,6 @@ size_t get_oldest_process()
 
 size_t Scheduler::getNextProcessID()
 {
-    clean_up_exited_threads();
-    handle_expired_timers();
     const size_t next = get_oldest_process(); // dec and return split here for debugging purposes.
     return next;
 }
@@ -353,7 +354,9 @@ void Scheduler::sleep_ms(const u32 ms)
 // When called from interrupt, the state is stored at this pointer loc, r.
 void Scheduler::schedule(cpu_registers_t* const r)
 {
-    processes[current_process_id].last_executed = kget_tick_ms();
+    processes[current_process_id].last_executed = execution_counter;
+    clean_up_exited_threads();
+    handle_expired_timers();
     const size_t next_id = getNextProcessID();
     switch_process(r, next_id);
 }
@@ -379,19 +382,6 @@ void Scheduler::exit(cpu_registers_t* const r)
     LOG("Post-exit process ID:", next);
 
     switch_process(r, next);
-    // enable_interrupts();
-    // kyield();
-
-    // asm volatile (
-    //     "pop %eax\n"
-    //     "pop %gs\n"
-    //     "pop %fs\n"
-    //     "pop %es\n"
-    //     "pop %ds\n"
-    //     "popa\n"
-    //     "add $8, %esp\n" // Cleans up the pushed error code and pushed ISR number
-    //     "iretl"
-    // );
 }
 
 // Kill is supposed to send a command to the process to tell it to exit.

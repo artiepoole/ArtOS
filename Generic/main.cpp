@@ -15,6 +15,7 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 #include <float.h>
+#include <kernel.h>
 #include <paging.h>
 #include <SMBIOS.h>
 #include <stdbool.h>
@@ -292,8 +293,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // TODO: the shell should not be singleton!
     // Stores kernel/scheduler as PID 0. This then starts the kernel shell as PID 1. The shell can then be used to run doom :)
-    [[maybe_unused]] auto scheduler = new Scheduler(shell_run, "shell", local_apic, &kernel_events);
-
+    [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
+    execf(shell_run, "shell", false);
     while (true);
     WRITE("ERROR: Left main loop.");
     asm("hlt");

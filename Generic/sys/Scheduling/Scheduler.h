@@ -34,7 +34,7 @@ class EventQueue;
 class Scheduler
 {
 public:
-    Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQueue* kernel_queue);
+    Scheduler(LocalAPIC* timer, EventQueue* kernel_queue);
     ~Scheduler();
     static Scheduler& get();
     // void start(size_t PID);
@@ -44,7 +44,7 @@ public:
     static size_t getNextFreeProcessID();
     static size_t getMaxAliveProcessID();
     // Only takes void foo() types atm. No support for input variables
-    static void execf(void (*func)(), const char* name, bool user = false);
+    static void execf(cpu_registers_t* r, uintptr_t func, uintptr_t name, bool user);
 
     // static void fork();
     static void exit(cpu_registers_t* r);

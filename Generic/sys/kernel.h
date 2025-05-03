@@ -45,7 +45,8 @@ enum class SYSCALL_t
     GET_TIME,
     GET_EPOCH,
     MMAP,
-    MUNMAP
+    MUNMAP,
+    EXECF
 };
 
 typedef struct tm tm;
@@ -74,6 +75,9 @@ void draw_screen_region(const u32* frame_buffer);
 // memory
 void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset);
 void munmap(void* addr, size_t length);
+
+// scheduling
+void execf(void (*func)(), const char* name, bool user);
 #ifdef __cplusplus
 }
 #endif

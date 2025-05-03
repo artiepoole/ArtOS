@@ -128,12 +128,13 @@ int run_doom()
 }
 
 /* I have not implemented generic handling of functions as executable files yet, so I needed to create a different entry point for doom. */
-void run_doom_noret()
+[[noreturn]] void run_doom_noret()
 {
     doomgeneric_Create(0, nullptr);
 
     while (doomgeneric_Tick());
 
-    exit(0); // should be unreachable.
+    while (true);
+    // exit(0); // should be unreachable.
 }
 }
