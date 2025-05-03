@@ -145,5 +145,7 @@ private:
     ArtFile file{};
 };
 
+Terminal& get_terminal();
+
 
 #endif //TERMINAL_H

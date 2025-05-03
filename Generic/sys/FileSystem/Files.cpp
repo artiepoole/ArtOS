@@ -100,7 +100,7 @@ int art_open(const char* filename, [[maybe_unused]] unsigned int mode)
     if (art_string::strcmp("/dev/com1", filename) == 0)
     {
         int fd = find_free_handle();
-        if (int err = register_file_handle(fd, Serial::get_file()); err != 0)
+        if (int err = register_file_handle(fd, get_serial().get_file()); err != 0)
         {
             return err;
         }

@@ -37,7 +37,7 @@ struct cpu_registers_t
     u32 edi; //---------------------
     u32 esi; //
     u32 ebp; //
-    u32 esp; // Pushed by 'pusha'
+    u32 unused_esp; // Pushed by 'pusha'
     u32 ebx; //
     u32 edx; //
     u32 ecx; //
@@ -47,7 +47,7 @@ struct cpu_registers_t
     u32 eip; //---------------------
     u32 cs; // pushed by the processor automatically by interrupt
     u32 eflags; //
-    u32 user_esp; // useresp and ss are only populated if the ring level changes during the interrupt
+    u32 esp; // useresp and ss are only populated if the ring level changes during the interrupt
     u32 ss; //---------------------
     // Bottom of the pushed stack
 }__attribute__((packed));

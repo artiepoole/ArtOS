@@ -29,7 +29,7 @@ class ArtFile;
 
 #define PORT 0x3f8          // COM1
 
-class Serial : StorageDevice
+class Serial : public StorageDevice
 {
 private:
     static char _read_one_byte();
@@ -45,7 +45,7 @@ public:
     // ~Serial();
 
     // static Serial& get();
-    static ArtFile*& get_file();
+    ArtFile*& get_file();
 
     // remove copy functionality
     Serial(Serial const& other) = delete;
@@ -59,8 +59,8 @@ public:
     void write(char c);
     void write(const char* data);
     void write(const char* data, size_t len);
-    static u32 com_read(char* dest, u32 count);
-    static u32 com_write(const char* data, u32 count);
+    u32 com_read(char* dest, u32 count);
+    u32 com_write(const char* data, u32 count);
 
     i64 read(char* dest, [[maybe_unused]] size_t byte_offset, size_t byte_count) override { return com_read(dest, byte_count); }
     i64 write(const char* data, [[maybe_unused]] size_t byte_offset, size_t byte_count) override { return com_write(data, byte_count); }

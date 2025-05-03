@@ -45,7 +45,9 @@ Shell::Shell()
 
 void Shell::run()
 {
-    Terminal::get().write("Shell started\n");
+    get_terminal().resume_drawing();
+    get_terminal().refresh();
+    get_terminal().write("Shell started\n");
     while (true)
     {
         if (kprobe_pending_events())
@@ -56,7 +58,7 @@ void Shell::run()
             {
             case NULL_EVENT:
                 {
-                    Terminal::write("NULL EVENT\n");
+                    get_terminal().write("NULL EVENT\n");
                     break;
                 }
             case KEY_UP:
@@ -112,7 +114,7 @@ void Shell::run()
                         {
                         case '\b': // backspace
                             {
-                                Terminal::backspace();
+                                get_terminal().backspace();
                                 if (cmd_buffer_idx > 0)
                                 {
                                     cmd_buffer[--cmd_buffer_idx] = ' ';
@@ -121,7 +123,7 @@ void Shell::run()
                             }
                         case '\t': // tab
                             {
-                                Terminal::write("    ");
+                                get_terminal().write("    ");
                                 break;
                             }
                         case '^': // ctrl bit 1
@@ -177,11 +179,11 @@ void Shell::run()
                             }
                         case '\n':
                             {
-                                Terminal::write("\n");
+                                get_terminal().write("\n");
                                 process_cmd();
                                 memset(cmd_buffer, 0, cmd_buffer_size);
                                 cmd_buffer_idx = 0;
-                                Terminal::refresh();
+                                get_terminal().refresh();
                                 break;
                             }
                         default:
@@ -191,19 +193,19 @@ void Shell::run()
                                     if (is_alpha) // alphanumeric keys get shifted to caps
                                     {
                                         cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                        Terminal::write(shift_map[cin]);
+                                        get_terminal().write(shift_map[cin]);
                                         break;
                                     }
                                 if ((keyboard_modifiers & 0b0001)) // shift is down or capslock is on
                                 {
                                     cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                    Terminal::write(shift_map[cin]);
+                                    get_terminal().write(shift_map[cin]);
                                     break;
                                 }
                                 else
                                 {
                                     cmd_buffer[cmd_buffer_idx++] = key;
-                                    Terminal::write(key);
+                                    get_terminal().write(key);
                                 }
 
                                 break;
@@ -214,7 +216,7 @@ void Shell::run()
                 }
             default:
                 {
-                    auto& term = Terminal::get();
+                    auto& term = get_terminal();
                     term.write("Unhandled event.\n");
                     term.write("Type: ");
                     term.write(static_cast<int>(type));
@@ -252,24 +254,24 @@ int Shell::process_cmd()
     if (cmd_buffer_idx == 0) return -1;
     if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
     {
-        Terminal::stop_drawing();
+        get_terminal().stop_drawing();
         Scheduler::execf(run_doom_noret, "doom");
-        Terminal::resume_drawing();
-        Terminal::refresh();
+        get_terminal().resume_drawing();
+        get_terminal().refresh();
     }
     else if (strncasecmp(cmd_buffer, "div0", 5) == 0)
     {
-        Terminal::stop_drawing();
+        get_terminal().stop_drawing();
         Scheduler::execf(div_0, "div0");
-        Terminal::resume_drawing();
-        Terminal::refresh();
+        get_terminal().resume_drawing();
+        get_terminal().refresh();
     }
     else if (strncasecmp(cmd_buffer, "test", 5) == 0)
     {
-        Terminal::stop_drawing();
+        get_terminal().stop_drawing();
         Scheduler::execf(user_test, "test", true);
-        Terminal::resume_drawing();
-        Terminal::refresh();
+        get_terminal().resume_drawing();
+        get_terminal().refresh();
     }
     else if (strncasecmp(cmd_buffer, "readelf", 8) == 0)
     {
@@ -281,9 +283,9 @@ int Shell::process_cmd()
     }
     else
     {
-        Terminal::write("Unknown command: ", COLOR_RED);
-        Terminal::write(cmd_buffer, cmd_buffer_idx, COLOR_MAGENTA);
-        Terminal::newLine();
+        get_terminal().write("Unknown command: ", COLOR_RED);
+        get_terminal().write(cmd_buffer, cmd_buffer_idx, COLOR_MAGENTA);
+        get_terminal().newLine();
     }
     return 0;
 }

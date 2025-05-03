@@ -139,10 +139,10 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     }
     else
     {
-        proc_stack = art_alloc(stack_size, stack_alignment);
-        stack_top = static_cast<u8*>(proc_stack) + stack_size;
+        // proc_stack = art_alloc(stack_size, stack_alignment);
+        // stack_top = static_cast<u8*>(proc_stack) + stack_size;
         // proc_stack = &kernel_stack_bottom;
-        // stack_top = &kernel_stack_top;
+        stack_top = &kernel_stack_top;
     }
     LOG("Starting Process: ", name, " PID: ", next_process_id);
     context.esp = reinterpret_cast<u32>(stack_top);
@@ -188,12 +188,12 @@ void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
         new_PID = 1;
     }
     // TODO: is r here editable to replace data on the stack?!
-    if (processes[current_process_id].state != Process::STATE_DEAD) convert_current_context(r, current_process_id);
+    if (processes[current_process_id].state != Process::STATE_DEAD && processes[current_process_id].state != Process::STATE_EXITED) store_current_context(r, current_process_id);
     current_process_id = new_PID;
     const auto priority = processes[current_process_id].priority;
+    // LOG("Switching to ", processes[current_process_id].name);
     start_oneshot(context_switch_period_ms * priority);
     execution_counter = TSC_get_ticks();
-    LOG("Switching to ", processes[current_process_id].name);
     set_current_context(r, current_process_id);
 }
 
@@ -229,7 +229,10 @@ void Scheduler::clean_up_exited_threads()
     {
         if (processes[i].state == Process::STATE_EXITED)
         {
-            aligned_free(processes[i].stack);
+            if (processes[i].user)
+            {
+                art_free(processes[i].stack);
+            }
             processes[i].reset(); // cleans up event queue.
             if (i == highest_assigned_pid)
             {
@@ -310,7 +313,7 @@ void Scheduler::start_oneshot(u32 time_ms)
 }
 
 //TODO: refactor. this no longer converts
-void Scheduler::convert_current_context(cpu_registers_t* r, const size_t PID)
+void Scheduler::store_current_context(cpu_registers_t* r, const size_t PID)
 {
     art_string::memcpy(&processes[PID].context, r, sizeof(cpu_registers_t));
 }
@@ -318,15 +321,13 @@ void Scheduler::convert_current_context(cpu_registers_t* r, const size_t PID)
 void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
 {
     art_string::memcpy(r, &processes[PID].context, sizeof(cpu_registers_t));
+    // r->esp = reinterpret_cast<u32>(processes[PID].stack);
 
     // TODO: This contained logic here may be incorrect.
     // When going from CPL3 to CPL3, I am not sure that overwriting user_esp is correct.
     // It could be better to only memcpy 8 fewer bytes to preserve useresp and ss?
     // we only really need to store the new EIP value or the new cs, eflags, user_esp and new ss for a user mode switch.
-    if (r->cs & RPL_USER) // If returning to CPL!=0 then user_esp must be set.
-    {
-        r->user_esp = r->esp;
-    }
+
     if (processes[PID].user)
     {
         // auto addr =  | 0xFFF;
@@ -376,7 +377,21 @@ void Scheduler::exit(cpu_registers_t* const r)
     }
     size_t next = getNextProcessID();
     LOG("Post-exit process ID:", next);
+
     switch_process(r, next);
+    // enable_interrupts();
+    // kyield();
+
+    // asm volatile (
+    //     "pop %eax\n"
+    //     "pop %gs\n"
+    //     "pop %fs\n"
+    //     "pop %es\n"
+    //     "pop %ds\n"
+    //     "popa\n"
+    //     "add $8, %esp\n" // Cleans up the pushed error code and pushed ISR number
+    //     "iretl"
+    // );
 }
 
 // Kill is supposed to send a command to the process to tell it to exit.
@@ -413,7 +428,9 @@ void Scheduler::create_idle_task()
     proc->state = Process::STATE_READY;
     proc->parent_pid = 0;
     proc->user = false;
-    proc->stack = art_alloc(stack_size, stack_alignment);
+    // void* proc_stack = art_alloc(stack_size, stack_alignment);
+    // void* stack_top = static_cast<u8*>(proc_stack) + stack_size;
+    proc->stack = &kernel_stack_top;
     proc->last_executed = 0;
     proc->priority = Process::PRIORITY_LOW;
     const auto nm = "idle_task";

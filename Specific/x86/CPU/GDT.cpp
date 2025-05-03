@@ -127,6 +127,7 @@ constexpr u32 limits[n_entries] = {0, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFF
 constexpr u8 accesses[n_entries] = {0, 0x9a, 0x93, 0xFa, 0xF3, 0x89}; // TODO: explain these bits.
 constexpr u8 flags[n_entries] = {0, 0xc, 0xc, 0xc, 0xc, 0x0}; // 0xc is double and paging modes
 extern void* kernel_stack_top;
+extern void* kernel_interrupt_stack_top;
 // TODO(CRITICAL): add a TSS for kernel mode.
 // raw_gdt_entry_t* MB_GDT;
 
@@ -177,7 +178,7 @@ void GDT_init()
 {
     memset(&ArtOS_TSS0, 0, sizeof(TSS_t));
     ArtOS_TSS0.SS0 = kernel_ds_offset;
-    ArtOS_TSS0.ESP0 = reinterpret_cast<uintptr_t>(&kernel_stack_top);
+    ArtOS_TSS0.ESP0 = reinterpret_cast<uintptr_t>(&kernel_interrupt_stack_top);
     ArtOS_TSS0.IOPB = sizeof(TSS_t);
 
     for (size_t i = 0; i < n_entries; i++)

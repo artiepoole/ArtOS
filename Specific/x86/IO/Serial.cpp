@@ -63,7 +63,7 @@ Serial::Serial()
     outb(PORT + MODEM_CONTROL_OFFSET, 0x0F);
     connected = true;
 
-    Terminal::get().write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
+    get_terminal().write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
     write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
 }
 

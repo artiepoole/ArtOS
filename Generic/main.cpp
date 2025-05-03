@@ -203,11 +203,11 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // TODO: register_file_handle does not instantiate an fstream properly. Only fopen does.
     // This means that these should not be registered directly and instead should use filenames.
     // These filenames are already in place.
-    register_file_handle(0, Serial::get_file()); // stdin
+    register_file_handle(0, get_serial().get_file()); // stdin
     vga.incrementProgressBarChunk(bar);
-    register_file_handle(1, Serial::get_file()); // stdout
+    register_file_handle(1, get_serial().get_file()); // stdout
     vga.incrementProgressBarChunk(bar);
-    register_file_handle(2, Serial::get_file()); // stderr
+    register_file_handle(2, get_serial().get_file()); // stderr
     vga.incrementProgressBarChunk(bar);
     int com = art_open("/dev/com1", 0);
     art_write(com, "This should print to com0 via art_write.\0", 42);
@@ -217,8 +217,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 #elif ENABLE_TERMINAL_LOGGING
     // TODO: handle terminal file wrapper also.
     register_file_handle(0, nullptr); // stdin
-    register_file_handle(1, Terminal::get_stdout_file()); // stdout
-    register_file_handle(2, Terminal::get_stderr_file()); // stderr
+    register_file_handle(1, get_terminal().get_stdout_file()); // stdout
+    register_file_handle(2, get_terminal().get_stderr_file()); // stderr
     printf("This should print out to terminal via printf\n");
     fprintf(stderr, "This should print error to screen via fprintf\n");
     fprintf(stdout, "This should print out to screen via fprintf\n");
@@ -286,7 +286,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     LOG("LOADED OS. Entering event loop.");
 
     // #if !ENABLE_TERMINAL_LOGGING
-    //     Terminal::write("Loading done.\n");
+    //     get_terminal().write("Loading done.\n");
     // #endif
 
 

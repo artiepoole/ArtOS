@@ -117,7 +117,7 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(r->ds, true);
     NEWLINE();
 
-    WRITE("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    WRITE("edi, esi, ebp, unused_esp, ebx, edx, ecx, eax;");
     NEWLINE();
     WRITE(r->edi, true);
     WRITE(", ");
@@ -125,7 +125,7 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(", ");
     WRITE(r->ebp, true);
     WRITE(", ");
-    WRITE(r->esp, true);
+    WRITE(r->unused_esp, true);
     WRITE(", ");
     WRITE(r->ebx, true);
     WRITE(", ");
@@ -145,7 +145,7 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(", ");
     WRITE(r->eflags, true);
     WRITE(", ");
-    WRITE(r->user_esp, true);
+    WRITE(r->esp, true);
     WRITE(", ");
     WRITE(r->ss, true);
     NEWLINE();

@@ -106,12 +106,15 @@ multiboot_header:
 multiboot_header_end:
 
 
-.globl kernel_stack_top, kernel_stack_bottom
+.globl kernel_stack_top, kernel_interrupt_stack_top, kernel_stack_bottom
 .section .bss
 .align 16
 kernel_stack_bottom:
 .skip 1024*1024 # 1MB
+kernel_interrupt_stack_top:
+.skip 1024*1024 # 1MB
 kernel_stack_top:
+
 
 .section .text
 .globl  start, _start

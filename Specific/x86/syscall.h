@@ -1,3 +1,19 @@
+// ArtOS - hobby operating system by Artie Poole
+// Copyright (C) 2025 Stuart Forbes Poole <artiepoole>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 //
 // Created by artypoole on 09/07/24.
 //
@@ -20,7 +36,7 @@ void kwrite_error(const char* buffer, unsigned long len);
 template <typename type_t>
 void kprint(type_t const& arg1)
 {
-    auto& term = Terminal::get();
+    auto& term = get_terminal();
     term.write(arg1);
     term.newLine();
 }
@@ -28,7 +44,7 @@ void kprint(type_t const& arg1)
 template <typename... args_t>
 void kprint(args_t&&... args)
 {
-    auto& term = Terminal::get();
+    auto& term = get_terminal();
     (term.write(args), ...);
     term.newLine();
 }
@@ -36,7 +52,7 @@ void kprint(args_t&&... args)
 template <typename... args_t>
 void kprint_colour(u32 color, args_t&&... args)
 {
-    auto& term = Terminal::get();
+    auto& term = get_terminal();
     (term.write(args, color), ...);
     term.newLine();
 }
@@ -45,7 +61,7 @@ template <typename int_like>
     requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
 void kprint_hex(int_like val, size_t hex_len, u32 color = COLOR_BASE00)
 {
-    auto& term = Terminal::get();
+    auto& term = get_terminal();
     term.write(val, hex_len, color);
     term.newLine();
 }

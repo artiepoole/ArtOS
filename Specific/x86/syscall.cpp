@@ -44,8 +44,6 @@ void kwrite_standard([[maybe_unused]] const char* buffer, [[maybe_unused]] unsig
 void kwrite_error([[maybe_unused]] const char* buffer, [[maybe_unused]] unsigned long len)
 {
     // // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
-    // auto& term = Terminal::get();
-    // term.write(buffer, len, COLOR_RED);
 
     WRITE(buffer, len);
 }

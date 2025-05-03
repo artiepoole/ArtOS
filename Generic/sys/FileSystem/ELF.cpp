@@ -24,7 +24,7 @@
 
 #include "logging.h"
 #include "stdio.h"
-#include "stdlib.h"
+#include "art_string.h"
 
 ELF::ELF(ArtFile* parent_file) : file(parent_file)
 {

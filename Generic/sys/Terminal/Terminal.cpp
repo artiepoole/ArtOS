@@ -94,10 +94,10 @@ Terminal::~Terminal()
     term_instance = nullptr;
 }
 
-Terminal& Terminal::get()
-{
-    return *term_instance;
-}
+// Terminal& Terminal::get()
+// {
+//     return *term_instance;
+// }
 
 ArtFile* Terminal::get_stdout_file()
 {
@@ -532,4 +532,9 @@ ArtFile* TermFileWrapper::find_file(const char* filename)
 char* TermFileWrapper::get_name()
 {
     return name;
+}
+
+Terminal& get_terminal()
+{
+    return *term_instance;
 }
