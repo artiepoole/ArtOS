@@ -20,16 +20,22 @@
 
 
 #include "PIT.h"
+
+#include <IOAPIC.h>
+
 #include "logging.h"
 #include "ports.h"
 
 u32 rate = 0;
 
 volatile u32 timer_ticks = 0;
+IOAPIC *ioapic;
+size_t myirq;
 
-
-void configure_pit(const u32 hz)
+void configure_pit(const u32 hz, IOAPIC* ioapic_, size_t irq)
 {
+    myirq = irq;
+    ioapic = ioapic_;
     LOG("Initialising PIT");
     const u32 divisor = 1193180 / hz; /* Calculate our divisor */
     rate = 1193180 / divisor; // calculating back to get the real rate after integer maths
@@ -50,7 +56,9 @@ void PIT_sleep_ms(const u32 ms)
     }
     timer_ticks = ms * rate / 1000; // rate is in hz, time is in ms
     // LOG("Sleeping for ", ms, "ms. Ticks:", timer_ticks, " rate:", rate);
+    ioapic->enable_IRQ(myirq);
     while (timer_ticks > 0);
+    ioapic->disable_IRQ(myirq);
 }
 
 void pit_handler()

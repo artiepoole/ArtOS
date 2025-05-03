@@ -45,8 +45,8 @@ private:
 inline void shell_run()
 {
     // Init and load the shell. Shell draws directly to the terminal by using static methods.
-    Shell shell;
-    shell.run();
+    const auto shell = new Shell();
+    shell->run();
 }
 
 

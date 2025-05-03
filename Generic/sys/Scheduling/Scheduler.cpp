@@ -22,10 +22,12 @@
 #include <cmp_int.h>
 #include <GDT.h>
 #include <IDT.h>
+#include <kernel.h>
 #include <LocalAPIC.h>
 #include <logging.h>
 #include <PagingTableUser.h>
 #include <SMBIOS.h>
+#include <syscall.h>
 #include <TSC.h>
 #include <Memory/PagingTable.h>
 
@@ -51,7 +53,7 @@ u32 execution_counter = 0;
 size_t current_process_id = 0;
 size_t highest_assigned_pid = 0;
 // size_t next_process_id = 1;
-size_t context_switch_period_ms = 1;
+size_t context_switch_period_ms = 1000;
 Process processes[max_processes];
 LocalAPIC* lapic_timer = nullptr;
 
@@ -121,7 +123,7 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
 
     auto* proc = &processes[next_process_id];
-    proc->paging_table = new PagingTableUser();
+
 
     cpu_registers_t context{};
     proc->user = user;
@@ -129,16 +131,18 @@ void Scheduler::execf(void (*func)(), const char* name, const bool user)
     void* stack_top;
     if (user)
     {
+        proc->paging_table = new PagingTableUser();
         // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
         // TODO: the stack must be part of the user space memory map so this has to be remapped!
         proc_stack = art_alloc(stack_size, stack_alignment);
-        while (true);
         stack_top = static_cast<u8*>(proc_stack) + stack_size;
     }
     else
     {
-        proc_stack = &kernel_stack_bottom;
-        stack_top = &kernel_stack_top;
+        proc_stack = art_alloc(stack_size, stack_alignment);
+        stack_top = static_cast<u8*>(proc_stack) + stack_size;
+        // proc_stack = &kernel_stack_bottom;
+        // stack_top = &kernel_stack_top;
     }
     LOG("Starting Process: ", name, " PID: ", next_process_id);
     context.esp = reinterpret_cast<u32>(stack_top);
@@ -277,7 +281,7 @@ size_t get_oldest_process()
 {
     size_t ret_id = 0;
     size_t lowest = -1;
-    for (size_t i = 0; i <= highest_assigned_pid; i++)
+    for (size_t i = 2; i <= highest_assigned_pid; i++)
     {
         if (processes[i].state != Process::STATE_READY) continue;
         if (processes[i].last_executed < lowest)
@@ -286,7 +290,7 @@ size_t get_oldest_process()
             lowest = processes[i].last_executed;
         }
     }
-
+    if (ret_id == 0) return 1;
     return ret_id;
 }
 
@@ -321,8 +325,18 @@ void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
     {
         r->user_esp = r->esp;
     }
-
-    set_cr3(processes[PID].paging_table->get_page_table_addr());
+    if (processes[PID].user)
+    {
+        // auto addr =  | 0xFFF;
+        // __asm__ volatile ("mov %0, %%cr3" : : "r"(addr));
+        set_cr3(processes[PID].paging_table->get_page_table_addr());
+    }
+    else
+    {
+        auto addr = get_kernal_page_dir() | 0xFFF;
+        __asm__ volatile ("mov %0, %%cr3" : : "r"(addr));
+        // set_cr3(get_kernal_page_dir());
+    }
 }
 
 void Scheduler::sleep_ms(const u32 ms)
@@ -336,6 +350,7 @@ void Scheduler::sleep_ms(const u32 ms)
 // When called from interrupt, the state is stored at this pointer loc, r.
 void Scheduler::schedule(cpu_registers_t* const r)
 {
+    processes[current_process_id].last_executed = kget_tick_ms();
     const size_t next_id = getNextProcessID();
     switch_process(r, next_id);
 }

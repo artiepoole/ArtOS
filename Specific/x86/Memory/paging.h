@@ -107,7 +107,7 @@ uintptr_t page_get_next_phys_addr();
 
 void set_physical_bitmap_addr(uintptr_t physical_addr, bool state);
 void set_physical_bitmap_idx(size_t phys_idx, bool state);
-
+uintptr_t get_kernal_page_dir();
 
 extern unsigned char* kernel_brk;
 

@@ -62,14 +62,9 @@ void Process::start(const size_t parent_id, const cpu_registers_t& new_context, 
     priority = PRIORITY_NORMAL;
     last_executed = 0;
     context = new_context;
-    if (is_user)
-    {
-        stack = new_stack;
-    }
-    else
-    {
-        stack = NULL;
-    }
+
+    stack = new_stack;
+    // TODO: I could map an event queue into the user space memory and then my event processor could populate queues based on target process
     eventQueue = new EventQueue();
     art_string::strncpy(name, new_name, MIN(32, art_string::strlen(new_name)));
     user = is_user;

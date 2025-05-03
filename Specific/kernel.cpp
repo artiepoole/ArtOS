@@ -156,17 +156,17 @@ u32 get_ebp()
     return ebp;
 }
 
-u32 set_ebp(u32 ebp)
-{
-    asm volatile("mov %0, %%ebp" :: "r"(ebp));
-}
+// u32 set_ebp(u32 ebp)
+// {
+//     asm volatile("mov %0, %%ebp" :: "r"(ebp));
+// }
 
 void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset)
 {
-    u32 old_ebp = get_ebp(); // store old ebp (needed for 6th param)
+    // u32 old_ebp;
 
-    set_ebp(offset);
     void* result;
+    asm volatile( "push %0"::"r"(offset):"memory");
     asm volatile(
         "int $50" // Trigger software interrupt
         : "=a"(result)
@@ -178,7 +178,9 @@ void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset
         "D"(fd) // arg5 edi
         : "memory"
     );
-    set_ebp(old_ebp); // restore ebp
+    // set_ebp(old_ebp); // restore ebp
+    // asm volatile("mov %0, %%ebp" :: "r"(old_ebp));
+    return result;
 }
 
 void munmap(void* addr, size_t length)
@@ -202,5 +204,5 @@ u64 get_current_clock()
         : "a"(SYSCALL_t::GET_CURRENT_CLOCK)
         : "memory"
     );
-    return low | (high << 32);
+    return low | (static_cast<u64>(high) << 32);
 }

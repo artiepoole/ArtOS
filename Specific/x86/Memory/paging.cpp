@@ -75,6 +75,11 @@ void set_physical_bitmap_idx(const size_t phys_idx, const bool state)
     page_available_physical_bitmap.set_bit(phys_idx, state);
 }
 
+uintptr_t get_kernal_page_dir()
+{
+    return kernel_pages().get_page_table_addr();
+}
+
 void enable_paging()
 {
     auto addr = kernel_pages().get_page_table_addr() | 0xFFF;
@@ -111,21 +116,21 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         if (entry->addr > last_end)
         {
             // fill holes
-            kernel_pages().paging_identity_map(last_end, entry->addr - last_end, true, false);
+            kernel_pages().identity_map(last_end, entry->addr - last_end, true, false);
         }
 
         if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc)
         {
             // contains kernel
             // only map used kernel region.
-            kernel_pages().paging_identity_map(entry->addr, brk_loc - entry->addr, entry->type == 1 && entry->addr > 0, false);
+            kernel_pages().identity_map(entry->addr, brk_loc - entry->addr, entry->type == 1 && entry->addr > 0, false);
             main_region_start = entry->addr;
             main_region_end = entry->addr + entry->len;
             last_physical_idx = main_region_end >> base_address_shift;
         }
         else
         {
-            kernel_pages().paging_identity_map(entry->addr, entry->len, entry->type == 1 && entry->addr > 0, false);
+            kernel_pages().identity_map(entry->addr, entry->len, entry->type == 1 && entry->addr > 0, false);
         }
 
         last_end = entry->addr + entry->len;
@@ -133,7 +138,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 
     // Protect kernel and init identity map
     // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
-    kernel_pages().paging_identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
+    kernel_pages().identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
 
     // set upper limit in physical bitmap to extents of the avaialble
     page_available_physical_bitmap.set_range(
@@ -161,5 +166,5 @@ int kmunmap(void* addr, const size_t length_bytes)
 
 void paging_identity_map(const uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
 {
-    kernel_pages().paging_identity_map(phys_addr, size, writable, user);
+    kernel_pages().identity_map(phys_addr, size, writable, user);
 }

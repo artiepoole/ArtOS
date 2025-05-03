@@ -52,7 +52,7 @@ void* PagingTableKernel::mmap(const uintptr_t addr, const size_t length, int pro
     const size_t first_page = addr >> base_address_shift;
     const size_t num_pages = (length + page_alignment - 1) >> base_address_shift;
 
-    const virtual_address_t ret_addr = {page_get_next_virtual_chunk(first_page, num_pages)};
+    const virtual_address_t ret_addr = {get_next_virtual_chunk(first_page, num_pages)};
     virtual_address_t working_addr = ret_addr;
     for (size_t i = 0; i < num_pages; i++)
     {
@@ -86,7 +86,7 @@ void* PagingTableKernel::mmap(const uintptr_t addr, const size_t length, int pro
 }
 
 
-void PagingTableKernel::paging_identity_map(uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
+void PagingTableKernel::identity_map(uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
 {
     virtual_address_t virtual_address = {.raw = phys_addr};
 
@@ -120,10 +120,10 @@ int PagingTableKernel::munmap(void* addr, const size_t length_bytes)
 
 uintptr_t PagingTableKernel::get_page_table_addr()
 {
-    return reinterpret_cast<uintptr_t>(paging_directory);
+    return get_phys_from_virtual(reinterpret_cast<uintptr_t>(&paging_directory)) << base_address_shift;
 }
 
-uintptr_t PagingTableKernel::page_get_next_virtual_chunk(size_t idx, const size_t n_pages)
+uintptr_t PagingTableKernel::get_next_virtual_chunk(size_t idx, const size_t n_pages)
 {
     idx = page_available_virtual_bitmap.get_next_trues(idx, n_pages);
     if (idx == DBA_ERR_IDX) return 0;
@@ -195,5 +195,3 @@ int PagingTableKernel::unassign_page_table_entries(const size_t start_idx, const
 
     return 0;
 }
-
-

@@ -163,6 +163,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // remap IRQs in APIC
     io_apic->remap_IRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
+    io_apic->disable_IRQ(2);
     vga.incrementProgressBarChunk(bar);
     io_apic->remap_IRQ(1, 33); // Keyboard
     vga.incrementProgressBarChunk(bar);
@@ -173,7 +174,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     io_apic->remap_IRQ(15, 47); // IDE primary
     vga.incrementProgressBarChunk(bar);
 
-    configure_pit(2000);
+    configure_pit(2000, io_apic, 2);
+
     vga.incrementProgressBarChunk(bar);
 
     // Create a new GDT and load it. Paging is used so this is just redundant
@@ -184,6 +186,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     CPUID_init(); // load CPUID values and try and get TSC rate otherwise get TSC rate from PIT calibration
     local_apic->configure_timer(DIVISOR_128); // use TSC rate to calibrate TSC->LAPIC timer ratio and calculate LAPIC timer rate at given divisor
+
     // TODO: In order to implement scheduling:
     // todo: Processes need a way to yield
     // todo: Processes need to have a way to start/be executed
@@ -276,7 +279,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
 
 
-    ksleep_s(1);
     // vga.draw();
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
     LOG("LOADED OS. Entering event loop.");

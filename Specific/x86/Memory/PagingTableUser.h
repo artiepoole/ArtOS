@@ -26,8 +26,6 @@
 class PagingTableUser : public PagingTable
 {
 public:
-    PagingTableUser() = default;
-
     virtual_address_t get_next_virtual_addr(uintptr_t start_addr);
     virtual_address_t get_next_virtual_chunk(uintptr_t addr, size_t n_pages);
     uintptr_t get_phys_from_virtual(uintptr_t v_addr) override;

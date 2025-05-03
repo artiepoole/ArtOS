@@ -227,8 +227,8 @@ void Shell::run()
                 }
             }
         }
-        // else
-        kpause_exec(100);
+        // // else
+        // kpause_exec(0);
     }
 }
 
@@ -242,6 +242,7 @@ void div_0()
 
 void user_test()
 {
+    // This cannot be loaded in userspace because the memory required to access this function is statically linked in physical memory in the kernel space. You HAVE to load from file or copy memory regions in order to execute in user space.
     LOG("User space should not work.");
 }
 

@@ -100,7 +100,8 @@ uint32_t kget_tick_ns()
 // TODO: replace PIT_sleep* with scheduler sleep
 void ksleep_s(const u32 s)
 {
-    const u32 ms = s * 1000;
+// TODO: pit is disabled so should replace with RTC or similar.
+const u32 ms = s * 1000;
     // if s*1000 out of bounds for u32 then handle that by sleeping for s lots of milliseconds a thousand times.
     if (ms < s) { for (u32 i = 0; i < 1000; i++) PIT_sleep_ms(s); }
     PIT_sleep_ms(ms);
@@ -203,7 +204,8 @@ void syscall_handler(cpu_registers_t* r)
         r->eax = kget_epoch_time();
         break;
     case SYSCALL_t::MMAP:
-        r->eax = reinterpret_cast<u32>(kmmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, r->ebp));
+
+        r->eax = reinterpret_cast<u32>(kmmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, *reinterpret_cast<u32*>(r->ebp) + 7));
         break;
     case SYSCALL_t::MUNMAP:
         kmunmap(reinterpret_cast<void*>(r->ebx), r->ecx);
