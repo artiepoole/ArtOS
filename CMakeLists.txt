@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
-
-option(SIMD "Replace memcpy with SIMD version?" OFF)
+option(SIMD "Replace memcpy with SIMD version?" ON)
 option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 
 project(ArtOS)
@@ -47,12 +46,19 @@ add_subdirectory(executable_src/doom)
 add_subdirectory(ArtOSTypes)
 #add_subdirectory(helloworld)
 ## Building the sys binary
-add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific}
+add_executable(${KERNEL_BIN}
+        Specific/x86/boot.S
+        Generic/main.cpp
+        ${Generic}
+        ${Specific}
+        ${ArchitectureSpecific}
 )
 
 
 target_include_directories(
-        ${KERNEL_BIN} PUBLIC
+        ${KERNEL_BIN} PUBLIC#if SIMD
+        #include "SIMD.h"
+        #endif
         Generic/
         Generic/sys
         Generic/sys/Communication
@@ -94,10 +100,14 @@ target_include_directories(
         ${KERNEL_BIN} PUBLIC
         ArtOS_lib/
         ArtOS_lib/keymaps
+        ArtOS_lib/SIMD
 )
 
-set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_kernel.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
-
+set_target_properties(
+        ${KERNEL_BIN} PROPERTIES
+        LINKER_LANGUAGE CXX
+        LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_kernel.ld -ffreestanding -O2 -nostdlib -Wl,-demangle"
+)
 
 add_custom_command(
         TARGET ${KERNEL_BIN} POST_BUILD
@@ -113,6 +123,11 @@ target_compile_definitions(${KERNEL_BIN}
         SIMD=$<BOOL:${SIMD}>
         FORLAPTOP=$<BOOL:${FORLAPTOP}>
 )
+
+
+target_link_libraries(${KERNEL_BIN} PUBLIC pdclib doom ArtOSTypes)
+
+
 add_executable(b.art executable_src/bart/bart.cpp)
 target_link_libraries(b.art ArtOS_lib pdclib)
 set_target_properties(b.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
@@ -122,11 +137,8 @@ target_link_libraries(hello.art ArtOS_lib)
 set_target_properties(hello.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
 
-target_link_libraries(${KERNEL_BIN} PUBLIC pdclib doom ArtOSTypes)
-target_include_directories(${KERNEL_LIB} PRIVATE
-        Generic/sys
-        Generic/sys/ComponentTypes/
-        ArtOSTypes/
+target_compile_definitions(pdclib PUBLIC
+        SIMD=$<BOOL:${SIMD}>
 )
 
 ### Generating the ISO file

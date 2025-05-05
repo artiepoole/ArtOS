@@ -15,27 +15,23 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 //
-// Created by artypoole on 04/10/24.
+// Created by artiepoole on 5/5/25.
 //
 
-#ifndef SIMD_H
-#define SIMD_H
+#ifndef _TYPES_H
+#define _TYPES_H
 
-#include "stddef.h"
-#include "stdint.h"
-#include "stdbool.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef unsigned char u8;
+typedef unsigned short u16;
+typedef unsigned int u32;
+typedef unsigned long long u64;
 
-void simd_enable();
-bool simd_enabled();
+typedef signed char i8;
+typedef signed short i16;
+typedef signed int i32;
+typedef signed long long i64;
 
-void* simd_copy(void* dest, const void* src, size_t size);
-void* simd_move(void* dest, const void* src, size_t n);
-void* simd_set(void* dest, int value, size_t size);
+typedef u32 size_t;
+typedef u32 uintptr_t;
 
-#ifdef __cplusplus
-}
-#endif
-#endif //SIMD_H
+#endif //_TYPES_H

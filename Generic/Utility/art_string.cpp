@@ -20,16 +20,17 @@
 
 #include "art_string.h"
 #include "memory.h"
+
+#if SIMD
 #include "SIMD.h"
+#endif
 
 namespace art_string
 {
     void* memset(void* s, const int c, size_t n)
     {
 #if SIMD
-
         return simd_set(s, c, n);
-
 #else
 
         unsigned char* p = static_cast<unsigned char*>(s);
@@ -99,21 +100,17 @@ namespace art_string
 
     void* memcpy(void* dest, const void* src, size_t n)
     {
-        if (simd_enabled())
-        {
-            simd_copy(dest, src, n);
-        }
-        else
-        {
-            auto s1 = static_cast<char*>(dest);
-            auto s2 = static_cast<const char*>(src);
+#if SIMD
+        simd_copy(dest, src, n);
+#else
+        auto s1 = static_cast<char*>(dest);
+        auto s2 = static_cast<const char*>(src);
 
-            while (n--)
-            {
-                *s1++ = *s2++;
-            }
+        while (n--)
+        {
+            *s1++ = *s2++;
         }
-
+#endif
         return dest;
     }
 

@@ -19,18 +19,19 @@
    This file is part of the Public Domain C Library (PDCLib).
    Permission is granted to use, modify, and / or redistribute at will.
 */
-
-// #include "SIMD.h"
+#if SIMD
+#include "SIMD.h"
+#endif
 #include <string.h>
 
 #ifndef REGTEST
 
 void* memmove(void* s1, const void* s2, size_t n)
 {
-    // if (simd_enabled())
-    // {
-    //     return simd_move(s1, s2, n);
-    // }
+#if SIMD
+    return simd_move(s1, s2, n);
+#else
+
     char* dest = (char*)s1;
     const char* src = (const char*)s2;
 
@@ -53,6 +54,7 @@ void* memmove(void* s1, const void* s2, size_t n)
     }
 
     return s1;
+#endif
 }
 
 #endif

@@ -29,16 +29,10 @@
 #include "PIC.h"
 #include "Terminal.h"
 #include "syscall.h"
-
-#include "SIMD.h"
 #include "paging.h"
-
-
 #include "icxxabi.h"
-
 #include "LocalAPIC.h"
 #include "IOAPIC.h"
-
 #include "ACPI.h"
 #include "PCIDevice.h"
 #include "multiboot2.h"
@@ -64,8 +58,9 @@
 #include "CPUID.h"
 #include "SMBIOS.h"
 #endif
-
-
+#if SIMD
+#include "simd_enable.h"
+#endif
 IDE_drive_info_t drive_list[4];
 uintptr_t BM_controller_base_port;
 
@@ -86,8 +81,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     }
 
     // Enable simd if available
+#if SIMD
     simd_enable();
-
+#endif
     // Must populate boot info in order to set up memory handling required to use malloc/new
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     mmap_init(&boot_info->mmap);
@@ -294,7 +290,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // TODO: the shell should not be singleton!
     // Stores kernel/scheduler as PID 0. This then starts the kernel shell as PID 1. The shell can then be used to run doom :)
     [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
-    execf(shell_run, "shell", false);
+
+    art_exec(art_open("b.art", 0));
+    // execf(shell_run, "shell", false);
     WRITE("ERROR: Left main loop.");
     asm("hlt");
 

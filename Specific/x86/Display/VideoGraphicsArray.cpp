@@ -39,13 +39,8 @@ Basic graphics utility methods
 
 #include "VideoGraphicsArray.h"
 
-#include <cmp_int.h>
-
-#include "SIMD.h"
 #include "CPU.h"
 #include <string.h>
-
-#include "stdlib.h"
 
 #include "splash_screen.h"
 #include "logging.h"

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.3...3.27.7 FATAL_ERROR)
-
+option(SIMD "Replace memcpy with SIMD version?" ON)
 project(pdclib_proj LANGUAGES C CXX)
 
 set(TARGET_NAME platform_functions)
@@ -343,5 +343,9 @@ set(pdclib CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter -Wshadow
 set_source_files_properties(functions/_dtoa/dtoa.c PROPERTIES COMPILE_OPTIONS -Wno-sign-compare)
 
 set_property(TARGET pdclib APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_STATIC_DEFINE ${FLAGS}")
+
+target_compile_definitions(pdclib PUBLIC
+        SIMD=$<BOOL:${SIMD}>
+)
 
 target_link_libraries(pdclib ArtOSTypes ArtOS_lib)

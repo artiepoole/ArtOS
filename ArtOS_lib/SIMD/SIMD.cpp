@@ -18,11 +18,8 @@
 // Created by artypoole on 04/10/24.
 //
 
+#include "_types.h"
 #include "SIMD.h"
-#include "CPUID.h"
-
-bool simd_is_enabled = false;
-
 
 typedef char v16qi __attribute__ ((__vector_size__ (16)));
 
@@ -65,42 +62,9 @@ mm_set1_epi8(const char A)
                        A, A, A, A, A, A, A, A);
 }
 
-
-static void enable_sse()
-{
-    uint32_t cr4;
-    __asm__ __volatile__ ("mov %%cr4, %0" : "=r" (cr4));
-    // Set OSFXSR and OSXMMEXCPT (bits 9 and 10 respectively)
-    cr4 |= 3 << 9;
-    __asm__ __volatile__ ("mov %0, %%cr4" : : "r" (cr4));
-}
-
-/* https://wiki.osdev.org/SSE */
-extern "C"
-void simd_enable()
-{
-    cpuid_feature_info_t const* info = cpuid_get_feature_info();
-    if (!info->edx & 0x1 << 24)
-    {
-        return;
-    }
-    if (info->edx & 0x1 << 26)
-    {
-        enable_sse();
-        simd_is_enabled = true;
-    }
-    // AVX256 is ecx & 0x1<<28
-}
-
-
-bool simd_enabled()
-{
-    return simd_is_enabled;
-}
-
 // TODO: does this start need to be aligned?
 extern "C"
-void* simd_copy(void* dest, const void* src, size_t size)
+void* simd_copy(void* dest, const void* src, u32 size)
 {
     // auto* d = static_cast<unsigned char*>(dest);
     // auto* s = static_cast<const unsigned char*>(src);

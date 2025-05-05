@@ -20,26 +20,27 @@
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-// #include "SIMD.h"
+#if SIMD
+#include "SIMD.h"
+#endif
 
-#include "../../../include/string.h"
+#include "string.h"
 
 #ifndef REGTEST
 
+
 void* memset(void* s, int c, size_t n)
 {
-    // if (simd_enabled())
-    // {
-    //     return simd_set(s, c, n);
-    // }
-
+#if SIMD
+    return simd_set(s, c, n);
+#else
     unsigned char* p = (unsigned char*)s;
 
     while (n--)
     {
         *p++ = (unsigned char)c;
     }
-
+#endif
     return s;
 }
 

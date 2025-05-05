@@ -23,27 +23,23 @@
 #include "string.h"
 
 #ifndef REGTEST
-
-
-// #include "SIMD.h"
-
+#if SIMD
+#include "SIMD.h"
+#endif
 
 void* memcpy(void* _PDCLIB_restrict dest, const void* _PDCLIB_restrict src, size_t n)
 {
-    // if (simd_enabled())
-    // {
-    //     simd_copy(dest, src, n);
-    // }
-    // else
-    {
-        char* s1 = dest;
-        const char* s2 = src;
+#if SIMD
+    simd_copy(dest, src, n);
+#else
+    char* s1 = dest;
+    const char* s2 = src;
 
-        while (n--)
-        {
-            *s1++ = *s2++;
-        }
+    while (n--)
+    {
+        *s1++ = *s2++;
     }
+#endif
 
     return dest;
 }
