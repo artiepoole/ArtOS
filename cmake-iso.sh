@@ -17,23 +17,19 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+set -e
 
-if ${CMAKE_SOURCE_DIR}; then
-  GRUB_SRC=".${CMAKE_SOURCE_DIR}/../grub.cfg"
-  BIN_SRC=".${CMAKE_BUILD_DIR}/ArtOS.bin"
-  DOOMWAD_SRC=".${CMAKE_SOURCE_DIR}/../external_resources/doomwad/doom1.wad"
-else
-  GRUB_SRC="grub.cfg"
-  BIN_SRC="./ArtOS.bin"
-  DOOMWAD_SRC="./external_resources/doomwad/doom1.wad"
-fi
+GRUB_SRC=".${CMAKE_SOURCE_DIR}/../grub.cfg"
+BIN_SRC=".${CMAKE_BUILD_DIR}/ArtOS.bin"
+BART_SRC=".${CMAKE_BUILD_DIR}/b.art"
+HELLO_SRC=".${CMAKE_BUILD_DIR}/hello.art"
+DOOMWAD_SRC=".${CMAKE_SOURCE_DIR}/../external_resources/doomwad/doom1.wad"
+
 echo "Grub source: ${GRUB_SRC}"
 echo "ArtOS bin loc: ${BIN_SRC}"
 echo "DOOMWAD source: ${DOOMWAD_SRC}"
-
-
-
-#HELLO_SRC="${CMAKE_BUILD_DIR+'/.'}helloworld/hello.elf"
+echo "b.art source: ${BART_SRC}"
+echo "hello.art source: ${HELLO_SRC}"
 
 
 if grub-file --is-x86-multiboot2 ArtOS.bin; then
@@ -48,7 +44,8 @@ if grub-file --is-x86-multiboot2 ArtOS.bin; then
     else
       wget https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad -O isodir/fs/doom1.wad
    fi
-#    cp $HELLO_SRC isodir/fs/hello.elf
+   cp "${BART_SRC}" isodir/fs/
+    cp "${HELLO_SRC}" isodir/fs/
     grub-mkrescue -o ArtOS.iso isodir
 #    rm -rf isodir
   else

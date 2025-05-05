@@ -26,10 +26,11 @@ namespace art_string
 {
     void* memset(void* s, const int c, size_t n)
     {
-        if (simd_enabled())
-        {
-            return simd_set(s, c, n);
-        }
+#if SIMD
+
+        return simd_set(s, c, n);
+
+#else
 
         unsigned char* p = static_cast<unsigned char*>(s);
 
@@ -39,6 +40,7 @@ namespace art_string
         }
 
         return s;
+#endif
     }
 
     int strncmp(const char* s1, const char* s2, size_t n)

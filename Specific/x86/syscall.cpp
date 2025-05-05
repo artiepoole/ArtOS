@@ -150,7 +150,7 @@ void kdraw_screen_region(const u32* frame_buffer)
     VideoGraphicsArray::get().drawRegion(frame_buffer);
 }
 
-#include "kernel.h"
+#include "../../ArtOS_lib/kernel.h"
 
 void syscall_handler(cpu_registers_t* r)
 {
@@ -215,8 +215,9 @@ void syscall_handler(cpu_registers_t* r)
         break;
     case SYSCALL_t::EXECF:
         Scheduler::execf(r, r->ebx, r->ecx, r->edx);
+        break;
     default:
-        LOG("Unhandled Syscall.");
+        LOG("Unhandled Syscall: ", static_cast<u32>(r->eax));
         r->eax = -1;
         break;
     }

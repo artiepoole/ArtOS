@@ -16,7 +16,7 @@
 
 #include "event.h"
 
-#include "kernel.h"
+#include "../ArtOS_lib/kernel.h"
 #include "ports.h"
 
 #include "../doom/doomgeneric/doomkeys.h"

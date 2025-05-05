@@ -15,7 +15,7 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 #include <float.h>
-#include <kernel.h>
+#include <../ArtOS_lib/kernel.h>
 #include <paging.h>
 #include <SMBIOS.h>
 #include <stdbool.h>
@@ -210,7 +210,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
     register_file_handle(2, get_serial().get_file()); // stderr
     vga.incrementProgressBarChunk(bar);
-    int com = art_open("/dev/com1", 0);
+    int com = art_open("/dev/com1\0", 0);
     art_write(com, "This should print to com0 via art_write.\0", 42);
     vga.incrementProgressBarChunk(bar);
     // fprintf(com, "%s\n", "This should print to com0 via fprintf");
@@ -295,7 +295,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     // Stores kernel/scheduler as PID 0. This then starts the kernel shell as PID 1. The shell can then be used to run doom :)
     [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
     execf(shell_run, "shell", false);
-    while (true);
     WRITE("ERROR: Left main loop.");
     asm("hlt");
 

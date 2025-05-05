@@ -344,4 +344,4 @@ set_source_files_properties(functions/_dtoa/dtoa.c PROPERTIES COMPILE_OPTIONS -W
 
 set_property(TARGET pdclib APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_STATIC_DEFINE ${FLAGS}")
 
-target_link_libraries(pdclib ArtOSTypes)
+target_link_libraries(pdclib ArtOSTypes ArtOS_lib)

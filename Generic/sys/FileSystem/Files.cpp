@@ -97,7 +97,7 @@ int art_open(const char* filename, [[maybe_unused]] unsigned int mode)
 {
     // TODO this is unfinished. This should take a path or a working dir
 
-    if (art_string::strcmp("/dev/com1", filename) == 0)
+    if (art_string::strcmp("/dev/com1\0", filename) == 0)
     {
         int fd = find_free_handle();
         if (int err = register_file_handle(fd, get_serial().get_file()); err != 0)

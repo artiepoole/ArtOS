@@ -22,11 +22,10 @@
 
 #include <ELF.h>
 #include <Files.h>
-#include <kernel.h>
+#include <../../../ArtOS_lib/kernel.h>
 #include <syscall.h>
 #include <logging.h>
 
-#include "Scheduler.h"
 
 extern "C" {
 #include "doomgeneric/doomgeneric.h"

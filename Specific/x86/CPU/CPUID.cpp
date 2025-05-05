@@ -24,7 +24,7 @@
 #include <Terminal.h>
 
 #include "CPU.h"
-#include "kernel.h"
+#include "../../../ArtOS_lib/kernel.h"
 #include "types.h"
 #include "logging.h"
 #include "PIT.h"

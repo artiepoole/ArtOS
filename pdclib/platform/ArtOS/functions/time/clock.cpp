@@ -24,7 +24,7 @@
 #ifndef REGTEST
 
 #include "time.h"
-#include "kernel.h"
+#include "../../../../../ArtOS_lib/kernel.h"
 // #include "syscall.h"
 
 

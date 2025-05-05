@@ -23,7 +23,7 @@
 #include <GDT.h>
 #include <IDT.h>
 #include <IOAPIC.h>
-#include <kernel.h>
+#include <../../../ArtOS_lib/kernel.h>
 #include <LocalAPIC.h>
 #include <logging.h>
 #include <PagingTableUser.h>

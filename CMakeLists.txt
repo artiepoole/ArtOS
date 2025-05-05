@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE macros for use with Qemu/com1." OFF)
 option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
+
+option(SIMD "Replace memcpy with SIMD version?" OFF)
 option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
 
 project(ArtOS)
@@ -10,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 
 
-set(KERNEL_LIB "kernel_lib")
+set(KERNEL_LIB "ArtOS_lib")
 set(KERNEL_NAME ${CMAKE_PROJECT_NAME})
 set(KERNEL_BIN ${KERNEL_NAME}.bin)
 set(KERNEL_ISO ${KERNEL_NAME}.iso)
@@ -38,15 +40,17 @@ file(GLOB_RECURSE Generic
 )
 
 
+add_subdirectory(ArtOS_lib)
+add_subdirectory(executable_src/bart)
 add_subdirectory(pdclib)
-add_subdirectory(doom)
+add_subdirectory(executable_src/doom)
 add_subdirectory(ArtOSTypes)
 #add_subdirectory(helloworld)
 ## Building the sys binary
 add_executable(${KERNEL_BIN} Specific/x86/boot.S Generic/main.cpp ${Generic} ${Specific} ${ArchitectureSpecific}
 )
 
-add_library(${KERNEL_LIB} Specific/kernel.cpp)
+
 target_include_directories(
         ${KERNEL_BIN} PUBLIC
         Generic/
@@ -80,14 +84,20 @@ target_include_directories(
         Specific/x86/Display
         Specific/x86/Drivers/Storage
         Specific/x86/IO
-        Specific/x86/IO/keymaps
         Specific/x86/Memory
         Specific/x86/PCI
         Specific/x86/ProcessInterruptControllers
         Specific/x86/Timers
 )
 
-set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/linker.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
+target_include_directories(
+        ${KERNEL_BIN} PUBLIC
+        ArtOS_lib/
+        ArtOS_lib/keymaps
+)
+
+set_target_properties(${KERNEL_BIN} PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_kernel.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
+
 
 add_custom_command(
         TARGET ${KERNEL_BIN} POST_BUILD
@@ -100,10 +110,19 @@ target_compile_definitions(${KERNEL_BIN}
         PUBLIC
         ENABLE_SERIAL_LOGGING=$<BOOL:${ENABLE_SERIAL_LOGGING}>
         ENABLE_TERMINAL_LOGGING=$<BOOL:${ENABLE_TERMINAL_LOGGING}>
+        SIMD=$<BOOL:${SIMD}>
         FORLAPTOP=$<BOOL:${FORLAPTOP}>
 )
+add_executable(b.art executable_src/bart/bart.cpp)
+target_link_libraries(b.art ArtOS_lib pdclib)
+set_target_properties(b.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
-target_link_libraries(${KERNEL_BIN} pdclib doom ArtOSTypes)
+add_executable(hello.art executable_src/helloworld/helloworld.cpp)
+target_link_libraries(hello.art ArtOS_lib)
+set_target_properties(hello.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
+
+
+target_link_libraries(${KERNEL_BIN} PUBLIC pdclib doom ArtOSTypes)
 target_include_directories(${KERNEL_LIB} PRIVATE
         Generic/sys
         Generic/sys/ComponentTypes/
@@ -117,7 +136,7 @@ add_custom_target(${KERNEL_NAME}
         COMMENT "Generating the kernel bootable iso file"
         BYPRODUCTS ${KERNEL_ISO}
 )
-add_dependencies(${KERNEL_NAME} ${KERNEL_BIN}) # hello.elf
+add_dependencies(${KERNEL_NAME} ${KERNEL_BIN} ${KERNEL_LIB} b.art hello.art)
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
