@@ -133,8 +133,8 @@ namespace art_allocator
     {
         if (idx < next_free_array_entry) next_free_array_entry = idx;
         if (idx == end_chunk_idx & end_chunk_idx >= 1) end_chunk_idx = chunks[idx].prev;
-        if (idx == highest_used_chunk & highest_used_chunk >= 1) highest_used_chunk = get_highest_used_chunk();
         chunks[idx] = chunk_t{nullptr, 0, 0, 0, false, true};
+        if (idx == highest_used_chunk & highest_used_chunk >= 1) highest_used_chunk = get_highest_used_chunk();
     }
 
 
@@ -275,7 +275,6 @@ namespace art_allocator
         // without a refactor because the appending of a chunk also merges if possible atm.
         return get_pages_for_new_chunk(size_bytes);
     }
-
 }
 
 
@@ -356,12 +355,18 @@ void art_free(const void* ptr)
         {
             // chunk_t* chunk = &chunks[idx];
             chunks[idx].memory_free = true;
-            if (chunks[chunks[idx].prev].memory_free & idx != 0)
+            // IF prev is free and is contiguous
+            chunk_t this_chunk = chunks[idx];
+            chunk_t prev_chunk = chunks[chunks[idx].prev];
+            if (idx != 0 && prev_chunk.memory_free == true && prev_chunk.start + prev_chunk.size == this_chunk.start)
             {
                 idx = chunks[idx].prev; // swap to prev because current will be deleted
                 merge_chunk(idx, chunks[idx].next);
             }
-            if (chunks[chunks[idx].next].memory_free)
+            // IF next is free and is contiguous
+
+            chunk_t next_chunk = chunks[chunks[idx].next];
+            if (next_chunk.memory_free && this_chunk.start + this_chunk.size == next_chunk.start)
             {
                 merge_chunk(idx, chunks[idx].next);
             }
