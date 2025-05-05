@@ -361,7 +361,8 @@ size_t IDEStorageContainer::get_dir_entry_size(ArtDirectory*& target_dir)
 {
     char first_sector_data[this->drive_dev->get_drive_info()->sector_size];
     read_lba(&first_sector_data, target_dir->get_lba(), one_sector_size);
-    return *reinterpret_cast<size_t*>(&first_sector_data[10]);
+    size_t ret = *reinterpret_cast<u64*>(&first_sector_data[10]);
+    return ret;
 }
 
 u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name_length, const size_t ext_length, char*& filename) const
@@ -384,8 +385,8 @@ u8 IDEStorageContainer::populate_filename(char* sub_data, const u8 expected_name
         if (art_string::strncmp(tag, "NM", 2) == 0)
         {
             art_free(filename);
-            filename = art_string::strndup(&sub_data[expected_name_length + extension_pos + 5], len - 4);
-            return len;
+            filename = art_string::strndup(&sub_data[expected_name_length + extension_pos + 5], len - 5);
+            return len - 4;
         }
         if (len > 0)
         {
