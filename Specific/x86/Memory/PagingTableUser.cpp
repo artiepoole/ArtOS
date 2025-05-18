@@ -164,8 +164,9 @@ page_table* PagingTableUser::append_page_table(const bool writable)
     return reinterpret_cast<page_table*>(new_table_loc);
 }
 
-void PagingTableUser::assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable, const bool)
+void PagingTableUser::assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable)
 {
+    // TODO: what if there is no tab entry? This should be more complete and standalone. It is not called by the class methods in the user verson.
     page_table_entry_t tab_entry = {};
     tab_entry.present = true;
     tab_entry.physical_address = physical_addr >> base_address_shift;

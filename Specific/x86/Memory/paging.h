@@ -32,6 +32,8 @@ constexpr size_t max_n_pages = 0x100000;
 constexpr uintptr_t max_memory_addr = max_n_pages * page_alignment;
 extern uintptr_t main_region_end;
 
+constexpr int PAGING_WRITABLE = 0x1;
+constexpr int PAGING_USER = 0x2;
 
 constexpr size_t paging_bitmap_n_DBs = (max_n_pages + (64 - 1)) / 32;
 
@@ -97,6 +99,7 @@ struct page_table
 void mmap_init(multiboot2_tag_mmap* mmap);
 //
 void* kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset);
+uintptr_t kget_mapping_target(void* v_addr);
 int kmunmap(void* addr, size_t length);
 //
 void paging_identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);

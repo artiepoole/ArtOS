@@ -70,7 +70,7 @@ u8 doom_key_map[128] =
 
 void DG_Init()
 {
-    // Nothing to do here but maybe this should prep the FS if not init.
+    // TODO: Take fullscreen control via a new syscall.
 }
 
 void DG_DrawFrame()

@@ -47,6 +47,7 @@ void PagingTableKernel::assign_page_directory_entry(const size_t dir_idx, const 
     paging_directory[dir_idx] = dir_entry;
 }
 
+
 void* PagingTableKernel::mmap(const uintptr_t addr, const size_t length, int prot, int flags, int fd, size_t offset)
 {
     const size_t first_page = addr >> base_address_shift;
@@ -59,7 +60,7 @@ void* PagingTableKernel::mmap(const uintptr_t addr, const size_t length, int pro
         if (!dir_entry_present(working_addr.page_directory_index))
         {
             // TODO: handle flag ints as bools here
-            assign_page_directory_entry(working_addr.page_directory_index, true, false);
+            assign_page_directory_entry(working_addr.page_directory_index, prot & PAGING_WRITABLE, flags & PAGING_USER);
         }
 
 

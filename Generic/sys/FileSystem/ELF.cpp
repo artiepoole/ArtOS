@@ -21,6 +21,8 @@
 #include "ELF.h"
 
 #include <memory.h>
+#include <paging.h>
+#include <PagingTableUser.h>
 
 #include "logging.h"
 #include "stdio.h"
@@ -71,13 +73,38 @@ ELF::ELF(ArtFile* parent_file) : file(parent_file)
         if (file->read(string_table, string_table_length) <= 0) art_free(string_table);
         LOG("String table: ", string_table);
     }
+    // loop through section headers
+    for (size_t i = 0; i < elf_header.e_shnum; i++)
+    {
+        auto user_table = new PagingTableUser();
+        const auto& header = section_header_table[i];
+        if (header.sh_addr > 0 && header.sh_flags & ELF_FLAG_ALLOCATE)
+        {
+            size_t fid = 0;
+            //TODO: mark as user access
+            void* section = kmmap(0, header.sh_size, header.sh_flags & ELF_FLAG_WRITABLE, PAGING_USER, fid, 0);
+            user_table->assign_page_table_entry(
+                kget_mapping_target(section),
+                virtual_address_t(header.sh_addr),
+                header.sh_flags & ELF_FLAG_WRITABLE
+            );
+            /* TODO: map memory regions one at a time.
+             * I will allocate these pages in kernel space wherever, and mark them as user-accessible
+             * then I will get the physical addresses from these kernel space pages into the user space
+             * mapping at fixed v_addr values
+             * i.e, the kernel space for a page is V: 0xff0000 -> P:0xff0000
+             * and the user space table contains 0x1000 -> 0xff0000
+             *
+             */
+        }
+        // TODO: call scheduler to add a process with this paging table.
+    }
 
     // TODO: find the symbol table?
     // I can now use the section_header_table[idx].sh_name as an index into the string table to figure out what the section is.
     // We don't need the entire file to be mapped into memory. Only the relevant sections do: the ones with valid address values.
     // I can loop through all and keep track of the start address and end and figure out the max_address required and then map this
     // on to the end of the stack or something when executing. E.g. my hello.elf starts at 0x100000 and the actual code and data sections are only
-
 
     // in the section table, the address is the destination address and the offset is the loation in the file. The size is the n_bytes in both caes.
     return;

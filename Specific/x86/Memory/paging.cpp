@@ -159,6 +159,11 @@ void* kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t o
     return kernel_pages().mmap(addr, length, prot, flags, fd, offset);
 }
 
+uintptr_t kget_mapping_target(void* v_addr)
+{
+    return kernel_pages().get_phys_from_virtual(reinterpret_cast<uintptr_t>(v_addr));
+}
+
 int kmunmap(void* addr, const size_t length_bytes)
 {
     return kernel_pages().munmap(addr, length_bytes);

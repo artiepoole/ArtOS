@@ -60,7 +60,7 @@ namespace art_allocator
         const size_t n_pages = (new_size * sizeof(chunk_t) + page_alignment - 1) / page_alignment;
         new_size = n_pages * page_alignment / sizeof(chunk_t);
 
-        auto* new_chunks = static_cast<chunk_t*>(kmmap(0, n_pages * page_alignment, 0, 0, 0, 0));
+        auto* new_chunks = static_cast<chunk_t*>(kmmap(0, n_pages * page_alignment, PAGING_WRITABLE, 0, 0, 0));
 
         if (not new_chunks) return false;
 
@@ -172,7 +172,7 @@ namespace art_allocator
     {
         const size_t n_pages = (size_bytes + page_alignment - 1) / page_alignment;
         const size_t got_bytes = n_pages * page_alignment;
-        const auto ptr = kmmap(0, n_pages * page_alignment, 0, 0, 0, 0);
+        const auto ptr = kmmap(0, n_pages * page_alignment, PAGING_WRITABLE, 0, 0, 0);
         if (!ptr)
         {
             exit(-1);
@@ -288,7 +288,7 @@ void art_memory_init()
     LOG("Initialising memory allocator");
     constexpr size_t n_pages = 1;
     constexpr size_t new_size = page_alignment / sizeof(chunk_t);
-    auto* new_chunks = static_cast<chunk_t*>(kmmap(0, n_pages * page_alignment, 0, 0, 0, 0));
+    auto* new_chunks = static_cast<chunk_t*>(kmmap(0, n_pages * page_alignment, PAGING_WRITABLE, 0, 0, 0));
 
     if (not new_chunks)
     {

@@ -29,7 +29,7 @@ inline size_t stack_size = 1024 * 1024; // 1MB stack default. Probably not enoug
 constexpr size_t max_processes = 255;
 
 class EventQueue;
-
+class PagingTableUser;
 
 class Scheduler
 {
@@ -65,9 +65,10 @@ public:
 
     static void schedule(cpu_registers_t* r);
     // static void schedule();
+    static void execute_from_paging_table(PagingTableUser* PTU, char* name);
 
     static void sleep_ms(u32 ms);
 };
 
 
-#endif //PROCESS_H
+#endif //SCHEDULER_H

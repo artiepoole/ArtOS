@@ -84,7 +84,7 @@ Scheduler::Scheduler(LocalAPIC* timer, EventQueue* kernel_queue)
 {
     // Store current state in process[0]
     // Set up first Lapic one shot
-    disable_interrupts();
+    // disable_interrupts();
     scheduler_instance = this;
     lapic_timer = timer;
     const auto nm = "scheduler";
@@ -425,4 +425,8 @@ void Scheduler::create_idle_task()
     art_string::strncpy(proc->name, nm, MIN(32, art_string::strlen(nm)));
     proc->context = context;
     proc->eventQueue = new EventQueue();
+}
+
+Scheduler::execute_from_paging_table(PagingTableUser PTU, char* name)
+{
 }

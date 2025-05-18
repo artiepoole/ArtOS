@@ -36,14 +36,14 @@ public:
     int munmap(void* addr, size_t length_bytes) override;
 
     page_table* append_page_table(bool writable);
-    void assign_page_table_entry(u32 physical_addr, virtual_address_t v_addr, bool writable, bool user) override;
+    void assign_page_table_entry(u32 physical_addr, virtual_address_t v_addr, bool writable);
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
 
     // TODO: WAIT I PROBABLY DON'T WANT A DBA FOR USER SPACE APPS!!!!!!!!!!!!!!!
     // TODO: This means I need to move the generic logic in PagingTable.h/.cpp to implementation specific stuff.
 
 private:
-    page_directory_4kb_t paging_directory[page_table_len];
+    page_directory_4kb_t paging_directory[page_table_len] = {};
     bool v_addr_is_used(virtual_address_t v_addr);
 };
 

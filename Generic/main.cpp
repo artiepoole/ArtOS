@@ -282,17 +282,14 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
     LOG("LOADED OS. Entering event loop.");
 
-    // #if !ENABLE_TERMINAL_LOGGING
-    //     get_terminal().write("Loading done.\n");
-    // #endif
-
-
-    // TODO: the shell should not be singleton!
-    // Stores kernel/scheduler as PID 0. This then starts the kernel shell as PID 1. The shell can then be used to run doom :)
     [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
 
-    art_exec(art_open("b.art", 0));
-    // execf(shell_run, "shell", false);
+    int shell_file = art_open("b.art", 0);
+    if (shell_file < 1)
+    LOG("CRITICAL: Failed to open b.art")
+    art_exec(shell_file);
+    art_close(shell_file);
+
     WRITE("ERROR: Left main loop.");
     asm("hlt");
 
