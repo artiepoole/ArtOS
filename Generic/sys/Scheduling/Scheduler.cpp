@@ -427,6 +427,40 @@ void Scheduler::create_idle_task()
     proc->eventQueue = new EventQueue();
 }
 
-Scheduler::execute_from_paging_table(PagingTableUser PTU, char* name)
+void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const uintptr_t entry_point)
 {
+    auto name = name_loc;
+    // Should copy stack contents but I am not sure if they are already ruined by this.R=
+    size_t next_process_id = getNextFreeProcessID();
+    const size_t parent_process_id = current_process_id;
+    if (next_process_id + 1 >= max_processes) return; // TODO: Error
+
+    auto* proc = &processes[next_process_id];
+
+
+    cpu_registers_t context{};
+    proc->user = true;
+    void* proc_stack;
+    void* stack_top;
+    proc->paging_table = PTU;
+    // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
+    // TODO: the stack must be part of the user space memory map so this has to be remapped!
+    proc_stack = art_alloc(stack_size, stack_alignment);
+    stack_top = static_cast<u8*>(proc_stack) + stack_size;
+
+    LOG("Starting Process: ", name, " PID: ", next_process_id);
+    context.esp = reinterpret_cast<u32>(stack_top);
+    context.cs = user_cs_offset | RPL_USER;
+    context.ds = user_ds_offset | RPL_USER;
+    context.es = user_ds_offset | RPL_USER;
+    context.fs = user_ds_offset | RPL_USER;
+    context.gs = user_ds_offset | RPL_USER;
+    context.ss = user_ds_offset | RPL_USER;
+    context.eip = reinterpret_cast<u32>(entry_point);
+    context.eflags = default_eflags;
+
+
+    proc->start(parent_process_id, context, proc_stack, name, true);
+
+    processes[parent_process_id].state = Process::STATE_PARKED;
 }

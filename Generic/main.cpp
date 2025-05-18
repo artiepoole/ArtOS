@@ -287,7 +287,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     int shell_file = art_open("b.art", 0);
     if (shell_file < 1)
     LOG("CRITICAL: Failed to open b.art")
+
     art_exec(shell_file);
+    yield();
     art_close(shell_file);
 
     WRITE("ERROR: Left main loop.");

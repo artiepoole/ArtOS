@@ -43,7 +43,7 @@ public:
     bool dir_entry_present(size_t idx) override;
     uintptr_t get_phys_from_virtual(uintptr_t v_addr) override;
     page_table_entry_t check_vmap_contents(uintptr_t v_addr) override;
-    void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user) override;
+    void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user);
     void assign_page_directory_entry(size_t dir_idx, bool writable, bool user);
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
     void direct_map(uintptr_t sector_start, size_t sector_size, u8 permissions);

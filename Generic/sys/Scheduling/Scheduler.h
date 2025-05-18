@@ -65,7 +65,7 @@ public:
 
     static void schedule(cpu_registers_t* r);
     // static void schedule();
-    static void execute_from_paging_table(PagingTableUser* PTU, char* name);
+    static void execute_from_paging_table(PagingTableUser* PTU, const char* name, const uintptr_t entry_point);
 
     static void sleep_ms(u32 ms);
 };

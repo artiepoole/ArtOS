@@ -25,6 +25,8 @@
 
 
 #ifdef __cplusplus
+class ELF;
+
 extern "C" {
 #endif
 
@@ -46,7 +48,8 @@ enum class SYSCALL_t
     GET_EPOCH,
     MMAP,
     MUNMAP,
-    EXECF
+    EXECF,
+    YIELD
 };
 
 typedef struct tm tm;
@@ -78,6 +81,7 @@ void munmap(void* addr, size_t length);
 
 // scheduling
 void execf(void (*func)(), const char* name, bool user);
+void yield();
 #ifdef __cplusplus
 }
 #endif

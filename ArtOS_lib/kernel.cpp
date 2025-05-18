@@ -221,3 +221,12 @@ void execf(void (*func)(), const char* name, bool user)
     );
 }
 
+void yield()
+{
+    asm volatile(
+        "int $50" // Trigger software interrupt
+        :
+        : "a"(SYSCALL_t::YIELD) // syscall ID
+        : "memory"
+    );
+}

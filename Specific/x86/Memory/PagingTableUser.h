@@ -43,7 +43,7 @@ public:
     // TODO: This means I need to move the generic logic in PagingTable.h/.cpp to implementation specific stuff.
 
 private:
-    page_directory_4kb_t paging_directory[page_table_len] = {};
+    alignas(page_alignment) page_directory_4kb_t paging_directory[page_table_len] = {};
     bool v_addr_is_used(virtual_address_t v_addr);
 };
 

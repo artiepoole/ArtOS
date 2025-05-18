@@ -216,6 +216,9 @@ void syscall_handler(cpu_registers_t* r)
     case SYSCALL_t::EXECF:
         Scheduler::execf(r, r->ebx, r->ecx, r->edx);
         break;
+    case SYSCALL_t::YIELD:
+        Scheduler::schedule(r);
+        break;
     default:
         LOG("Unhandled Syscall: ", static_cast<u32>(r->eax));
         r->eax = -1;

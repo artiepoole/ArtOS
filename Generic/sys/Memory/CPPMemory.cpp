@@ -37,6 +37,13 @@ void* operator new[](size_t size) throw()
     return art_alloc(size, 0);
 }
 
+void* operator new(size_t size, std::align_val_t alignment)
+{
+    if (size == 0) size = 1;
+
+    return art_alloc(size, static_cast<size_t>(alignment));
+}
+
 
 void operator delete(void* p) throw()
 {

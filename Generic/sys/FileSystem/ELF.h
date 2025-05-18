@@ -96,7 +96,7 @@ public:
     bool is_executable();
 
 private:
-    void mmap();
+    // void mmap();
     ArtFile* file;
     ELF_header_t elf_header;
     ELF_program_header_t* program_header_table;

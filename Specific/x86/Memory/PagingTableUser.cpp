@@ -117,8 +117,7 @@ void* PagingTableUser::mmap(const uintptr_t addr, const size_t length, int prot,
             assign_page_table_entry(
                 phys_addr,
                 working_addr,
-                writeable,
-                false
+                writeable
             );
         }
         else
