@@ -111,7 +111,7 @@ union raw_gdt_entry_t
 struct nice_gdt_entry_t
 {
     u32 base;
-    u32 limit : 20;
+    u32 limit;
     gdt_access_t access;
     gdt_flags_t flags;
 };
@@ -122,9 +122,9 @@ raw_gdt_entry_t ArtOS_GDT[n_entries];
 gdtr_t ArtOS_GDTR;
 TSS_t ArtOS_TSS0 = {};
 
-const u32 bases[n_entries] = {0, 0, 0, 0, 0, reinterpret_cast<u32>(&ArtOS_TSS0) - 0xc0000000};
-constexpr u32 limits[n_entries] = {0, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFFF};
-constexpr u8 accesses[n_entries] = {0, 0x9a, 0x93, 0xFa, 0xF3, 0x89}; // TODO: explain these bits.
+const u32 bases[n_entries] = {0, 0, 0, 0, 0, reinterpret_cast<u32>(&ArtOS_TSS0)};
+constexpr u32 limits[n_entries] = {0, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFFF, sizeof(TSS_t) - 1};
+constexpr u8 accesses[n_entries] = {0, 0x9a, 0x93, 0xFa, 0xF2, 0x89}; // TODO: explain these bits.
 constexpr u8 flags[n_entries] = {0, 0xc, 0xc, 0xc, 0xc, 0x0}; // 0xc is double and paging modes
 // extern void* kernel_stack_top;
 extern void* kernel_interrupt_stack_top;
@@ -157,7 +157,7 @@ raw_gdt_entry_t nice_to_ugly(const nice_gdt_entry_t& nice_entry)
         .limit_low = nice_entry.limit & 0xFFFF,
         .base_low = nice_entry.base & 0xFFFFFF, // 24bits
         .access = static_cast<u64>(nice_entry.access.raw & 0xFF),
-        .limit_high = nice_entry.limit << 16 & 0xF,
+        .limit_high = nice_entry.limit >> 16 & 0xF,
         .flags = static_cast<u64>(nice_entry.flags.raw & 0xF),
         .base_high = static_cast<u8>(nice_entry.base >> 24),
     };
@@ -194,11 +194,11 @@ void GDT_init()
             }
         );
     }
-    ArtOS_GDTR.offset = reinterpret_cast<u32>(&ArtOS_GDT) - 0xc0000000;
-    ArtOS_GDTR.size = n_entries * sizeof(raw_gdt_entry_t);
+    ArtOS_GDTR.offset = reinterpret_cast<u32>(&ArtOS_GDT);
+    ArtOS_GDTR.size = n_entries * sizeof(raw_gdt_entry_t) - 1;
 
     // set_GDTR(ArtOS_GDTR.offset);
-    uintptr_t gdtr_loc = reinterpret_cast<uintptr_t>(&ArtOS_GDTR) - 0xc0000000;
+    uintptr_t gdtr_loc = reinterpret_cast<uintptr_t>(&ArtOS_GDTR);
     load_gdt(gdtr_loc, kernel_ds_offset, kernel_cs_offset);
 
     // TODO: This hardcoded 0x28 refers to the offset in the GDT that points to the TSS descriptor.
