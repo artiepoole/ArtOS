@@ -14,7 +14,7 @@
 /*  Multiboot header. */
 .globl multiboot_header
 multiboot_header:
-            /*  magic */
+    /*  magic */
     .long   MULTIBOOT2_HEADER_MAGIC
     /*  ISA: i386 */
     .long   MULTIBOOT2_ARCHITECTURE_I386
