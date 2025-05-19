@@ -28,8 +28,10 @@ uintptr_t user_base_address = 256 * 1024 * 1024; // 256MB of kernel space?
 DenseBooleanArray<u64> page_available_virtual_bitmap;
 u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
 
-page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
-page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
+extern page_directory_4kb_t boot_page_directory[];
+extern page_table boot_page_tables[];
+// page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
+// page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
 
 // void PagingTableKernel::late_init()
 // {
@@ -41,12 +43,19 @@ void PagingTableKernel::assign_page_directory_entry(const size_t dir_idx, const 
 {
     page_directory_4kb_t dir_entry{0};
     dir_entry.present = true;
-    dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&paging_tables[dir_idx]) >> base_address_shift; // might be wrong.
+    dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&boot_page_tables[dir_idx]) >> base_address_shift; // might be wrong.
     dir_entry.rw = writable;
     dir_entry.user_access = user;
-    paging_directory[dir_idx] = dir_entry;
+    boot_page_directory[dir_idx] = dir_entry;
 }
 
+
+PagingTableKernel::PagingTableKernel()
+{
+    page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);
+    // paging_directory = &boot_page_directory;
+    // paging_tables = &boot_page_tables;
+}
 
 void* PagingTableKernel::mmap(const uintptr_t addr, const size_t length, int prot, int flags, int fd, size_t offset)
 {
@@ -95,11 +104,11 @@ void PagingTableKernel::identity_map(uintptr_t phys_addr, const size_t size, con
     for (size_t i = 0; i < num_pages; i++)
     {
         // Every 1024 table entries requires a new dir entry.
-        if (!paging_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
+        if (!boot_page_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
         {
             assign_page_table_entry(phys_addr, virtual_address, writable, user);
         }
-        if (!paging_directory[virtual_address.page_directory_index].present)
+        if (!boot_page_directory[virtual_address.page_directory_index].present)
         {
             assign_page_directory_entry(virtual_address.page_directory_index, writable, user);
         }
@@ -121,7 +130,7 @@ int PagingTableKernel::munmap(void* addr, const size_t length_bytes)
 
 uintptr_t PagingTableKernel::get_page_table_addr()
 {
-    return get_phys_from_virtual(reinterpret_cast<uintptr_t>(&paging_directory)) << base_address_shift;
+    return get_phys_from_virtual(reinterpret_cast<uintptr_t>(&boot_page_directory) - 0xc0000000) << base_address_shift;
 }
 
 uintptr_t PagingTableKernel::get_next_virtual_chunk(size_t idx, const size_t n_pages)
@@ -140,14 +149,14 @@ uintptr_t PagingTableKernel::get_next_virtual_addr(const uintptr_t start_addr)
 
 bool PagingTableKernel::dir_entry_present(const size_t idx)
 {
-    return paging_directory[idx].present;
+    return boot_page_directory[idx].present;
 }
 
 
 uintptr_t PagingTableKernel::get_phys_from_virtual(const uintptr_t v_addr)
 {
     const virtual_address_t lookup = {v_addr};
-    if (const auto entry = paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
+    if (const auto entry = boot_page_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
     {
         return entry.physical_address;
     }
@@ -157,7 +166,7 @@ uintptr_t PagingTableKernel::get_phys_from_virtual(const uintptr_t v_addr)
 page_table_entry_t PagingTableKernel::check_vmap_contents(const uintptr_t v_addr)
 {
     const virtual_address_t lookup = {v_addr};
-    if (const auto entry = paging_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
+    if (const auto entry = boot_page_tables[lookup.page_directory_index].table[lookup.page_table_index]; entry.present)
     {
         return entry;
     }
@@ -173,7 +182,7 @@ void PagingTableKernel::assign_page_table_entry(const uintptr_t physical_addr, c
     tab_entry.physical_address = physical_addr >> base_address_shift;
     tab_entry.rw = writable;
     tab_entry.user_access = user;
-    paging_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
+    boot_page_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
     page_available_virtual_bitmap.set_bit(v_addr.raw >> base_address_shift, false);
     set_physical_bitmap_addr(physical_addr, false);
 }
@@ -184,7 +193,7 @@ int PagingTableKernel::unassign_page_table_entries(const size_t start_idx, const
     // TODO: mark empty dicts as not present?
     for (size_t i = start_idx; i < start_idx + n_pages; i++)
     {
-        auto* tab_entry = &paging_tables[i / 1024].table[i % 1024];
+        auto* tab_entry = &boot_page_tables[i / 1024].table[i % 1024];
         if (!tab_entry->present)return -1;
 
         const size_t phys_idx = tab_entry->physical_address;

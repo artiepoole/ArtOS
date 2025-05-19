@@ -74,7 +74,7 @@ kernel_stack_top:
 boot_page_directory:
 	.skip 4096
 boot_page_tables:
-	.skip 4096*256
+	.skip 4096*1024 # entire memory region available
 
 .section .multiboot.text, "a"
 .globl  start, _start
@@ -89,14 +89,14 @@ _start:
 	#       1 MiB as it can be generally useful, and there's no need to
 	#       specially map the VGA buffer.
 	movl $0, %esi
-	# Map 1023 pages. The 1024th will be the VGA text buffer.
+    # is supposed to map 1024 entries for 256 page tables (only the top 1GB is mapped here)
 	movl $(1024*256), %ecx
 
 1:
-	# Only map the kernel.
+    # Starts at 0 memory and loops until end of kernel. It does the mapping (in 1:) and then incrementing (in 2:) until kernel end is reached then it does 3:
 	cmpl $kernel_start, %esi
 	jl 2f
-	cmpl $(kernel_end - 0xC0000000), %esi
+	cmpl $(0xFFFFFFFF - 0xC0000000), %esi
 	jge 3f
 
 	# Map physical address as "present, writable". Note that this maps
@@ -114,33 +114,83 @@ _start:
 	loop 1b
 
 3:
-	# Map VGA video memory to 0xC03FF000 as "present, writable".
-	# movl $(0x000B8000 | 0x003), boot_page_tables - 0xC0000000 + (4096*1024-1) * 4
 
-	# The page table is used at both page directory entry 0 (virtually from 0x0
-	# to 0x3FFFFF) (thus identity mapping the kernel) and page directory entry
-	# 768 (virtually from 0xC0000000 to 0xC03FFFFF) (thus mapping it in the
-	# higher half). The kernel is identity mapped because enabling paging does
-	# not change the next instruction, which continues to be physical. The CPU
-	# would instead page fault if there was no identity mapping.
+    # Map the bootstrap page table to both virtual addresses 0x00000000 and 0xC0000000.
+    movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
 
-	# Map the page table to both virtual addresses 0x00000000 and 0xC0000000.
-	movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
-	movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 768 * 4
+    # %esi contains how many bytes we mapped
+    # Calculate (mapped_bytes + 4MB-1) / 4MB, result stays in %esi
+    addl $(4 * 1024 * 1024 - 1), %esi
+    shrl $22, %esi             # %esi now holds number of 4MB chunks to map
 
-	# Set cr3 to the address of the boot_page_directory.
-	movl $(boot_page_directory - 0xC0000000), %ecx
-	movl %ecx, %cr3
+    xorl %ecx, %ecx            # %ecx = loop index (i)
 
-	# Enable paging and the write-protect bit.
-	movl %cr0, %ecx
-	orl $0x80010000, %ecx
-	movl %ecx, %cr0
+map_upper_tables:
+    cmpl %esi, %ecx
+    jge done_mapping_upper
 
-	# Jump to higher half with an absolute jump.
-	lea 4f, %ecx
-	jmp *%ecx
+    # Compute physical address of page table: boot_page_tables + ecx * 4096
+    movl %ecx, %edx
+    shl $12, %edx                              # edx = ecx * 4096
+    movl $(boot_page_tables - 0xC0000000), %edi
+    addl %edx, %edi                            # edi = physical address of page table
+    orl $0x003, %edi                           # mark present + writable
 
+    # Compute offset in page directory: (768 + ecx) * 4 -> edx
+    movl %ecx, %edx
+    addl $768, %edx
+    shl $2, %edx
+
+    # Write page table address into the directory
+    movl %edi, boot_page_directory - 0xC0000000(, %edx, 1)
+
+    incl %ecx
+    jmp map_upper_tables
+
+done_mapping_upper:
+map_mutliboot_table:
+        # Assume %ebx holds physical address to map; copy it to %esi (safe register)
+    movl %ebx, %esi             # %esi = physical address to map
+
+    # Calculate page directory index (bits 22-31) in %edi
+    movl %esi, %edi
+    shrl $22, %edi              # %edi = page directory index
+
+    # Calculate page table index (bits 12-21) in %edx
+    movl %esi, %edx
+    shrl $12, %edx              # shift right 12
+    andl $0x3FF, %edx           # mask lower 10 bits -> page table index
+
+    # Calculate address of page table: boot_page_tables + %edi * 4096
+    leal boot_page_tables - 0xC0000000, %ecx # temporarily use %ecx for calculation
+    shll $12, %edi              # %edi = %edi * 4096 (page table offset)
+    addl %edi, %ecx             # %ecx = &boot_page_tables + offset
+
+    # Calculate page table entry address: %eax + %edx * 4
+    movl %edx, %edi
+    shll $2, %edi               # %edi = page table index * 4 (byte offset)
+    addl %edi, %ecx             # %eax = address of page table entry
+
+    # Prepare page table entry value in %esi
+    andl $0xFFFFF000, %esi      # page align address
+    orl $0x003, %esi            # flags: present + writable
+
+    # Store the page table entry
+    movl %esi, (%ecx)
+
+done_mapping:
+    # Set cr3 to the address of the boot_page_directory.
+    movl $(boot_page_directory - 0xC0000000), %ecx
+    movl %ecx, %cr3
+
+    # Enable paging and the write-protect bit.
+    movl %cr0, %ecx
+    orl $0x80010000, %ecx
+    movl %ecx, %cr0
+
+    # Jump to higher half with an absolute jump.
+    lea 4f, %ecx
+    jmp *%ecx
 
 .section .text
 

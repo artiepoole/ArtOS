@@ -85,7 +85,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     simd_enable();
 #endif
     // Must populate boot info in order to set up memory handling required to use malloc/new
-    [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
+    [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr + 0xc0000000);
     mmap_init(&boot_info->mmap);
     multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
 

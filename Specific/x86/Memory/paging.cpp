@@ -138,7 +138,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 
     // Protect kernel and init identity map
     // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
-    kernel_pages().identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
+    // kernel_pages().identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
 
     // set upper limit in physical bitmap to extents of the avaialble
     page_available_physical_bitmap.set_range(

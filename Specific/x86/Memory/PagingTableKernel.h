@@ -30,7 +30,7 @@
 class PagingTableKernel : public PagingTable
 {
 public:
-    PagingTableKernel()  {  page_available_virtual_bitmap.init(paging_virt_bitmap_array, max_n_pages, true);}
+    PagingTableKernel();
 
     // void late_init();
 
@@ -50,8 +50,8 @@ public:
 
 private:
     DenseBooleanArray<u64> page_available_virtual_bitmap;
-    page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
-    page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
+    // page_directory_4kb_t paging_directory[page_table_len]__attribute__((aligned(page_alignment)));
+    // page_table paging_tables[page_table_len]__attribute__((aligned(page_alignment)));
     u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
 };
 
