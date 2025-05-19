@@ -194,11 +194,11 @@ void GDT_init()
             }
         );
     }
-    ArtOS_GDTR.offset = reinterpret_cast<u32>(&ArtOS_GDT)- 0xc0000000;
+    ArtOS_GDTR.offset = reinterpret_cast<u32>(&ArtOS_GDT) - 0xc0000000;
     ArtOS_GDTR.size = n_entries * sizeof(raw_gdt_entry_t);
 
     // set_GDTR(ArtOS_GDTR.offset);
-    uintptr_t gdtr_loc = reinterpret_cast<uintptr_t>(&ArtOS_GDTR)- 0xc0000000;
+    uintptr_t gdtr_loc = reinterpret_cast<uintptr_t>(&ArtOS_GDTR) - 0xc0000000;
     load_gdt(gdtr_loc, kernel_ds_offset, kernel_cs_offset);
 
     // TODO: This hardcoded 0x28 refers to the offset in the GDT that points to the TSS descriptor.
