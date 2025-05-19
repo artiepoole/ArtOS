@@ -82,22 +82,19 @@ boot_page_tables:
 start:
 _start:
 
-    # Physical address of boot_page_table1.
+    # Physical address of boot_page_tables.
 	movl $(boot_page_tables - 0xC0000000), %edi
 	# First address to map is address 0.
-	# TODO: Start at the first kernel page instead. Alternatively map the first
-	#       1 MiB as it can be generally useful, and there's no need to
-	#       specially map the VGA buffer.
 	movl $0, %esi
     # is supposed to map 1024 entries for 256 page tables (only the top 1GB is mapped here)
 	movl $(1024*256), %ecx
 
-1:
+start_mapping:
     # Starts at 0 memory and loops until end of kernel. It does the mapping (in 1:) and then incrementing (in 2:) until kernel end is reached then it does 3:
 	cmpl $kernel_start, %esi
-	jl 2f
+	jl increment_pointers
 	cmpl $(0xFFFFFFFF - 0xC0000000), %esi
-	jge 3f
+	jge do_mapping
 
 	# Map physical address as "present, writable". Note that this maps
 	# .text and .rodata as writable. Mind security and map them as non-writable.
@@ -105,15 +102,15 @@ _start:
 	orl $0x003, %edx
 	movl %edx, (%edi)
 
-2:
+increment_pointers:
 	# Size of page is 4096 bytes.
 	addl $4096, %esi
 	# Size of entries in boot_page_table1 is 4 bytes.
 	addl $4, %edi
 	# Loop to the next entry if we haven't finished.
-	loop 1b
+	loop start_mapping
 
-3:
+do_mapping:
 
     # Map the bootstrap page table to both virtual addresses 0x00000000 and 0xC0000000.
     movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
