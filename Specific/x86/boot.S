@@ -91,7 +91,7 @@ _start:
 
 start_mapping:
     # Starts at 0 memory and loops until end of kernel. It does the mapping (in 1:) and then incrementing (in 2:) until kernel end is reached then it does 3:
-	cmpl $kernel_start, %esi
+	cmpl 0x00100000, %esi
 	jl increment_pointers
 	cmpl $(0xFFFFFFFF - 0xC0000000), %esi
 	jge do_mapping

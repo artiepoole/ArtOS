@@ -48,6 +48,9 @@ uintptr_t main_region_start;
 uintptr_t main_region_end;
 size_t last_physical_idx;
 
+extern unsigned char kernel_start;
+unsigned char* kernel_start_loc = &kernel_start;
+
 
 // bitmaps used to keep track of the next virtual and physical pages available.
 // These are the same during identity mapping, but diverge when user space programs make malloc calls
@@ -103,28 +106,25 @@ void mmap_init(multiboot2_tag_mmap* mmap)
     const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift; // first page after kernel image.
     uintptr_t last_end = 0;
 
+    // TODO: I Don't want it identitiy map if type 1!
     // Loop through all entries and map appropriately
     for (size_t i = 0; i < n_entries; i++)
     {
         multiboot2_mmap_entry const* entry = mmap->entries[i];
-        if (entry->addr > last_end)
-        {
-            // fill holes
-            kernel_pages().identity_map(last_end, entry->addr - last_end, true, false);
-        }
+        if (entry->type == 1) continue;
 
         if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc)
         {
             // contains kernel
             // only map used kernel region.
-            kernel_pages().identity_map(entry->addr, brk_loc - entry->addr, entry->type == 1 && entry->addr > 0, false);
+            kernel_pages().identity_map(entry->addr, brk_loc - entry->addr, false, false);
             main_region_start = entry->addr;
             main_region_end = entry->addr + entry->len;
             last_physical_idx = main_region_end >> base_address_shift;
         }
         else
         {
-            kernel_pages().identity_map(entry->addr, entry->len, entry->type == 1 && entry->addr > 0, false);
+            kernel_pages().identity_map(entry->addr, entry->len, false && entry->addr > 0, false);
         }
 
         last_end = entry->addr + entry->len;
@@ -135,11 +135,15 @@ void mmap_init(multiboot2_tag_mmap* mmap)
     // kernel_pages().identity_map(0xf0000000, 0xffffffff - 0xf0000000, true, false);
 
     // set upper limit in physical bitmap to extents of the avaialble
+    // TODO: this is not correct at all.
+    // page_available_physical_bitmap.set_range(0, post_kernel_page-0xc0000000, false);
     page_available_physical_bitmap.set_range(
-        post_kernel_page >> base_address_shift,
-        (main_region_end - post_kernel_page) >> base_address_shift,
+        (post_kernel_page - 0xc0000000) >> base_address_shift,
+        (main_region_end - post_kernel_page - 0xc0000000) >> base_address_shift,
         true
     );
+
+    kernel_pages().reserve_kernel_v_addr_space(reinterpret_cast<void*>(0xc0000000), kernel_brk);
 
 
     LOG("Paging: memory map processed.");

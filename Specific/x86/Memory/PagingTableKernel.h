@@ -47,6 +47,7 @@ public:
     void assign_page_directory_entry(size_t dir_idx, bool writable, bool user);
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
     void direct_map(uintptr_t sector_start, size_t sector_size, u8 permissions);
+    void reserve_kernel_v_addr_space(void* start, void* end);
 
 private:
     DenseBooleanArray<u64> page_available_virtual_bitmap;

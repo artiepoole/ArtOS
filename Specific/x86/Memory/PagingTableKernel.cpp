@@ -21,6 +21,7 @@
 #include "PagingTableKernel.h"
 
 #include <art_string.h>
+#include <cmp_int.h>
 #include <PagingTable.h>
 
 uintptr_t user_base_address = 256 * 1024 * 1024; // 256MB of kernel space?
@@ -43,10 +44,49 @@ void PagingTableKernel::assign_page_directory_entry(const size_t dir_idx, const 
 {
     page_directory_4kb_t dir_entry{0};
     dir_entry.present = true;
-    dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&boot_page_tables[dir_idx]) >> base_address_shift; // might be wrong.
+    dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&boot_page_tables[dir_idx]) - 0xc0000000 >> base_address_shift; // might be wrong.
     dir_entry.rw = writable;
     dir_entry.user_access = user;
     boot_page_directory[dir_idx] = dir_entry;
+}
+
+void PagingTableKernel::assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable, const bool user)
+{
+    // TODO: This should definitely be a method of the class.
+    page_table_entry_t tab_entry;
+    tab_entry.present = true;
+    tab_entry.physical_address = physical_addr >> base_address_shift;
+    tab_entry.rw = writable;
+    tab_entry.user_access = user;
+    boot_page_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
+    page_available_virtual_bitmap.set_bit(v_addr.raw >> base_address_shift, false);
+    set_physical_bitmap_addr(physical_addr, false);
+}
+
+
+int PagingTableKernel::unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
+{
+    // TODO: mark empty dicts as not present?
+    for (size_t i = start_idx; i < start_idx + n_pages; i++)
+    {
+        auto* tab_entry = &boot_page_tables[i / 1024].table[i % 1024];
+        if (!tab_entry->present)return -1;
+
+        const size_t phys_idx = tab_entry->physical_address;
+
+        set_physical_bitmap_idx(phys_idx, true);
+        tab_entry->raw = 0;
+    }
+    page_available_virtual_bitmap.set_range(start_idx, n_pages, true);
+
+    return 0;
+}
+
+void PagingTableKernel::reserve_kernel_v_addr_space(void* start, void* end)
+{
+    auto start_idx = reinterpret_cast<uintptr_t>(start) >> base_address_shift;
+    auto end_idx = (reinterpret_cast<uintptr_t>(end) >> base_address_shift);
+    page_available_virtual_bitmap.set_range(start_idx, end_idx, false);
 }
 
 
@@ -63,6 +103,7 @@ void* PagingTableKernel::mmap(const uintptr_t addr, const size_t length, int pro
     const size_t num_pages = (length + page_alignment - 1) >> base_address_shift;
 
     const virtual_address_t ret_addr = {get_next_virtual_chunk(first_page, num_pages)};
+    if (ret_addr.raw == 0) return nullptr;
     virtual_address_t working_addr = ret_addr;
     for (size_t i = 0; i < num_pages; i++)
     {
@@ -104,11 +145,11 @@ void PagingTableKernel::identity_map(uintptr_t phys_addr, const size_t size, con
     for (size_t i = 0; i < num_pages; i++)
     {
         // Every 1024 table entries requires a new dir entry.
-        if (!boot_page_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
-        {
-            assign_page_table_entry(phys_addr, virtual_address, writable, user);
-        }
-        if (!boot_page_directory[virtual_address.page_directory_index].present)
+        // if (!boot_page_tables[virtual_address.page_directory_index].table[virtual_address.page_table_index].present)
+        // {
+        assign_page_table_entry(phys_addr, virtual_address, writable, user);
+        // }
+        if (!boot_page_directory[virtual_address.page_directory_index].present || virtual_address.page_table_index == 0)
         {
             assign_page_directory_entry(virtual_address.page_directory_index, writable, user);
         }
@@ -135,14 +176,16 @@ uintptr_t PagingTableKernel::get_page_table_addr()
 
 uintptr_t PagingTableKernel::get_next_virtual_chunk(size_t idx, const size_t n_pages)
 {
-    idx = page_available_virtual_bitmap.get_next_trues(idx, n_pages);
+    const uintptr_t min_idx = MAX(idx, 768*1024);
+    idx = page_available_virtual_bitmap.get_next_trues(min_idx, n_pages);
     if (idx == DBA_ERR_IDX) return 0;
     return idx << base_address_shift;
 }
 
 uintptr_t PagingTableKernel::get_next_virtual_addr(const uintptr_t start_addr)
 {
-    const size_t idx = page_available_virtual_bitmap.get_next_true(start_addr >> base_address_shift);
+    const uintptr_t min_addr = MAX(start_addr, 0xc0000000);
+    const size_t idx = page_available_virtual_bitmap.get_next_true(min_addr >> base_address_shift);
     if (idx == DBA_ERR_IDX) return 0;
     return idx << base_address_shift;
 }
@@ -171,37 +214,4 @@ page_table_entry_t PagingTableKernel::check_vmap_contents(const uintptr_t v_addr
         return entry;
     }
     return page_table_entry_t{};
-}
-
-
-void PagingTableKernel::assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable, const bool user)
-{
-    // TODO: This should definitely be a method of the class.
-    page_table_entry_t tab_entry;
-    tab_entry.present = true;
-    tab_entry.physical_address = physical_addr >> base_address_shift;
-    tab_entry.rw = writable;
-    tab_entry.user_access = user;
-    boot_page_tables[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
-    page_available_virtual_bitmap.set_bit(v_addr.raw >> base_address_shift, false);
-    set_physical_bitmap_addr(physical_addr, false);
-}
-
-
-int PagingTableKernel::unassign_page_table_entries(const size_t start_idx, const size_t n_pages)
-{
-    // TODO: mark empty dicts as not present?
-    for (size_t i = start_idx; i < start_idx + n_pages; i++)
-    {
-        auto* tab_entry = &boot_page_tables[i / 1024].table[i % 1024];
-        if (!tab_entry->present)return -1;
-
-        const size_t phys_idx = tab_entry->physical_address;
-
-        set_physical_bitmap_idx(phys_idx, true);
-        tab_entry->raw = 0;
-    }
-    page_available_virtual_bitmap.set_range(start_idx, n_pages, true);
-
-    return 0;
 }

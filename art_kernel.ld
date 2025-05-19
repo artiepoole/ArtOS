@@ -15,7 +15,7 @@ SECTIONS
 	/* which will be mapped to 1MB in the physical address space. */
 	/* Note that we page-align the sections. */
 
-    kernel_start = .;
+
         .multiboot.data : {
             *(.multiboot.data)
         }
@@ -26,18 +26,22 @@ SECTIONS
         }
 
 	. += 0xC0000000;
+
 	/* Add a symbol that indicates the start address of the kernel. */
 	.text ALIGN (4K) : AT (ADDR (.text) - 0xC0000000)
 	{
-		*(.text)
-	}
-	.rodata ALIGN (4K) : AT (ADDR (.rodata) - 0xC0000000)
-	{
-		*(.rodata)
+	    kernel_start = .;
+        *(.text*)
+        *(.rodata)
 	}
 	.data ALIGN (4K) : AT (ADDR (.data) - 0xC0000000)
 	{
-		*(.data)
+        start_ctors = .;
+        KEEP(*( .init_array ));
+        KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
+        end_ctors = .;
+        *(.data)
+        *(.rawdata*)
 	}
 	.bss ALIGN (4K) : AT (ADDR (.bss) - 0xC0000000)
 	{
