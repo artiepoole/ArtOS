@@ -1,6 +1,6 @@
 /* The bootloader will look at this image and start execution at the symbol
    designated as the entry point. */
-ENTRY(start)
+ENTRY(_start)
 
 OUTPUT_FORMAT(elf32-i386)
 OUTPUT_ARCH(i386:i386)
@@ -10,54 +10,42 @@ OUTPUT_ARCH(i386:i386)
 
 SECTIONS
 {
-	/* It used to be universally recommended to use 1M as a start offset,
-	   as it was effectively guaranteed to be available under BIOS systems.
-	   However, UEFI has made things more complicated, and experimental data
-	   strongly suggests that 2M is a safer place to load. In 2016, a new
-	   feature was introduced to the multiboot2 spec to inform bootloaders
-	   that a kernel can be loaded anywhere within a range of addresses and
-	   will be able to relocate itself to run from such a loader-selected
-	   address, in order to give the loader freedom in selecting a span of
-	   memory which is verified to be available by the firmware, in order to
-	   work around this issue. This does not use that feature, so 2M was
-	   chosen as a safer option than the traditional 1M. */
-	   /* I have since changed this line based on another tutorial and haven't checked this value */
-   . = 2M;
-   kernel_start = .;
-   .mboot ALIGN (4K) : AT(ADDR(.mboot))
-   {
-       *(.multiboot_header)
-   }
+    . = 0x00100000;
+	/* The kernel will live at 3GB + 1MB in the virtual address space, */
+	/* which will be mapped to 1MB in the physical address space. */
+	/* Note that we page-align the sections. */
 
-    .text BLOCK(4K) : ALIGN(4K)
-    {
-        *(.text*)
-        *(.rodata)
-    }
+    kernel_start = .;
+        .multiboot.data : {
+            *(.multiboot.data)
+        }
 
-	/* Read-write data (initialized) */
-	/*.data */
-    .data BLOCK(4K) : ALIGN(4K)
-    {
-        start_ctors = .;
-        KEEP(*( .init_array ));
-        KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
-        end_ctors = .;
-        *(.data)
-        *(.rawdata*)
-    }
+        .multiboot.text : AT(ADDR(.multiboot.text))
+        {
+        KEEP(*(.multiboot.text))
+        }
 
-
-	/* Read-write data (uninitialized) and stack */
-	/* .bss BLOCK(4K) : ALIGN(4K) 8*/
-	.bss BLOCK(4K) : ALIGN(4K)
+	. += 0xC0000000;
+	/* Add a symbol that indicates the start address of the kernel. */
+	.text ALIGN (4K) : AT (ADDR (.text) - 0xC0000000)
+	{
+		*(.text)
+	}
+	.rodata ALIGN (4K) : AT (ADDR (.rodata) - 0xC0000000)
+	{
+		*(.rodata)
+	}
+	.data ALIGN (4K) : AT (ADDR (.data) - 0xC0000000)
+	{
+		*(.data)
+	}
+	.bss ALIGN (4K) : AT (ADDR (.bss) - 0xC0000000)
 	{
 		*(COMMON)
 		*(.bss)
+		*(.bootstrap_stack)
 	}
-
     /DISCARD/ : { *(.fini_array*) *(.comment) }
-	/* The compiler may produce other sections, by default it will put them in
-	   a segment with the same name. Simply add stuff here as needed. */
-    kernel_end = .;
+	/* Add a symbol that indicates the end address of the kernel. */
+	kernel_end = .;
 }
