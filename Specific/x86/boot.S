@@ -89,6 +89,8 @@ _start:
     # is supposed to map 1024 entries for 256 page tables (only the top 1GB is mapped here)
 	movl $(1024*256), %ecx
 
+
+# esi stores the memory address in bytes and edi stores the index into the page table
 start_mapping:
     # Starts at 0 memory and loops until end of kernel. It does the mapping (in 1:) and then incrementing (in 2:) until kernel end is reached then it does 3:
 	cmpl 0x00100000, %esi
@@ -96,7 +98,7 @@ start_mapping:
 	cmpl $(0xFFFFFFFF - 0xC0000000), %esi
 	jge do_mapping
 
-	# Map physical address as "present, writable". Note that this maps
+	# Map physical address as "present, writable" (+0x03). Note that this maps
 	# .text and .rodata as writable. Mind security and map them as non-writable.
 	movl %esi, %edx
 	orl $0x003, %edx
@@ -105,28 +107,28 @@ start_mapping:
 increment_pointers:
 	# Size of page is 4096 bytes.
 	addl $4096, %esi
-	# Size of entries in boot_page_table1 is 4 bytes.
+	# Size of entries in boot_page_tables is 4 bytes.
 	addl $4, %edi
 	# Loop to the next entry if we haven't finished.
 	loop start_mapping
 
 do_mapping:
 
-    # Map the bootstrap page table to both virtual addresses 0x00000000 and 0xC0000000.
+    # Map the bootstrap page table to lower half temporarily
     movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
 
-    # %esi contains how many bytes we mapped
+    # %esi contains how many bytes we already mapped
     # Calculate (mapped_bytes + 4MB-1) / 4MB, result stays in %esi
-    addl $(4 * 1024 * 1024 - 1), %esi
+    addl $(4096 * 1024 - 1), %esi
     shrl $22, %esi             # %esi now holds number of 4MB chunks to map
 
-    xorl %ecx, %ecx            # %ecx = loop index (i)
+    movl $0, %ecx            # %ecx = loop index (i) - resets to 0
 
 map_upper_tables:
     cmpl %esi, %ecx
     jge done_mapping_upper
 
-    # Compute physical address of page table: boot_page_tables + ecx * 4096
+    # Compute physical address of page table: boot_page_tables + ecx * 4096, here edi stores the data we will write to the page directory.
     movl %ecx, %edx
     shl $12, %edx                              # edx = ecx * 4096
     movl $(boot_page_tables - 0xC0000000), %edi
