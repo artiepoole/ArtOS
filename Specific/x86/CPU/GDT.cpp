@@ -122,7 +122,7 @@ raw_gdt_entry_t ArtOS_GDT[n_entries];
 gdtr_t ArtOS_GDTR;
 TSS_t ArtOS_TSS0 = {};
 
-const u32 bases[n_entries] = {0, 0, 0, 0, 0, reinterpret_cast<u32>(&ArtOS_TSS0)};
+const u32 bases[n_entries] = {0, 0, 0, 0, 0, reinterpret_cast<u32>(&ArtOS_TSS0) - 0xc0000000};
 constexpr u32 limits[n_entries] = {0, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFFF, 0xFFFFF};
 constexpr u8 accesses[n_entries] = {0, 0x9a, 0x93, 0xFa, 0xF3, 0x89}; // TODO: explain these bits.
 constexpr u8 flags[n_entries] = {0, 0xc, 0xc, 0xc, 0xc, 0x0}; // 0xc is double and paging modes
@@ -171,7 +171,7 @@ u16 get_segment_offset(const size_t idx)
 
 // Loads gdt and sets segment selectors appropriately. Implemented in GDT.S
 extern "C"
-void load_gdt(gdtr_t* gdt_ptr, unsigned int data_sel, unsigned int code_sel);
+void load_gdt(uintptr_t gdt_ptr, unsigned int data_sel, unsigned int code_sel);
 
 
 void GDT_init()
@@ -194,11 +194,12 @@ void GDT_init()
             }
         );
     }
-    ArtOS_GDTR.offset = reinterpret_cast<u32>((&ArtOS_GDT) - 0xc0000000 / sizeof(raw_gdt_entry_t));
+    ArtOS_GDTR.offset = reinterpret_cast<u32>(&ArtOS_GDT)- 0xc0000000;
     ArtOS_GDTR.size = n_entries * sizeof(raw_gdt_entry_t);
-    // set_GDTR(ArtOS_GDTR.offset);
 
-    load_gdt((&ArtOS_GDTR) - 0xc0000000 / sizeof(gdtr_t), kernel_ds_offset, kernel_cs_offset);
+    // set_GDTR(ArtOS_GDTR.offset);
+    uintptr_t gdtr_loc = reinterpret_cast<uintptr_t>(&ArtOS_GDTR)- 0xc0000000;
+    load_gdt(gdtr_loc, kernel_ds_offset, kernel_cs_offset);
 
     // TODO: This hardcoded 0x28 refers to the offset in the GDT that points to the TSS descriptor.
     u16 ltr = tss_offset;
