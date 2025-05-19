@@ -96,13 +96,7 @@ void enable_paging()
  */
 void mmap_init(multiboot2_tag_mmap* mmap)
 {
-    // get_kernel_pages().late_init();
-    // kernel_pages.late_init();
-    // TODO:  This should call PagingTableKernel() which should do this
-    // Iniitalise bitmaps
-
     page_available_physical_bitmap.init(paging_phys_bitmap_array, max_n_pages, false);
-
 
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
