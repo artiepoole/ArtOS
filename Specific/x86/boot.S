@@ -76,106 +76,128 @@ boot_page_directory:
 boot_page_tables:
 	.skip 4096*1024 # entire memory region available
 
+
 .section .multiboot.text, "a"
 .globl  start, _start
 .type _start, @function
 start:
 _start:
+    # first page: 0x00100000 is the 256th page. so page dir = 1, page table entry = 256, which is first page table which points to 0x00100000
+    # TODO: we need to map the first page from 0x10000 in lower half before the jump
 
-    # Physical address of boot_page_tables.
-	movl $(boot_page_tables - 0xC0000000), %edi
-	# First address to map is address 0.
-	movl $0, %esi
-    # is supposed to map 1024 entries for 256 page tables (only the top 1GB is mapped here)
-	movl $(1024*256), %ecx
-
-
-# esi stores the memory address in bytes and edi stores the index into the page table
-start_mapping:
-    # Starts at 0 memory and loops until end of kernel. It does the mapping (in 1:) and then incrementing (in 2:) until kernel end is reached then it does 3:
-	cmpl 0x00100000, %esi
-	jl increment_pointers
-	cmpl $(0xFFFFFFFF - 0xC0000000), %esi
-	jge do_mapping
-
-	# Map physical address as "present, writable" (+0x03). Note that this maps
-	# .text and .rodata as writable. Mind security and map them as non-writable.
-	movl %esi, %edx
-	orl $0x003, %edx
-	movl %edx, (%edi)
-
-increment_pointers:
-	# Size of page is 4096 bytes.
-	addl $4096, %esi
-	# Size of entries in boot_page_tables is 4 bytes.
-	addl $4, %edi
-	# Loop to the next entry if we haven't finished.
-	loop start_mapping
-
-do_mapping:
-
-    # Map the bootstrap page table to lower half temporarily
+    # updates page directory to know first page table exists
     movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
 
-    # %esi contains how many bytes we already mapped
-    # Calculate (mapped_bytes + 4MB-1) / 4MB, result stays in %esi
-    addl $(4096 * 1024 - 1), %esi
-    shrl $22, %esi             # %esi now holds number of 4MB chunks to map
+    # get page table entry physical addr
+	movl $(boot_page_tables - 0xC0000000 + 4*256), %edi
+	orl $0x3, %edi
 
-    movl $0, %ecx            # %ecx = loop index (i) - resets to 0
+	# create page table entry to identity map this one page which contains this mapping code
+	movl 0x00100000, %edi
+	orl $0x3, %edi
+    # get address of page table entry
+    movl $(boot_page_tables - 0xC0000000 + 4*256), %edx
+	# write it into the page table
+	movl %edi, (%edx)
 
-map_upper_tables:
-    cmpl %esi, %ecx
-    jge done_mapping_upper
+# We want to loop from 0 to 256 to update the 256 entries of the page directory to point to the start of each page table
+# We then want to loop from 0 to 1024*256 to write to the page tables
+# page directory address is boot_page_directory + (index + 768) * 4
+# Page table entry physical address is boot_page_tables - 0xC0000000 + index * 4
+# so at  boot_page_directory + index * 4 we want to write (boot_page_tables - 0xC0000000 + index * 4096  or 0x3)
+# ecx is idx so we will loop from 256 to 0
 
-    # Compute physical address of page table: boot_page_tables + ecx * 4096, here edi stores the data we will write to the page directory.
-    movl %ecx, %edx
-    shl $12, %edx                              # edx = ecx * 4096
+populate_page_directory_lower:
+    movl $0, %ecx
+    # load the start address of the destination (end of the directory) within the boot page directory into esi
+    movl $(boot_page_directory - 0xC0000000), %esi
     movl $(boot_page_tables - 0xC0000000), %edi
-    addl %edx, %edi                            # edi = physical address of page table
-    orl $0x003, %edi                           # mark present + writable
+    page_dir_loop_low:
+        # This copies the page table address and sets the present and writable flags into edx then writes the adddress to the page directory.
+        movl %edi, %edx
+        orl $0x3, %edx
+        movl %edx, (%esi)
 
-    # Compute offset in page directory: (768 + ecx) * 4 -> edx
-    movl %ecx, %edx
-    addl $768, %edx
-    shl $2, %edx
+        # increment the index of the page directory
+        addl $4, %esi
+        # increment the address of the table
+        addl $4096, %edi
+        # increment index
+        incl %ecx
+        cmpl $256, %ecx
+        jl page_dir_loop_low
 
-    # Write page table address into the directory
-    movl %edi, boot_page_directory - 0xC0000000(, %edx, 1)
+# were going to count up this time
+populate_page_tables_lower:
+    # ecx stores the counter
+    movl $256, %ecx
+    # edi stores the physical address of the destination memory region
+    movl $0, %edi
+    # esi stores the page table entry address
+    movl $(boot_page_tables - 0xC0000000), %esi
 
-    incl %ecx
-    jmp map_upper_tables
+    page_table_loop_low:
 
-done_mapping_upper:
-map_mutliboot_table:
-        # Assume %ebx holds physical address to map; copy it to %esi (safe register)
-    movl %ebx, %esi             # %esi = physical address to map
+        # copies the dest. physical address and then adds the flags for present and writable
+        movl %edi, %edx
+        orl $0x3, %edx
+        # store the physical address in the page table
+        movl %edx, (%esi)
 
-    # Calculate page directory index (bits 22-31) in %edi
-    movl %esi, %edi
-    shrl $22, %edi              # %edi = page directory index
+        # increment the physical address of the page table entry to write to
+        addl $4, %esi
+        # increment the reuslting physical address
+        addl $4096, %edi
+        incl %ecx
+        cmpl $(4096*256), %ecx
+        jl page_table_loop_low
 
-    # Calculate page table index (bits 12-21) in %edx
-    movl %esi, %edx
-    shrl $12, %edx              # shift right 12
-    andl $0x3FF, %edx           # mask lower 10 bits -> page table index
 
-    # Calculate address of page table: boot_page_tables + %edi * 4096
-    leal boot_page_tables - 0xC0000000, %ecx # temporarily use %ecx for calculation
-    shll $12, %edi              # %edi = %edi * 4096 (page table offset)
-    addl %edi, %ecx             # %ecx = &boot_page_tables + offset
+populate_page_directory_upper:
+    movl $768, %ecx
+    # load the start address of the destination (end of the directory) within the boot page directory into esi
+    movl $(boot_page_directory - 0xC0000000 + (768 * 4)), %esi
+    movl $(boot_page_tables - 0xC0000000 + (4096 * 768)), %edi
+    page_dir_loop_high:
+        # This copies the page table address and sets the present and writable flags into edx then writes the adddress to the page directory.
+        movl %edi, %edx
+        orl $0x3, %edx
+        movl %edx, (%esi)
 
-    # Calculate page table entry address: %eax + %edx * 4
-    movl %edx, %edi
-    shll $2, %edi               # %edi = page table index * 4 (byte offset)
-    addl %edi, %ecx             # %eax = address of page table entry
+        # increment the index of the page directory
+        addl $4, %esi
+        # increment the address of the table
+        addl $4096, %edi
+        # increment index
+        incl %ecx
+        cmpl $1024, %ecx
+        jl page_dir_loop_high
 
-    # Prepare page table entry value in %esi
-    andl $0xFFFFF000, %esi      # page align address
-    orl $0x003, %esi            # flags: present + writable
+##### this logic is wrong! It should map from 0x100000 -> 1GB to be accessed from 0xc0100000 -> 0x1000000000
+# were going to count up this time. We want to map from 768*2096 + 256 -> 1024*4096 addresses to point to addresses from 256 to 256*4096
+populate_page_tables_upper:
+    # ecx stores the counter
+    movl $256, %ecx
+    # edi stores the physical address of the destination memory region
+    movl $0x100000, %edi
+    # esi stores the page table entry address
+    movl $(boot_page_tables - 0xC0000000 + (4096*768) + (256*4)), %esi
 
-    # Store the page table entry
-    movl %esi, (%ecx)
+    page_table_loop_high:
+
+        # copies the dest. physical address and then adds the flags for present and writable
+        movl %edi, %edx
+        orl $0x3, %edx
+        # store the physical address in the page table
+        movl %edx, (%esi)
+
+        # increment the physical address of the page table entry to write to
+        addl $4, %esi
+        # increment the reuslting physical address
+        addl $4096, %edi
+        incl %ecx
+        cmpl $(4096*256), %ecx
+        jl page_table_loop_high
 
 done_mapping:
     # Set cr3 to the address of the boot_page_directory.
