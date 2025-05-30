@@ -82,23 +82,23 @@ boot_page_tables:
 .type _start, @function
 start:
 _start:
-    # first page: 0x00100000 is the 256th page. so page dir = 1, page table entry = 256, which is first page table which points to 0x00100000
-    # TODO: we need to map the first page from 0x10000 in lower half before the jump
-
-    # updates page directory to know first page table exists
-    movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
-
-    # get page table entry physical addr
-	movl $(boot_page_tables - 0xC0000000 + 4*256), %edi
-	orl $0x3, %edi
-
-	# create page table entry to identity map this one page which contains this mapping code
-	movl 0x00100000, %edi
-	orl $0x3, %edi
-    # get address of page table entry
-    movl $(boot_page_tables - 0xC0000000 + 4*256), %edx
-	# write it into the page table
-	movl %edi, (%edx)
+#    # first page: 0x00100000 is the 256th page. so page dir = 1, page table entry = 256, which is first page table which points to 0x00100000
+#    # TODO: we need to map the first page from 0x10000 in lower half before the jump
+#
+#    # updates page directory to know first page table exists
+#    movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
+#
+#    # get page table entry physical addr
+#	movl $(boot_page_tables - 0xC0000000 + 4*256), %edi
+#	orl $0x3, %edi
+#
+#	# create page table entry to identity map this one page which contains this mapping code
+#	movl 0x00100000, %edi
+#	orl $0x3, %edi
+#    # get address of page table entry
+#    movl $(boot_page_tables - 0xC0000000 + 4*256), %edx
+#	# write it into the page table
+#	movl %edi, (%edx)
 
 # We want to loop from 0 to 256 to update the 256 entries of the page directory to point to the start of each page table
 # We then want to loop from 0 to 1024*256 to write to the page tables
@@ -124,13 +124,13 @@ populate_page_directory_lower:
         addl $4096, %edi
         # increment index
         incl %ecx
-        cmpl $256, %ecx
+        cmpl $32, %ecx
         jl page_dir_loop_low
 
 # were going to count up this time
 populate_page_tables_lower:
     # ecx stores the counter
-    movl $256, %ecx
+    movl $32, %ecx
     # edi stores the physical address of the destination memory region
     movl $0, %edi
     # esi stores the page table entry address
@@ -149,7 +149,7 @@ populate_page_tables_lower:
         # increment the reuslting physical address
         addl $4096, %edi
         incl %ecx
-        cmpl $(4096*256), %ecx
+        cmpl $(4096*32), %ecx
         jl page_table_loop_low
 
 

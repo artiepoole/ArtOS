@@ -35,7 +35,8 @@
 
 /// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
 constexpr size_t page_table_size = 1024;
-
+extern page_directory_4kb_t boot_page_directory[];
+extern page_table boot_page_tables[];
 // PagingTableKernel kernel_pages;
 
 PagingTableKernel& kernel_pages()
@@ -85,12 +86,52 @@ uintptr_t get_kernal_page_dir()
 
 void enable_paging()
 {
-    auto addr = kernel_pages().get_page_table_addr() | 0xFFF;
+    auto addr = kernel_pages().get_page_table_addr() | 0xFFF; // TODO: shouldn't this be & 0xfffff000 ?
     __asm__ volatile ("mov %0, %%cr3" : : "r"(addr)); // set the cr3 to the paging_directory physical address
     u32 cr0 = 0;
     __asm__ volatile ("mov %%cr0, %0" : "=r"(cr0));
     cr0 = cr0 | 0x80000001;
     __asm__ volatile ("mov %0, %%cr0" : : "r"(cr0));
+}
+
+// TODO: need to map entry addresses
+/** Quickly and unsafely identity map a memory region
+ *
+ * @param start
+ * @param end
+ */
+void dirty_ident_map(uintptr_t start, uintptr_t end)
+{
+    size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
+    virtual_address_t vaddr = {start};
+    for (size_t i = 0; i < n_pages; i++)
+    {
+        boot_page_tables[vaddr.page_directory_index].table[vaddr.page_table_index].raw = (vaddr.raw & 0xfffff000) | 0x3;
+        boot_page_directory[vaddr.page_directory_index].raw = reinterpret_cast<uintptr_t>(&boot_page_tables[vaddr.page_directory_index]) | 0x3;
+        vaddr.raw += 4096;
+    }
+    u32 cr0 = 0;
+    __asm__ volatile ("mov %%cr0, %0" : "=r"(cr0));
+    cr0 = cr0 | 0x80000001;
+    __asm__ volatile ("mov %0, %%cr0" : : "r"(cr0));
+}
+
+
+/**
+ * Qiuckly and unsafely unmap an identity mapped region
+ * @param start
+ * @param end
+ */
+void dirty_ident_unmap(uintptr_t start, uintptr_t end)
+{
+    size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
+    virtual_address_t vaddr = {start};
+    for (size_t i = 0; i < n_pages; i++)
+    {
+        boot_page_tables[vaddr.page_directory_index].table[vaddr.page_table_index].raw = 0;
+        boot_page_directory[vaddr.page_directory_index].raw = 0;
+        vaddr.raw += 4096;
+    }
 }
 
 /*
@@ -108,6 +149,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 
     // TODO: I Don't want it identitiy map if type 1!
     // Loop through all entries and map appropriately
+    dirty_ident_map(reinterpret_cast<uintptr_t>(mmap->entries[0]), reinterpret_cast<uintptr_t>(mmap->entries[5]) + sizeof(multiboot2_mmap_entry));
     for (size_t i = 0; i < n_entries; i++)
     {
         multiboot2_mmap_entry const* entry = mmap->entries[i];
@@ -129,6 +171,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 
         last_end = entry->addr + entry->len;
     }
+    dirty_ident_unmap(reinterpret_cast<uintptr_t>(mmap->entries[0]), reinterpret_cast<uintptr_t>(mmap->entries[5]) + sizeof(multiboot2_mmap_entry));
 
     // Protect kernel and init identity map
     // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
