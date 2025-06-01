@@ -100,20 +100,16 @@ void enable_paging()
  * @param start
  * @param end
  */
-void dirty_ident_map(uintptr_t start, uintptr_t end)
+void dirty_ident_map(const uintptr_t start, const uintptr_t end)
 {
-    size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
+    const size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
     virtual_address_t vaddr = {start};
     for (size_t i = 0; i < n_pages; i++)
     {
         boot_page_tables[vaddr.page_directory_index].table[vaddr.page_table_index].raw = (vaddr.raw & 0xfffff000) | 0x3;
-        boot_page_directory[vaddr.page_directory_index].raw = reinterpret_cast<uintptr_t>(&boot_page_tables[vaddr.page_directory_index]) | 0x3;
+        boot_page_directory[vaddr.page_directory_index].raw = (reinterpret_cast<uintptr_t>(&boot_page_tables[vaddr.page_directory_index]) - 0xc0000000) | 0x3;
         vaddr.raw += 4096;
     }
-    u32 cr0 = 0;
-    __asm__ volatile ("mov %%cr0, %0" : "=r"(cr0));
-    cr0 = cr0 | 0x80000001;
-    __asm__ volatile ("mov %0, %%cr0" : : "r"(cr0));
 }
 
 
@@ -122,9 +118,9 @@ void dirty_ident_map(uintptr_t start, uintptr_t end)
  * @param start
  * @param end
  */
-void dirty_ident_unmap(uintptr_t start, uintptr_t end)
+void dirty_ident_unmap(const uintptr_t start, const uintptr_t end)
 {
-    size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
+    const size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
     virtual_address_t vaddr = {start};
     for (size_t i = 0; i < n_pages; i++)
     {

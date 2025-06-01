@@ -112,6 +112,9 @@ void set_physical_bitmap_addr(uintptr_t physical_addr, bool state);
 void set_physical_bitmap_idx(size_t phys_idx, bool state);
 uintptr_t get_kernal_page_dir();
 
+void dirty_ident_map(uintptr_t start, uintptr_t end);
+void dirty_ident_unmap(uintptr_t start, uintptr_t end);
+
 extern unsigned char* kernel_brk;
 
 #endif //PAGING_H

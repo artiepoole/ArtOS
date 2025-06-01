@@ -149,7 +149,7 @@ populate_page_tables_lower:
         # increment the reuslting physical address
         addl $4096, %edi
         incl %ecx
-        cmpl $(4096*32), %ecx
+        cmpl $(1024*32), %ecx
         jl page_table_loop_low
 
 
@@ -196,7 +196,7 @@ populate_page_tables_upper:
         # increment the reuslting physical address
         addl $4096, %edi
         incl %ecx
-        cmpl $(4096*256), %ecx
+        cmpl $(1024*256), %ecx # 4096 bytes * 256 = 1024 entries * 256
         jl page_table_loop_high
 
 done_mapping:
