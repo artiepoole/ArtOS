@@ -23,6 +23,7 @@
 #include <art_string.h>
 #include <memory.h>
 
+
 bool PagingTableUser::v_addr_is_used(const virtual_address_t v_addr)
 {
     const size_t dir_idx = v_addr.page_directory_index;
@@ -30,6 +31,11 @@ bool PagingTableUser::v_addr_is_used(const virtual_address_t v_addr)
     auto [table] = *reinterpret_cast<page_table*>(paging_directory[dir_idx].page_table_entry_address << base_address_shift);
 
     return table->present;
+}
+
+PagingTableUser::PagingTableUser()
+{
+    // TODO: This needs to map the necessary parts of kernel memory to and from 0xc0000000 -> end.
 }
 
 virtual_address_t PagingTableUser::get_next_virtual_addr(const uintptr_t start_addr)
@@ -109,7 +115,7 @@ void* PagingTableUser::mmap(const uintptr_t addr, const size_t length, int prot,
         if (!dir_entry_present(working_addr.page_directory_index))
         {
             // TODO: handle flag ints as bools here
-            append_page_table(writeable);
+            append_page_table(writeable, true);
         }
 
         if (const auto phys_addr = page_get_next_phys_addr(); phys_addr != 0)
@@ -117,7 +123,7 @@ void* PagingTableUser::mmap(const uintptr_t addr, const size_t length, int prot,
             assign_page_table_entry(
                 phys_addr,
                 working_addr,
-                writeable
+                writeable, true
             );
         }
         else
@@ -140,7 +146,7 @@ int PagingTableUser::munmap(void* addr, const size_t length_bytes)
         (length_bytes + page_alignment - 1) >> base_address_shift); // this rounds up
 }
 
-page_table* PagingTableUser::append_page_table(const bool writable)
+page_table* PagingTableUser::append_page_table(const bool writable, const bool user)
 {
     const auto new_table_loc = reinterpret_cast<uintptr_t>(art_alloc(sizeof(page_table), page_alignment));
     size_t dir_idx = 0;
@@ -150,28 +156,36 @@ page_table* PagingTableUser::append_page_table(const bool writable)
     }
     paging_directory[dir_idx] = {
         1,
-        1,
-        1,
+        writable,
+        user,
         0,
         0,
         0,
         0,
         0,
         0,
-        new_table_loc >> base_address_shift,
+        new_table_loc >> base_address_shift, // TODO: this is meant to be a physical memory address
     };
     return reinterpret_cast<page_table*>(new_table_loc);
 }
 
-void PagingTableUser::assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable)
+void PagingTableUser::assign_page_table_entry(const uintptr_t physical_addr, const virtual_address_t v_addr, const bool writable, const bool user)
 {
-    // TODO: what if there is no tab entry? This should be more complete and standalone. It is not called by the class methods in the user verson.
+    // TODO: what if there is no tab entry? This should be more complete and standalone. It is not called by the class methods in the user version.
     page_table_entry_t tab_entry = {};
     tab_entry.present = true;
     tab_entry.physical_address = physical_addr >> base_address_shift;
     tab_entry.rw = writable;
     tab_entry.user_access = true;
-    auto [table] = *reinterpret_cast<page_table*>(paging_directory[v_addr.page_directory_index].page_table_entry_address << base_address_shift);
+    page_table table;
+    if (paging_directory[v_addr.page_directory_index].page_table_entry_address == 0)
+    {
+        append_page_table(writable, user);
+    }
+
+    table = *reinterpret_cast<page_table*>(paging_directory[v_addr.page_directory_index].page_table_entry_address << base_address_shift);
+
+
     table[v_addr.page_table_index] = tab_entry;
 }
 
@@ -189,4 +203,8 @@ int PagingTableUser::unassign_page_table_entries(size_t start_idx, size_t n_page
         tab_entry->raw = 0;
     }
     return 0;
+}
+
+int PagingTableUser::map_kernel_page(uintptr_t physicaL_page_addr, uintptr_t virtual_page_addr)
+{
 }
