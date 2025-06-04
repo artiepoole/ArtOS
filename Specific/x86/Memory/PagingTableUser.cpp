@@ -186,7 +186,7 @@ void PagingTableUser::assign_page_table_entry(const uintptr_t physical_addr, con
     table = *reinterpret_cast<page_table*>(paging_directory[v_addr.page_directory_index].page_table_entry_address << base_address_shift);
 
 
-    table[v_addr.page_table_index] = tab_entry;
+    table.table[v_addr.page_table_index] = tab_entry;
 }
 
 int PagingTableUser::unassign_page_table_entries(size_t start_idx, size_t n_pages)

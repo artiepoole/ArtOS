@@ -98,7 +98,7 @@ int ELF::execute()
             user_table->assign_page_table_entry(
                 kget_mapping_target(section),
                 virtual_address_t(header.sh_addr),
-                header.sh_flags & ELF_FLAG_WRITABLE, TODO
+                header.sh_flags & ELF_FLAG_WRITABLE, true
             );
         }
     }

@@ -51,6 +51,7 @@ public:
     page_table* append_page_table(bool writable, bool user);
     void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user);
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
+    int map_kernel_page(uintptr_t physicaL_page_addr, uintptr_t virtual_page_addr);
     int known_mapping(uintptr_t start_address, uintptr_t end_address);
 
 private:
