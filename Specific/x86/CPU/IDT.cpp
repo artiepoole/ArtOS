@@ -55,13 +55,12 @@ struct idt_ptr_t
 //  I can simply write the stubs in C++ instead of ASM as inline anyway so why am I not?
 
 extern void* isr_stub_table[];
-static bool idt_vectors[IDT_STUB_COUNT];
-static idt_ptr_t idt_pointer;
-static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
+static idt_ptr_t idt_pointer __attribute__((section(".trampoline.data"), used));
+static idt_entry_t idt_entries[256] __attribute__((section(".trampoline.data"), used)); // Create an array of IDT entries; aligned for performance
 
 bool already_killing = false;
 
-inline constexpr char exception_messages[][40] =
+inline constexpr char exception_messages[][40] __attribute__((section(".trampoline.rodata"), used)) =
 {
     "div by zero", // 0
     "debug exception", // 1
@@ -97,7 +96,7 @@ inline constexpr char exception_messages[][40] =
     "reserved exceptions", //
 };
 
-void log_registers([[maybe_unused]] const cpu_registers_t* r)
+void __attribute__((section(".trampoline.text"))) log_registers([[maybe_unused]] const cpu_registers_t* r)
 {
     WRITE("int_no, err_code: ");
     NEWLINE();
@@ -155,7 +154,7 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     NEWLINE();
 }
 
-void handle_div_by_zero(const cpu_registers_t* r)
+void __attribute__((section(".trampoline.text"))) handle_div_by_zero(const cpu_registers_t* r)
 {
     WRITE("Div by zero not handled. oops.\n");
     log_registers(r);
@@ -163,7 +162,7 @@ void handle_div_by_zero(const cpu_registers_t* r)
 
 
 extern "C"
-void exception_handler(cpu_registers_t* const r)
+void __attribute__((section(".trampoline.text"))) exception_handler(cpu_registers_t* const r)
 {
     log_registers(r);
     if (already_killing)
@@ -225,7 +224,7 @@ void exception_handler(cpu_registers_t* const r)
 
 
 extern "C"
-void irq_handler(cpu_registers_t* const r)
+void __attribute__((section(".trampoline.text"))) irq_handler(cpu_registers_t* const r)
 {
     if (const auto int_no = r->int_no; int_no >= 32)
     {
@@ -285,6 +284,8 @@ void IDT::_setDescriptor(const u8 idt_index, const u8 flags)
     descriptor->reserved = 0;
 }
 
+// 0xc09666fd
+
 
 IDT::IDT()
 {
@@ -295,13 +296,18 @@ IDT::IDT()
 
     for (u8 idt_index = 0; idt_index < IDT_STUB_COUNT; idt_index++)
     {
+        if (idt_index > LAPIC_CALIBRATE_IRQ + 32 &&
+            idt_index != SYSCALL_ID &&
+            idt_index != SPURIOUS_IRQ)
+        {
+            continue;
+        }
         if (idt_index != SYSCALL_ID)
         {
             _setDescriptor(idt_index, 0x8E);
         }
         else _setDescriptor(idt_index, 0xEE); // CPL3 accessible.
-
-        idt_vectors[idt_index] = true;
+        // idt_vectors[idt_index] = true;
     }
 
     TIMESTAMP();

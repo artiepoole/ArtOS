@@ -49,6 +49,20 @@ SECTIONS
 		*(.bss)
 		*(.bootstrap_stack)
 	}
+
+	.trampoline.text ALIGN (4K) : AT (ADDR (.trampoline.text) - 0xC0000000){
+        kernel_trampoline_text_start = .;
+        *(.trampoline.text)
+        kernel_trampoline_text_end = .;
+    }
+
+    .trampoline.data ALIGN(4K) :  AT (ADDR (.trampoline.data) - 0xC0000000) {
+        kernel_trampoline_data_start = .;
+        *(.trampoline.data)
+        *(.trampoline.rodata)
+        kernel_trampoline_data_end = .;
+    }
+
     /DISCARD/ : { *(.fini_array*) *(.comment) }
 	/* Add a symbol that indicates the end address of the kernel. */
 	kernel_end = .;
