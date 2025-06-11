@@ -94,7 +94,7 @@ page_table_entry_t paging_check_contents(uintptr_t vaddr);
 struct page_table
 {
     page_table_entry_t table[page_table_len]; // u32
-};
+}__attribute__((aligned(4096)));
 
 void mmap_init(multiboot2_tag_mmap* mmap);
 //
