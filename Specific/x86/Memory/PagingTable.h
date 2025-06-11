@@ -21,7 +21,6 @@
 #define PAGINGTABLE_H
 #include <stdint.h>
 #include "paging.h"
-#include "DenseBooleanArray.h"
 
 
 /**

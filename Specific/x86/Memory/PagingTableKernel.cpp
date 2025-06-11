@@ -24,7 +24,6 @@
 #include <cmp_int.h>
 #include <PagingTable.h>
 
-uintptr_t user_base_address = 256 * 1024 * 1024; // 256MB of kernel space?
 
 DenseBooleanArray<u64> page_available_virtual_bitmap;
 u64 paging_virt_bitmap_array[paging_bitmap_n_DBs];
@@ -82,6 +81,9 @@ int PagingTableKernel::unassign_page_table_entries(const size_t start_idx, const
     return 0;
 }
 
+
+/** Marks a section of the vbitmap as used
+ */
 void PagingTableKernel::reserve_kernel_v_addr_space(void* start, void* end)
 {
     auto start_idx = reinterpret_cast<uintptr_t>(start) >> base_address_shift;
