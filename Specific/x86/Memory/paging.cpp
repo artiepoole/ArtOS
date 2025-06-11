@@ -131,7 +131,6 @@ void dirty_ident_unmap(const uintptr_t start, const uintptr_t end)
 }
 
 
-
 /*
  *  Uses kernel_brk because this is the last memory address to be given to the kernel.
  *  This could use kernel end once sbrk is no longer a thing.
@@ -200,7 +199,7 @@ void* kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t o
 
 uintptr_t kget_mapping_target(void* v_addr)
 {
-    return kernel_pages().get_phys_from_virtual(reinterpret_cast<uintptr_t>(v_addr))*page_alignment;
+    return kernel_pages().get_phys_from_virtual(reinterpret_cast<uintptr_t>(v_addr)) * page_alignment;
 }
 
 int kmunmap(void* addr, const size_t length_bytes)
