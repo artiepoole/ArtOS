@@ -85,7 +85,7 @@ err_program_read:
 
 int ELF::execute()
 {
-    auto user_table = new PagingTableUser();
+    const auto user_table = new PagingTableUser();
     // loop through section headers
     for (size_t i = 0; i < elf_header.e_shnum; i++)
     {
@@ -93,13 +93,16 @@ int ELF::execute()
         if (header.sh_addr > 0 && header.sh_flags & ELF_FLAG_ALLOCATE)
         {
             size_t fid = 0;
-            //TODO: mark as user access
-            void* section = kmmap(0, header.sh_size, header.sh_flags & ELF_FLAG_WRITABLE, PAGING_USER, fid, 0);
-            user_table->assign_page_table_entry(
-                kget_mapping_target(section),
-                virtual_address_t(header.sh_addr),
-                header.sh_flags & ELF_FLAG_WRITABLE, true
-            );
+            void* section = kmmap(header.sh_addr, header.sh_size, header.sh_flags & ELF_FLAG_WRITABLE, PAGING_USER, fid, 0);
+            uintptr_t phys_addr = kget_mapping_target(section);
+            user_table->assign_page_table_entry(phys_addr,
+                                                header.sh_addr,
+                                                header.sh_flags & ELF_FLAG_WRITABLE,
+                                                true);
+            file->seek(header.sh_offset, SEEK_SET);
+            file->read(static_cast<char*>(section), header.sh_size);
+            //todo: doesn't seem to be unmapping whole region properly.
+            // HERE unmap would mark the physical memory as free but it is mapped in user space :o
         }
     }
     Scheduler::execute_from_paging_table(user_table, file->get_name(), elf_header.e_entry);
@@ -110,4 +113,3 @@ bool ELF::is_executable()
 {
     return elf_header.e_ident.magic == ELF_MAGIC;
 }
-
