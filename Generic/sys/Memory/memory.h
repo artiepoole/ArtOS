@@ -46,12 +46,6 @@ enum ART_ALLOC_FLAGS
     USER_SPACE
 };
 
-struct multiboot2_tag_mmap; // forward dec - multiboot2.h
-
-void* aligned_malloc(size_t size, size_t alignment);
-
-void aligned_free(void* ptr);
-
 #ifdef __cplusplus
 }
 #endif
