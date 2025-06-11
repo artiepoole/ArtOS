@@ -285,8 +285,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
 
     int shell_file = art_open("b.art", 0);
-    if (shell_file < 1)
-    LOG("CRITICAL: Failed to open b.art")
+    if (shell_file < 1) { LOG("CRITICAL: Failed to open b.art") }
 
     art_exec(shell_file);
     yield();
