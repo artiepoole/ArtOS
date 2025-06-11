@@ -26,6 +26,7 @@
 #include <../../../ArtOS_lib/kernel.h>
 #include <LocalAPIC.h>
 #include <logging.h>
+#include <PagingTableKernel.h>
 #include <PagingTableUser.h>
 #include <SMBIOS.h>
 #include <syscall.h>
@@ -331,7 +332,9 @@ void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
     {
         // auto addr =  | 0xFFF;
         // __asm__ volatile ("mov %0, %%cr3" : : "r"(addr));
-        set_cr3(processes[PID].paging_table->get_page_table_addr());
+        // set_cr3();
+        uintptr_t addr = kget_mapping_target(reinterpret_cast<void*>(processes[PID].paging_table->get_page_table_addr()));
+        asm volatile("mov %0, %%cr3" :: "r"(addr) : "memory");
     }
     else
     {
