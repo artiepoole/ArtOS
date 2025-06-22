@@ -152,6 +152,8 @@ add_dependencies(${KERNEL_NAME} ${KERNEL_BIN} ${KERNEL_LIB} b.art hello.art)
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy b.art ${CMAKE_SOURCE_DIR}/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy hello.art ${CMAKE_SOURCE_DIR}/bin/
 )
 
 #target_compile_options(hello.elf PRIVATE -O3 -DNDEBUG)
