@@ -171,7 +171,7 @@ int PagingTableKernel::munmap(void* addr, const size_t length_bytes)
         (length_bytes + page_alignment - 1) >> base_address_shift); // this rounds up
 }
 
-uintptr_t PagingTableKernel::get_page_table_addr()
+uintptr_t PagingTableKernel::get_phys_addr_of_page_dir()
 {
     return get_phys_from_virtual(reinterpret_cast<uintptr_t>(&boot_page_directory) - 0xc0000000) << base_address_shift;
 }

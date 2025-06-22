@@ -333,7 +333,7 @@ void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
         // auto addr =  | 0xFFF;
         // __asm__ volatile ("mov %0, %%cr3" : : "r"(addr));
         // set_cr3();
-        uintptr_t addr = kget_mapping_target(reinterpret_cast<void*>(processes[PID].paging_table->get_page_table_addr()));
+        uintptr_t addr = processes[PID].paging_table->get_phys_addr_of_page_dir();
         asm volatile("mov %0, %%cr3" :: "r"(addr) : "memory");
     }
     else
@@ -430,7 +430,7 @@ void Scheduler::create_idle_task()
     proc->eventQueue = new EventQueue();
 }
 
-void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const uintptr_t entry_point)
+void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const uintptr_t entry_point, const uintptr_t stack_vaddr, const uintptr_t stack_size)
 {
     auto name = name_loc;
     // Should copy stack contents but I am not sure if they are already ruined by this.R=
@@ -443,13 +443,22 @@ void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name
 
     cpu_registers_t context{};
     proc->user = true;
-    void* proc_stack;
-    void* stack_top;
     proc->paging_table = PTU;
+    uintptr_t stack_top;
+    void* proc_stack;
+
     // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
     // TODO: the stack must be part of the user space memory map so this has to be remapped!
-    proc_stack = art_alloc(stack_size, stack_alignment);
-    stack_top = static_cast<u8*>(proc_stack) + stack_size;
+    if (stack_size == 0 or stack_vaddr == 0)
+    {
+        proc_stack = art_alloc(stack_size, stack_alignment);
+        stack_top = reinterpret_cast<uintptr_t>(proc_stack) + stack_size;
+    }
+    else
+    {
+        proc_stack = reinterpret_cast<u8*>(stack_vaddr);
+        stack_top = stack_vaddr + stack_size;
+    }
 
     LOG("Starting Process: ", name, " PID: ", next_process_id);
     context.esp = reinterpret_cast<u32>(stack_top);

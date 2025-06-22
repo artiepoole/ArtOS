@@ -44,10 +44,20 @@ void PagingTableUser::map_all_kernel_pages()
 
 PagingTableUser::PagingTableUser()
 {
-    paging_directory = static_cast<page_directory_4kb_t*>(art_alloc(sizeof(page_directory_4kb_t) * 1024));
+    paging_directory = static_cast<page_directory_4kb_t*>(art_alloc(sizeof(page_directory_4kb_t) * 1024, page_alignment));
+    art_string::memset(paging_directory, 0, 1024 * sizeof(page_directory_4kb_t));
     paging_table = static_cast<page_table*>(art_alloc(sizeof(page_table) * 1024, page_alignment));
+    art_string::memset(paging_table, 0, 1024 * sizeof(page_table));
+
+    // TODO: for each page directory, set the table location
     map_all_kernel_pages();
-    // TODO: This needs to map the necessary parts of kernel memory to and from 0xc0000000 -> end.
+    for (size_t i = 0; i < 1024; i++)
+    {
+        paging_directory[i].page_table_entry_address = PagingTableUser::get_phys_from_virtual(reinterpret_cast<uintptr_t>(&paging_table[i]));
+    }
+
+    // uintptr_t addr = PagingTableUser::get_phys_addr_of_page_dir();
+    // asm volatile("mov %0, %%cr3" :: "r"(addr) : "memory");
 }
 
 PagingTableUser::~PagingTableUser()
@@ -82,7 +92,7 @@ page_table_entry_t PagingTableUser::check_vmap_contents(uintptr_t v_addr)
 }
 
 
-uintptr_t PagingTableUser::get_page_table_addr()
+uintptr_t PagingTableUser::get_phys_addr_of_page_dir()
 {
     return kget_mapping_target(paging_directory);
 }
@@ -105,7 +115,7 @@ void* PagingTableUser::mmap(const uintptr_t addr, const size_t length, int prot,
 
         if (uintptr_t phys_addr = page_get_next_phys_addr(); phys_addr != 0)
         {
-            assign_page_table_entry(
+            assign_page_table_entries(
                 phys_addr,
                 working_addr.raw,
                 writeable, true
@@ -158,7 +168,7 @@ page_table* PagingTableUser::append_page_table(const bool writable, const bool u
 }
 
 
-void PagingTableUser::assign_page_table_entry(const uintptr_t physical_addr, const uintptr_t virt_addr, const bool writable, const bool user)
+void PagingTableUser::assign_page_table_entries(const uintptr_t physical_addr, const uintptr_t virt_addr, const bool writable, const bool user)
 {
     auto v_addr = virtual_address_t{virt_addr};
     auto tab_entry = page_table_entry_t{0};
@@ -166,9 +176,10 @@ void PagingTableUser::assign_page_table_entry(const uintptr_t physical_addr, con
     tab_entry.physical_address = physical_addr >> base_address_shift;
     tab_entry.rw = writable;
     tab_entry.user_access = true;
-    page_table table{};
-    table = *reinterpret_cast<page_table*>(paging_directory[v_addr.page_directory_index].page_table_entry_address << base_address_shift);
-    table.table[v_addr.page_table_index] = tab_entry;
+    paging_directory[v_addr.page_directory_index].present = true;
+    paging_directory[v_addr.page_directory_index].rw = writable;
+    paging_directory[v_addr.page_directory_index].user_access = true;
+    paging_table[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
 }
 
 int PagingTableUser::unassign_page_table_entries(size_t start_idx, size_t n_pages)
@@ -225,4 +236,3 @@ virtual_address_t PagingTableUser::get_next_virtual_chunk(const uintptr_t start_
     if (n_sequential == n_pages)return ret_addr;
     return virtual_address_t{0};
 }
-

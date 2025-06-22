@@ -81,12 +81,12 @@ void set_physical_bitmap_idx(const size_t phys_idx, const bool state)
 
 uintptr_t get_kernal_page_dir()
 {
-    return kernel_pages().get_page_table_addr();
+    return kernel_pages().get_phys_addr_of_page_dir();
 }
 
 void enable_paging()
 {
-    auto addr = kernel_pages().get_page_table_addr() | 0xFFF; // TODO: shouldn't this be & 0xfffff000 ?
+    auto addr = kernel_pages().get_phys_addr_of_page_dir() | 0xFFF; // TODO: shouldn't this be & 0xfffff000 ?
     __asm__ volatile ("mov %0, %%cr3" : : "r"(addr)); // set the cr3 to the paging_directory physical address
     u32 cr0 = 0;
     __asm__ volatile ("mov %%cr0, %0" : "=r"(cr0));

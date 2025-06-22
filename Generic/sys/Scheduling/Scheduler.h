@@ -50,7 +50,7 @@ public:
     static void exit(cpu_registers_t* r);
     static void kill(size_t target_pid);
     static void create_idle_task();
-
+    static void execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, uintptr_t entry_point, uintptr_t stack_vaddr, uintptr_t stack_size);
     static void clean_up_exited_threads();
     static size_t getCurrentProcessID();
     static EventQueue* getCurrentProcessEventQueue();
@@ -65,7 +65,6 @@ public:
 
     static void schedule(cpu_registers_t* r);
     // static void schedule();
-    static void execute_from_paging_table(PagingTableUser* PTU, const char* name, const uintptr_t entry_point);
 
     static void sleep_ms(u32 ms);
 };

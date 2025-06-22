@@ -37,7 +37,7 @@ public:
     void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
     void identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);
     int munmap(void* addr, size_t length_bytes) override;
-    uintptr_t get_page_table_addr() override;
+    uintptr_t get_phys_addr_of_page_dir() override;
     uintptr_t get_next_virtual_chunk(size_t idx, size_t n_pages);
     uintptr_t get_next_virtual_addr(uintptr_t start_addr);
     bool dir_entry_present(size_t idx) override;

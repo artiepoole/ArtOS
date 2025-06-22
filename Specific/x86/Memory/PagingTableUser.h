@@ -36,11 +36,11 @@ public:
     uintptr_t get_phys_from_virtual(uintptr_t v_addr) override;
     page_table_entry_t check_vmap_contents(uintptr_t v_addr) override;
     bool dir_entry_present(size_t idx) override;
-    uintptr_t get_page_table_addr() override;
+    uintptr_t get_phys_addr_of_page_dir() override;
     void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
     int munmap(void* addr, size_t length_bytes) override;
     page_table* append_page_table(bool writable, bool user);
-    void assign_page_table_entry(uintptr_t physical_addr, uintptr_t virt_addr, bool writable, bool user);
+    void assign_page_table_entries(uintptr_t physical_addr, uintptr_t virt_addr, bool writable, bool user);
     int unassign_page_table_entries(size_t start_idx, size_t n_pages);
     int map_kernel_page(uintptr_t physicaL_page_addr, uintptr_t virtual_page_addr);
     int known_mapping(uintptr_t start_address, uintptr_t end_address);

@@ -42,7 +42,7 @@ public:
     virtual ~PagingTable() = default;
     virtual void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) = 0;
     virtual int munmap(void* addr, size_t length_bytes) = 0;
-    virtual uintptr_t get_page_table_addr() = 0;
+    virtual uintptr_t get_phys_addr_of_page_dir() = 0;
     virtual bool dir_entry_present(size_t idx) = 0;
     virtual uintptr_t get_phys_from_virtual(uintptr_t v_addr) = 0;
     virtual page_table_entry_t check_vmap_contents(uintptr_t v_addr) = 0;
