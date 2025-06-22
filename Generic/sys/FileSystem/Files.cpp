@@ -96,6 +96,9 @@ extern "C"
 int art_open(const char* filename, [[maybe_unused]] unsigned int mode)
 {
     // TODO this is unfinished. This should take a path or a working dir
+    if (art_string::strcmp("stdin\0", filename) == 0) return 0;
+    if (art_string::strcmp("stdout\0", filename) == 0) return 1;
+    if (art_string::strcmp("stderr\0", filename) == 0) return 2;
 
     if (art_string::strcmp("/dev/com1\0", filename) == 0)
     {

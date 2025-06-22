@@ -158,15 +158,19 @@ void syscall_handler(cpu_registers_t* r)
     switch (static_cast<SYSCALL_t>(r->eax))
     {
     case SYSCALL_t::WRITE:
-        // TODO: this is no where near this simple. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
+        // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
+        // TODO: mapping user space data!
+        // TODO: mapping a single page will be a problem if the buffer is close to the end of the page
         art_write(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
         break;
     case SYSCALL_t::READ:
-        // TODO: this is no where near this simple. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
+        // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
+        // TODO: mapping user space data!
         art_read(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
         break;
     case SYSCALL_t::OPEN:
-        // TODO: this is no where near this simple. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
+        // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
+        // TODO: mapping user space data!
         art_open(reinterpret_cast<char*>(r->ebx), r->ecx);
         break;
     case SYSCALL_t::CLOSE:

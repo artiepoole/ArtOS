@@ -40,7 +40,8 @@ void BartShell::run()
 {
     // get_terminal().resume_drawing();
     // get_terminal().refresh();
-    printf("Shell started\n");
+    // open("stdout", 0);
+    write(0, "Shell started\n", 14);
     while (true)
     {
         if (probe_pending_events())

@@ -117,6 +117,7 @@ void DG_SetWindowTitle(const char*)
     // No window to set title on.
 }
 
+// TODO: for userspace, this is the entry point.  This whole file should be part of doom project as well.
 int run_doom()
 {
     doomgeneric_Create(0, nullptr);
@@ -128,6 +129,7 @@ int run_doom()
 }
 
 /* I have not implemented generic handling of functions as executable files yet, so I needed to create a different entry point for doom. */
+// TODO: remove this in user space version.
 [[noreturn]] void run_doom_noret()
 {
     doomgeneric_Create(0, nullptr);
