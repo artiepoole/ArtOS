@@ -19,9 +19,7 @@
 //
 
 #include "bart.h"
-
-#include <cstdio>
-
+#include "stdio.h"
 #include "kernel.h"
 #include "event.h"
 #include "string.h"
@@ -42,6 +40,7 @@ void BartShell::run()
     // get_terminal().refresh();
     // open("stdout", 0);
     write(0, "Shell started\n", 14);
+    // setvbuf(stdout, NULL, _IONBF, 0);
     while (true)
     {
         if (probe_pending_events())
@@ -111,7 +110,7 @@ void BartShell::run()
                                 printf("\b");
                                 if (cmd_buffer_idx > 0)
                                 {
-                                    cmd_buffer[--cmd_buffer_idx] = ' ';
+                                    cmd_buffer[--cmd_buffer_idx] = '\0';
                                 }
                                 break;
                             }
@@ -214,6 +213,7 @@ void BartShell::run()
                     break;
                 }
             }
+            // fflush(stdout);
         }
         // // else
         // kpause_exec(0);

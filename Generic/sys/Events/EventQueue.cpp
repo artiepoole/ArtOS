@@ -63,10 +63,7 @@ EventQueue::EventQueue()
     _event_queue = new event_t[DEF_MAX_EVENTS];
     max_len = DEF_MAX_EVENTS;
     if (_event_queue == nullptr) return;
-    for (size_t i = 0; i < DEF_MAX_EVENTS; i++)
-    {
-        _event_queue[i] = event_t{NULL_EVENT, event_data_t{0, 0}};
-    }
+    art_string::memset(_event_queue, 0, DEF_MAX_EVENTS * sizeof(event_t));
     LOG("EventQueue initialised");
 }
 

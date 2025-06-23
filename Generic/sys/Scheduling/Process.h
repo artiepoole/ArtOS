@@ -68,6 +68,7 @@ struct Process
     EventQueue* eventQueue;
     bool user;
     PagingTableUser* paging_table;
+    uintptr_t cr3_val;
 
 };
 

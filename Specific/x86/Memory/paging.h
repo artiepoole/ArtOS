@@ -24,6 +24,7 @@
 #include "types.h"
 #include "multiboot2.h"
 
+class PagingTableKernel;
 constexpr size_t page_alignment = 4096;
 constexpr size_t base_address_shift = 12;
 /// Each table is 4k in size, and is page aligned i.e. 4k aligned. They consists of 1024 32 bit entries.
@@ -114,6 +115,9 @@ uintptr_t get_kernal_page_dir();
 
 void dirty_ident_map(uintptr_t start, uintptr_t end);
 void dirty_ident_unmap(uintptr_t start, uintptr_t end);
+
+
+PagingTableKernel& kernel_pages();
 
 extern unsigned char* kernel_brk;
 

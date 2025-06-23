@@ -21,6 +21,7 @@
 #include "IDT.h"
 
 #include <GDT.h>
+#include <paging.h>
 #include <Scheduler.h>
 #include <syscall.h>
 

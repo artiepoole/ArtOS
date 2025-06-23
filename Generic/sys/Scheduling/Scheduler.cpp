@@ -29,6 +29,7 @@
 #include <PagingTableKernel.h>
 #include <PagingTableUser.h>
 #include <SMBIOS.h>
+#include <string.h>
 #include <syscall.h>
 #include <TSC.h>
 #include <Memory/PagingTable.h>
@@ -86,6 +87,7 @@ Scheduler::Scheduler(LocalAPIC* timer, EventQueue* kernel_queue)
     // Store current state in process[0]
     // Set up first Lapic one shot
     // disable_interrupts();
+    art_string::memset(processes, 0, sizeof(Process) * max_processes);
     scheduler_instance = this;
     lapic_timer = timer;
     const auto nm = "scheduler";
@@ -135,6 +137,7 @@ void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name_loc, const bo
     if (user)
     {
         proc->paging_table = new PagingTableUser();
+        proc->cr3_val = proc->paging_table->get_phys_addr_of_page_dir();
         // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
         // TODO: the stack must be part of the user space memory map so this has to be remapped!
         proc_stack = art_alloc(stack_size, stack_alignment);
@@ -145,6 +148,7 @@ void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name_loc, const bo
         // proc_stack = art_alloc(stack_size, stack_alignment);
         // stack_top = static_cast<u8*>(proc_stack) + stack_size;
         // proc_stack = &kernel_stack_bottom;
+        proc->cr3_val = kernel_pages().get_phys_addr_of_page_dir();
         stack_top = &kernel_stack_top;
     }
     LOG("Starting Process: ", name, " PID: ", next_process_id);
@@ -254,6 +258,11 @@ EventQueue* Scheduler::getCurrentProcessEventQueue()
     return processes[current_process_id].eventQueue;
 }
 
+uintptr_t Scheduler::getCurrentProcessPagingDirectory()
+{
+    return processes[current_process_id].paging_table->get_phys_addr_of_page_dir();
+}
+
 // bool Scheduler::isCurrentProcessUser()
 // {
 //     return processes[current_process_id].user;
@@ -321,27 +330,7 @@ void Scheduler::store_current_context(cpu_registers_t* r, const size_t PID)
 void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
 {
     art_string::memcpy(r, &processes[PID].context, sizeof(cpu_registers_t));
-    // r->esp = reinterpret_cast<u32>(processes[PID].stack);
-
-    // TODO: This contained logic here may be incorrect.
-    // When going from CPL3 to CPL3, I am not sure that overwriting user_esp is correct.
-    // It could be better to only memcpy 8 fewer bytes to preserve useresp and ss?
-    // we only really need to store the new EIP value or the new cs, eflags, user_esp and new ss for a user mode switch.
-
-    if (processes[PID].user)
-    {
-        // auto addr =  | 0xFFF;
-        // __asm__ volatile ("mov %0, %%cr3" : : "r"(addr));
-        // set_cr3();
-        uintptr_t addr = processes[PID].paging_table->get_phys_addr_of_page_dir();
-        asm volatile("mov %0, %%cr3" :: "r"(addr) : "memory");
-    }
-    else
-    {
-        auto addr = get_kernal_page_dir() | 0xFFF;
-        __asm__ volatile ("mov %0, %%cr3" : : "r"(addr));
-        // set_cr3(get_kernal_page_dir());
-    }
+    asm volatile("mov %0, %%cr3" :: "r"(processes[PID].cr3_val) : "memory");
 }
 
 void Scheduler::sleep_ms(const u32 ms)
@@ -428,6 +417,7 @@ void Scheduler::create_idle_task()
     art_string::strncpy(proc->name, nm, MIN(32, art_string::strlen(nm)));
     proc->context = context;
     proc->eventQueue = new EventQueue();
+    proc->cr3_val = kernel_pages().get_phys_addr_of_page_dir();
 }
 
 void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const uintptr_t entry_point, const uintptr_t stack_vaddr, const uintptr_t stack_size)
@@ -471,7 +461,8 @@ void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name
     context.eip = reinterpret_cast<u32>(entry_point);
     context.eflags = default_eflags;
 
-
+    // proc->eventQueue = new EventQueue();
+    proc->cr3_val = proc->paging_table->get_phys_addr_of_page_dir();
     proc->start(parent_process_id, context, proc_stack, name, true);
 
     processes[parent_process_id].state = Process::STATE_PARKED;

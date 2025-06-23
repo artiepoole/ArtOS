@@ -39,7 +39,7 @@ void PagingTableUser::map_all_kernel_pages()
 {
     // Copies all the mappings from kernel space into this directory. The contained addresses are all physical memory.
     art_string::memcpy(&paging_directory[768], &boot_page_directory[768], 256 * sizeof(page_directory_4kb_t));
-    art_string::memcpy(&paging_table[768], &boot_page_tables[768], 256 * sizeof(page_table));
+    // art_string::memcpy(&paging_table[768], &boot_page_tables[768], 256 * sizeof(page_table));
 }
 
 PagingTableUser::PagingTableUser()
@@ -51,7 +51,7 @@ PagingTableUser::PagingTableUser()
 
     // TODO: for each page directory, set the table location
     map_all_kernel_pages();
-    for (size_t i = 0; i < 1024; i++)
+    for (size_t i = 0; i < 768; i++)
     {
         paging_directory[i].page_table_entry_address = PagingTableUser::get_phys_from_virtual(reinterpret_cast<uintptr_t>(&paging_table[i]));
     }
@@ -177,7 +177,7 @@ void PagingTableUser::assign_page_table_entries(const uintptr_t physical_addr, c
     tab_entry.rw = writable;
     tab_entry.user_access = true;
     paging_directory[v_addr.page_directory_index].present = true;
-    paging_directory[v_addr.page_directory_index].rw = writable;
+    paging_directory[v_addr.page_directory_index].rw |= writable;
     paging_directory[v_addr.page_directory_index].user_access = true;
     paging_table[v_addr.page_directory_index].table[v_addr.page_table_index] = tab_entry;
 }

@@ -196,7 +196,19 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("Singletons loaded.");
 
-#if ENABLE_SERIAL_LOGGING
+#if ENABLE_TERMINAL_LOGGING
+    // TODO: handle terminal file wrapper also.
+    register_file_handle(0, nullptr); // stdin
+    vga.incrementProgressBarChunk(bar);
+    register_file_handle(1, get_terminal().get_stdout_file()); // stdout
+    vga.incrementProgressBarChunk(bar);
+    register_file_handle(2, get_terminal().get_stderr_file()); // stderr
+    vga.incrementProgressBarChunk(bar);
+    printf("This should print out to terminal via printf\n");
+    fprintf(stderr, "This should print error to screen via fprintf\n");
+    fprintf(stdout, "This should print out to screen via fprintf\n");
+    vga.incrementProgressBarChunk(bar);
+#elif ENABLE_SERIAL_LOGGING
     // TODO: register_file_handle does not instantiate an fstream properly. Only fopen does.
     // This means that these should not be registered directly and instead should use filenames.
     // These filenames are already in place.
@@ -211,14 +223,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
     // fprintf(com, "%s\n", "This should print to com0 via fprintf");
     // printf("This should print to com0 via printf\n");
-#elif ENABLE_TERMINAL_LOGGING
-    // TODO: handle terminal file wrapper also.
-    register_file_handle(0, nullptr); // stdin
-    register_file_handle(1, get_terminal().get_stdout_file()); // stdout
-    register_file_handle(2, get_terminal().get_stderr_file()); // stderr
-    printf("This should print out to terminal via printf\n");
-    fprintf(stderr, "This should print error to screen via fprintf\n");
-    fprintf(stdout, "This should print out to screen via fprintf\n");
 #endif
     PCI_populate_list();
     vga.incrementProgressBarChunk(bar);

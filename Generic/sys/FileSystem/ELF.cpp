@@ -108,8 +108,16 @@ int ELF::execute()
                                                       header.sh_addr + page * page_alignment,
                                                       header.sh_flags & ELF_FLAG_WRITABLE,
                                                       true);
-
-                file->read(static_cast<char*>(working_vaddr), MIN(header.sh_size - (page * page_alignment), page_alignment));
+                if (header.sh_type != 8)
+                {
+                    // TODO: the working addr should take into account the offset!
+                    // TODO: this alignment fix needs testing!
+                    file->read(static_cast<char*>(working_vaddr + header.sh_addr % page_alignment), MIN(header.sh_size - (page * page_alignment), page_alignment));
+                }
+                else
+                {
+                    art_string::memset(working_vaddr, 0, MIN(header.sh_size - (page * page_alignment), page_alignment));
+                }
                 working_vaddr += page_alignment;
             }
             if (header.sh_type == 0x8)

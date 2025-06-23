@@ -98,8 +98,8 @@ uint32_t kget_tick_ns()
 // TODO: replace PIT_sleep* with scheduler sleep
 void ksleep_s(const u32 s)
 {
-// TODO: pit is disabled so should replace with RTC or similar.
-const u32 ms = s * 1000;
+    // TODO: pit is disabled so should replace with RTC or similar.
+    const u32 ms = s * 1000;
     // if s*1000 out of bounds for u32 then handle that by sleeping for s lots of milliseconds a thousand times.
     if (ms < s) { for (u32 i = 0; i < 1000; i++) PIT_sleep_ms(s); }
     PIT_sleep_ms(ms);
@@ -161,12 +161,14 @@ void syscall_handler(cpu_registers_t* r)
         // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
         // TODO: mapping user space data!
         // TODO: mapping a single page will be a problem if the buffer is close to the end of the page
-        art_write(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
+
+        r->eax = art_write(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
         break;
     case SYSCALL_t::READ:
         // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
         // TODO: mapping user space data!
-        art_read(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
+
+        r->eax = art_read(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
         break;
     case SYSCALL_t::OPEN:
         // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
@@ -215,7 +217,7 @@ void syscall_handler(cpu_registers_t* r)
     case SYSCALL_t::GET_CURRENT_CLOCK:
         large_res = kget_current_clock();
         r->eax = static_cast<u32>(large_res);
-        r->ebx = static_cast<u32>(large_res>>32);
+        r->ebx = static_cast<u32>(large_res >> 32);
         break;
     case SYSCALL_t::EXECF:
         Scheduler::execf(r, r->ebx, r->ecx, r->edx);

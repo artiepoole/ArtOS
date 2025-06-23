@@ -36,6 +36,7 @@ Process::Process()
     name[0] = '\0';
     eventQueue = NULL;
     user = false;
+    cr3_val = 0;
 }
 
 void Process::reset()
@@ -53,6 +54,7 @@ void Process::reset()
         eventQueue = NULL;
     }
     user = false;
+    cr3_val = 0;
 }
 
 

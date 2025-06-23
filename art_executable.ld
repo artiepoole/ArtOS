@@ -13,6 +13,10 @@ SECTIONS
     {
         *(.text*)
         *(.rodata)
+        *(.init)
+        *(.fini)
+        *(.eh_frame*)
+        *(.eh_frame_hdr*)
     }
 
 	/* Read-write data (initialized) */
@@ -23,7 +27,13 @@ SECTIONS
         KEEP(*( .init_array ));
         KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
         end_ctors = .;
+
         *(.data)
+        *(.data.rel.local*)
+        *(.data.rel*)
+        *(.got.plt*)
+        *(.ctors)
+        *(.dtors)
         *(.rawdata*)
     }
 
@@ -31,6 +41,7 @@ SECTIONS
 	.bss BLOCK(4K) : ALIGN(4K)
 	{
 		*(.bss)
+        *(COMMON)
 	}
 
     /DISCARD/ : { *(.fini_array*) *(.comment) }

@@ -54,6 +54,7 @@ public:
     static void clean_up_exited_threads();
     static size_t getCurrentProcessID();
     static EventQueue* getCurrentProcessEventQueue();
+    static uintptr_t getCurrentProcessPagingDirectory();
     // static bool isCurrentProcessUser();
     // static bool isProcessUser(size_t PID);
     static size_t getNextProcessID();
