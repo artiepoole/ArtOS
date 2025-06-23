@@ -46,8 +46,9 @@ PagingTableUser::PagingTableUser()
 {
     paging_directory = static_cast<page_directory_4kb_t*>(art_alloc(sizeof(page_directory_4kb_t) * 1024, page_alignment));
     art_string::memset(paging_directory, 0, 1024 * sizeof(page_directory_4kb_t));
-    paging_table = static_cast<page_table*>(art_alloc(sizeof(page_table) * 1024, page_alignment));
-    art_string::memset(paging_table, 0, 1024 * sizeof(page_table));
+    // Shares kernel tables at the top end, so only need bottom 768 for each user space program
+    paging_table = static_cast<page_table*>(art_alloc(sizeof(page_table) * 768, page_alignment));
+    art_string::memset(paging_table, 0, 768 * sizeof(page_table));
 
     // TODO: for each page directory, set the table location
     map_all_kernel_pages();
