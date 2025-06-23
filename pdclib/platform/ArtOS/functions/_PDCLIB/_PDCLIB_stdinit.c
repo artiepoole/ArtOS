@@ -49,12 +49,12 @@ static struct _PDCLIB_file_t _PDCLIB_serr = {
     NULL, NULL
 };
 static struct _PDCLIB_file_t _PDCLIB_sout = {
-    1, _PDCLIB_sout_buffer, BUFSIZ, 0, 0, {0, 0}, 0, {0}, _IONBF | _PDCLIB_FWRITE,
+    1, _PDCLIB_sout_buffer, BUFSIZ, 0, 0, {0, 0}, 0, {0}, _IOLBF | _PDCLIB_FWRITE,
 #ifndef __STDC_NO_THREADS__
     _PDCLIB_MTX_RECURSIVE_INIT,
 #endif
     NULL, &_PDCLIB_serr
-}; //_IOLBF |
+}; // _IONBF <- no buffer _IOLBF <<- linefeed buffer
 static struct _PDCLIB_file_t _PDCLIB_sin = {
     0, _PDCLIB_sin_buffer, BUFSIZ, 0, 0, {0, 0}, 0, {0}, _IOLBF | _PDCLIB_FREAD,
 #ifndef __STDC_NO_THREADS__

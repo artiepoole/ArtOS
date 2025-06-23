@@ -39,7 +39,7 @@ void BartShell::run()
     // get_terminal().resume_drawing();
     // get_terminal().refresh();
     // open("stdout", 0);
-    write(0, "Shell started\n", 14);
+    printf("Shell started\n");
     // setvbuf(stdout, NULL, _IONBF, 0);
     while (true)
     {
@@ -107,7 +107,7 @@ void BartShell::run()
                         {
                         case '\b': // backspace
                             {
-                                printf("\b");
+                                putchar('\b');
                                 if (cmd_buffer_idx > 0)
                                 {
                                     cmd_buffer[--cmd_buffer_idx] = '\0';
@@ -172,7 +172,7 @@ void BartShell::run()
                             }
                         case '\n':
                             {
-                                printf("\n");
+                                putchar('\n');
                                 process_cmd();
                                 memset(cmd_buffer, 0, cmd_buffer_size);
                                 cmd_buffer_idx = 0;
@@ -186,19 +186,19 @@ void BartShell::run()
                                     if (is_alpha) // alphanumeric keys get shifted to caps
                                     {
                                         cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                        printf("%c", shift_map[cin]);
+                                        putchar(shift_map[cin]);
                                         break;
                                     }
                                 if ((keyboard_modifiers & 0b0001)) // shift is down or capslock is on
                                 {
                                     cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                    printf("%c", shift_map[cin]);
+                                    putchar(shift_map[cin]);
                                     break;
                                 }
                                 else
                                 {
                                     cmd_buffer[cmd_buffer_idx++] = key;
-                                    printf("%c", key);
+                                    putchar(key);
                                 }
 
                                 break;
@@ -213,7 +213,7 @@ void BartShell::run()
                     break;
                 }
             }
-            // fflush(stdout);
+            fflush(stdout);
         }
         // // else
         // kpause_exec(0);
@@ -231,7 +231,7 @@ void div_0()
 
 int BartShell::process_cmd()
 {
-    printf("Run %s", cmd_buffer);
+    printf("%s\n", cmd_buffer);
     // // TODO: implement actual command lookup of executables.
     // if (cmd_buffer_idx == 0) return -1;
     // if (strncasecmp(cmd_buffer, "play doom", 10) == 0)

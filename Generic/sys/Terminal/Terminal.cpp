@@ -296,6 +296,11 @@ void Terminal::_write_to_screen(const char* data, const u32 count, const PALETTE
                 newLine();
                 break;
             }
+        case '\b':
+            {
+                backspace();
+                break;
+            }
         default:
             {
                 terminal_buffer[terminal_row * buffer_width + terminal_column++] = terminal_char_t{c, colour};
