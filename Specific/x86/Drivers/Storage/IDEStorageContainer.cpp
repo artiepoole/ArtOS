@@ -179,7 +179,8 @@ int IDEStorageContainer::wait_for_DMA_transfer() const
     }
     if (BM_waiting_for_transfer)
     {
-        LOG("BM transfer complete didn't send interrupt?");
+        // LOG("BM transfer complete didn't send interrupt. Ignore if in user space :)");
+        // BM_waiting_for_transfer = false;
         return -DEVICE_ERROR;
     }
     return 0;
@@ -211,7 +212,8 @@ int IDEStorageContainer::read_into_region_from_lba(size_t lba_offset)
     if (ret_val != 0) { return ret_val; }
     start_DMA_transfer(); // should just set BM start_stop
     ret_val = wait_for_DMA_transfer(); // should poll/wait/check status of each device.
-    if (ret_val != 0) { return ret_val; }
+    //TODO: This needs to have a mutex or something! We need this to be able to read inside a disable interrupts.
+    // if (ret_val != 0) { return ret_val; }
     ret_val = stop_DMA_read(); // should just reset BM start_stop
     if (ret_val != 0) { return ret_val; }
     stored_buffer_start = lba_offset * one_sector_size;
