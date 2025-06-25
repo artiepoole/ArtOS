@@ -49,7 +49,6 @@
 #include "logging.h"
 #include "memory.h"
 #include "Scheduler.h"
-#include "Shell.h"
 #include "GDT.h"
 #include "Terminal.h"
 #include "Serial.h"
