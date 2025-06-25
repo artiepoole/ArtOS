@@ -41,7 +41,7 @@ extern page_table boot_page_tables[];
 
 void PagingTableKernel::assign_page_directory_entry(const size_t dir_idx, const bool writable, const bool user)
 {
-    page_directory_4kb_t dir_entry{0};
+    page_directory_4kb_t dir_entry{};
     dir_entry.present = true;
     dir_entry.page_table_entry_address = reinterpret_cast<uintptr_t>(&boot_page_tables[dir_idx]) - 0xc0000000 >> base_address_shift; // might be wrong.
     dir_entry.rw = writable;

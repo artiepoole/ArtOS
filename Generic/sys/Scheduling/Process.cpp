@@ -37,6 +37,7 @@ Process::Process()
     eventQueue = NULL;
     user = false;
     cr3_val = 0;
+    paging_table = nullptr;
 }
 
 void Process::reset()

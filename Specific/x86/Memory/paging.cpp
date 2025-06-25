@@ -142,7 +142,6 @@ void mmap_init(multiboot2_tag_mmap* mmap)
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
     const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift; // first page after kernel image.
-    uintptr_t last_end = 0;
 
     // TODO: I Don't want it identitiy map if type 1!
     // Loop through all entries and map appropriately
@@ -166,7 +165,6 @@ void mmap_init(multiboot2_tag_mmap* mmap)
             kernel_pages().identity_map(entry->addr, entry->len, false && entry->addr > 0, false);
         }
 
-        last_end = entry->addr + entry->len;
     }
     dirty_ident_unmap(reinterpret_cast<uintptr_t>(mmap->entries[0]), reinterpret_cast<uintptr_t>(mmap->entries[5]) + sizeof(multiboot2_mmap_entry));
 

@@ -27,7 +27,7 @@
 #include "paging.h"
 
 
-artos_boot_header boot_info{};
+artos_boot_header boot_info = {};
 
 
 /*

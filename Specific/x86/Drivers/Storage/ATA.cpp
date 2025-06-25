@@ -140,7 +140,7 @@ enum class ATA_DEVICE_TYPES
  * 0x1F - unknown or unspecified
  */
 
-IDE_drive_info_t* last_drive_info;
+IDE_drive_info_t* last_drive_info = nullptr;
 
 ATA_status_t ATA_get_status(IDE_drive_info_t* drive_info)
 {
@@ -365,7 +365,7 @@ int ATA_is_packet_device(IDE_drive_info_t* drive_info)
 {
     ATA_reset_device(drive_info);
 
-    u8 signatures[4] = {0};
+    u8 signatures[4] = {};
     signatures[0] = inb(drive_info->base_port + SECTOR_COUNT_OFFSET);
     signatures[1] = inb(drive_info->base_port + LBA_LOW_OFFSET);
     signatures[2] = inb(drive_info->base_port + LBA_MID_OFFSET);

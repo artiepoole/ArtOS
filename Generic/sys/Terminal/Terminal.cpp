@@ -520,6 +520,9 @@ ArtFile* TermFileWrapper::get_file()
 
 i64 TermFileWrapper::write(const char* data, size_t, size_t byte_count)
 {
+#ifdef ENABLE_SERIAL_LOGGING
+    get_serial().write(data, byte_count);
+#endif
     if (is_stderr) return Terminal::user_err(data, byte_count);
     return Terminal::user_write(data, byte_count);
 }

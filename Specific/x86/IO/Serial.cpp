@@ -25,7 +25,7 @@
 #include "Terminal.h"
 
 // static Serial* instance{nullptr};
-static ArtFile* file_wrapper{nullptr};
+static ArtFile* file_wrapper = nullptr;
 
 #define RECEIVE_OFFSET 0x0
 #define SEND_OFFSET 0x0
@@ -63,7 +63,10 @@ Serial::Serial()
     outb(PORT + MODEM_CONTROL_OFFSET, 0x0F);
     connected = true;
 
-    get_terminal().write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
+#if ENABLE_TERMINAL_LOGGING
+    Terminal::write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
+#endif
+
     write("Sun Jan  0 00:00:00 1900\tSerial connected\n");
 }
 
@@ -159,6 +162,7 @@ void Serial::_write_buffer(const char* data, const size_t size)
     for (size_t i = 0; i < size; i++)
     {
         const char c = data[i];
+        if (c == '\b') return;
         _send_one_byte(c);
     }
 }

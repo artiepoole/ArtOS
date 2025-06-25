@@ -21,6 +21,7 @@
 #include "PagingTableUser.h"
 
 #include <art_string.h>
+#include <logging.h>
 #include <memory.h>
 
 extern page_directory_4kb_t boot_page_directory[];
@@ -172,7 +173,7 @@ page_table* PagingTableUser::append_page_table(const bool writable, const bool u
 void PagingTableUser::assign_page_table_entries(const uintptr_t physical_addr, const uintptr_t virt_addr, const bool writable, const bool user)
 {
     auto v_addr = virtual_address_t{virt_addr};
-    auto tab_entry = page_table_entry_t{0};
+    auto tab_entry = page_table_entry_t{};
     tab_entry.present = true;
     tab_entry.physical_address = physical_addr >> base_address_shift;
     tab_entry.rw = writable;
@@ -201,6 +202,8 @@ int PagingTableUser::unassign_page_table_entries(size_t start_idx, size_t n_page
 
 int PagingTableUser::map_kernel_page(uintptr_t physicaL_page_addr, uintptr_t virtual_page_addr)
 {
+    LOG("ERROR! CALL TO map_kernel_page which is not implemeted")
+    return 0;
 }
 
 bool PagingTableUser::dir_entry_present(const size_t idx)
@@ -235,5 +238,5 @@ virtual_address_t PagingTableUser::get_next_virtual_chunk(const uintptr_t start_
         n_sequential++;
     }
     if (n_sequential == n_pages)return ret_addr;
-    return virtual_address_t{0};
+    return virtual_address_t{};
 }

@@ -61,8 +61,9 @@
 #if SIMD
 #include "simd_enable.h"
 #endif
-IDE_drive_info_t drive_list[4];
-uintptr_t BM_controller_base_port;
+
+IDE_drive_info_t drive_list[4] = {};
+uintptr_t BM_controller_base_port = 0;
 
 
 extern "C"

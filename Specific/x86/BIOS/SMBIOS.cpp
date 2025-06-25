@@ -19,6 +19,9 @@
 //
 
 #include "SMBIOS.h"
+
+#include <paging.h>
+
 #include "string.h"
 
 
@@ -40,6 +43,7 @@ address_range search_for_SMBIOS()
 {
     u8 checksum = 0;
     auto eps = reinterpret_cast<u8*>(0x000F0000);
+    dirty_ident_map(0x000F0000, 0x000FFFFF);
     while (eps <= reinterpret_cast<u8*>(0x000FFFFF))
     {
         /* Check Anchor String (32-bit version) */

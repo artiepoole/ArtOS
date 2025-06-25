@@ -173,7 +173,7 @@ int ATAPIDrive::set_regs(const ATAPI_cmd_regs& regs)
 u32 ATAPIDrive::get_last_lba()
 {
     ATA_select_drive(drive_info);
-    ATAPI_packet_t packet = {0};
+    ATAPI_packet_t packet = {};
     packet.bytes[0] = ATAPI_GET_CAPACITY_CMD;
 
     // "FLUSH" buffers.

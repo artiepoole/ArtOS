@@ -108,7 +108,7 @@ void __cxa_finalize(void* f)
             * function itself. No worries.
             **/
             (*__atexit_funcs[i].destructor_func)(__atexit_funcs[i].obj_ptr);
-            __atexit_funcs[i].destructor_func = 0;
+            __atexit_funcs[i].destructor_func = nullptr;
 
             /*
             * Notice that we didn't decrement __atexit_func_count: this is because this algorithm

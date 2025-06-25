@@ -30,7 +30,7 @@
 #include "PIT.h"
 #include "TSC.h"
 
-u8 binaryNum[32];
+u8 binaryNum[32] = {};
 const u8 decimal[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 
@@ -106,7 +106,7 @@ cpuid_ext_manufacturer_info_t* cpuid_print_ext_manufacturer_info()
 
 cpuid_feature_info_t* cpuid_get_feature_info()
 {
-    ; // family info, aditonal features, featureflag2, featureflag1
+     // family info, aditonal features, featureflag2, featureflag1
     __asm__("mov $0x1 , %eax");
     asm volatile("cpuid":"=a"(cpu_feature_info.eax), "=b" (cpu_feature_info.ebx), "=c" (cpu_feature_info.ecx), "=d" (cpu_feature_info.edx));
 
