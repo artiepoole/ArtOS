@@ -222,8 +222,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     int com = art_open("/dev/com1\0", 0);
     art_write(com, "This should print to com0 via art_write.\0", 42);
     vga.incrementProgressBarChunk(bar);
-    // fprintf(com, "%s\n", "This should print to com0 via fprintf");
-    // printf("This should print to com0 via printf\n");
+    printf("This should print to com0 via printf\n");
 #endif
     PCI_populate_list();
     vga.incrementProgressBarChunk(bar);
@@ -290,7 +289,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
 
     int shell_file = art_open("b.art", 0);
-    if (shell_file < 1) { LOG("CRITICAL: Failed to open b.art") }
+    if (shell_file < 1) { LOG("CRITICAL: Failed to open b.art"); }
 
     art_exec(shell_file);
     yield();

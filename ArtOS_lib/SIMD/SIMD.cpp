@@ -175,7 +175,7 @@ void* simd_move(void* dest, const void* src, const size_t size)
 void* simd_set(void* dest, const int value, const size_t size)
 {
     auto* d = static_cast<char*>(dest);
-    const auto val = static_cast<const char>(value);
+    const auto val = static_cast<char>(value);
 
     // Create a 128-bit value that repeats the byte `val`
     const m128i simd_val = mm_set1_epi8(val);

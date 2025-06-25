@@ -64,7 +64,7 @@ ELF::ELF(ArtFile* parent_file) : file(parent_file)
         section_header_table = static_cast<ELF_section_header_t*>(art_alloc(n_bytes, 0));
         if (section_header_table == NULL) goto err_program_read;
         if (file->seek(elf_header.e_shoff, SEEK_SET) != elf_header.e_shoff) goto err_program_read;
-        if (file->read(reinterpret_cast<char*>(section_header_table), n_bytes) <= 0) goto err_section_read;;
+        if (file->read(reinterpret_cast<char*>(section_header_table), n_bytes) <= 0) goto err_section_read;
     }
     if (section_header_table[elf_header.e_shstrndx].sh_size > 0)
     {

@@ -39,7 +39,7 @@ void* aligned_malloc(size_t size, size_t alignment)
     uintptr_t aligned_addr = (addr + alignment - 1 + sizeof(void*)) & ~(alignment - 1);
 
     // Store the original pointer just before the aligned memory
-    void** aligned_ptr = (void**)(aligned_addr - sizeof(void*));
+    auto** aligned_ptr = (void**)(aligned_addr - sizeof(void*));
     *aligned_ptr = ptr;
 
     return (void*)aligned_addr;

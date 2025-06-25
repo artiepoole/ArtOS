@@ -202,11 +202,8 @@ void Shell::run()
                                     get_terminal().write(shift_map[cin]);
                                     break;
                                 }
-                                else
-                                {
-                                    cmd_buffer[cmd_buffer_idx++] = key;
-                                    get_terminal().write(key);
-                                }
+                                cmd_buffer[cmd_buffer_idx++] = key;
+                                get_terminal().write(key);
 
                                 break;
                             }

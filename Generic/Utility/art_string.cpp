@@ -57,17 +57,14 @@ namespace art_string
         {
             return 0;
         }
-        else
-        {
-            return (*(unsigned char*)s1 - *(unsigned char*)s2);
-        }
+        return (*(unsigned char*)s1 - *(unsigned char*)s2);
     }
 
     char* strncpy(char* dest, const char* src, size_t n)
     {
         char* rc = dest;
 
-        while (n && (*dest++ = *src++))
+        while (n && ((*dest++ = *src++)))
         {
             /* Cannot do "n--" in the conditional as size_t is unsigned and we have
                to check it again for >0 in the next loop below, so we must not risk

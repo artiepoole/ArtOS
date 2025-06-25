@@ -283,7 +283,7 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
             identity_data[i] = inw(drive_info->base_port + DATA_OFFSET);
         }
         status = ATA_get_alt_status(drive_info);
-        if (status.data_request) { LOG("Read 256 words but drq still set?"); };
+        if (status.data_request) { LOG("Read 256 words but drq still set?"); }
         if (identity_data[0] >> 14 == 0x2)
         {
             LOG("ATAPI device confirmed.");

@@ -116,7 +116,7 @@ void ksleep_ns(const u32 ns)
     const u32 start = kget_tick_ns();
     while (kget_tick_ns() - start < ns)
     {
-    };
+    }
 }
 
 void ksleep_us(const u32 us)
@@ -124,7 +124,7 @@ void ksleep_us(const u32 us)
     const u32 start = kget_tick_us();
     while (kget_tick_us() - start < us)
     {
-    };
+    }
 }
 
 

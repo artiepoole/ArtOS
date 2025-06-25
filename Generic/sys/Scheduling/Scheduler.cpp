@@ -172,7 +172,7 @@ void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name_loc, const bo
         context.gs = kernel_ds_offset;
         context.ss = kernel_ds_offset;
     }
-    context.eip = reinterpret_cast<u32>(func);
+    context.eip = func;
     context.eflags = default_eflags;
 
 
@@ -451,7 +451,7 @@ void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name
     }
 
     LOG("Starting Process: ", name, " PID: ", next_process_id);
-    context.esp = reinterpret_cast<u32>(stack_top);
+    context.esp = stack_top;
     context.cs = user_cs_offset | RPL_USER;
     context.ds = user_ds_offset | RPL_USER;
     context.es = user_ds_offset | RPL_USER;

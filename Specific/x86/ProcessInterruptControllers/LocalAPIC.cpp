@@ -56,7 +56,7 @@ union destination_format_register
     };
 
     u32 raw;
-}__attribute__((packed));;
+}__attribute__((packed));
 
 
 union local_destination_register
