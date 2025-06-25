@@ -80,7 +80,7 @@ void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset
 void munmap(void* addr, size_t length);
 
 // scheduling
-void execf(void (*func)(), const char* name, bool user);
+void execf(int fid);
 void yield();
 #ifdef __cplusplus
 }

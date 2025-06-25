@@ -220,7 +220,7 @@ void syscall_handler(cpu_registers_t* r)
         r->ebx = static_cast<u32>(large_res >> 32);
         break;
     case SYSCALL_t::EXECF:
-        Scheduler::execf(r, r->ebx, r->ecx, r->edx);
+        r->eax = art_exec(r->ebx);
         break;
     case SYSCALL_t::YIELD:
         Scheduler::schedule(r);
