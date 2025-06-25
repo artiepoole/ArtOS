@@ -23,6 +23,7 @@
 #include <art_string.h>
 #include <logging.h>
 #include <memory.h>
+#include <PagingTableKernel.h>
 
 extern page_directory_4kb_t boot_page_directory[];
 extern page_table boot_page_tables[];
@@ -55,7 +56,7 @@ PagingTableUser::PagingTableUser()
     map_all_kernel_pages();
     for (size_t i = 0; i < 768; i++)
     {
-        paging_directory[i].page_table_entry_address = PagingTableUser::get_phys_from_virtual(reinterpret_cast<uintptr_t>(&paging_table[i]));
+        paging_directory[i].page_table_entry_address = kernel_pages().get_phys_from_virtual(reinterpret_cast<uintptr_t>(&paging_table[i]));
     }
 
     // uintptr_t addr = PagingTableUser::get_phys_addr_of_page_dir();
