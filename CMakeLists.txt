@@ -133,7 +133,7 @@ target_link_libraries(b.art ArtOS_lib pdclib)
 set_target_properties(b.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
 add_executable(hello.art executable_src/helloworld/helloworld.cpp)
-target_link_libraries(hello.art ArtOS_lib)
+target_link_libraries(hello.art ArtOS_lib pdclib)
 set_target_properties(hello.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
 
 

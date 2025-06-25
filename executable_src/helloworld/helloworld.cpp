@@ -18,12 +18,11 @@
 // Created by artypoole on 09/01/25.
 //
 
+#include "stdio.h"
 #include "kernel.h"
 
 int main()
 {
-    const auto message = "Hello, World!\n\0";
-    write(1, message, 14); // Write to stdout
-    _exit(0); // Exit with status 0
-    return 0; // Not reached
+    printf("Hello world!\n");
+    _exit(0);
 }

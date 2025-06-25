@@ -36,11 +36,7 @@ BartShell::BartShell()
 
 void BartShell::run()
 {
-    // get_terminal().resume_drawing();
-    // get_terminal().refresh();
-    // open("stdout", 0);
     printf("Shell started\n");
-    // setvbuf(stdout, NULL, _IONBF, 0);
     while (true)
     {
         if (probe_pending_events())
@@ -232,6 +228,14 @@ void div_0()
 int BartShell::process_cmd()
 {
     printf("%s\n", cmd_buffer);
+    if (!strcmp(cmd_buffer, "hello"))
+    {
+        if (const int fid = open("hello.art", 0))
+        {
+            printf("executing hello.art\n");
+            int ret = execf(fid);
+        }
+    }
     // // TODO: implement actual command lookup of executables.
     // if (cmd_buffer_idx == 0) return -1;
     // if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
