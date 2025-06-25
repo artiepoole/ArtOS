@@ -12,7 +12,7 @@ SECTIONS
     .text BLOCK(4K) : ALIGN(4K)
     {
         *(.text*)
-        *(.rodata)
+        *(.rodata*)
         *(.init)
         *(.fini)
         *(.eh_frame*)
@@ -27,11 +27,8 @@ SECTIONS
         KEEP(*( .init_array ));
         KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
         end_ctors = .;
-
-        *(.data)
-        *(.data.rel.local*)
-        *(.data.rel*)
-        *(.got.plt*)
+        *(.data*)
+        *(.got*)
         *(.ctors)
         *(.dtors)
         *(.rawdata*)

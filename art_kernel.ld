@@ -32,17 +32,23 @@ SECTIONS
 	{
 	    kernel_start = .;
         *(.text*)
-        *(.rodata)
+        *(.rodata*)
+        *(.eh_frame*)
+        *(.eh_frame_hdr*)
 	}
 	.data ALIGN (4K) : AT (ADDR (.data) - 0xC0000000)
 	{
-        start_ctors = .;
-        KEEP(*( .init_array ));
-        KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
-        end_ctors = .;
-        *(.data)
+        *(.data*)
         *(.rawdata*)
 	}
+
+	.init_array ALIGN(4k) : AT(ADDR(.init_array) - 0xC0000000)
+    {
+        start_ctors = .;
+        KEEP(*(.init_array))
+        KEEP(*(SORT_BY_INIT_PRIORITY(.init_array.*)))
+        end_ctors = .;
+    }
 	.bss ALIGN (4K) : AT (ADDR (.bss) - 0xC0000000)
 	{
 		*(COMMON)
