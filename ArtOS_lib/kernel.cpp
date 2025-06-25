@@ -208,7 +208,7 @@ u64 get_current_clock()
     return low | (static_cast<u64>(high) << 32);
 }
 
-void execf(int fid)
+int execf(int fid)
 {
     int ret;
     asm volatile(
@@ -217,6 +217,7 @@ void execf(int fid)
         : "a"(SYSCALL_t::EXECF), "b"(fid)
         : "memory"
     );
+    return ret;
 }
 
 void yield()

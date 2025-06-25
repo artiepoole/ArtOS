@@ -173,7 +173,7 @@ void syscall_handler(cpu_registers_t* r)
     case SYSCALL_t::OPEN:
         // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
         // TODO: mapping user space data!
-        art_open(reinterpret_cast<char*>(r->ebx), r->ecx);
+        r->eax = art_open(reinterpret_cast<char*>(r->ebx), r->ecx);
         break;
     case SYSCALL_t::CLOSE:
         art_close(r->ebx);
