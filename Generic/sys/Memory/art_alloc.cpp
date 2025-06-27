@@ -18,9 +18,9 @@
 // Created by artiepoole on 3/12/25.
 //
 
+#include <art_string.h>
 #include <logging.h>
 #include <stdlib.h>
-#include <doomgeneric/p_local.h>
 
 #include "LinkedList.h"
 #include "memory.h"
@@ -64,7 +64,7 @@ namespace art_allocator
 
         if (not new_chunks) return false;
 
-        memcpy(new_chunks, chunks, sizeof(chunk_t) * n_chunks);
+        art_string::memcpy(new_chunks, chunks, sizeof(chunk_t) * n_chunks);
         // NOTE: always a full page so munmap is safe.
         kmunmap(chunks, sizeof(chunk_t) * n_chunks);
         for (size_t i = n_chunks; i < new_size; i++)
