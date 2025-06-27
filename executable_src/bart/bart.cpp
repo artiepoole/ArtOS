@@ -205,13 +205,15 @@ void div_0() {
 
 int BartShell::process_cmd() {
     printf("%s\n", cmd_buffer);
-    if (!strcmp(cmd_buffer, "hello")) {
-        if (const int fid = open("hello.art", 0)) {
-            printf("executing hello.art\n");
-            const int ret = execf(fid);
-            return ret;
-        }
+    int fid = open(cmd_buffer, 0);
+    if ( fid > 0) {
+        printf("executing %s\n", cmd_buffer);
+        const int ret = execf(fid);
+        printf("%s exited with exit code %d\n", cmd_buffer, ret);
+        return ret;
     }
+    printf("File not found: %s\n", cmd_buffer);
+
     // // TODO: implement actual command lookup of executables.
     // if (cmd_buffer_idx == 0) return -1;
     // if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
