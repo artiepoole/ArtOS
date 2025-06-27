@@ -92,6 +92,12 @@ int register_file_handle(size_t file_id, ArtFile* file)
     return 0;
 }
 
+int override_file_handle(size_t file_id, ArtFile* file)
+{
+    handles[file_id] = file;
+    return 0;
+}
+
 extern "C"
 int art_open(const char* filename, [[maybe_unused]] unsigned int mode)
 {
