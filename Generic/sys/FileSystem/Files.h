@@ -83,6 +83,7 @@ struct DirectoryData
 
 ArtFile* get_file_handle(size_t fd);
 int register_file_handle(size_t fd, ArtFile* file);
+int override_file_handle(size_t file_id, ArtFile* file);
 void register_storage_device(StorageDevice* dev);
 void deregister_storage_device(StorageDevice* dev);
 
