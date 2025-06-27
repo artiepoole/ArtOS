@@ -23,8 +23,8 @@
 #include "keymaps/key_maps.h"
 
 
-extern "C" int write(int fd, const char* buf, unsigned long count)
-{
+extern "C" {
+int write(int fd, const char *buf, unsigned long count) {
     int result;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -35,8 +35,7 @@ extern "C" int write(int fd, const char* buf, unsigned long count)
     return result;
 }
 
-extern "C" int read(int fd, char* buf, size_t count)
-{
+int read(int fd, char *buf, size_t count) {
     int result;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -47,8 +46,7 @@ extern "C" int read(int fd, char* buf, size_t count)
     return result;
 }
 
-int open(const char* pathname, int flags)
-{
+int open(const char *pathname, int flags) {
     int result;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -59,8 +57,7 @@ int open(const char* pathname, int flags)
     return result;
 }
 
-void _exit(int status)
-{
+void _exit(int status) {
     asm volatile(
         "int $0x80" // Trigger software interrupt
         :
@@ -70,8 +67,7 @@ void _exit(int status)
     while (true);
 }
 
-void sleep_ms(u32 ms)
-{
+void sleep_ms(u32 ms) {
     asm volatile(
         "int $0x80" // Trigger software interrupt
         :
@@ -80,8 +76,7 @@ void sleep_ms(u32 ms)
     );
 }
 
-u32 get_tick_ms()
-{
+u32 get_tick_ms() {
     u32 result;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -92,8 +87,7 @@ u32 get_tick_ms()
     return result;
 }
 
-bool probe_pending_events()
-{
+bool probe_pending_events() {
     bool result;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -104,8 +98,7 @@ bool probe_pending_events()
     return result;
 }
 
-event_t get_next_event()
-{
+event_t get_next_event() {
     u32 type, data_low, data_high;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -116,8 +109,7 @@ event_t get_next_event()
     return event_t{static_cast<EVENT_TYPE>(type), event_data_t{data_low, data_high}};
 }
 
-void draw_screen_region(const u32* frame_buffer)
-{
+void draw_screen_region(const u32 *frame_buffer) {
     asm volatile(
         "int $0x80" // Trigger software interrupt
         :
@@ -126,8 +118,7 @@ void draw_screen_region(const u32* frame_buffer)
     );
 }
 
-int get_time(tm* dest)
-{
+int get_time(tm *dest) {
     int result;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -138,8 +129,7 @@ int get_time(tm* dest)
     return result;
 }
 
-long get_epoch_time()
-{
+long get_epoch_time() {
     long result;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -150,8 +140,7 @@ long get_epoch_time()
     return result;
 }
 
-u32 get_ebp()
-{
+u32 get_ebp() {
     u32 ebp;
     asm("mov %%ebp,%0" : "=r"(ebp));
     return ebp;
@@ -162,11 +151,10 @@ u32 get_ebp()
 //     asm volatile("mov %0, %%ebp" :: "r"(ebp));
 // }
 
-void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset)
-{
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, size_t offset) {
     // u32 old_ebp;
 
-    void* result;
+    void *result;
     // asm volatile( "push %0"::"r"(offset):"memory");
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -184,8 +172,7 @@ void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset
     return result;
 }
 
-void munmap(void* addr, size_t length)
-{
+void munmap(void *addr, size_t length) {
     asm volatile(
         "int $0x80" // Trigger software interrupt
         :
@@ -196,8 +183,7 @@ void munmap(void* addr, size_t length)
     );
 }
 
-u64 get_current_clock()
-{
+u64 get_current_clock() {
     int low, high;
     asm volatile(
         "int $0x80" // Trigger software interrupt
@@ -208,24 +194,47 @@ u64 get_current_clock()
     return low | (static_cast<u64>(high) << 32);
 }
 
-int execf(int fid)
-{
+int execf(int fd) {
     int ret;
     asm volatile(
         "int $0x80" // Trigger software interrupt
         :"=a"(ret)
-        : "a"(SYSCALL_t::EXECF), "b"(fid)
+        : "a"(SYSCALL_t::EXECF), "b"(fd)
         : "memory"
     );
     return ret;
 }
 
-void yield()
-{
+void yield() {
     asm volatile(
         "int $0x80" // Trigger software interrupt
         :
         : "a"(SYSCALL_t::YIELD) // syscall ID
         : "memory"
     );
+}
+}
+
+int close(const int fd) {
+    int ret;
+    asm volatile(
+        "int $0x80" // Trigger software interrupt
+        :"=a"(ret)
+        : "a"(SYSCALL_t::CLOSE), "b"(fd)
+        : "memory"
+    );
+    return ret;
+}
+
+int seek(int fd, i64 offset, int whence) {
+    int ret;
+    u32 off_low = offset & 0xFFFFFFFF;
+    i32 off_high = offset >> 32;
+    asm volatile(
+        "int $0x80" // Trigger software interrupt
+        :"=a"(ret)
+        : "a"(SYSCALL_t::SEEK), "b"(fd), "c"(off_high), "d"(off_low), "S"(whence)
+        : "memory"
+    );
+    return ret;
 }

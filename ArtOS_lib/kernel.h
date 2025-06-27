@@ -31,10 +31,11 @@ extern "C" {
 #endif
 
 
-enum class SYSCALL_t
+enum SYSCALL_t
 {
     WRITE,
     READ,
+    SEEK,
     OPEN,
     CLOSE,
     EXIT,
@@ -58,7 +59,9 @@ typedef struct event_t event_t;
 // files
 int write(int fd, const char* buf, unsigned long count);
 int read(int fd, char* buf, size_t count);
+int seek(int fd, i64 offset, int whence);
 int open(const char* pathname, int flags);
+int close(const int fd);
 void _exit(int status);
 
 // time
