@@ -25,7 +25,7 @@
 #if ENABLE_SERIAL_LOGGING && ENABLE_TERMINAL_LOGGING
     #include "Terminal.h"
     #include "Serial.h"
-    #define LOG(...) get_terminal().log(__VA_ARGS__); get_serial().log(__VA_ARGS__);
+    #define LOG(...) get_terminal().log(__VA_ARGS__); get_serial().log(__VA_ARGS__)
     #define WRITE(...) get_terminal().write(__VA_ARGS__); get_serial().write(__VA_ARGS__)
     #define NEWLINE() get_terminal().newLine(); get_serial().newLine()
     #define TIMESTAMP() get_terminal().time_stamp(); get_serial().time_stamp()
