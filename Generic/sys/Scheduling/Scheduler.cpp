@@ -361,16 +361,18 @@ void LAPIC_handler(cpu_registers_t* const r)
 // Exit is called by the program to tell the OS it is done.
 void Scheduler::exit(cpu_registers_t* const r)
 {
-    LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", (u32)r->ebx);
+    u32 status = r->ebx;
+    LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", status);
+
     processes[current_process_id].state = Process::STATE_EXITED;
     auto parent_id = processes[current_process_id].parent_pid;
     if (processes[parent_id].state == Process::STATE_PARKED)
     {
         processes[parent_id].state = Process::STATE_READY;
+        processes[parent_id].context.eax = status;
     }
     size_t next = getNextProcessID();
     LOG("Post-exit process ID:", next);
-
     switch_process(r, next);
 }
 
