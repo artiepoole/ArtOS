@@ -23,14 +23,15 @@ GRUB_SRC=".${CMAKE_SOURCE_DIR}/../grub.cfg"
 BIN_SRC=".${CMAKE_BUILD_DIR}/ArtOS.bin"
 BART_SRC=".${CMAKE_BUILD_DIR}/b.art"
 HELLO_SRC=".${CMAKE_BUILD_DIR}/hello.art"
+DOOM_SRC=".${CMAKE_BUILD_DIR}/doom.art"
 DOOMWAD_SRC=".${CMAKE_SOURCE_DIR}/../external_resources/doomwad/doom1.wad"
 
 echo "Grub source: ${GRUB_SRC}"
 echo "ArtOS bin loc: ${BIN_SRC}"
-echo "DOOMWAD source: ${DOOMWAD_SRC}"
 echo "b.art source: ${BART_SRC}"
 echo "hello.art source: ${HELLO_SRC}"
-
+echo "doom.art source: ${DOOM_SRC}"
+echo "DOOMWAD source: ${DOOMWAD_SRC}"
 
 if grub-file --is-x86-multiboot2 ArtOS.bin; then
   if test -f $GRUB_SRC; then
@@ -46,6 +47,7 @@ if grub-file --is-x86-multiboot2 ArtOS.bin; then
    fi
    cp "${BART_SRC}" isodir/fs/
     cp "${HELLO_SRC}" isodir/fs/
+    cp "${DOOM_SRC}" isodir/fs/
     grub-mkrescue -o ArtOS.iso isodir
 #    rm -rf isodir
   else

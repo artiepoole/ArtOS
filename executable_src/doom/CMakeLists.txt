@@ -1,18 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(doom LANGUAGES C CXX)
+project(doom.art LANGUAGES C CXX)
 
-file(GLOB SRC
-        "doomgeneric/*.h"
-        "doomgeneric/*.c"
-)
-
-add_library(doom STATIC ${SRC})
-
-target_compile_definitions(doom
-        PUBLIC
-        FORLAPTOP=$<BOOL:${FORLAPTOP}>
-)
-target_include_directories(doom PRIVATE doomgeneric)
-target_include_directories(doom PUBLIC ./)
-target_link_libraries(doom pdclib)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -z noexecstack")
+set(TARGET_BIN "doom.art")

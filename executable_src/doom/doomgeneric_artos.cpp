@@ -14,19 +14,19 @@
 //     You should have received a copy of the GNU General Public License
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
+
+#include "doomgeneric.h"
+#include "doomkeys.h"
+
 #include "event.h"
 
-#include "../ArtOS_lib/kernel.h"
-#include "ports.h"
-
-#include "../doom/doomgeneric/doomkeys.h"
-#include "types.h"
+#include "kernel.h"
 
 
+// pixel_t *DG_ScreenBuffer;
+#ifdef __cplusplus
 extern "C" {
-#include "../doom/doomgeneric/doomgeneric.h"
-
-
+#endif
 u8 doom_key_map[128] =
 {
     0, KEY_ESCAPE, '1', '2', '3', '4', '5', '6', '7', '8', /* 9 */
@@ -34,7 +34,7 @@ u8 doom_key_map[128] =
     KEY_TAB, /* Tab */
     'q', KEY_UPARROW, KEY_USE, 'r', /* 19 */ // q w e r
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', KEY_ENTER, /* Enter key */
-    KEYB_CONTROL, /* 29   - Control */
+    KEY_RCTRL, /* 29   - Control */
     KEY_STRAFE_L, KEY_DOWNARROW, KEY_STRAFE_R, 'f', 'g', 'h', KEY_LEFTARROW, KEY_FIRE, KEY_RIGHTARROW, ';', /* 39 */
     '\'', '`', KEY_RSHIFT, /* Left shift */
     '\\', 'z', 'x', 'c', 'v', 'b', 'n', /* 49 */
@@ -68,28 +68,23 @@ u8 doom_key_map[128] =
 };
 
 
-void DG_Init()
-{
-    // TODO: Take fullscreen control via a new syscall.
+void DG_Init() {
+    // DG_ScreenBuffer = static_cast<pixel_t *>(malloc(DOOMGENERIC_RESX * DOOMGENERIC_RESY * sizeof(pixel_t)));
 }
 
-void DG_DrawFrame()
-{
+void DG_DrawFrame() {
     draw_screen_region(DG_ScreenBuffer);
 }
 
-void DG_SleepMs(const uint32_t ms)
-{
+void DG_SleepMs(const uint32_t ms) {
     sleep_ms(ms);
 }
 
-uint32_t DG_GetTicksMs()
-{
+uint32_t DG_GetTicksMs() {
     return get_tick_ms();
 }
 
-int DG_GetKey(int* pressed, unsigned char* key)
-{
+int DG_GetKey(int *pressed, unsigned char *key) {
     // should return 0 if no events
     // should update just one keypress if keypress
     // should skip to next event if not keypress
@@ -97,29 +92,26 @@ int DG_GetKey(int* pressed, unsigned char* key)
     // TODO: implement syscall for get events.
     if (!probe_pending_events()) return 0; // no events
 
-    switch (const auto latest = get_next_event(); latest.type)
-    {
-    case KEY_DOWN:
-        *pressed = 1;
-        *key = doom_key_map[latest.data.lower_data];
-        break;
-    case KEY_UP:
-        *pressed = 0;
-        *key = doom_key_map[latest.data.lower_data];
-        break;
-    default: break;
+    switch (const auto latest = get_next_event(); latest.type) {
+        case KEY_DOWN:
+            *pressed = 1;
+            *key = doom_key_map[latest.data.lower_data];
+            break;
+        case KEY_UP:
+            *pressed = 0;
+            *key = doom_key_map[latest.data.lower_data];
+            break;
+        default: break;
     }
     return 1;
 }
 
-void DG_SetWindowTitle(const char*)
-{
+void DG_SetWindowTitle(const char *) {
     // No window to set title on.
 }
 
 // TODO: for userspace, this is the entry point.  This whole file should be part of doom project as well.
-int run_doom()
-{
+int main() {
     doomgeneric_Create(0, nullptr);
 
     while (doomgeneric_Tick());
@@ -128,15 +120,6 @@ int run_doom()
     return 0;
 }
 
-/* I have not implemented generic handling of functions as executable files yet, so I needed to create a different entry point for doom. */
-// TODO: remove this in user space version.
-[[noreturn]] void run_doom_noret()
-{
-    doomgeneric_Create(0, nullptr);
-
-    while (doomgeneric_Tick());
-
-    while (true);
-    // exit(0); // should be unreachable.
+#ifdef __cplusplus
 }
-}
+#endif

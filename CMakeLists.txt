@@ -40,10 +40,11 @@ file(GLOB_RECURSE Generic
 
 
 add_subdirectory(ArtOS_lib)
-add_subdirectory(executable_src/bart)
 add_subdirectory(pdclib)
-add_subdirectory(executable_src/doom)
 add_subdirectory(ArtOSTypes)
+add_subdirectory(executable_src/bart)
+add_subdirectory(executable_src/helloworld)
+add_subdirectory(executable_src/doom)
 #add_subdirectory(helloworld)
 ## Building the sys binary
 add_executable(${KERNEL_BIN}
@@ -125,7 +126,7 @@ target_compile_definitions(${KERNEL_BIN}
 )
 
 
-target_link_libraries(${KERNEL_BIN} PUBLIC pdclib doom ArtOSTypes)
+target_link_libraries(${KERNEL_BIN} PUBLIC pdclib ArtOSTypes)
 
 
 add_executable(b.art executable_src/bart/bart.cpp)
@@ -135,6 +136,29 @@ set_target_properties(b.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAK
 add_executable(hello.art executable_src/helloworld/helloworld.cpp)
 target_link_libraries(hello.art ArtOS_lib pdclib)
 set_target_properties(hello.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
+
+file(GLOB DOOM_SRC
+        "executable_src/doom/doomgeneric/*.h"
+        "executable_src/doom/doomgeneric/*.c"
+)
+
+add_executable(doom.art executable_src/doom/doomgeneric_artos.cpp ${DOOM_SRC})
+target_link_libraries(doom.art ArtOS_lib pdclib)
+set_target_properties(doom.art PROPERTIES LINKER_LANGUAGE CXX LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/art_executable.ld -ffreestanding -O2 -nostdlib -Wl,-demangle")
+
+
+
+
+target_include_directories(doom.art PRIVATE executable_src/doom/doomgeneric)
+target_include_directories(doom.art PUBLIC executable_src/doom)
+
+target_compile_definitions(doom.art
+        PUBLIC
+        FORLAPTOP=$<BOOL:${FORLAPTOP}>
+)
+
+target_link_libraries(doom.art ArtOS_lib pdclib)
+
 
 
 target_compile_definitions(pdclib PUBLIC
@@ -148,12 +172,13 @@ add_custom_target(${KERNEL_NAME}
         COMMENT "Generating the kernel bootable iso file"
         BYPRODUCTS ${KERNEL_ISO}
 )
-add_dependencies(${KERNEL_NAME} ${KERNEL_BIN} ${KERNEL_LIB} b.art hello.art)
+add_dependencies(${KERNEL_NAME} ${KERNEL_BIN} ${KERNEL_LIB} b.art hello.art doom.art)
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${KERNEL_ISO} ${CMAKE_SOURCE_DIR}/bin/
         COMMAND ${CMAKE_COMMAND} -E copy b.art ${CMAKE_SOURCE_DIR}/bin/
         COMMAND ${CMAKE_COMMAND} -E copy hello.art ${CMAKE_SOURCE_DIR}/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy doom.art ${CMAKE_SOURCE_DIR}/bin/
 )
 
 #target_compile_options(hello.elf PRIVATE -O3 -DNDEBUG)

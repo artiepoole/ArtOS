@@ -51,6 +51,10 @@ typedef u32 pixel_t;
 
 extern pixel_t* DG_ScreenBuffer;
 extern boolean doom_is_running;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 void doomgeneric_Create(int argc, char** argv);
 boolean doomgeneric_Tick();
 
@@ -67,5 +71,7 @@ void DG_SetWindowTitle(const char* title);
 
 int run_doom();
 [[noreturn]] void run_doom_noret();
-
+#ifdef __cplusplus
+}
+#endif
 #endif //DOOM_GENERIC
