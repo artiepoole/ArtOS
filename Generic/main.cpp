@@ -283,13 +283,19 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // vga.draw();
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
+    vga.draw();
+
+
+
+
     LOG("LOADED OS. Entering event loop.");
 
     [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
 
     int shell_file = art_open("b.art", 0);
     if (shell_file < 1) { LOG("CRITICAL: Failed to open b.art"); }
-
+    override_file_handle(1, Terminal::get_stdout_file()); // stdout
+    override_file_handle(2, Terminal::get_stderr_file()); // stderr
     art_exec(shell_file);
     yield();
     art_close(shell_file);
