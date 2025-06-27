@@ -147,7 +147,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 qemu-system-i386
 -cdrom
 bin/ArtOS.iso
--serial[doom1.wad](external_resources/doomwad/doom1.wad)
+-serial
 file:serial.log
 -boot
 a
@@ -175,6 +175,7 @@ ide-hd,drive=disk,bus=ide.0
 ```
 sudo apt-get install 
 gcc-multilib
+g++-multilib
 grub-pc-bin
 xorriso
 mtools
