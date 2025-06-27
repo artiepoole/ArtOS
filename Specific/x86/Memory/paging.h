@@ -119,6 +119,9 @@ void dirty_ident_unmap(uintptr_t start, uintptr_t end);
 
 PagingTableKernel& kernel_pages();
 
+
+void *user_mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset);
+int user_munmap(void *addr, const size_t length_bytes);
 extern unsigned char* kernel_brk;
 
 #endif //PAGING_H

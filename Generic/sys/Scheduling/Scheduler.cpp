@@ -469,3 +469,7 @@ void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name
 
     processes[parent_process_id].state = Process::STATE_PARKED;
 }
+
+PagingTableUser* Scheduler::getCurrentPagingTable() {
+    return processes[current_process_id].paging_table;
+}

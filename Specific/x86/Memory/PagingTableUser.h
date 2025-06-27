@@ -41,8 +41,7 @@ public:
     int munmap(void* addr, size_t length_bytes) override;
     page_table* append_page_table(bool writable, bool user);
     void assign_page_table_entries(uintptr_t physical_addr, uintptr_t virt_addr, bool writable, bool user);
-    int unassign_page_table_entries(size_t start_idx, size_t n_pages);
-    int map_kernel_page(uintptr_t physicaL_page_addr, uintptr_t virtual_page_addr);
+    int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
     int known_mapping(uintptr_t start_address, uintptr_t end_address);
 
 private:

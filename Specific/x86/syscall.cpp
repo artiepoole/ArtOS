@@ -34,6 +34,8 @@
 #include "TSC.h"
 #include "RTC.h"
 
+struct _PDCLIB_file_t;
+
 // u64 clock_rate = 0;
 
 void kwrite_standard([[maybe_unused]] const char* buffer, [[maybe_unused]] unsigned long len)
@@ -175,6 +177,12 @@ void syscall_handler(cpu_registers_t* r)
         // TODO: mapping user space data!
         r->eax = art_open(reinterpret_cast<char*>(r->ebx), r->ecx);
         break;
+    case SYSCALL_t::SEEK:
+            {
+        large_res = art_seek(r->ebx,r->ecx <<32 || r->edx, r->esi);
+        r->eax = large_res>>32;
+        r->ebx = large_res&0xFFFFFFFF;
+        }
     case SYSCALL_t::CLOSE:
         art_close(r->ebx);
         break;
@@ -209,10 +217,10 @@ void syscall_handler(cpu_registers_t* r)
         break;
     case SYSCALL_t::MMAP:
         // *reinterpret_cast<u32*>(r->ebp) + 7)
-        r->eax = reinterpret_cast<u32>(kmmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, 0));
+        r->eax = reinterpret_cast<u32>(user_mmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, 0));
         break;
     case SYSCALL_t::MUNMAP:
-        kmunmap(reinterpret_cast<void*>(r->ebx), r->ecx);
+        r->eax = user_munmap(reinterpret_cast<void*>(r->ebx), r->ecx);
         break;
     case SYSCALL_t::GET_CURRENT_CLOCK:
         large_res = kget_current_clock();

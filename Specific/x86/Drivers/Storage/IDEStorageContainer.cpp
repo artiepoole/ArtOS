@@ -179,7 +179,7 @@ int IDEStorageContainer::wait_for_DMA_transfer() const
     }
     if (BM_waiting_for_transfer)
     {
-        // LOG("BM transfer complete didn't send interrupt. Ignore if in user space :)");
+        LOG("BM transfer complete didn't send interrupt. Ignore if in user space :)");
         // BM_waiting_for_transfer = false;
         return -DEVICE_ERROR;
     }

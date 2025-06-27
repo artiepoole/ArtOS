@@ -176,10 +176,25 @@ int art_exec(const int fid)
 }
 
 extern "C"
-_PDCLIB_int_least64_t art_seek(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, const int whence)
+_PDCLIB_int_least64_t art_seek_stream(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, const int whence)
 {
     //TODO: implement device seek_pos changes.
     if (ArtFile* h = handles[stream->handle])
+    {
+        return h->seek(offset, whence);
+    }
+    // if (strcmp(->get_name(), "doom1.wad") == 0)
+    // {
+    //     return doom_seek(stream, offset, whence);
+    // }
+    return ERR_NOT_FOUND;
+}
+
+extern "C"
+_PDCLIB_int_least64_t art_seek(int fd, _PDCLIB_int_least64_t offset, const int whence)
+{
+    //TODO: implement device seek_pos changes.
+    if (ArtFile* h = handles[fd])
     {
         return h->seek(offset, whence);
     }

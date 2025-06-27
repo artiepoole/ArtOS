@@ -31,40 +31,58 @@ constexpr size_t max_processes = 255;
 class EventQueue;
 class PagingTableUser;
 
-class Scheduler
-{
+class Scheduler {
 public:
-    Scheduler(LocalAPIC* timer, EventQueue* kernel_queue);
+    Scheduler(LocalAPIC *timer, EventQueue *kernel_queue);
+
     ~Scheduler();
-    static Scheduler& get();
+
+    static Scheduler &get();
+
     // void start(size_t PID);
     // static void switch_process(size_t new_PID);
-    static void switch_process(cpu_registers_t* r, size_t new_PID);
+    static void switch_process(cpu_registers_t *r, size_t new_PID);
 
     static size_t getNextFreeProcessID();
+
     static size_t getMaxAliveProcessID();
+
     // Only takes void foo() types atm. No support for input variables
-    static void execf(cpu_registers_t* r, uintptr_t func, uintptr_t name, bool user);
+    static void execf(cpu_registers_t *r, uintptr_t func, uintptr_t name, bool user);
 
     // static void fork();
-    static void exit(cpu_registers_t* r);
+    static void exit(cpu_registers_t *r);
+
     static void kill(size_t target_pid);
+
     static void create_idle_task();
-    static void execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, uintptr_t entry_point, uintptr_t stack_vaddr, uintptr_t stack_size);
+
+    static void execute_from_paging_table(PagingTableUser *PTU, const char *name_loc, uintptr_t entry_point,
+                                          uintptr_t stack_vaddr, uintptr_t stack_size);
+
+    PagingTableUser *getCurrentPagingTable();
+
     static void clean_up_exited_threads();
+
     static size_t getCurrentProcessID();
-    static EventQueue* getCurrentProcessEventQueue();
+
+    static EventQueue *getCurrentProcessEventQueue();
+
     static uintptr_t getCurrentProcessPagingDirectory();
+
     // static bool isCurrentProcessUser();
     // static bool isProcessUser(size_t PID);
     static size_t getNextProcessID();
 
     static void start_oneshot(u32 time_ms);
-    // static void store_current_context(size_t PID);
-    static void store_current_context(cpu_registers_t* r, size_t PID);
-    static void set_current_context(cpu_registers_t* r, size_t PID);
 
-    static void schedule(cpu_registers_t* r);
+    // static void store_current_context(size_t PID);
+    static void store_current_context(cpu_registers_t *r, size_t PID);
+
+    static void set_current_context(cpu_registers_t *r, size_t PID);
+
+    static void schedule(cpu_registers_t *r);
+
     // static void schedule();
 
     static void sleep_ms(u32 ms);

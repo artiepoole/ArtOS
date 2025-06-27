@@ -22,6 +22,7 @@
 #include "paging.h"
 
 #include <PagingTableKernel.h>
+#include <PagingTableUser.h>
 
 #include "errno.h"
 
@@ -39,8 +40,7 @@ extern page_directory_4kb_t boot_page_directory[];
 extern page_table boot_page_tables[];
 // PagingTableKernel kernel_pages;
 
-PagingTableKernel& kernel_pages()
-{
+PagingTableKernel &kernel_pages() {
     static PagingTableKernel instance;
     return instance;
 }
@@ -50,7 +50,7 @@ uintptr_t main_region_end;
 size_t last_physical_idx;
 
 extern unsigned char kernel_start;
-unsigned char* kernel_start_loc = &kernel_start;
+unsigned char *kernel_start_loc = &kernel_start;
 
 
 // bitmaps used to keep track of the next virtual and physical pages available.
@@ -61,31 +61,26 @@ u64 paging_phys_bitmap_array[paging_bitmap_n_DBs];
 DenseBooleanArray<u64> page_available_physical_bitmap;
 
 
-uintptr_t page_get_next_phys_addr()
-{
+uintptr_t page_get_next_phys_addr() {
     const size_t idx = page_available_physical_bitmap.get_next_true();
     if (idx == DBA_ERR_IDX) return 0;
     return idx << base_address_shift;
 }
 
 
-void set_physical_bitmap_addr(const uintptr_t physical_addr, const bool state)
-{
+void set_physical_bitmap_addr(const uintptr_t physical_addr, const bool state) {
     page_available_physical_bitmap.set_bit(physical_addr >> base_address_shift, state);
 }
 
-void set_physical_bitmap_idx(const size_t phys_idx, const bool state)
-{
+void set_physical_bitmap_idx(const size_t phys_idx, const bool state) {
     page_available_physical_bitmap.set_bit(phys_idx, state);
 }
 
-uintptr_t get_kernal_page_dir()
-{
+uintptr_t get_kernal_page_dir() {
     return kernel_pages().get_phys_addr_of_page_dir();
 }
 
-void enable_paging()
-{
+void enable_paging() {
     auto addr = kernel_pages().get_phys_addr_of_page_dir() | 0xFFF; // TODO: shouldn't this be & 0xfffff000 ?
     __asm__ volatile ("mov %0, %%cr3" : : "r"(addr)); // set the cr3 to the paging_directory physical address
     u32 cr0 = 0;
@@ -100,14 +95,13 @@ void enable_paging()
  * @param start
  * @param end
  */
-void dirty_ident_map(const uintptr_t start, const uintptr_t end)
-{
+void dirty_ident_map(const uintptr_t start, const uintptr_t end) {
     const size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
     virtual_address_t vaddr = {start};
-    for (size_t i = 0; i < n_pages; i++)
-    {
+    for (size_t i = 0; i < n_pages; i++) {
         boot_page_tables[vaddr.page_directory_index].table[vaddr.page_table_index].raw = (vaddr.raw & 0xfffff000) | 0x3;
-        boot_page_directory[vaddr.page_directory_index].raw = (reinterpret_cast<uintptr_t>(&boot_page_tables[vaddr.page_directory_index]) - 0xc0000000) | 0x3;
+        boot_page_directory[vaddr.page_directory_index].raw =
+                (reinterpret_cast<uintptr_t>(&boot_page_tables[vaddr.page_directory_index]) - 0xc0000000) | 0x3;
         vaddr.raw += 4096;
     }
 }
@@ -118,12 +112,10 @@ void dirty_ident_map(const uintptr_t start, const uintptr_t end)
  * @param start
  * @param end
  */
-void dirty_ident_unmap(const uintptr_t start, const uintptr_t end)
-{
+void dirty_ident_unmap(const uintptr_t start, const uintptr_t end) {
     const size_t n_pages = (end - start + page_alignment - 1) >> base_address_shift;
     virtual_address_t vaddr = {start};
-    for (size_t i = 0; i < n_pages; i++)
-    {
+    for (size_t i = 0; i < n_pages; i++) {
         boot_page_tables[vaddr.page_directory_index].table[vaddr.page_table_index].raw = 0;
         boot_page_directory[vaddr.page_directory_index].raw = 0;
         vaddr.raw += 4096;
@@ -135,38 +127,35 @@ void dirty_ident_unmap(const uintptr_t start, const uintptr_t end)
  *  Uses kernel_brk because this is the last memory address to be given to the kernel.
  *  This could use kernel end once sbrk is no longer a thing.
  */
-void mmap_init(multiboot2_tag_mmap* mmap)
-{
+void mmap_init(multiboot2_tag_mmap *mmap) {
     page_available_physical_bitmap.init(paging_phys_bitmap_array, max_n_pages, false);
 
     const auto brk_loc = reinterpret_cast<uintptr_t>(kernel_brk);
     const size_t n_entries = mmap->size / sizeof(multiboot2_mmap_entry);
-    const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift; // first page after kernel image.
+    const uintptr_t post_kernel_page = ((brk_loc >> base_address_shift) + 1) << base_address_shift;
+    // first page after kernel image.
 
     // TODO: I Don't want it identitiy map if type 1!
     // Loop through all entries and map appropriately
-    dirty_ident_map(reinterpret_cast<uintptr_t>(mmap->entries[0]), reinterpret_cast<uintptr_t>(mmap->entries[5]) + sizeof(multiboot2_mmap_entry));
-    for (size_t i = 0; i < n_entries; i++)
-    {
-        multiboot2_mmap_entry const* entry = mmap->entries[i];
+    dirty_ident_map(reinterpret_cast<uintptr_t>(mmap->entries[0]),
+                    reinterpret_cast<uintptr_t>(mmap->entries[5]) + sizeof(multiboot2_mmap_entry));
+    for (size_t i = 0; i < n_entries; i++) {
+        multiboot2_mmap_entry const *entry = mmap->entries[i];
         if (entry->type == 1) continue;
 
-        if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc)
-        {
+        if (entry->addr < brk_loc && entry->addr + entry->len > brk_loc) {
             // contains kernel
             // only map used kernel region.
             kernel_pages().identity_map(entry->addr, brk_loc - entry->addr, false, false);
             main_region_start = entry->addr;
             main_region_end = entry->addr + entry->len;
             last_physical_idx = main_region_end >> base_address_shift;
-        }
-        else
-        {
+        } else {
             kernel_pages().identity_map(entry->addr, entry->len, false && entry->addr > 0, false);
         }
-
     }
-    dirty_ident_unmap(reinterpret_cast<uintptr_t>(mmap->entries[0]), reinterpret_cast<uintptr_t>(mmap->entries[5]) + sizeof(multiboot2_mmap_entry));
+    dirty_ident_unmap(reinterpret_cast<uintptr_t>(mmap->entries[0]),
+                      reinterpret_cast<uintptr_t>(mmap->entries[5]) + sizeof(multiboot2_mmap_entry));
 
     // Protect kernel and init identity map
     // paging_identity_map(main_region_start, post_kernel_page - main_region_start, true, false);
@@ -181,7 +170,7 @@ void mmap_init(multiboot2_tag_mmap* mmap)
         true
     );
 
-    kernel_pages().reserve_kernel_v_addr_space(reinterpret_cast<void*>(0xc0000000), kernel_brk);
+    kernel_pages().reserve_kernel_v_addr_space(reinterpret_cast<void *>(0xc0000000), kernel_brk);
 
 
     LOG("Paging: memory map processed.");
@@ -190,22 +179,26 @@ void mmap_init(multiboot2_tag_mmap* mmap)
 }
 
 
-void* kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset)
-{
+void *kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) {
     return kernel_pages().mmap(addr, length, prot, flags, fd, offset);
 }
 
-uintptr_t kget_mapping_target(void* v_addr)
-{
+void *user_mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) {
+    return Scheduler::get().getCurrentPagingTable()->mmap(addr, length, prot, flags, fd, offset);
+}
+
+uintptr_t kget_mapping_target(void *v_addr) {
     return kernel_pages().get_phys_from_virtual(reinterpret_cast<uintptr_t>(v_addr)) * page_alignment;
 }
 
-int kmunmap(void* addr, const size_t length_bytes)
-{
+int kmunmap(void *addr, const size_t length_bytes) {
     return kernel_pages().munmap(addr, length_bytes);
 }
 
-void paging_identity_map(const uintptr_t phys_addr, const size_t size, const bool writable, const bool user)
-{
+int user_munmap(void *addr, const size_t length_bytes) {
+    return Scheduler::get().getCurrentPagingTable()->munmap(addr, length_bytes);
+}
+
+void paging_identity_map(const uintptr_t phys_addr, const size_t size, const bool writable, const bool user) {
     kernel_pages().identity_map(phys_addr, size, writable, user);
 }
