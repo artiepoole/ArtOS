@@ -203,7 +203,7 @@ int PagingTableUser::unassign_page_table_entries(size_t start_idx, size_t n_page
 
 int PagingTableUser::map_kernel_page(uintptr_t physicaL_page_addr, uintptr_t virtual_page_addr)
 {
-    LOG("ERROR! CALL TO map_kernel_page which is not implemeted")
+    LOG("ERROR! CALL TO map_kernel_page which is not implemeted");
     return 0;
 }
 
