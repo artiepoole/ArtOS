@@ -11,6 +11,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "Files.h"
+#include "kernel.h"
 
 #ifndef REGTEST
 
@@ -26,7 +27,7 @@ extern "C" {
 
 int _PDCLIB_close(int fd)
 {
-    return art_close(fd);
+    return close(fd);
 }
 
 #endif

@@ -14,6 +14,8 @@
 
 #ifndef REGTEST
 
+#include <kernel.h>
+
 #include "_PDCLIB_glue.h"
 
 #include "errno.h"
@@ -31,7 +33,7 @@ typedef long ssize_t;
 int _PDCLIB_fillbuffer(struct _PDCLIB_file_t* stream)
 {
     /* No need to handle buffers > INT_MAX, as PDCLib doesn't allow them */
-    ssize_t rc = art_read(stream->handle, stream->buffer, stream->bufsize);
+    ssize_t rc = read(stream->handle, stream->buffer, stream->bufsize);
 
     if (rc > 0)
     {

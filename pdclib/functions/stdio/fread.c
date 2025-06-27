@@ -7,7 +7,7 @@
 #include <Files.h>
 #include <stdio.h>
 #include <string.h>
-
+#include "kernel.h"
 
 #ifndef REGTEST
 
@@ -54,7 +54,7 @@ size_t fread(void* _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PDCL
     // _PDCLIB_UNLOCK( stream->mtx );
     //
     // return nmemb_i;
-    return art_read(stream->handle, ptr, nmemb * size);
+    return read(stream->handle, ptr, nmemb * size);
 }
 
 #endif
