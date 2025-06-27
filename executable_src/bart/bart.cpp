@@ -19,64 +19,53 @@
 //
 
 #include "bart.h"
-#include "stdio.h"
-#include "kernel.h"
 #include "event.h"
-#include "string.h"
+#include "kernel.h"
 #include "keymaps/key_maps.h"
+#include "stdio.h"
+#include "string.h"
 
-
-BartShell::BartShell()
-{
-    for (char& i : cmd_buffer)
-    {
+BartShell::BartShell() {
+    for (char &i: cmd_buffer) {
         i = 0;
     }
 }
 
-void BartShell::run()
-{
+void BartShell::run() {
     printf("Shell started\n");
-    while (true)
-    {
-        if (probe_pending_events())
-        {
+    while (true) {
+        if (probe_pending_events()) {
             auto [type, data] = get_next_event();
-            // LOG("Found event. Type: ", static_cast<int>(type), " lower: ", data.lower_data, " upper: ",data.upper_data);
-            switch (type)
-            {
-            case NULL_EVENT:
-                {
+            // LOG("Found event. Type: ", static_cast<int>(type), " lower: ",
+            // data.lower_data, " upper: ",data.upper_data);
+            switch (type) {
+                case NULL_EVENT: {
                     printf("NULL EVENT\n");
                     break;
                 }
-            case KEY_UP:
-                {
+                case KEY_UP: {
                     const size_t cin = data.lower_data;
                     const char key = key_map[cin];
 
-                    if (key_map[cin] != 0)
-                    {
-                        switch (key)
-                        {
-                        case '*': // shift bit 0
+                    if (key_map[cin] != 0) {
+                        switch (key) {
+                            case '*': // shift bit 0
                             {
                                 keyboard_modifiers &= 0b1110; // not 0100
                                 break;
                             }
 
-                        case '^': // ctrl bit 1
+                            case '^': // ctrl bit 1
                             {
                                 keyboard_modifiers &= 0b1101; // not 0010
                                 break;
                             }
-                        case '!': // alt bit 2
+                            case '!': // alt bit 2
                             {
                                 keyboard_modifiers &= 0b1011; // not 0001
                                 break;
                             }
-                        default:
-                            {
+                            default: {
                                 break;
                             }
                         }
@@ -90,84 +79,79 @@ void BartShell::run()
                     // WRITE("Key up event in main loop.\n");
                     break;
                 }
-            case KEY_DOWN:
-                {
+                case KEY_DOWN: {
                     // WRITE("Key down event in main loop: ");
                     const size_t cin = data.lower_data;
                     const char key = key_map[cin];
                     // WRITE(key);
                     // NEWLINE();
-                    if (key_map[cin] != 0)
-                    {
-                        switch (key)
-                        {
-                        case '\b': // backspace
+                    if (key_map[cin] != 0) {
+                        switch (key) {
+                            case '\b': // backspace
                             {
                                 putchar('\b');
-                                if (cmd_buffer_idx > 0)
-                                {
+                                if (cmd_buffer_idx > 0) {
                                     cmd_buffer[--cmd_buffer_idx] = '\0';
                                 }
                                 break;
                             }
-                        case '\t': // tab
+                            case '\t': // tab
                             {
                                 printf("    ");
                                 break;
                             }
-                        case '^': // ctrl bit 1
+                            case '^': // ctrl bit 1
                             {
                                 keyboard_modifiers |= 0b0010;
                                 break;
                             }
-                        case '*': // shift bit 0
+                            case '*': // shift bit 0
                             {
                                 keyboard_modifiers |= 0b0001;
                                 // print("Shift pressed", keyboard_modifiers);
                                 break;
                             }
-                        case '!': // alt bit 2
+                            case '!': // alt bit 2
                             {
                                 keyboard_modifiers |= 0b0100;
                                 break;
                             }
-                        case 'H': // Home
+                            case 'H': // Home
                             {
                                 // todo: handle home
                                 break;
                             }
-                        case 'E': // end
+                            case 'E': // end
                             {
                                 // go to end of line
                                 break;
                             }
-                        case 'U': // up
+                            case 'U': // up
                             {
                                 // probably won't handle up
                                 break;
                             }
-                        case 'D': // down
+                            case 'D': // down
                             {
                                 // probably won't handle this
                                 break;
                             }
-                        case '<': // left
+                            case '<': // left
                             {
                                 // move left
                                 break;
                             }
-                        case '>': // right
+                            case '>': // right
                             {
                                 // move right
                                 break;
                             }
-                        case 'C': // capital C meaning caps lock
+                            case 'C': // capital C meaning caps lock
                             {
                                 keyboard_modifiers ^= 0b1000;
                                 break;
                             }
-                        case '\n':
-                            {
+                            case '\n': {
                                 putchar('\n');
                                 process_cmd();
                                 memset(cmd_buffer, 0, cmd_buffer_size);
@@ -175,8 +159,7 @@ void BartShell::run()
                                 // get_terminal().refresh();
                                 break;
                             }
-                        default:
-                            {
+                            default: {
                                 bool is_alpha = (key >= 97 && key <= 122);
                                 if (keyboard_modifiers & 0b1000) // caps lock enabled
                                     if (is_alpha) // alphanumeric keys get shifted to caps
@@ -185,14 +168,13 @@ void BartShell::run()
                                         putchar(shift_map[cin]);
                                         break;
                                     }
-                                if ((keyboard_modifiers & 0b0001)) // shift is down or capslock is on
+                                if ((keyboard_modifiers &
+                                     0b0001)) // shift is down or capslock is on
                                 {
                                     cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
                                     putchar(shift_map[cin]);
                                     break;
-                                }
-                                else
-                                {
+                                } else {
                                     cmd_buffer[cmd_buffer_idx++] = key;
                                     putchar(key);
                                 }
@@ -203,9 +185,9 @@ void BartShell::run()
                     }
                     break;
                 }
-            default:
-                {
-                    printf("Unhandled event.\n Type: %x lower: %i upper: %i\n", static_cast<int>(type), data.lower_data, data.upper_data);
+                default: {
+                    printf("Unhandled event.\n Type: %x lower: %i upper: %i\n",
+                           static_cast<int>(type), data.lower_data, data.upper_data);
                     break;
                 }
             }
@@ -216,24 +198,18 @@ void BartShell::run()
     }
 }
 
-void div_0()
-{
-    asm (
-        "mov $0, %eax\n"
-        "div %eax"
-    );
+void div_0() {
+    asm("mov $0, %eax\n"
+        "div %eax");
 }
 
-
-int BartShell::process_cmd()
-{
+int BartShell::process_cmd() {
     printf("%s\n", cmd_buffer);
-    if (!strcmp(cmd_buffer, "hello"))
-    {
-        if (const int fid = open("hello.art", 0))
-        {
+    if (!strcmp(cmd_buffer, "hello")) {
+        if (const int fid = open("hello.art", 0)) {
             printf("executing hello.art\n");
-            int ret = execf(fid);
+            const int ret = execf(fid);
+            return ret;
         }
     }
     // // TODO: implement actual command lookup of executables.
@@ -263,9 +239,9 @@ int BartShell::process_cmd()
     // {
     //     ELF_header_t elf_header{};
     //     const auto fid = art_open("hello.elf", 0);
-    //     art_read(fid, reinterpret_cast<char*>(&elf_header), sizeof(ELF_header_t));
-    //     art_exec(fid);
-    //     LOG("ELF header read: ", elf_header.e_ident.magic);
+    //     art_read(fid, reinterpret_cast<char*>(&elf_header),
+    //     sizeof(ELF_header_t)); art_exec(fid); LOG("ELF header read: ",
+    //     elf_header.e_ident.magic);
     // }
     // else
     // {
@@ -276,9 +252,9 @@ int BartShell::process_cmd()
     return 0;
 }
 
-int main()
-{
-    // Init and load the shell. Shell draws directly to the terminal by using static methods.
+int main() {
+    // Init and load the shell. Shell draws directly to the terminal by using
+    // static methods.
     auto shell = BartShell();
     shell.run();
 }

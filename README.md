@@ -174,6 +174,7 @@ ide-hd,drive=disk,bus=ide.0
 
 ```
 sudo apt-get install 
+gcc-multilib
 grub-pc-bin
 xorriso
 mtools
