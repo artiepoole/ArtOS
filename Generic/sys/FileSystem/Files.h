@@ -110,6 +110,9 @@ enum file_open_flags {
     O_NOFOLLOW = 1 << 11,
     O_TMPFILE = 1 << 12,
     O_TRUNC = 1 << 13,
+    O_APPEND = 1 << 14,
+    O_CREATE = 1 << 15,
+
 };
 
 enum mmap_flags {

@@ -205,10 +205,10 @@ void div_0() {
 
 int BartShell::process_cmd() {
     printf("%s\n", cmd_buffer);
-    int fid = open(cmd_buffer, 0);
-    if ( fid > 0) {
+    FILE* f = fopen(cmd_buffer, "rb");
+    if ( f ) {
         printf("executing %s\n", cmd_buffer);
-        const int ret = execf(fid);
+        const int ret = execf(f->handle);
         printf("%s exited with exit code %d\n", cmd_buffer, ret);
         return ret;
     }
