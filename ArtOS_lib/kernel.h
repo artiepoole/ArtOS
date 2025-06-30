@@ -31,8 +31,7 @@ extern "C" {
 #endif
 
 
-enum SYSCALL_t
-{
+enum SYSCALL_t {
     WRITE,
     READ,
     SEEK,
@@ -45,6 +44,7 @@ enum SYSCALL_t
     PROBE_EVENTS,
     GET_EVENT,
     DRAW_REGION,
+    CLEAR_TERM,
     GET_TIME,
     GET_EPOCH,
     MMAP,
@@ -57,33 +57,47 @@ typedef struct tm tm;
 typedef struct event_t event_t;
 
 // files
-int write(int fd, const char* buf, unsigned long count);
-int read(int fd, char* buf, size_t count);
+int write(int fd, const char *buf, unsigned long count);
+
+int read(int fd, char *buf, size_t count);
+
 i64 seek(int fd, i64 offset, int whence);
-int open(const char* pathname, int flags);
+
+int open(const char *pathname, int flags);
+
 int close(const int fd);
+
 void _exit(int status);
 
 // time
 void sleep_ms(u32 ms);
+
 u32 get_tick_ms();
-int get_time(tm* dest);
+
+int get_time(tm *dest);
+
 long get_epoch_time();
+
 u64 get_current_clock();
 
 // events
 bool probe_pending_events();
+
 event_t get_next_event();
 
 // graphics
-void draw_screen_region(const u32* frame_buffer);
+void draw_screen_region(const u32 *frame_buffer);
+
+void clear_term();
 
 // memory
-void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset);
-void munmap(void* addr, size_t length);
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, size_t offset);
+
+void munmap(void *addr, size_t length);
 
 // scheduling
 int execf(int fid);
+
 void yield();
 #ifdef __cplusplus
 }

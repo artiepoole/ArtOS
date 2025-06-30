@@ -430,6 +430,10 @@ void Terminal::clear()
 
     // 1 so that it doesn't match terminal buffer clears and redraws whole screen
     art_string::memset(rendered_buffer, 1, buffer_height * buffer_width * sizeof(terminal_char_t));
+    cursor_idx= 0;
+    terminal_column = 1;
+    terminal_row = 0;
+    setChar(0, 0, '>', colour_accent);
     _draw_changes();
 }
 

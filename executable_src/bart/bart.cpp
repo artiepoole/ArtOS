@@ -19,6 +19,9 @@
 //
 
 #include "bart.h"
+
+#include <stdlib.h>
+
 #include "event.h"
 #include "kernel.h"
 #include "keymaps/key_maps.h"
@@ -31,14 +34,17 @@ BartShell::BartShell() {
     }
 }
 
-void BartShell::run() {
+
+// TODO: for drawing here, maybe this should have its own screen buffer and should implement the terminal
+// stuff itself and then loop "while pending events" and then flush after events are all processed
+// TODO: arguments
+// TODO: fs commands and shortcuts
+// TODO: creating files
+[[noreturn]] void BartShell::run() {
     printf("Shell started\n");
     while (true) {
-        if (probe_pending_events()) {
-            auto [type, data] = get_next_event();
-            // LOG("Found event. Type: ", static_cast<int>(type), " lower: ",
-            // data.lower_data, " upper: ",data.upper_data);
-            switch (type) {
+        while (probe_pending_events()) {
+            switch (auto [type, data] = get_next_event(); type) {
                 case NULL_EVENT: {
                     printf("NULL EVENT\n");
                     break;
@@ -70,26 +76,16 @@ void BartShell::run() {
                             }
                         }
                     }
-
-                    // todo: Add a line buffer and parsing to inputs on enter.
-                    // todo: Add an key handler which deals with modifier keys
-                    // todo: handle backspace
-                    // todo: write an actual terminal class.
-
-                    // WRITE("Key up event in main loop.\n");
                     break;
                 }
                 case KEY_DOWN: {
-                    // WRITE("Key down event in main loop: ");
                     const size_t cin = data.lower_data;
                     const char key = key_map[cin];
-                    // WRITE(key);
-                    // NEWLINE();
                     if (key_map[cin] != 0) {
                         switch (key) {
                             case '\b': // backspace
                             {
-                                putchar('\b');
+                                printf("%c", '\b');
                                 if (cmd_buffer_idx > 0) {
                                     cmd_buffer[--cmd_buffer_idx] = '\0';
                                 }
@@ -152,7 +148,8 @@ void BartShell::run() {
                                 break;
                             }
                             case '\n': {
-                                putchar('\n');
+                                printf("\n");
+                                if (cmd_buffer[0] == '\0') { break; }
                                 process_cmd();
                                 memset(cmd_buffer, 0, cmd_buffer_size);
                                 cmd_buffer_idx = 0;
@@ -160,25 +157,23 @@ void BartShell::run() {
                                 break;
                             }
                             default: {
-                                bool is_alpha = (key >= 97 && key <= 122);
+                                const bool is_alpha = (key >= 97 && key <= 122);
                                 if (keyboard_modifiers & 0b1000) // caps lock enabled
                                     if (is_alpha) // alphanumeric keys get shifted to caps
                                     {
                                         cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                        putchar(shift_map[cin]);
+                                        printf("%c", shift_map[cin]);
                                         break;
                                     }
                                 if ((keyboard_modifiers &
                                      0b0001)) // shift is down or capslock is on
                                 {
                                     cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                    putchar(shift_map[cin]);
+                                    printf("%c", shift_map[cin]);
                                     break;
-                                } else {
-                                    cmd_buffer[cmd_buffer_idx++] = key;
-                                    putchar(key);
                                 }
-
+                                cmd_buffer[cmd_buffer_idx++] = key;
+                                printf("%c", key);
                                 break;
                             }
                         }
@@ -191,10 +186,8 @@ void BartShell::run() {
                     break;
                 }
             }
-            fflush(stdout);
         }
-        // // else
-        // kpause_exec(0);
+        fflush(stdout);
     }
 }
 
@@ -205,58 +198,26 @@ void div_0() {
 
 int BartShell::process_cmd() {
     printf("%s\n", cmd_buffer);
-    FILE* f = fopen(cmd_buffer, "rb");
-    if ( f ) {
+    if (!strcmp("exit\0", cmd_buffer)) {
+        exit(0);
+    }
+    if (!strcmp("clear\0", cmd_buffer)) {
+        clear_term();
+        return 0;
+    }
+    FILE *f = fopen(cmd_buffer, "rb");
+    if (f->handle > 0) {
         printf("executing %s\n", cmd_buffer);
         const int ret = execf(f->handle);
         printf("%s exited with exit code %d\n", cmd_buffer, ret);
         return ret;
     }
     printf("File not found: %s\n", cmd_buffer);
-
-    // // TODO: implement actual command lookup of executables.
-    // if (cmd_buffer_idx == 0) return -1;
-    // if (strncasecmp(cmd_buffer, "play doom", 10) == 0)
-    // {
-    //     get_terminal().stop_drawing();
-    //     execf(run_doom_noret, "doom", false);
-    //     get_terminal().resume_drawing();
-    //     get_terminal().refresh();
-    // }
-    // else if (strncasecmp(cmd_buffer, "div0", 5) == 0)
-    // {
-    //     get_terminal().stop_drawing();
-    //     execf(div_0, "div0", false);
-    //     get_terminal().resume_drawing();
-    //     get_terminal().refresh();
-    // }
-    // else if (strncasecmp(cmd_buffer, "test", 5) == 0)
-    // {
-    //     get_terminal().stop_drawing();
-    //     execf(user_test, "test", true);
-    //     get_terminal().resume_drawing();
-    //     get_terminal().refresh();
-    // }
-    // else if (strncasecmp(cmd_buffer, "readelf", 8) == 0)
-    // {
-    //     ELF_header_t elf_header{};
-    //     const auto fid = art_open("hello.elf", 0);
-    //     art_read(fid, reinterpret_cast<char*>(&elf_header),
-    //     sizeof(ELF_header_t)); art_exec(fid); LOG("ELF header read: ",
-    //     elf_header.e_ident.magic);
-    // }
-    // else
-    // {
-    //     get_terminal().write("Unknown command: ", COLOR_RED);
-    //     get_terminal().write(cmd_buffer, cmd_buffer_idx, COLOR_MAGENTA);
-    //     get_terminal().newLine();
-    // }
     return 0;
 }
 
 int main() {
-    // Init and load the shell. Shell draws directly to the terminal by using
-    // static methods.
+    // Init and load the shell. Shell draws directly to the terminal using printf
     auto shell = BartShell();
     shell.run();
 }

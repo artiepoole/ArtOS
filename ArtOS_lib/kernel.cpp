@@ -236,6 +236,15 @@ i64 seek(int fd, i64 offset, int whence) {
         : "a"(SYSCALL_t::SEEK), "b"(fd), "c"(off_high), "d"(off_low), "S"(whence)
         : "memory"
     );
-    i64 ret = ret_high<<32 | ret_low;
+    i64 ret = ret_high << 32 | ret_low;
     return ret;
+}
+
+void clear_term() {
+    asm volatile(
+        "int $0x80" // Trigger software interrupt
+        :
+        : "a"(SYSCALL_t::CLEAR_TERM)
+        : "memory"
+    );
 }
