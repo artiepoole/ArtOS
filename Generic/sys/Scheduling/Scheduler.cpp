@@ -20,6 +20,7 @@
 #include "Scheduler.h"
 
 #include <cmp_int.h>
+#include <Files.h>
 #include <GDT.h>
 #include <IDT.h>
 #include <IOAPIC.h>
@@ -363,7 +364,13 @@ void Scheduler::exit(cpu_registers_t* const r)
 {
     u32 status = r->ebx;
     LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", status);
-
+    if (current_process_id == 2) {
+        const int shell_file = art_open("b.art", 0);
+        if (shell_file < 1) { LOG("CRITICAL: Failed to restart b.art"); }
+        art_exec(shell_file);
+        yield();
+        art_close(shell_file);
+    }
     processes[current_process_id].state = Process::STATE_EXITED;
     auto parent_id = processes[current_process_id].parent_pid;
     if (processes[parent_id].state == Process::STATE_PARKED)
