@@ -226,15 +226,16 @@ int close(const int fd) {
     return ret;
 }
 
-int seek(int fd, i64 offset, int whence) {
-    int ret;
+i64 seek(int fd, i64 offset, int whence) {
+    int ret_high, ret_low;
     u32 off_low = offset & 0xFFFFFFFF;
     i32 off_high = offset >> 32;
     asm volatile(
         "int $0x80" // Trigger software interrupt
-        :"=a"(ret)
+        :"=a"(ret_high), "=b"(ret_low)
         : "a"(SYSCALL_t::SEEK), "b"(fd), "c"(off_high), "d"(off_low), "S"(whence)
         : "memory"
     );
+    i64 ret = ret_high<<32 | ret_low;
     return ret;
 }

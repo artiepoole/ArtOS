@@ -179,10 +179,11 @@ void syscall_handler(cpu_registers_t* r)
         break;
     case SYSCALL_t::SEEK:
             {
-        large_res = art_seek(r->ebx,r->ecx <<32 || r->edx, r->esi);
+        large_res = art_seek(r->ebx,r->ecx <<32 | r->edx, r->esi);
         r->eax = large_res>>32;
         r->ebx = large_res&0xFFFFFFFF;
         }
+        break;
     case SYSCALL_t::CLOSE:
         art_close(r->ebx);
         break;
