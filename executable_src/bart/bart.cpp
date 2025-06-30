@@ -205,6 +205,10 @@ int BartShell::process_cmd() {
         clear_term();
         return 0;
     }
+    if (!strcmp("div_0\0", cmd_buffer)) {
+        div_0();
+        return 0;
+    }
     FILE *f = fopen(cmd_buffer, "rb");
     if (f->handle > 0) {
         printf("executing %s\n", cmd_buffer);

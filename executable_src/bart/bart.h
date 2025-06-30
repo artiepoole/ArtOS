@@ -29,7 +29,7 @@ class BartShell
 {
 public:
     BartShell();
-    void run();
+    [[noreturn]] void run();
 
 private:
     int process_cmd();
