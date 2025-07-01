@@ -28,172 +28,135 @@
 #include "stdio.h"
 #include "string.h"
 
+
+void div_0() {
+    asm("mov $0, %eax\n"
+        "div %eax");
+}
+
 BartShell::BartShell() {
     for (char &i: cmd_buffer) {
         i = 0;
     }
 }
 
-
-// TODO: for drawing here, maybe this should have its own screen buffer and should implement the terminal
-// stuff itself and then loop "while pending events" and then flush after events are all processed
-// TODO: arguments
-// TODO: fs commands and shortcuts
-// TODO: creating files
-[[noreturn]] void BartShell::run() {
-    printf("Shell started\n");
-    while (true) {
-        while (probe_pending_events()) {
-            switch (auto [type, data] = get_next_event(); type) {
-                case NULL_EVENT: {
-                    printf("NULL EVENT\n");
-                    break;
-                }
-                case KEY_UP: {
-                    const size_t cin = data.lower_data;
-                    const char key = key_map[cin];
-
-                    if (key_map[cin] != 0) {
-                        switch (key) {
-                            case '*': // shift bit 0
-                            {
-                                keyboard_modifiers &= 0b1110; // not 0100
-                                break;
-                            }
-
-                            case '^': // ctrl bit 1
-                            {
-                                keyboard_modifiers &= 0b1101; // not 0010
-                                break;
-                            }
-                            case '!': // alt bit 2
-                            {
-                                keyboard_modifiers &= 0b1011; // not 0001
-                                break;
-                            }
-                            default: {
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-                case KEY_DOWN: {
-                    const size_t cin = data.lower_data;
-                    const char key = key_map[cin];
-                    if (key_map[cin] != 0) {
-                        switch (key) {
-                            case '\b': // backspace
-                            {
-                                printf("%c", '\b');
-                                if (cmd_buffer_idx > 0) {
-                                    cmd_buffer[--cmd_buffer_idx] = '\0';
-                                }
-                                break;
-                            }
-                            case '\t': // tab
-                            {
-                                printf("    ");
-                                break;
-                            }
-                            case '^': // ctrl bit 1
-                            {
-                                keyboard_modifiers |= 0b0010;
-                                break;
-                            }
-                            case '*': // shift bit 0
-                            {
-                                keyboard_modifiers |= 0b0001;
-                                // print("Shift pressed", keyboard_modifiers);
-                                break;
-                            }
-                            case '!': // alt bit 2
-                            {
-                                keyboard_modifiers |= 0b0100;
-                                break;
-                            }
-                            case 'H': // Home
-                            {
-                                // todo: handle home
-                                break;
-                            }
-                            case 'E': // end
-                            {
-                                // go to end of line
-                                break;
-                            }
-                            case 'U': // up
-                            {
-                                // probably won't handle up
-                                break;
-                            }
-                            case 'D': // down
-                            {
-                                // probably won't handle this
-                                break;
-                            }
-                            case '<': // left
-                            {
-                                // move left
-                                break;
-                            }
-                            case '>': // right
-                            {
-                                // move right
-                                break;
-                            }
-                            case 'C': // capital C meaning caps lock
-                            {
-                                keyboard_modifiers ^= 0b1000;
-                                break;
-                            }
-                            case '\n': {
-                                printf("\n");
-                                if (cmd_buffer[0] == '\0') { break; }
-                                process_cmd();
-                                memset(cmd_buffer, 0, cmd_buffer_size);
-                                cmd_buffer_idx = 0;
-                                // get_terminal().refresh();
-                                break;
-                            }
-                            default: {
-                                const bool is_alpha = (key >= 97 && key <= 122);
-                                if (keyboard_modifiers & 0b1000) // caps lock enabled
-                                    if (is_alpha) // alphanumeric keys get shifted to caps
-                                    {
-                                        cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                        printf("%c", shift_map[cin]);
-                                        break;
-                                    }
-                                if ((keyboard_modifiers &
-                                     0b0001)) // shift is down or capslock is on
-                                {
-                                    cmd_buffer[cmd_buffer_idx++] = shift_map[cin];
-                                    printf("%c", shift_map[cin]);
-                                    break;
-                                }
-                                cmd_buffer[cmd_buffer_idx++] = key;
-                                printf("%c", key);
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-                default: {
-                    printf("Unhandled event.\n Type: %x lower: %i upper: %i\n",
-                           static_cast<int>(type), data.lower_data, data.upper_data);
-                    break;
-                }
-            }
-        }
-        fflush(stdout);
+void BartShell::set_modifier(char key) {
+    switch (key) {
+        case '*': keyboard_modifiers |= 0b0001;
+            break;
+        case '^': keyboard_modifiers |= 0b0010;
+            break;
+        case '!': keyboard_modifiers |= 0b0100;
+            break;
+        case 'C': keyboard_modifiers ^= 0b1000;
+            break;
+        default: break;
     }
 }
 
-void div_0() {
-    asm("mov $0, %eax\n"
-        "div %eax");
+void BartShell::clear_modifier(char key) {
+    switch (key) {
+        case '*': keyboard_modifiers &= ~0b0001;
+            break;
+        case '^': keyboard_modifiers &= ~0b0010;
+            break;
+        case '!': keyboard_modifiers &= ~0b0100;
+            break;
+        default: break;
+    }
+}
+
+char BartShell::transform_key(const char key, const size_t cin) const {
+    const bool is_alpha = (key >= 'a' && key <= 'z');
+    if (keyboard_modifiers & 0b0001 || (keyboard_modifiers & 0b1000 && is_alpha))
+        return shift_map[cin];
+    return key;
+}
+
+void BartShell::key_down(size_t cin) {
+    switch (char key = key_map[cin]) {
+        case '\0':
+            break;
+        case '\b': // backspace
+        {
+            if (cmd_buffer_idx > 0) {
+                putchar('\b');
+                cmd_buffer[--cmd_buffer_idx] = '\0';
+            }
+            break;
+        }
+        case '\t': // tab
+        {
+            printf("    ");
+            break;
+        }
+        case '^': // ctrl bit 1
+        {
+            keyboard_modifiers |= 0b0010;
+            break;
+        }
+        case '*': // shift bit 0
+        {
+            keyboard_modifiers |= 0b0001;
+            // print("Shift pressed", keyboard_modifiers);
+            break;
+        }
+        case '!': // alt bit 2
+        {
+            keyboard_modifiers |= 0b0100;
+            break;
+        }
+        case 'H': // Home
+        {
+            // todo: handle home
+            break;
+        }
+        case 'E': // end
+        {
+            // go to end of line
+            break;
+        }
+        case 'U': // up
+        {
+            // probably won't handle up
+            break;
+        }
+        case 'D': // down
+        {
+            // probably won't handle this
+            break;
+        }
+        case '<': // left
+        {
+            // move left
+            break;
+        }
+        case '>': // right
+        {
+            // move right
+            break;
+        }
+        case 'C': // capital C meaning caps lock
+        {
+            keyboard_modifiers ^= 0b1000;
+            break;
+        }
+        case '\n': {
+            putchar('\n');
+            if (cmd_buffer[0] != '\0') {
+                process_cmd();
+                memset(cmd_buffer, 0, cmd_buffer_size);
+                cmd_buffer_idx = 0;
+            }
+            break;
+        }
+        default: {
+            key = transform_key(key, cin);
+            cmd_buffer[cmd_buffer_idx++] = key;
+            putchar(key);
+            break;
+        }
+    }
 }
 
 int BartShell::process_cmd() {
@@ -219,6 +182,38 @@ int BartShell::process_cmd() {
     printf("File not found: %s\n", cmd_buffer);
     return 0;
 }
+
+// TODO: for drawing here, maybe this should have its own screen buffer and should implement the terminal
+// stuff itself and then loop "while pending events" and then flush after events are all processed
+// TODO: arguments
+// TODO: fs commands and shortcuts
+// TODO: creating files
+[[noreturn]] void BartShell::run() {
+    printf("Shell started\n");
+    while (true) {
+        bool to_flush = false;
+        while (probe_pending_events()) {
+            auto [type, data] = get_next_event();
+            if (type == KEY_DOWN) {
+                const size_t cin = data.lower_data;
+                key_down(cin);
+                to_flush = true;
+            } else if (type == KEY_UP) {
+                const size_t cin = data.lower_data;
+                const char key = key_map[cin];
+                clear_modifier(key);
+            } else if (type == NULL_EVENT) {
+                printf("NULL EVENT\n");
+            } else {
+                printf("Unhandled event.\n Type: %x lower: %i upper: %i\n",
+                       static_cast<int>(type), data.lower_data, data.upper_data);
+                break;
+            }
+        }
+        if (to_flush) { fflush(stdout); }
+    }
+}
+
 
 int main() {
     // Init and load the shell. Shell draws directly to the terminal using printf

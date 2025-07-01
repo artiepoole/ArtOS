@@ -29,6 +29,15 @@ class BartShell
 {
 public:
     BartShell();
+
+    void set_modifier(char key);
+
+    void clear_modifier(char key);
+
+    char transform_key(char key, size_t cin) const;
+
+    void key_down(size_t cin);
+
     [[noreturn]] void run();
 
 private:
