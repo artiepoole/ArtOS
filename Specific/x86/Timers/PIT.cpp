@@ -32,37 +32,45 @@ volatile u32 timer_ticks = 0;
 IOAPIC *ioapic;
 size_t myirq;
 
-void configure_pit(const u32 hz, IOAPIC* ioapic_, size_t irq)
-{
+#define PIT_CONTROL_PORT 0x43
+#define PIT_CHANNEL0_PORT 0x40
+#define PIT_BASE_FREQUENCY 1193182  // Hz
+
+void configure_pit(const u32 hz, IOAPIC *ioapic_, size_t irq) {
+    // In square wave mode, the PIT double counts.
     myirq = irq;
     ioapic = ioapic_;
     LOG("Initialising PIT");
-    const u32 divisor = 1193180 / hz; /* Calculate our divisor */
-    rate = 1193180 / divisor; // calculating back to get the real rate after integer maths
+    const u32 divisor = PIT_BASE_FREQUENCY / (2 * hz); /* Calculate our divisor */
+    rate = 2 * PIT_BASE_FREQUENCY / divisor; // calculating back to get the real rate after integer maths
     LOG("\tConfigured PIT. Divisor: ", divisor, " rate: ", rate);
-    outb(0x43, 0x36); /* Set our command byte 0x36 */
-    outb(0x40, divisor & 0xFF); /* Set low byte of divisor */
-    outb(0x40, divisor >> 8); /* Set high byte of divisor */
+    // 0x36 = 00 11 011 0
+    // 00 = Channel 0
+    // 11 = Access mode: lobyte/hibyte
+    // 011 = Mode 3 (square wave)
+    // 0 = Binary counting mode
+    outb(PIT_CONTROL_PORT, 0x36);
+    outb(PIT_CHANNEL0_PORT, divisor & 0xFF);
+    outb(PIT_CHANNEL0_PORT, (divisor >> 8) & 0xFF);
+
     LOG("PIT initialised");
 }
 
 
-void PIT_sleep_ms(const u32 ms)
-{
-    if (rate == 0)
-    {
+void PIT_sleep_ms(const u32 ms) {
+    if (rate == 0) {
         LOG("Tried to PIT_sleep_ms when timer is not initiated.");
         return;
     }
-    timer_ticks = ms * rate / 1000; // rate is in hz, time is in ms
-    // LOG("Sleeping for ", ms, "ms. Ticks:", timer_ticks, " rate:", rate);
+    timer_ticks = static_cast<uint64_t>(ms) * rate / 1000;
     ioapic->enable_IRQ(myirq);
-    while (timer_ticks > 0);
+    while (timer_ticks > 0) {
+        asm volatile("hlt;");
+    }
     ioapic->disable_IRQ(myirq);
 }
 
-void pit_handler()
-{
+void pit_handler() {
     // Check if PIT_sleep_ms is still active.
     if (timer_ticks == 0) return;
     timer_ticks -= 1;
