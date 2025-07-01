@@ -53,7 +53,7 @@ size_t stack_alignment = 16;
 
 u32 default_eflags = 0x206;
 Scheduler* scheduler_instance = nullptr;
-u32 execution_counter = 0;
+u64 execution_counter = 0;
 size_t current_process_id = 0;
 size_t highest_assigned_pid = 0;
 // size_t next_process_id = 1;
@@ -96,7 +96,6 @@ Scheduler::Scheduler(LocalAPIC* timer, EventQueue* kernel_queue)
     processes[0].state = Process::STATE_PARKED;
     processes[0].eventQueue = kernel_queue;
     processes[0].stack = &kernel_stack_top;
-    execution_counter = TSC_get_ticks();
     create_idle_task();
     // execf(, main_func, name, false);
 }
@@ -200,7 +199,6 @@ void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
     const auto priority = processes[current_process_id].priority;
     // LOG("Switching to ", processes[current_process_id].name);
     start_oneshot(context_switch_period_ms * priority);
-    execution_counter = TSC_get_ticks();
     set_current_context(r, current_process_id);
 }
 
@@ -278,9 +276,11 @@ uintptr_t Scheduler::getCurrentProcessPagingDirectory()
 // iterate([device](ArtDirectory* dir) { device->populate_directory_recursive(dir); });
 void handle_expired_timers()
 {
-    u32 elapsed_ms = (TSC_get_ticks() - execution_counter) / (cpuid_get_TSC_frequency() / 1000);
+    // THERE's soemthing wrong with the ticks counting and reporting so doom is SO fast
+    const u64 ticks = TSC_get_ticks();
+    u32 elapsed_ms = ( ticks - execution_counter) / (cpuid_get_TSC_frequency() / 1000);
     sleep_timers.iterate([elapsed_ms](sleep_timer_t* t) { t->counter -= elapsed_ms; });
-
+    execution_counter = ticks;
     while (true)
     {
         sleep_timer_t* timer = sleep_timers.find_if([](sleep_timer_t t) { return t.counter < 0; });
