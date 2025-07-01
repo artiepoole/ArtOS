@@ -70,7 +70,7 @@ extern u8 kernel_stack_bottom;
 
 void idle_task()
 {
-    LOG("Starting idle task");
+    get_serial().log(  "Starting idle task");
     while (true);
 }
 
