@@ -184,6 +184,12 @@ void __attribute__((section(".trampoline.text"))) exception_handler(cpu_register
         switch (r->int_no)
         {
         case 0:
+                WRITE("DIV0 so exit process.\n");
+                already_killing = true;
+                r->ebx = 32;
+                Scheduler::exit(r);
+                already_killing = false;
+                break;
         case 4:
         case 6:
         case 12:
@@ -192,6 +198,7 @@ void __attribute__((section(".trampoline.text"))) exception_handler(cpu_register
         case 17:
             WRITE("Attempting to exit process.\n");
             already_killing = true;
+            r->ebx = r->int_no;
             Scheduler::exit(r);
             already_killing = false;
             break;
