@@ -82,31 +82,6 @@ boot_page_tables:
 .type _start, @function
 start:
 _start:
-#    # first page: 0x00100000 is the 256th page. so page dir = 1, page table entry = 256, which is first page table which points to 0x00100000
-#    # TODO: we need to map the first page from 0x10000 in lower half before the jump
-#
-#    # updates page directory to know first page table exists
-#    movl $(boot_page_tables - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
-#
-#    # get page table entry physical addr
-#	movl $(boot_page_tables - 0xC0000000 + 4*256), %edi
-#	orl $0x3, %edi
-#
-#	# create page table entry to identity map this one page which contains this mapping code
-#	movl 0x00100000, %edi
-#	orl $0x3, %edi
-#    # get address of page table entry
-#    movl $(boot_page_tables - 0xC0000000 + 4*256), %edx
-#	# write it into the page table
-#	movl %edi, (%edx)
-
-# We want to loop from 0 to 256 to update the 256 entries of the page directory to point to the start of each page table
-# We then want to loop from 0 to 1024*256 to write to the page tables
-# page directory address is boot_page_directory + (index + 768) * 4
-# Page table entry physical address is boot_page_tables - 0xC0000000 + index * 4
-# so at  boot_page_directory + index * 4 we want to write (boot_page_tables - 0xC0000000 + index * 4096  or 0x3)
-# ecx is idx so we will loop from 256 to 0
-
 populate_page_directory_lower:
     movl $0, %ecx
     # load the start address of the destination (end of the directory) within the boot page directory into esi
@@ -173,7 +148,6 @@ populate_page_directory_upper:
         cmpl $1024, %ecx
         jl page_dir_loop_high
 
-##### this logic is wrong! It should map from 0x100000 -> 1GB to be accessed from 0xc0100000 -> 0x1000000000
 # were going to count up this time. We want to map from 768*2096 + 256 -> 1024*4096 addresses to point to addresses from 256 to 256*4096
 populate_page_tables_upper:
     # ecx stores the counter
