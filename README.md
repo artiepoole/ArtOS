@@ -55,7 +55,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 - [ ] **User IO**
   - [x] Keyboard
   - [ ] Mouse
-  - [ ] Shell environment
+  - [x] Shell environment
 - [ ] **Hardware detection and support**
   - [x] SMBIOS detection
   - [x] PCI device detection
@@ -84,23 +84,24 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
   - [x] Play DOOM for ArtOS on real hardware
   - [x] Loading from CD ROM instead of baked into the binary
   - [ ] Loading from boot USB
-  - [ ] Run in user space
+  - [x] Run in user space
   - [ ] Add sound
   - [ ] Add save game support
 - [ ] **Optimisations**
   - [x] Basic SIMD for memcpy, memmove and memset
   - [ ] Advanced SIMD usage (string operations and vector maths)
-  - [ ] Ther are many other optimisations to consider
+  - [ ] There are many other optimisations to consider
 - [ ] **Path to User Space**
   - [x] Use Paging/virtual memory
   - [x] Proper handling of a scheduler to allow for sleeping of a task
-  - [ ] Implement a standard library for user space
-  - [ ] Run an executable
+  - [x] Implement a standard library for user space
+  - [x] Run an executable
   - [ ] Self hosting compiler
 - [ ] **Misc**
-  - [ ] Remove resolution specific baked in splash screen with centered graphic (can be scaled) and programatically drawn borders. Bring back the loading bar?
+  - [x] Remove resolution specific baked in splash screen with centered graphic (can be scaled) and programatically drawn borders. Bring back the loading bar?
 - [ ] **Stretch goals**
-  - [ ] higher half and 64-bit support
+  - [x] higher half 
+  - [ ] 64-bit support
   - [ ] ARM support (raspberry pi zero?)
   - [ ] Multithreading
   - [ ] Networking
@@ -111,12 +112,12 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 
 ## Known issues:
 
-- [ ] I have not made an internal memory allocator.
+- [x] I have not made an internal memory allocator.
   - I have relied on the pdclib malloc implementation too heavily, and now it is supposed to use syscalls so that user space processes can use it, and I have no way to internally allocate while staying within the relevant context.
-- [ ] Paging is only ever kernel level and global. This means that user processes cannot have their own memory map.
+- [x] Paging is only ever kernel level and global. This means that user processes cannot have their own memory map.
   - Each process should have its own paging table, but I mustn't multi-allocate physical addresses. This probably just needs to use the physical address bitmap globally.
   - Should probably make a PageTable class which handles the virtual address mapping
-- [ ] The IDT files are trash.
+- [x] The IDT files are trash.
   - It's difficult to change the interrupt vectors.
   - If the vector is not sequential it is not assigned properly e.g. even if I call the syscall isr 0x80, the actual interrupt is 0x50. This is a problem for the spurious interrupt as well because it HAS to be >240 or similar.
 - [ ] My interrupt process/Scheduler/IDE driver components do not work together
@@ -125,10 +126,10 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
   - I need to implement concurrency handling in the driver (i.e. spinlocks or whatever)
   - I need to keep track of what process was requesting the read so that it can be resumed when the read finishes.
   - Should the IDE exist as a process/daemon so that it can have its own stack etc?
-- [ ] malloc has no concept of user or alignment. Internally, I should implement a new version of this or just use mmap instead of malloc? I think if I fix the paging tables issue, that will be handled better.
+- [x] malloc has no concept of user or alignment. Internally, I should implement a new version of this or just use mmap instead of malloc? I think if I fix the paging tables issue, that will be handled better.
 - [ ] I need to create some useful tools for the shell
   - such as "ls", "cd", "run" etc. This means I need to create the idea of a path/path string within my OS.
-
+- [ ] doom is not running at fixed framerate. Too fast
 ## Tools
 - i686-elf gcc cross-compiler
 - QEMU
