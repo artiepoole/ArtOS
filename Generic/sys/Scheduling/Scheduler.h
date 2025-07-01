@@ -85,7 +85,7 @@ public:
 
     // static void schedule();
 
-    static void sleep_ms(u32 ms);
+    static void sleep_ms(cpu_registers_t *r);
 };
 
 

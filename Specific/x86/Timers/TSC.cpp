@@ -22,8 +22,8 @@
 
 u64 TSC_get_ticks()
 {
-    u32 eax;
-    u32 edx;
-    asm volatile("rdtsc": "=a" (eax),"=d" (edx));
-    return static_cast<u64>(eax) | static_cast<u64>(edx) << 32;
+    u32 lo;
+    u32 hi;
+    __asm__ volatile ("rdtsc" : "=a"(lo), "=d"(hi));
+    return static_cast<u64>(hi) << 32 | lo;
 }

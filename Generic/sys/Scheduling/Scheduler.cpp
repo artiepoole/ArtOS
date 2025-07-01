@@ -74,12 +74,11 @@ void idle_task()
     while (true);
 }
 
-int kyield()
+void kyield()
 {
     // TODO: this should mark the thread as yielded somehow.
     constexpr u8 irq = LAPIC_IRQ + 32; // Example dynamic value
     __asm__ __volatile__("int %0" :: "i"(irq));
-    return 0;
 }
 
 
@@ -88,6 +87,7 @@ Scheduler::Scheduler(LocalAPIC* timer, EventQueue* kernel_queue)
     // Store current state in process[0]
     // Set up first Lapic one shot
     // disable_interrupts();
+    execution_counter = TSC_get_ticks();
     art_string::memset(processes, 0, sizeof(Process) * max_processes);
     scheduler_instance = this;
     lapic_timer = timer;
@@ -96,6 +96,7 @@ Scheduler::Scheduler(LocalAPIC* timer, EventQueue* kernel_queue)
     processes[0].state = Process::STATE_PARKED;
     processes[0].eventQueue = kernel_queue;
     processes[0].stack = &kernel_stack_top;
+    execution_counter = TSC_get_ticks();
     create_idle_task();
     // execf(, main_func, name, false);
 }
@@ -175,7 +176,7 @@ void Scheduler::execf(cpu_registers_t* r, u32 func, uintptr_t name_loc, const bo
     context.eip = func;
     context.eflags = default_eflags;
 
-
+    proc->last_executed = TSC_get_ticks();
     proc->start(parent_process_id, context, proc_stack, name, user);
 
     processes[parent_process_id].state = Process::STATE_PARKED;
@@ -195,6 +196,7 @@ void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
     // TODO: is r here editable to replace data on the stack?!
     // if (processes[current_process_id].state != Process::STATE_DEAD && processes[current_process_id].state != Process::STATE_EXITED)
     store_current_context(r, current_process_id);
+    processes[current_process_id].last_executed = execution_counter;
     current_process_id = new_PID;
     const auto priority = processes[current_process_id].priority;
     // LOG("Switching to ", processes[current_process_id].name);
@@ -278,14 +280,14 @@ void handle_expired_timers()
 {
     // THERE's soemthing wrong with the ticks counting and reporting so doom is SO fast
     const u64 ticks = TSC_get_ticks();
-    u32 elapsed_ms = ( ticks - execution_counter) / (cpuid_get_TSC_frequency() / 1000);
-    sleep_timers.iterate([elapsed_ms](sleep_timer_t* t) { t->counter -= elapsed_ms; });
+    u64 elapsed_ms = ( ticks - execution_counter) * 1000 / cpuid_get_TSC_frequency();
+    sleep_timers.iterate([elapsed_ms](sleep_timer_t* t) { t->counter -= static_cast<i64>(elapsed_ms); });
     execution_counter = ticks;
     while (true)
     {
-        sleep_timer_t* timer = sleep_timers.find_if([](sleep_timer_t t) { return t.counter < 0; });
+        sleep_timer_t* timer = sleep_timers.find_if([](const sleep_timer_t &t) { return t.counter < 0; });
         if (timer == nullptr) return;
-        size_t pid = timer->pid;
+        const size_t pid = timer->pid;
         sleep_timers.remove(timer);
         if (processes[pid].state == Process::STATE_SLEEPING)
         {
@@ -297,7 +299,7 @@ void handle_expired_timers()
 size_t get_oldest_process()
 {
     size_t ret_id = 0;
-    size_t lowest = -1;
+    u64 lowest = -1;
     for (size_t i = 2; i <= highest_assigned_pid; i++)
     {
         if (processes[i].state != Process::STATE_READY) continue;
@@ -334,18 +336,19 @@ void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
     asm volatile("mov %0, %%cr3" :: "r"(processes[PID].cr3_val) : "memory");
 }
 
-void Scheduler::sleep_ms(const u32 ms)
+void Scheduler::sleep_ms(cpu_registers_t* r)
 {
+    const size_t ms = r->ebx;
     sleep_timers.append(sleep_timer_t{current_process_id, ms});
     processes[current_process_id].state = Process::STATE_SLEEPING;
-    start_oneshot(MIN(ms, context_switch_period_ms));
-    kyield();
+    execution_counter = TSC_get_ticks();
+    processes[current_process_id].last_executed = execution_counter;
+    schedule(r);
 }
 
 // When called from interrupt, the state is stored at this pointer loc, r.
 void Scheduler::schedule(cpu_registers_t* const r)
 {
-    processes[current_process_id].last_executed = execution_counter;
     clean_up_exited_threads();
     handle_expired_timers();
     const size_t next_id = getNextProcessID();
@@ -420,7 +423,7 @@ void Scheduler::create_idle_task()
     // void* proc_stack = art_alloc(stack_size, stack_alignment);
     // void* stack_top = static_cast<u8*>(proc_stack) + stack_size;
     proc->stack = &kernel_stack_top;
-    proc->last_executed = 0;
+    proc->last_executed = -1;
     proc->priority = Process::PRIORITY_LOW;
     const auto nm = "idle_task";
     art_string::strncpy(proc->name, nm, MIN(32, art_string::strlen(nm)));
@@ -438,7 +441,7 @@ void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
 
     auto* proc = &processes[next_process_id];
-
+    *proc = Process{};
 
     cpu_registers_t context{};
     proc->user = true;
@@ -472,6 +475,7 @@ void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name
 
     // proc->eventQueue = new EventQueue();
     proc->cr3_val = proc->paging_table->get_phys_addr_of_page_dir();
+    proc->last_executed = TSC_get_ticks();
     proc->start(parent_process_id, context, proc_stack, name, true);
 
     processes[parent_process_id].state = Process::STATE_PARKED;

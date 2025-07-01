@@ -33,6 +33,8 @@ SECTIONS
 	    kernel_start = .;
         *(.text*)
         *(.rodata*)
+        *(.init)
+        *(.fini)
         *(.eh_frame*)
         *(.eh_frame_hdr*)
 	}
@@ -40,6 +42,9 @@ SECTIONS
 	{
         *(.data*)
         *(.rawdata*)
+        *(.got*)
+        *(.ctors)
+        *(.dtors)
 	}
 
 	.init_array ALIGN(4k) : AT(ADDR(.init_array) - 0xC0000000)

@@ -60,7 +60,6 @@ struct Process
     u32 parent_pid;
     State_t state;
     Priority_t priority;
-    size_t last_executed;
     cpu_registers_t context;
     //    u32 base_vaddr;
     char name[32]; //this can be stored in an equivalent of proc?
@@ -69,6 +68,7 @@ struct Process
     bool user;
     PagingTableUser* paging_table;
     uintptr_t cr3_val;
+    u64 last_executed;
 
 };
 

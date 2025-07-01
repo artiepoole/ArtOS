@@ -73,13 +73,13 @@ u64 kget_clock_rate_hz();
 
 u64 kget_current_clock();
 
-uint32_t kget_tick_s();
+u64 kget_tick_s();
 
-uint32_t kget_tick_ms();
+u64 kget_tick_ms();
 
-uint32_t kget_tick_us();
+u64 kget_tick_us();
 
-uint32_t kget_tick_ns();
+u64 kget_tick_ns();
 
 void ksleep_s(u32 s);
 
