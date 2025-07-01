@@ -54,13 +54,12 @@ public:
     void calibrate_timer();
     void configure_timer(DIVISOR divisor);
     bool ready() const;
-    int start_timer(u32 ms);
-
+    int start_timer_ms(u32 ms) const;
+    int start_timer_us(u32 us) const;
 private:
     uintptr_t base;
     LVT full_lvt;
     LVT_spurious_vector volatile* spurious_vector_entry;
-    u32 LAPIC_ratio = 0;
     u32 LAPIC_rate = 0;
     bool is_ready = false;
 };

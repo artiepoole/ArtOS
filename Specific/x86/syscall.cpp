@@ -180,7 +180,7 @@ void syscall_handler(cpu_registers_t *r) {
             break;
         }
         case SYSCALL_t::GET_TICK_MS: {
-            r->eax = kget_tick_ms()&0xffffffff;
+            r->eax = kget_tick_ms() & 0xffffffff;
             break;
         }
         case SYSCALL_t::PROBE_EVENTS: {

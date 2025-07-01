@@ -74,7 +74,7 @@ public:
     // static bool isProcessUser(size_t PID);
     static size_t getNextProcessID();
 
-    static void start_oneshot(u32 time_ms);
+    static void start_oneshot(u32 time_us);
 
     // static void store_current_context(size_t PID);
     static void store_current_context(cpu_registers_t *r, size_t PID);
