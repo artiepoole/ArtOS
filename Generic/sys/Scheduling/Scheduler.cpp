@@ -56,7 +56,7 @@ u64 execution_counter = 0;
 size_t current_process_id = 0;
 size_t highest_assigned_pid = 0;
 // size_t next_process_id = 1;
-size_t context_switch_period_us = 100;
+size_t context_switch_period_us = 10000;
 Process processes[max_processes];
 LocalAPIC *lapic_timer = nullptr;
 
