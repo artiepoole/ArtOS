@@ -44,6 +44,7 @@ struct Process
         STATE_SLEEPING,
         STATE_PARKED,
         STATE_READY,
+        STATE_WAITING,
     };
 
     // Used to scale execution duration.
@@ -69,7 +70,7 @@ struct Process
     PagingTableUser* paging_table;
     uintptr_t cr3_val;
     u64 last_executed;
-
+    int waiting_fid = -1;
 };
 
 

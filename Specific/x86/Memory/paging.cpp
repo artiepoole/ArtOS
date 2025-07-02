@@ -184,7 +184,7 @@ void *kmmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t o
 }
 
 void *user_mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) {
-    return Scheduler::get().getCurrentPagingTable()->mmap(addr, length, prot, flags, fd, offset);
+    return Scheduler::get().getCurrentPagingTable().mmap(addr, length, prot, flags, fd, offset);
 }
 
 uintptr_t kget_mapping_target(void *v_addr) {
@@ -196,7 +196,7 @@ int kmunmap(void *addr, const size_t length_bytes) {
 }
 
 int user_munmap(void *addr, const size_t length_bytes) {
-    return Scheduler::get().getCurrentPagingTable()->munmap(addr, length_bytes);
+    return Scheduler::get().getCurrentPagingTable().munmap(addr, length_bytes);
 }
 
 void paging_identity_map(const uintptr_t phys_addr, const size_t size, const bool writable, const bool user) {

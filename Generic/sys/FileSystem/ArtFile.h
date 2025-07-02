@@ -38,9 +38,13 @@ public:
 
 
     size_t read(char* dest, size_t byte_count);
+    int start_async_read(char* dest, size_t byte_count) const;
+    bool async_done() const;
     _PDCLIB_int_least64_t seek(u64 byte_offset, int whence);
     int write(const char* src, size_t byte_count);
     const char* get_name();
+
+    i64 async_n_read();
 
 private:
     ArtDirectory* parent_directory;

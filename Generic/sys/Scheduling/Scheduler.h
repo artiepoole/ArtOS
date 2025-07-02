@@ -60,9 +60,11 @@ public:
     static void execute_from_paging_table(PagingTableUser *PTU, const char *name_loc, uintptr_t entry_point,
                                           uintptr_t stack_vaddr, uintptr_t stack_size);
 
-    PagingTableUser *getCurrentPagingTable();
+    PagingTableUser &getCurrentPagingTable();
 
     static void clean_up_exited_threads();
+
+    static void check_finished_io_read();
 
     static size_t getCurrentProcessID();
 
@@ -86,6 +88,8 @@ public:
     // static void schedule();
 
     static void sleep_ms(cpu_registers_t *r);
+
+    static void mark_process_as_waiting(cpu_registers_t* r);
 };
 
 

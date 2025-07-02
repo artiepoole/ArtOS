@@ -3,13 +3,13 @@ option(ENABLE_SERIAL_LOGGING "Enables serial logging using LOG, WRITE, NEWLINE m
 option(ENABLE_TERMINAL_LOGGING "Overrides serial logging. Enables terminal logging using LOG, WRITE, NEWLINE macros. Only if logging is enabled." OFF)
 option(SIMD "Replace memcpy with SIMD version?" ON)
 option(FORLAPTOP "Enable building for real hardware, disable for QEMU." OFF)
+option(ASYNC_READ "Enable asynchronous IO. Warning: poor performance." ON)
 
 project(ArtOS)
 ENABLE_LANGUAGE(ASM)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
-
 
 set(KERNEL_LIB "ArtOS_lib")
 set(KERNEL_NAME ${CMAKE_PROJECT_NAME})
@@ -55,6 +55,9 @@ add_executable(${KERNEL_BIN}
         ${ArchitectureSpecific}
 )
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_definitions(${KERNEL_BIN} PRIVATE NDEBUG)
+endif()
 
 target_include_directories(
         ${KERNEL_BIN} PUBLIC#if SIMD
@@ -123,8 +126,8 @@ target_compile_definitions(${KERNEL_BIN}
         ENABLE_TERMINAL_LOGGING=$<BOOL:${ENABLE_TERMINAL_LOGGING}>
         SIMD=$<BOOL:${SIMD}>
         FORLAPTOP=$<BOOL:${FORLAPTOP}>
+        ASYNC_READ=$<BOOL:${ASYNC_READ}>
 )
-
 
 target_link_libraries(${KERNEL_BIN} PUBLIC pdclib ArtOSTypes)
 

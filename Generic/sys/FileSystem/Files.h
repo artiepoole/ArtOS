@@ -112,7 +112,6 @@ enum file_open_flags {
     O_TRUNC = 1 << 13,
     O_APPEND = 1 << 14,
     O_CREATE = 1 << 15,
-
 };
 
 enum mmap_flags {
@@ -130,7 +129,13 @@ int art_write(int fd, const char *buf, unsigned long count);
 
 int art_read(int fd, char *buf, size_t count);
 
-int art_exec(const int fid);
+int art_async_read(int file_id, char *buf, size_t count);
+
+bool art_async_done(int file_id);
+
+i64 art_async_n_read(int file_id);
+
+int art_exec(int fid);
 
 _PDCLIB_int_least64_t art_seek_stream(const struct _PDCLIB_file_t *stream, _PDCLIB_int_least64_t offset, int whence);
 

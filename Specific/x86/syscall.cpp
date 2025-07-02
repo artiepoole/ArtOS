@@ -34,6 +34,9 @@
 #include "TSC.h"
 #include "RTC.h"
 
+#define LOG_SYSCALL false
+
+
 struct _PDCLIB_file_t;
 
 // u64 clock_rate = 0;
@@ -95,7 +98,7 @@ u64 kget_tick_ns() {
 //     PIT_sleep_ms(ms);
 // }
 
-void ksleep_ms(cpu_registers_t* r) {
+void ksleep_ms(cpu_registers_t *r) {
     Scheduler::sleep_ms(r);
     // PIT_sleep_ms(ms);
 }
@@ -151,9 +154,39 @@ void syscall_handler(cpu_registers_t *r) {
         case SYSCALL_t::READ: {
             // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
             // TODO: mapping user space data!
-
-            r->eax = art_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx), r->edx);
-            break;
+            {
+#if ASYNC_READ
+                switch (const int res = art_async_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx),
+                                                       r->edx)) {
+                    case -1:
+#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
+                        get_serial().log("Async not enabled, using synchronous read");
+#endif
+                        r->eax = art_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx), r->edx);
+                        break;
+                    case 0:
+                        // todo: sleep process and mark as waiting for files
+#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
+                        get_serial().log("starting async read by pausing process");
+#endif
+                        Scheduler::mark_process_as_waiting(r);
+                        break;
+                    default:
+#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
+                        get_serial().log(res, " bytes of data already in buffer, returning directly");
+#endif
+                        r->eax = res;
+                        break;
+                }
+                break;
+#else
+#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
+                get_serial().log("Async not enabled, using synchronous read");
+#endif
+                r->eax = art_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx), r->edx);
+                break;
+#endif
+            }
         }
         case SYSCALL_t::OPEN: {
             // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.

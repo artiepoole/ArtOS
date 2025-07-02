@@ -41,6 +41,14 @@
 #include "EventQueue.h"
 #include "Process.h"
 
+#define LOG_IDLE false
+#ifdef NDEBUG
+    #define CONTEXT_SWITCH_PERIOD_US 1000  // Release
+#else
+#define CONTEXT_SWITCH_PERIOD_US 10000 // Debug or other
+#endif
+
+size_t context_switch_period_us = CONTEXT_SWITCH_PERIOD_US;
 
 struct sleep_timer_t {
     size_t pid;
@@ -56,7 +64,6 @@ u64 execution_counter = 0;
 size_t current_process_id = 0;
 size_t highest_assigned_pid = 0;
 // size_t next_process_id = 1;
-size_t context_switch_period_us = 10000;
 Process processes[max_processes];
 LocalAPIC *lapic_timer = nullptr;
 
@@ -68,8 +75,8 @@ extern u8 kernel_stack_top;
 extern u8 kernel_stack_bottom;
 
 void idle_task() {
-    get_serial().log("Starting idle task");
-    while (true);
+    while (true) {
+    };
 }
 
 
@@ -77,6 +84,9 @@ Scheduler::Scheduler(LocalAPIC *timer, EventQueue *kernel_queue) {
     // Store current state in process[0]
     // Set up first Lapic one shot
     // disable_interrupts();
+#if ENABLE_SERIAL_LOGGING
+    get_serial().log("context_switch_period_us: ", context_switch_period_us);
+#endif
     execution_counter = TSC_get_ticks();
     art_string::memset(processes, 0, sizeof(Process) * max_processes);
     scheduler_instance = this;
@@ -172,6 +182,13 @@ void Scheduler::switch_process(cpu_registers_t *const r, size_t new_PID) {
     if (new_PID == 0) {
         new_PID = 1;
     }
+
+#if ENABLE_SERIAL_LOGGING and LOG_IDLE
+    if (new_PID == 1) {
+        get_serial().log("switching to idle task");
+    }
+#endif
+
     // TODO: is r here editable to replace data on the stack?!
     // if (processes[current_process_id].state != Process::STATE_DEAD && processes[current_process_id].state != Process::STATE_EXITED)
     store_current_context(r, current_process_id);
@@ -214,6 +231,18 @@ void Scheduler::clean_up_exited_threads() {
             processes[i].reset(); // cleans up event queue.
             if (i == highest_assigned_pid) {
                 highest_assigned_pid = getMaxAliveProcessID();
+            }
+        }
+    }
+}
+
+void Scheduler::check_finished_io_read() {
+    for (size_t i = 0; i <= highest_assigned_pid; i++) {
+        if (Process &proc = processes[i]; proc.state == Process::STATE_WAITING) {
+            if (proc.waiting_fid > 0 && art_async_done(proc.waiting_fid)) {
+                proc.state = Process::STATE_READY;
+                proc.context.eax = art_async_n_read(proc.waiting_fid);
+                proc.waiting_fid = -1;
             }
         }
     }
@@ -281,7 +310,9 @@ size_t Scheduler::getNextProcessID() {
 
 void Scheduler::start_oneshot(u32 time_us) {
     if (lapic_timer->start_timer_us(time_us) < 0) {
+#if ENABLE_SERIAL_LOGGING
         get_serial().log("Lapic failed to start timer?");
+#endif
     };
 }
 
@@ -304,10 +335,18 @@ void Scheduler::sleep_ms(cpu_registers_t *r) {
     schedule(r);
 }
 
+void Scheduler::mark_process_as_waiting(cpu_registers_t *r) {
+    const int fd = r->ebx;
+    processes[current_process_id].state = Process::STATE_WAITING;
+    processes[current_process_id].waiting_fid = fd;
+    schedule(r);
+}
+
 // When called from interrupt, the state is stored at this pointer loc, r.
 void Scheduler::schedule(cpu_registers_t *const r) {
     clean_up_exited_threads();
     handle_expired_timers();
+    check_finished_io_read();
     const size_t next_id = getNextProcessID();
     switch_process(r, next_id);
 }
@@ -429,6 +468,6 @@ void Scheduler::execute_from_paging_table(PagingTableUser *PTU, const char *name
     processes[parent_process_id].state = Process::STATE_PARKED;
 }
 
-PagingTableUser *Scheduler::getCurrentPagingTable() {
-    return processes[current_process_id].paging_table;
+PagingTableUser &Scheduler::getCurrentPagingTable() {
+    return *processes[current_process_id].paging_table;
 }
