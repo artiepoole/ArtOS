@@ -21,6 +21,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include <io_queue_entry.h>
 #include <LocalAPIC.h>
 #include <Process.h>
 
@@ -40,58 +41,37 @@ public:
     ~Scheduler();
 
     static Scheduler& get();
-
-    // void start(size_t PID);
-    // static void switch_process(size_t new_PID);
-    static void switch_process(cpu_registers_t* r, size_t new_PID);
-
     static size_t getNextFreeProcessID();
-
     static size_t getMaxAliveProcessID();
-
-    // Only takes void foo() types atm. No support for input variables
-    static void execf(cpu_registers_t* r, uintptr_t func, uintptr_t name, bool user);
-
-    // static void fork();
+    static void handle_expired_timers();
     static void exit(cpu_registers_t* r);
-
     static void kill(size_t target_pid);
-
-    static void create_idle_task();
 
     static void execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, uintptr_t entry_point,
                                           uintptr_t stack_vaddr, uintptr_t stack_size);
-
     PagingTableUser& getCurrentPagingTable();
 
-    static void clean_up_exited_threads();
-
-    static void check_finished_io();
-
     static size_t getCurrentProcessID();
-
     static EventQueue* getCurrentProcessEventQueue();
-
     static uintptr_t getCurrentProcessPagingDirectory();
-
-    // static bool isCurrentProcessUser();
-    // static bool isProcessUser(size_t PID);
     static size_t getNextProcessID();
-
     static void start_oneshot(u32 time_us);
-
-    // static void store_current_context(size_t PID);
-    static void store_current_context(cpu_registers_t* r, size_t PID);
-
-    static void set_current_context(cpu_registers_t* r, size_t PID);
-
     static void schedule(cpu_registers_t* r);
 
     // static void schedule();
 
     static void sleep_ms(cpu_registers_t* r);
+    static void append_read(cpu_registers_t* r);
 
-    static void mark_process_as_waiting(cpu_registers_t* r, Process::WaitingReason_t reason, int data);
+private:
+    static void create_idle_task();
+
+    static void handle_exited_threads();
+    static void handle_io();
+    static size_t get_next_process_id();
+    static void switch_process(cpu_registers_t* r, size_t new_PID);
+    static void store_current_context(cpu_registers_t* r, size_t PID);
+    static void set_current_context(cpu_registers_t* r, size_t PID);
 };
 
 

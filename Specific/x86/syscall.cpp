@@ -41,51 +41,62 @@ struct _PDCLIB_file_t;
 
 // u64 clock_rate = 0;
 
-void kwrite_standard([[maybe_unused]] const char *buffer, [[maybe_unused]] unsigned long len) {
+void kwrite_standard([[maybe_unused]] const char* buffer, [[maybe_unused]] unsigned long len)
+{
     WRITE(buffer, len);
 }
 
-void kwrite_error([[maybe_unused]] const char *buffer, [[maybe_unused]] unsigned long len) {
+void kwrite_error([[maybe_unused]] const char* buffer, [[maybe_unused]] unsigned long len)
+{
     // // todo: implement the propagation of colour so that this can be overridden to use red for errors or something.
 
     WRITE(buffer, len);
 }
 
-int kget_time(tm *mytm) {
+int kget_time(tm* mytm)
+{
     return RTC::get().getTime(mytm);
 }
 
 
-time_t kget_epoch_time() {
+time_t kget_epoch_time()
+{
     return RTC::get().epochTime();
 }
 
 extern "C"
-void _kexit(size_t target_pid) {
+void _kexit(size_t target_pid)
+{
     Scheduler::kill(target_pid);
 }
 
-u64 kget_clock_rate_hz() {
+u64 kget_clock_rate_hz()
+{
     return cpuid_get_TSC_frequency();
 }
 
-u64 kget_current_clock() {
+u64 kget_current_clock()
+{
     return TSC_get_ticks();
 }
 
-u64 kget_tick_s() {
+u64 kget_tick_s()
+{
     return TSC_get_ticks() / cpuid_get_TSC_frequency();
 }
 
-u64 kget_tick_ms() {
+u64 kget_tick_ms()
+{
     return (TSC_get_ticks() * 1000) / cpuid_get_TSC_frequency();
 }
 
-u64 kget_tick_us() {
+u64 kget_tick_us()
+{
     return (static_cast<uint64_t>(TSC_get_ticks()) * 1000000) / cpuid_get_TSC_frequency();
 }
 
-u64 kget_tick_ns() {
+u64 kget_tick_ns()
+{
     return (static_cast<uint64_t>(TSC_get_ticks()) * 1000000000) / cpuid_get_TSC_frequency();
 }
 
@@ -98,178 +109,170 @@ u64 kget_tick_ns() {
 //     PIT_sleep_ms(ms);
 // }
 
-void ksleep_ms(cpu_registers_t *r) {
+void ksleep_ms(cpu_registers_t* r)
+{
     Scheduler::sleep_ms(r);
     // PIT_sleep_ms(ms);
 }
 
-void ksleep_ns(const u32 ns) {
+void ksleep_ns(const u32 ns)
+{
     const u32 start = kget_tick_ns();
-    while (kget_tick_ns() - start < ns) {
+    while (kget_tick_ns() - start < ns)
+    {
     }
 }
 
-void ksleep_us(const u32 us) {
+void ksleep_us(const u32 us)
+{
     const u32 start = kget_tick_us();
-    while (kget_tick_us() - start < us) {
+    while (kget_tick_us() - start < us)
+    {
     }
 }
 
 
-void kpause_exec(const u32 ms) {
+void kpause_exec(const u32 ms)
+{
     PIT_sleep_ms(ms);
 }
 
-bool kprobe_pending_events() {
+bool kprobe_pending_events()
+{
     return Scheduler::getCurrentProcessEventQueue()->pendingEvents();
 }
 
-event_t kget_next_event() {
+event_t kget_next_event()
+{
     // TODO: this should only get events associated with the correct event queue.
     // There should not be a generic system event queue but instead there should be one associated with each processes
     return Scheduler::getCurrentProcessEventQueue()->getEvent();
 }
 
-void kdraw_screen_region(const u32 *frame_buffer) {
+void kdraw_screen_region(const u32* frame_buffer)
+{
     VideoGraphicsArray::get().drawRegion(frame_buffer);
 }
 
-void kclear_terminal() {
+void kclear_terminal()
+{
     Terminal::clear();
 }
 
 #include "../../ArtOS_lib/kernel.h"
 
-void syscall_handler(cpu_registers_t *r) {
+void syscall_handler(cpu_registers_t* r)
+{
     u64 large_res;
-    switch (static_cast<SYSCALL_t>(r->eax)) {
-        case SYSCALL_t::WRITE: {
-            // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
-            // TODO: mapping user space data!
-            // TODO: mapping a single page will be a problem if the buffer is close to the end of the page
-
-            r->eax = art_write(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx), r->edx);
+    switch (static_cast<SYSCALL_t>(r->eax))
+    {
+    case SYSCALL_t::WRITE:
+        {
+            r->eax = art_write(static_cast<int>(r->ebx), reinterpret_cast<char*>(r->ecx), r->edx);
             break;
         }
-        case SYSCALL_t::READ: {
-            {
-                // TODO: this should actually just always sleep the device and then this should be in the scheduler cleanup
-                if (art_dev_busy(r->ebx))
-                {
-                    Scheduler::mark_process_as_waiting(r, Process::DEV_BUSY, r->ebx);
-                }
-#if ASYNC_READ
-                switch (const int res = art_async_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx),
-                                                       r->edx)) {
-                    case -1:
-#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
-                        get_serial().log("Async not enabled, using synchronous read");
-#endif
-                        r->eax = art_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx), r->edx);
-                        break;
-                    case 0:
-                        // todo: sleep process and mark as waiting for files
-#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
-                        get_serial().log("starting async read by pausing process");
-#endif
-                        Scheduler::mark_process_as_waiting(r, Process::FILE_READING, r->ebx);
-                        break;
-                    default:
-#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
-                        get_serial().log(res, " bytes of data already in buffer, returning directly");
-#endif
-                        r->eax = res;
-                        break;
-                }
-                break;
-#else
-#if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
-                get_serial().log("Async not enabled, using synchronous read");
-#endif
-                r->eax = art_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx), r->edx);
-                break;
-#endif
-            }
-        }
-        case SYSCALL_t::OPEN: {
-            // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
-            // TODO: mapping user space data!
-            r->eax = art_open(reinterpret_cast<char *>(r->ebx), r->ecx);
+    case SYSCALL_t::READ:
+        {
+            Scheduler::append_read(r);
             break;
         }
-        case SYSCALL_t::SEEK: {
+    case SYSCALL_t::OPEN:
+        {
+            // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
+            // TODO: mapping user space data!
+            r->eax = art_open(reinterpret_cast<char*>(r->ebx), r->ecx);
+            break;
+        }
+    case SYSCALL_t::SEEK:
+        {
             large_res = art_seek(r->ebx, r->ecx << 32 | r->edx, r->esi);
             r->eax = large_res >> 32;
             r->ebx = large_res & 0xFFFFFFFF;
         }
         break;
-        case SYSCALL_t::CLOSE: {
+    case SYSCALL_t::CLOSE:
+        {
             art_close(r->ebx);
             break;
         }
-        case SYSCALL_t::EXIT: {
+    case SYSCALL_t::EXIT:
+        {
             Scheduler::exit(r);
             break;
         }
-        case SYSCALL_t::SLEEP_MS: {
+    case SYSCALL_t::SLEEP_MS:
+        {
             ksleep_ms(r);
             break;
         }
-        case SYSCALL_t::GET_TICK_MS: {
+    case SYSCALL_t::GET_TICK_MS:
+        {
             r->eax = kget_tick_ms() & 0xffffffff;
             break;
         }
-        case SYSCALL_t::PROBE_EVENTS: {
+    case SYSCALL_t::PROBE_EVENTS:
+        {
             r->eax = kprobe_pending_events();
             break;
         }
-        case SYSCALL_t::GET_EVENT: {
+    case SYSCALL_t::GET_EVENT:
+        {
             auto [type, data] = kget_next_event();
             r->eax = type;
             r->ebx = data.lower_data;
             r->ecx = data.upper_data;
             break;
         }
-        case SYSCALL_t::DRAW_REGION: {
-            kdraw_screen_region(reinterpret_cast<u32 *>(r->ebx));
+    case SYSCALL_t::DRAW_REGION:
+        {
+            kdraw_screen_region(reinterpret_cast<u32*>(r->ebx));
             break;
         }
-        case SYSCALL_t::CLEAR_TERM: {
+    case SYSCALL_t::CLEAR_TERM:
+        {
             kclear_terminal();
             break;
         }
-        case SYSCALL_t::GET_TIME: {
-            r->eax = kget_time(reinterpret_cast<tm *>(r->ebx));
+    case SYSCALL_t::GET_TIME:
+        {
+            r->eax = kget_time(reinterpret_cast<tm*>(r->ebx));
             break;
         }
-        case SYSCALL_t::GET_EPOCH: {
+    case SYSCALL_t::GET_EPOCH:
+        {
             r->eax = kget_epoch_time();
             break;
         }
-        case SYSCALL_t::MMAP: {
+    case SYSCALL_t::MMAP:
+        {
             // *reinterpret_cast<u32*>(r->ebp) + 7)
             r->eax = reinterpret_cast<u32>(user_mmap(r->ebx, r->ecx, r->edx, r->esi, r->edi, 0));
             break;
         }
-        case SYSCALL_t::MUNMAP: {
-            r->eax = user_munmap(reinterpret_cast<void *>(r->ebx), r->ecx);
+    case SYSCALL_t::MUNMAP:
+        {
+            r->eax = user_munmap(reinterpret_cast<void*>(r->ebx), r->ecx);
             break;
         }
-        case SYSCALL_t::GET_CURRENT_CLOCK: {
+    case SYSCALL_t::GET_CURRENT_CLOCK:
+        {
             large_res = kget_current_clock();
             r->eax = static_cast<u32>(large_res);
             r->ebx = static_cast<u32>(large_res >> 32);
             break;
         }
-        case SYSCALL_t::EXECF: {
+    case SYSCALL_t::EXECF:
+        {
             r->eax = art_exec(r->ebx);
             break;
         }
-        case SYSCALL_t::YIELD: {
+    case SYSCALL_t::YIELD:
+        {
             Scheduler::schedule(r);
             break;
         }
-        default: {
+    default:
+        {
             LOG("Unhandled Syscall: ", static_cast<u32>(r->eax));
             r->eax = -1;
             break;

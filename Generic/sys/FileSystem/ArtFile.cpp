@@ -89,7 +89,6 @@ bool ArtFile::device_busy() const
 /* return new position in bytes or <0 = error */
 _PDCLIB_int_least64_t ArtFile::seek(const u64 byte_offset, const int whence)
 {
-    // while (device_busy()){}
     if (byte_offset > size - 1) return EOF;
     switch (whence)
     {

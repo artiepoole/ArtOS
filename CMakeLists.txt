@@ -53,6 +53,8 @@ add_executable(${KERNEL_BIN}
         ${Generic}
         ${Specific}
         ${ArchitectureSpecific}
+        Generic/sys/Scheduling/io_queue_entry.h
+        Generic/sys/Scheduling/IO_Read.cpp
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")

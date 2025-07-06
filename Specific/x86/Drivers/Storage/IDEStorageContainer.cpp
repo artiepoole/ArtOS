@@ -200,15 +200,12 @@ i64 IDEStorageContainer::async_read(char *dest, size_t byte_offset, size_t n_byt
 
     constexpr u16 n_sectors = 32;
     const size_t start_lba = ((byte_offset) / static_cast<i64>(one_block_size)) & 0xFFFF;
-    size_t offset_in_page = (reinterpret_cast<uintptr_t>(dest) % page_alignment);
 
     dma_context.bytes_read = n_read;
     dma_context.busy = true;
     dma_context.byte_offset = byte_offset;
     dma_context.total_size = n_bytes;
-    dma_context.user_buffer = reinterpret_cast<char *>(kernel_pages().map_user_to_kernel(
-                                                           reinterpret_cast<uintptr_t>(dest),
-                                                           n_bytes + offset_in_page) + offset_in_page);
+    dma_context.user_buffer = dest;
     dma_context.lba_offset = start_lba;
 
 #if ENABLE_SERIAL_LOGGING and DMA_LOGS

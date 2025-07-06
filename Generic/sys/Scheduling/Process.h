@@ -44,22 +44,8 @@ struct Process
         STATE_SLEEPING,
         STATE_PARKED,
         STATE_READY,
-        STATE_WAITING,
     };
 
-    enum WaitingReason_t
-    {
-        NOT_WAITING,
-        FILE_READING,
-        DEV_BUSY,
-        FILE_WRITE,
-    };
-
-    struct waiting_data_t
-    {
-        WaitingReason_t reason = NOT_WAITING;
-        int value = -1; // FID for files
-    };
 
     // Used to scale execution duration.
     enum Priority_t
@@ -84,7 +70,6 @@ struct Process
     PagingTableUser* paging_table;
     uintptr_t cr3_val;
     u64 last_executed;
-    waiting_data_t waiting_data = {};
 };
 
 

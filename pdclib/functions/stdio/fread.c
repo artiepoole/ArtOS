@@ -1,3 +1,19 @@
+// ArtOS - hobby operating system by Artie Poole
+// Copyright (C) 2025 Stuart Forbes Poole <artiepoole>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 /* fread( void *, size_t, size_t, struct * )
 
    This file is part of the Public Domain C Library (PDCLib).
@@ -21,40 +37,39 @@ size_t fread(void* _PDCLIB_restrict ptr, size_t size, size_t nmemb, struct _PDCL
 {
     // TODO: proper implementation of this stream handling stuff,
 
-    //
-    // char * dest = ( char * )ptr;
-    // size_t nmemb_i = 0;
-    //
-    // _PDCLIB_LOCK( stream->mtx );
-    //
-    // if ( _PDCLIB_prepread( stream ) != EOF )
-    // {
-    //     for ( nmemb_i = 0; nmemb_i < nmemb; ++nmemb_i )
-    //     {
-    //         size_t size_i;
-    //
-    //         /* TODO: For better performance, move from stream buffer
-    //            to destination block-wise, not byte-wise.
-    //         */
-    //         for ( size_i = 0; size_i < size; ++size_i )
-    //         {
-    //             if ( _PDCLIB_CHECKBUFFER( stream ) == EOF )
-    //             {
-    //                 /* Could not read requested data */
-    //                 _PDCLIB_UNLOCK( stream->mtx );
-    //                 return nmemb_i;
-    //             }
-    //
-    //             dest[ nmemb_i * size + size_i ] = _PDCLIB_GETC( stream );
-    //         }
-    //     }
-    //
-    // }
-    //
-    // _PDCLIB_UNLOCK( stream->mtx );
-    //
-    // return nmemb_i;
-    return read(stream->handle, ptr, nmemb * size);
+
+    char* dest = (char*)ptr;
+    size_t nmemb_i = 0;
+
+    _PDCLIB_LOCK(stream->mtx);
+
+    if (_PDCLIB_prepread(stream) != EOF)
+    {
+        for (nmemb_i = 0; nmemb_i < nmemb; ++nmemb_i)
+        {
+            size_t size_i;
+
+            /* TODO: For better performance, move from stream buffer
+               to destination block-wise, not byte-wise.
+            */
+            for (size_i = 0; size_i < size; ++size_i)
+            {
+                if (_PDCLIB_CHECKBUFFER(stream) == EOF)
+                {
+                    /* Could not read requested data */
+                    _PDCLIB_UNLOCK(stream->mtx);
+                    return nmemb_i;
+                }
+
+                dest[nmemb_i * size + size_i] = _PDCLIB_GETC(stream);
+            }
+        }
+    }
+
+    _PDCLIB_UNLOCK(stream->mtx);
+
+    return nmemb_i;
+    // return read(stream->handle, ptr, nmemb * size);
 }
 
 #endif
