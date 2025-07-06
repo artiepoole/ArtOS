@@ -50,9 +50,10 @@
 
 size_t context_switch_period_us = CONTEXT_SWITCH_PERIOD_US;
 
-struct sleep_timer_t {
+struct sleep_timer_t
+{
     size_t pid;
-    i64 counter;
+    long double counter;
 };
 
 
@@ -260,30 +261,25 @@ uintptr_t Scheduler::getCurrentProcessPagingDirectory() {
     return processes[current_process_id].paging_table->get_phys_addr_of_page_dir();
 }
 
-// bool Scheduler::isCurrentProcessUser()
-// {
-//     return processes[current_process_id].user;
-// }
-
-// bool Scheduler::isProcessUser(size_t PID)
-// {
-//     return processes[PID].user;
-// }
-
-// files.find_if([filename](ArtFile f) { return strcmp(f.get_name(), filename) == 0; });
-// iterate([device](ArtDirectory* dir) { device->populate_directory_recursive(dir); });
-void handle_expired_timers() {
-    // THERE's soemthing wrong with the ticks counting and reporting so doom is SO fast
+void handle_expired_timers()
+{
+    if (!sleep_timers.head())
+    {
+        execution_counter = TSC_get_ticks();
+        return;
+    }
     const u64 ticks = TSC_get_ticks();
-    u64 elapsed_ms = (ticks - execution_counter) * 1000 / cpuid_get_TSC_frequency();
-    sleep_timers.iterate([elapsed_ms](sleep_timer_t *t) { t->counter -= static_cast<i64>(elapsed_ms); });
+    long double elapsed_ms = (ticks - execution_counter) * 1000 / static_cast<long double>(cpuid_get_TSC_frequency());
+    sleep_timers.iterate([elapsed_ms](sleep_timer_t* t) { t->counter -= elapsed_ms; });
     execution_counter = ticks;
-    while (true) {
-        sleep_timer_t *timer = sleep_timers.find_if([](const sleep_timer_t &t) { return t.counter < 0; });
+    while (true) // until all counters less than 0 are accounted for
+    {
+        sleep_timer_t* timer = sleep_timers.find_if([](const sleep_timer_t& t) { return t.counter <= 0; });
         if (timer == nullptr) return;
         const size_t pid = timer->pid;
         sleep_timers.remove(timer);
-        if (processes[pid].state == Process::STATE_SLEEPING) {
+        if (processes[pid].state == Process::STATE_SLEEPING)
+        {
             processes[pid].state = Process::STATE_READY;
         }
     }
