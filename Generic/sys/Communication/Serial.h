@@ -29,7 +29,8 @@ class ArtFile;
 
 #define PORT 0x3f8          // COM1
 
-class Serial : public StorageDevice {
+class Serial : public StorageDevice
+{
 private:
     static char _read_one_byte();
 
@@ -39,7 +40,7 @@ private:
 
     static int _get_transmit_empty();
 
-    static void _write_buffer(const char *data, size_t size);
+    static void _write_buffer(const char* data, size_t size);
 
     char name[11] = "/dev/com1";
 
@@ -51,12 +52,12 @@ public:
     // ~Serial();
 
     // static Serial& get();
-    ArtFile *&get_file();
+    ArtFile*& get_file();
 
     // remove copy functionality
-    Serial(Serial const &other) = delete;
+    Serial(Serial const& other) = delete;
 
-    Serial &operator=(Serial const &other) = delete;
+    Serial& operator=(Serial const& other) = delete;
 
     bool connected;
 
@@ -69,19 +70,21 @@ public:
     // void write(unsigned char c);
     void write(char c);
 
-    void write(const char *data);
+    void write(const char* data);
 
-    void write(const char *data, size_t len);
+    void write(const char* data, size_t len);
 
-    u32 com_read(char *dest, u32 count);
+    u32 com_read(char* dest, u32 count);
 
-    u32 com_write(const char *data, u32 count);
+    u32 com_write(const char* data, u32 count);
 
-    i64 read(char *dest, [[maybe_unused]] size_t byte_offset, size_t byte_count) override {
+    i64 read(char* dest, [[maybe_unused]] size_t byte_offset, size_t byte_count) override
+    {
         return com_read(dest, byte_count);
     }
 
-    i64 write(const char *data, [[maybe_unused]] size_t byte_offset, size_t byte_count) override {
+    i64 write(const char* data, [[maybe_unused]] size_t byte_offset, size_t byte_count) override
+    {
         return com_write(data, byte_count);
     }
 
@@ -89,12 +92,13 @@ public:
     i64 async_read(char* dest, [[maybe_unused]] size_t byte_offset, size_t byte_count) override { return -1; }
     bool device_busy() override { return false; }
     virtual i64 async_n_read() { return -1; }
-    char *get_name() override { return name; }
+    char* get_name() override { return name; }
 
 
     int mount() { return 0; }
 
-    ArtFile *find_file([[maybe_unused]] const char *filename) override {
+    ArtFile* find_file([[maybe_unused]] const char* filename) override
+    {
         if (art_string::strcmp(filename, "/dev/com1") == 0) return get_file();
         else return nullptr;
     }
@@ -107,38 +111,46 @@ public:
 
     void time_stamp();
 
-    template<typename int_like>
+    template <typename int_like>
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
     // Any interger like number but not a char or char array.
-    void write(const int_like val, const bool hex = false) {
+    void write(const int_like val, const bool hex = false)
+    {
         char out_str[255];
-        if (hex) {
+        if (hex)
+        {
             art_string::hex_from_int(val, out_str, sizeof(val));
-        } else {
+        }
+        else
+        {
             art_string::string_from_int(val, out_str);
         }
         write(out_str);
     }
 
-    template<typename type_t>
-    void log(type_t const &arg1) {
+    template <typename type_t>
+    void log(type_t const& arg1)
+    {
         time_stamp();
         write(arg1);
         newLine();
     }
 
-    template<typename... args_t>
-    void log(args_t &&... args) {
+    template <typename... args_t>
+    void log(args_t&&... args)
+    {
         time_stamp();
         (write(args), ...);
         newLine();
     }
 
 
-    template<typename int_like>
+    template <typename int_like>
         requires is_int_like_v<int_like> && (!is_same_v<int_like, char>)
-    void logHex(int_like val, const char *val_name = "") {
-        if (art_string::strlen(val_name) > 0) {
+    void logHex(int_like val, const char* val_name = "")
+    {
+        if (art_string::strlen(val_name) > 0)
+        {
             write(val_name);
             write(": ");
         }
@@ -147,6 +159,6 @@ public:
     };
 };
 
-Serial &get_serial();
+Serial& get_serial();
 
 #endif //SERIAL_H

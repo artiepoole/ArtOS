@@ -168,7 +168,6 @@ public:
         }
         return nullptr;
     }
-
 };
 
 //TODO: doubly linked list
