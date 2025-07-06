@@ -125,7 +125,7 @@ cpuid_feature_info_t* cpuid_get_feature_info()
 
 void measure_cpu_freq()
 {
-    constexpr double duration_ms = 1000;
+    constexpr u64 duration_ms = 1000;
     const auto start = TSC_get_ticks();
     PIT_sleep_ms(duration_ms);
     const auto end = TSC_get_ticks();

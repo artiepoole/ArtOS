@@ -131,7 +131,7 @@ int art_read(int fd, char *buf, size_t count);
 
 int art_async_read(int file_id, char *buf, size_t count);
 
-bool art_async_done(int file_id);
+bool art_dev_busy(int file_id);
 
 i64 art_async_n_read(int file_id);
 

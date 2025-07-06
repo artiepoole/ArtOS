@@ -47,12 +47,26 @@ struct Process
         STATE_WAITING,
     };
 
+    enum WaitingReason_t
+    {
+        NOT_WAITING,
+        FILE_READING,
+        DEV_BUSY,
+        FILE_WRITE,
+    };
+
+    struct waiting_data_t
+    {
+        WaitingReason_t reason = NOT_WAITING;
+        int value = -1; // FID for files
+    };
+
     // Used to scale execution duration.
     enum Priority_t
     {
         PRIORITY_LOW = 1,
-        PRIORITY_NORMAL = 2,
-        PRIORITY_HIGH = 4,
+        PRIORITY_NORMAL = 10,
+        PRIORITY_HIGH = 100,
     };
 
     bool isParked() { return state == STATE_PARKED; }
@@ -70,7 +84,7 @@ struct Process
     PagingTableUser* paging_table;
     uintptr_t cr3_val;
     u64 last_executed;
-    int waiting_fid = -1;
+    waiting_data_t waiting_data = {};
 };
 
 

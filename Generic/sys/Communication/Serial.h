@@ -86,8 +86,8 @@ public:
     }
 
     i64 seek([[maybe_unused]] u64 byte_offset, [[maybe_unused]] int whence) override { return 0; }
-    i64 async_read(char *dest, [[maybe_unused]] size_t byte_offset, size_t byte_count) override { return -1;}
-    bool async_done() override { return true; }
+    i64 async_read(char* dest, [[maybe_unused]] size_t byte_offset, size_t byte_count) override { return -1; }
+    bool device_busy() override { return false; }
     virtual i64 async_n_read() { return -1; }
     char *get_name() override { return name; }
 

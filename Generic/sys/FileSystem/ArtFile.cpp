@@ -49,7 +49,11 @@ ArtFile::ArtFile(StorageDevice *dev, char *tmp_filename): device(dev) {
 }
 
 /* return number of bytes read or <0 = error */
-size_t ArtFile::read(char *dest, size_t byte_count) {
+size_t ArtFile::read(char* dest, size_t byte_count)
+{
+    while (device_busy())
+    {
+    }
     // TODO: handle checks here.
     // if (byte_count > 1024*64) {byte_count = 1024*64;}
     if (seek_pos + byte_count > size) { byte_count = size - seek_pos; }
@@ -74,8 +78,9 @@ int ArtFile::start_async_read(char *dest, size_t byte_count) const {
 
 }
 
-bool ArtFile::async_done() const {
-    return device->async_done();
+bool ArtFile::device_busy() const
+{
+    return device->device_busy();
 }
 
 
@@ -102,7 +107,11 @@ _PDCLIB_int_least64_t ArtFile::seek(const u64 byte_offset, const int whence) {
 }
 
 /* return number of bytes written or <0 = error */
-int ArtFile::write(const char *src, const size_t byte_count) {
+int ArtFile::write(const char* src, const size_t byte_count)
+{
+    while (device_busy())
+    {
+    }
     return device->write(src, seek_pos, byte_count);
 }
 

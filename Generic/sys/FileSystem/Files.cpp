@@ -155,13 +155,15 @@ int art_async_read(const int file_id, char *buf, const size_t count) {
     return h->start_async_read(buf, count);
 }
 
-bool art_async_done(const int file_id) {
-    ArtFile *h = get_file_handle(file_id);
-    if (h == NULL) {
+bool art_dev_busy(const int file_id)
+{
+    ArtFile* h = get_file_handle(file_id);
+    if (h == NULL)
+    {
         // unknown FD
         return false;
     }
-    return h->async_done();
+    return h->device_busy();
 }
 
 i64 art_async_n_read(const int file_id) {

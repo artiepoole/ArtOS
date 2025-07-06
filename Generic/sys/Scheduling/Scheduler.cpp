@@ -29,6 +29,7 @@
 #include <logging.h>
 #include <PagingTableKernel.h>
 #include <PagingTableUser.h>
+#include <Process.h>
 #include <SMBIOS.h>
 #include <string.h>
 #include <syscall.h>
@@ -43,9 +44,9 @@
 
 #define LOG_IDLE false
 #ifdef NDEBUG
-    #define CONTEXT_SWITCH_PERIOD_US 1000  // Release
+#define CONTEXT_SWITCH_PERIOD_US 100  // Release
 #else
-#define CONTEXT_SWITCH_PERIOD_US 10000 // Debug or other
+#define CONTEXT_SWITCH_PERIOD_US 100 // Debug or other
 #endif
 
 size_t context_switch_period_us = CONTEXT_SWITCH_PERIOD_US;
@@ -60,13 +61,13 @@ struct sleep_timer_t
 size_t stack_alignment = 16;
 
 u32 default_eflags = 0x206;
-Scheduler *scheduler_instance = nullptr;
+Scheduler* scheduler_instance = nullptr;
 u64 execution_counter = 0;
 size_t current_process_id = 0;
 size_t highest_assigned_pid = 0;
 // size_t next_process_id = 1;
 Process processes[max_processes];
-LocalAPIC *lapic_timer = nullptr;
+LocalAPIC* lapic_timer = nullptr;
 
 
 LinkedList<sleep_timer_t> sleep_timers;
@@ -75,20 +76,22 @@ LinkedList<sleep_timer_t> sleep_timers;
 extern u8 kernel_stack_top;
 extern u8 kernel_stack_bottom;
 
-void idle_task() {
-    while (true) {
+void idle_task()
+{
+    while (true)
+    {
     };
 }
 
 
-Scheduler::Scheduler(LocalAPIC *timer, EventQueue *kernel_queue) {
+Scheduler::Scheduler(LocalAPIC* timer, EventQueue* kernel_queue)
+{
     // Store current state in process[0]
     // Set up first Lapic one shot
     // disable_interrupts();
 #if ENABLE_SERIAL_LOGGING
     get_serial().log("context_switch_period_us: ", context_switch_period_us);
 #endif
-    execution_counter = TSC_get_ticks();
     art_string::memset(processes, 0, sizeof(Process) * max_processes);
     scheduler_instance = this;
     lapic_timer = timer;
@@ -102,11 +105,13 @@ Scheduler::Scheduler(LocalAPIC *timer, EventQueue *kernel_queue) {
     // execf(, main_func, name, false);
 }
 
-Scheduler::~Scheduler() {
+Scheduler::~Scheduler()
+{
     scheduler_instance = nullptr;
 }
 
-Scheduler &Scheduler::get() {
+Scheduler& Scheduler::get()
+{
     return *scheduler_instance;
 }
 
@@ -118,69 +123,12 @@ Scheduler &Scheduler::get() {
  * Write values (like initial stack contents, arguments, etc.) via the kernel mapping.
  * Later, when the process runs, load its CR3, set its initial stack pointer, and iret.
 */
-// Create new process. This can only be user mode if the code and data for the function are contained in user-accessible pages
-void Scheduler::execf(cpu_registers_t *r, u32 func, uintptr_t name_loc, const bool user) {
-    auto name = reinterpret_cast<const char *>(name_loc);
-    // Should copy stack contents but I am not sure if they are already ruined by this.R=
-    size_t next_process_id = getNextFreeProcessID();
-    const size_t parent_process_id = current_process_id;
-    if (next_process_id + 1 >= max_processes) return; // TODO: Error
 
-    auto *proc = &processes[next_process_id];
-
-
-    cpu_registers_t context{};
-    proc->user = user;
-    void *proc_stack;
-    void *stack_top;
-    if (user) {
-        proc->paging_table = new PagingTableUser();
-        proc->cr3_val = proc->paging_table->get_phys_addr_of_page_dir();
-        // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
-        // TODO: the stack must be part of the user space memory map so this has to be remapped!
-        proc_stack = art_alloc(stack_size, stack_alignment);
-        stack_top = static_cast<u8 *>(proc_stack) + stack_size;
-    } else {
-        // proc_stack = art_alloc(stack_size, stack_alignment);
-        // stack_top = static_cast<u8*>(proc_stack) + stack_size;
-        // proc_stack = &kernel_stack_bottom;
-        proc->cr3_val = kernel_pages().get_phys_addr_of_page_dir();
-        stack_top = &kernel_stack_top;
-    }
-    LOG("Starting Process: ", name, " PID: ", next_process_id);
-    context.esp = reinterpret_cast<u32>(stack_top);
-
-    if (user) {
-        context.cs = user_cs_offset | RPL_USER;
-        context.ds = user_ds_offset | RPL_USER;
-        context.es = user_ds_offset | RPL_USER;
-        context.fs = user_ds_offset | RPL_USER;
-        context.gs = user_ds_offset | RPL_USER;
-        context.ss = user_ds_offset | RPL_USER;
-    } else {
-        context.cs = kernel_cs_offset;
-        context.ds = kernel_ds_offset;
-        context.es = kernel_ds_offset;
-        context.fs = kernel_ds_offset;
-        context.gs = kernel_ds_offset;
-        context.ss = kernel_ds_offset;
-    }
-    context.eip = func;
-    context.eflags = default_eflags;
-
-    proc->last_executed = TSC_get_ticks();
-    proc->start(parent_process_id, context, proc_stack, name, user);
-
-    processes[parent_process_id].state = Process::STATE_PARKED;
-    schedule(r);
-}
-
-
-// TODO (URGENT): This should swap paging directory. See: https://wiki.osdev.org/Kernel_Multitasking#Kernel_Stack_Per_Task
-// Specifically the `cmp eax,ecx` lines.
-void Scheduler::switch_process(cpu_registers_t *const r, size_t new_PID) {
+void Scheduler::switch_process(cpu_registers_t* const r, size_t new_PID)
+{
     // This should just pop the stack and push to it to replace next process. If process is 0 idk what to do.
-    if (new_PID == 0) {
+    if (new_PID == 0)
+    {
         new_PID = 1;
     }
 
@@ -201,7 +149,8 @@ void Scheduler::switch_process(cpu_registers_t *const r, size_t new_PID) {
     set_current_context(r, current_process_id);
 }
 
-size_t Scheduler::getNextFreeProcessID() {
+size_t Scheduler::getNextFreeProcessID()
+{
     size_t ret_id = 0;
     while (processes[ret_id].state != Process::STATE_DEAD) { ret_id++; }
     if (ret_id > highest_assigned_pid) highest_assigned_pid = ret_id;
@@ -209,55 +158,91 @@ size_t Scheduler::getNextFreeProcessID() {
 }
 
 // Returns the id of the process which is parked or alive which has the highest id.
-size_t Scheduler::getMaxAliveProcessID() {
+size_t Scheduler::getMaxAliveProcessID()
+{
     size_t ret_id = 0;
-    for (size_t i = 0; i <= highest_assigned_pid; i++) {
+    for (size_t i = 0; i <= highest_assigned_pid; i++)
+    {
         if (processes[i].state != Process::STATE_DEAD || processes[i].state != Process::STATE_EXITED) ret_id = i;
     }
     if (highest_assigned_pid < ret_id) highest_assigned_pid = ret_id;
     return ret_id;
 }
 
-// size_t Scheduler::getCurrentProcessID()
-// {
-// }
 
-
-void Scheduler::clean_up_exited_threads() {
-    for (size_t i = 0; i <= highest_assigned_pid; i++) {
-        if (processes[i].state == Process::STATE_EXITED) {
-            if (processes[i].user) {
+void Scheduler::clean_up_exited_threads()
+{
+    for (size_t i = 0; i <= highest_assigned_pid; i++)
+    {
+        if (processes[i].state == Process::STATE_EXITED)
+        {
+            if (processes[i].user)
+            {
                 art_free(processes[i].stack);
             }
             processes[i].reset(); // cleans up event queue.
-            if (i == highest_assigned_pid) {
+            if (i == highest_assigned_pid)
+            {
                 highest_assigned_pid = getMaxAliveProcessID();
             }
         }
     }
 }
 
-void Scheduler::check_finished_io_read() {
-    for (size_t i = 0; i <= highest_assigned_pid; i++) {
-        if (Process &proc = processes[i]; proc.state == Process::STATE_WAITING) {
-            if (proc.waiting_fid > 0 && art_async_done(proc.waiting_fid)) {
-                proc.state = Process::STATE_READY;
-                proc.context.eax = art_async_n_read(proc.waiting_fid);
-                proc.waiting_fid = -1;
+void Scheduler::check_finished_io()
+{
+    for (size_t i = 0; i <= highest_assigned_pid; i++)
+    {
+        if (Process& proc = processes[i]; proc.state == Process::STATE_WAITING)
+        {
+            switch (auto [reason, value] = proc.waiting_data; reason)
+            {
+            case Process::NOT_WAITING: continue;
+            case Process::FILE_READING:
+                {
+#if ASYNC_READ
+                    if (!art_dev_busy(value))
+                    {
+                        proc.state = Process::STATE_READY;
+                        proc.context.eax = art_async_n_read(value);
+                        proc.waiting_data.value = -1;
+                    }
+#endif
+
+                    break;
+                }
+            case Process::DEV_BUSY:
+                {
+                    if (!art_dev_busy(value))
+                    {
+#if ENABLE_SERIAL_LOGGING
+                        get_serial().log("Device marked as not busy. No idea if this will work.");
+#endif
+                        proc.state = Process::STATE_READY;
+                        // TODO: how to retry the read?
+                        syscall_handler(&proc.context);
+                    }
+                    break;
+                }
+            default:
+                break;
             }
         }
     }
 }
 
-size_t Scheduler::getCurrentProcessID() {
+size_t Scheduler::getCurrentProcessID()
+{
     return current_process_id;
 }
 
-EventQueue *Scheduler::getCurrentProcessEventQueue() {
+EventQueue* Scheduler::getCurrentProcessEventQueue()
+{
     return processes[current_process_id].eventQueue;
 }
 
-uintptr_t Scheduler::getCurrentProcessPagingDirectory() {
+uintptr_t Scheduler::getCurrentProcessPagingDirectory()
+{
     return processes[current_process_id].paging_table->get_phys_addr_of_page_dir();
 }
 
@@ -285,12 +270,15 @@ void handle_expired_timers()
     }
 }
 
-size_t get_oldest_process() {
+size_t get_oldest_process()
+{
     size_t ret_id = 0;
     u64 lowest = -1;
-    for (size_t i = 2; i <= highest_assigned_pid; i++) {
+    for (size_t i = 2; i <= highest_assigned_pid; i++)
+    {
         if (processes[i].state != Process::STATE_READY) continue;
-        if (processes[i].last_executed < lowest) {
+        if (processes[i].last_executed < lowest)
+        {
             ret_id = i;
             lowest = processes[i].last_executed;
         }
@@ -299,13 +287,16 @@ size_t get_oldest_process() {
     return ret_id;
 }
 
-size_t Scheduler::getNextProcessID() {
+size_t Scheduler::getNextProcessID()
+{
     const size_t next = get_oldest_process(); // dec and return split here for debugging purposes.
     return next;
 }
 
-void Scheduler::start_oneshot(u32 time_us) {
-    if (lapic_timer->start_timer_us(time_us) < 0) {
+void Scheduler::start_oneshot(u32 time_us)
+{
+    if (lapic_timer->start_timer_us(time_us) < 0)
+    {
 #if ENABLE_SERIAL_LOGGING
         get_serial().log("Lapic failed to start timer?");
 #endif
@@ -313,16 +304,19 @@ void Scheduler::start_oneshot(u32 time_us) {
 }
 
 //TODO: refactor. this no longer converts
-void Scheduler::store_current_context(cpu_registers_t *r, const size_t PID) {
+void Scheduler::store_current_context(cpu_registers_t* r, const size_t PID)
+{
     art_string::memcpy(&processes[PID].context, r, sizeof(cpu_registers_t));
 }
 
-void Scheduler::set_current_context(cpu_registers_t *r, size_t PID) {
+void Scheduler::set_current_context(cpu_registers_t* r, size_t PID)
+{
     art_string::memcpy(r, &processes[PID].context, sizeof(cpu_registers_t));
     asm volatile("mov %0, %%cr3" :: "r"(processes[PID].cr3_val) : "memory");
 }
 
-void Scheduler::sleep_ms(cpu_registers_t *r) {
+void Scheduler::sleep_ms(cpu_registers_t* r)
+{
     const size_t ms = r->ebx;
     sleep_timers.append(sleep_timer_t{current_process_id, ms});
     processes[current_process_id].state = Process::STATE_SLEEPING;
@@ -331,33 +325,37 @@ void Scheduler::sleep_ms(cpu_registers_t *r) {
     schedule(r);
 }
 
-void Scheduler::mark_process_as_waiting(cpu_registers_t *r) {
-    const int fd = r->ebx;
+void Scheduler::mark_process_as_waiting(cpu_registers_t* r, const Process::WaitingReason_t reason, const int data)
+{
     processes[current_process_id].state = Process::STATE_WAITING;
-    processes[current_process_id].waiting_fid = fd;
+    processes[current_process_id].waiting_data = {reason, data};
     schedule(r);
 }
 
 // When called from interrupt, the state is stored at this pointer loc, r.
-void Scheduler::schedule(cpu_registers_t *const r) {
+void Scheduler::schedule(cpu_registers_t* const r)
+{
     clean_up_exited_threads();
     handle_expired_timers();
-    check_finished_io_read();
+    check_finished_io();
     const size_t next_id = getNextProcessID();
     switch_process(r, next_id);
 }
 
 
-void LAPIC_handler(cpu_registers_t *const r) {
+void LAPIC_handler(cpu_registers_t* const r)
+{
     Scheduler::schedule(r);
     // TODO: implement scheduler
 }
 
 // Exit is called by the program to tell the OS it is done.
-void Scheduler::exit(cpu_registers_t *const r) {
+void Scheduler::exit(cpu_registers_t* const r)
+{
     u32 status = r->ebx;
     LOG("Exiting ", processes[current_process_id].name, " PID: ", current_process_id, " with status: ", status);
-    if (current_process_id == 2) {
+    if (current_process_id == 2)
+    {
         const int shell_file = art_open("b.art", 0);
         if (shell_file < 1) { LOG("CRITICAL: Failed to restart b.art"); }
         art_exec(shell_file);
@@ -366,7 +364,8 @@ void Scheduler::exit(cpu_registers_t *const r) {
     }
     processes[current_process_id].state = Process::STATE_EXITED;
     auto parent_id = processes[current_process_id].parent_pid;
-    if (processes[parent_id].state == Process::STATE_PARKED) {
+    if (processes[parent_id].state == Process::STATE_PARKED)
+    {
         processes[parent_id].state = Process::STATE_READY;
         processes[parent_id].context.eax = status;
     }
@@ -376,10 +375,12 @@ void Scheduler::exit(cpu_registers_t *const r) {
 }
 
 // Kill is supposed to send a command to the process to tell it to exit.
-void Scheduler::kill(size_t target_pid) {
+void Scheduler::kill(size_t target_pid)
+{
     processes[target_pid].state = Process::STATE_EXITED;
     auto parent_id = processes[current_process_id].parent_pid;
-    if (processes[parent_id].state == Process::STATE_PARKED) {
+    if (processes[parent_id].state == Process::STATE_PARKED)
+    {
         processes[parent_id].state = Process::STATE_READY;
     }
     // ???? what do here? I cannot switch because then it never returns?
@@ -387,10 +388,11 @@ void Scheduler::kill(size_t target_pid) {
     // kyield();
 }
 
-void Scheduler::create_idle_task() {
+void Scheduler::create_idle_task()
+{
     const size_t next_process_id = getNextFreeProcessID();
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
-    auto *proc = &processes[next_process_id];
+    auto* proc = &processes[next_process_id];
     cpu_registers_t context{};
 
     context.cs = kernel_cs_offset;
@@ -418,30 +420,34 @@ void Scheduler::create_idle_task() {
     proc->cr3_val = kernel_pages().get_phys_addr_of_page_dir();
 }
 
-void Scheduler::execute_from_paging_table(PagingTableUser *PTU, const char *name_loc, const uintptr_t entry_point,
-                                          const uintptr_t stack_vaddr, const uintptr_t stack_size) {
+void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const uintptr_t entry_point,
+                                          const uintptr_t stack_vaddr, const uintptr_t stack_size)
+{
     auto name = name_loc;
     // Should copy stack contents but I am not sure if they are already ruined by this.R=
     size_t next_process_id = getNextFreeProcessID();
     const size_t parent_process_id = current_process_id;
     if (next_process_id + 1 >= max_processes) return; // TODO: Error
 
-    auto *proc = &processes[next_process_id];
+    auto* proc = &processes[next_process_id];
     *proc = Process{};
 
     cpu_registers_t context{};
     proc->user = true;
     proc->paging_table = PTU;
     uintptr_t stack_top;
-    void *proc_stack;
+    void* proc_stack;
 
     // TOOD: this needs to be replaced so that a malloc call can be done using flags instead.
     // TODO: the stack must be part of the user space memory map so this has to be remapped!
-    if (stack_size == 0 or stack_vaddr == 0) {
+    if (stack_size == 0 or stack_vaddr == 0)
+    {
         proc_stack = art_alloc(stack_size, stack_alignment);
         stack_top = reinterpret_cast<uintptr_t>(proc_stack) + stack_size;
-    } else {
-        proc_stack = reinterpret_cast<u8 *>(stack_vaddr);
+    }
+    else
+    {
+        proc_stack = reinterpret_cast<u8*>(stack_vaddr);
         stack_top = stack_vaddr + stack_size;
     }
 
@@ -464,6 +470,7 @@ void Scheduler::execute_from_paging_table(PagingTableUser *PTU, const char *name
     processes[parent_process_id].state = Process::STATE_PARKED;
 }
 
-PagingTableUser &Scheduler::getCurrentPagingTable() {
+PagingTableUser& Scheduler::getCurrentPagingTable()
+{
     return *processes[current_process_id].paging_table;
 }

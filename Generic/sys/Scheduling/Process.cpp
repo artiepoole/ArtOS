@@ -37,7 +37,7 @@ Process::Process() {
     user = false;
     cr3_val = 0;
     paging_table = nullptr;
-    waiting_fid = -1;
+    waiting_data = {NOT_WAITING, -1};
 }
 
 void Process::reset() {
@@ -54,7 +54,7 @@ void Process::reset() {
     }
     user = false;
     cr3_val = 0;
-    waiting_fid = -1;
+    waiting_data = {NOT_WAITING, -1};
 }
 
 

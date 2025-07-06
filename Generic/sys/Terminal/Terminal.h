@@ -144,8 +144,8 @@ public:
 
     i64 write(const char *data, size_t, size_t byte_count) override;
 
-    virtual i64 async_read(char *dest, size_t byte_offset, size_t byte_count) { return -1; }
-    virtual bool async_done() { return true; }
+    virtual i64 async_read(char* dest, size_t byte_offset, size_t byte_count) { return -1; }
+    virtual bool device_busy() { return false; }
     virtual i64 async_n_read() { return -1; }
     i64 seek(u64, int) override { return 0; }
     int mount() override { return 0; }

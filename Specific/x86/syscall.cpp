@@ -78,7 +78,7 @@ u64 kget_tick_s() {
 }
 
 u64 kget_tick_ms() {
-    return (static_cast<uint64_t>(TSC_get_ticks()) * 1000) / cpuid_get_TSC_frequency();
+    return (TSC_get_ticks() * 1000) / cpuid_get_TSC_frequency();
 }
 
 u64 kget_tick_us() {
@@ -152,9 +152,12 @@ void syscall_handler(cpu_registers_t *r) {
             break;
         }
         case SYSCALL_t::READ: {
-            // TODO: this is no where near this simple for hardware files. Interrupts are needed for IO so the task must be slept and the interrupt handled correctly.
-            // TODO: mapping user space data!
             {
+                // TODO: this should actually just always sleep the device and then this should be in the scheduler cleanup
+                if (art_dev_busy(r->ebx))
+                {
+                    Scheduler::mark_process_as_waiting(r, Process::DEV_BUSY, r->ebx);
+                }
 #if ASYNC_READ
                 switch (const int res = art_async_read(static_cast<int>(r->ebx), reinterpret_cast<char *>(r->ecx),
                                                        r->edx)) {
@@ -169,7 +172,7 @@ void syscall_handler(cpu_registers_t *r) {
 #if ENABLE_SERIAL_LOGGING and LOG_SYSCALL
                         get_serial().log("starting async read by pausing process");
 #endif
-                        Scheduler::mark_process_as_waiting(r);
+                        Scheduler::mark_process_as_waiting(r, Process::FILE_READING, r->ebx);
                         break;
                     default:
 #if ENABLE_SERIAL_LOGGING and LOG_SYSCALL

@@ -49,7 +49,7 @@ IDEStorageContainer::IDEStorageContainer(IDE_drive_info_t &drive_info, PCIDevice
                                          const char *new_name): name(art_string::strdup(new_name)) {
     LOG("Initializing IDEStorageContainer");
     IDE_add_device(this);
-    dma_context.done = true;
+    dma_context.busy = false;
     this->pci_dev = pci_dev;
     this->bm_dev = bm_dev;
     if (drive_info.packet_device) {
@@ -91,6 +91,7 @@ int IDEStorageContainer::mount() {
 
 // Read from byte offset. Useful for use with files.
 i64 IDEStorageContainer::read(char *dest, const size_t byte_offset, const size_t n_bytes) {
+    busy = true;
     // LOG("Reading from IDEStorageContainer::read(char*...). start: ", byte_offset, " length: ", n_bytes);
     i64 n_read = 0;
     // has to be able to be neg but also up to U32_MAX so use an i64. n_read >0 here due to program flow.
@@ -114,10 +115,12 @@ i64 IDEStorageContainer::read(char *dest, const size_t byte_offset, const size_t
         real_offset = byte_offset + n_read;
     }
     // LOG("nread: ", n_read);
+    busy = false;
     return n_read;
 }
 
 void IDEStorageContainer::async_notify() {
+    busy = true;
     size_t offset_in_store;
     i64 available_bytes;
     BM_status_t bm_status = bm_dev->get_status();
@@ -159,6 +162,7 @@ void IDEStorageContainer::async_notify() {
         constexpr u16 n_sectors = 32;
         prep_DMA_read(start_lba, n_sectors); // should set up ATA stuff and then set up BM stuff
         start_DMA_transfer(); // should just set BM start_stop
+        busy = false;
         return;
     }
 #if ENABLE_SERIAL_LOGGING and DMA_LOGS
@@ -169,12 +173,14 @@ done:
     const size_t offset_in_page = (reinterpret_cast<uintptr_t>(dma_context.user_buffer) % page_alignment);
     kernel_pages().unmap_user_to_kernel(reinterpret_cast<uintptr_t>(dma_context.user_buffer),
                                         dma_context.total_size + offset_in_page);
-    dma_context.done = true;
+    busy = false;
+    dma_context.busy = false;
 }
 
 i64 IDEStorageContainer::async_read(char *dest, size_t byte_offset, size_t n_bytes) {
     //  if in store, just write now, and return n_read >0
     // else return n_read = 0 after starting the read.
+    busy = true;
     i64 n_read = 0;
     if (byte_offset < (stored_buffer_start + region_size) && byte_offset > stored_buffer_start &&
         stored_buffer_start > 0) {
@@ -187,6 +193,7 @@ i64 IDEStorageContainer::async_read(char *dest, size_t byte_offset, size_t n_byt
         n_read += available_bytes;
         byte_offset += n_read;
         if (n_read == n_bytes) {
+            busy = false;
             return n_read;
         };
     }
@@ -196,7 +203,7 @@ i64 IDEStorageContainer::async_read(char *dest, size_t byte_offset, size_t n_byt
     size_t offset_in_page = (reinterpret_cast<uintptr_t>(dest) % page_alignment);
 
     dma_context.bytes_read = n_read;
-    dma_context.done = false;
+    dma_context.busy = true;
     dma_context.byte_offset = byte_offset;
     dma_context.total_size = n_bytes;
     dma_context.user_buffer = reinterpret_cast<char *>(kernel_pages().map_user_to_kernel(
@@ -214,14 +221,19 @@ i64 IDEStorageContainer::async_read(char *dest, size_t byte_offset, size_t n_byt
     ret_val = prep_DMA_read(start_lba, n_sectors); // should set up ATA stuff and then set up BM stuff
     if (ret_val != 0) { return -1; }
     start_DMA_transfer(); // should just set BM start_stop
+    busy = false;
     return 0;
 }
 
-bool IDEStorageContainer::async_done() {
-    return dma_context.done;
+bool IDEStorageContainer::device_busy()
+{
+    return busy || dma_context.busy;
 }
 
 i64 IDEStorageContainer::async_n_read() {
+#if ENABLE_SERIAL_LOGGING and DMA_LOGS
+    get_serial().log("async_n_read called: ", dma_context.bytes_read);
+#endif
     return dma_context.bytes_read;
 }
 
@@ -362,7 +374,8 @@ void IDEStorageContainer::notify() {
 
     if (bm_status.interrupt) {
         // LOG("BM interrupt raised.");
-        if (!dma_context.done) {
+        if (dma_context.busy)
+        {
             async_notify();
         }
         bm_status.interrupt = true;

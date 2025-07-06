@@ -46,7 +46,7 @@ struct dma_read_context {
     size_t bytes_read;         // how much we have read so far
     i64 byte_offset;
     size_t lba_offset;
-    bool done;                 // indicates all data transferred
+    bool busy = true; // indicates all data transferred
     // any synchronization primitives like a semaphore or event if needed
 };
 
@@ -62,7 +62,7 @@ public:
     void async_notify();
 
     i64 async_read(char* dest, size_t byte_offset, size_t n_bytes) override;
-    bool async_done() override;
+    bool device_busy() override;
     i64 async_n_read() override;
     i64 read(void* dest, size_t byte_offset, size_t n_bytes);
     i64 read_lba(void* dest, size_t lba_offset, size_t n_bytes);
@@ -109,7 +109,7 @@ private:
     ArtDirectory* root_directory = nullptr;
     volatile bool BM_waiting_for_transfer = false; // todo private member
     i64 stored_buffer_start = -1;
-
+    bool busy = false;
     dma_read_context dma_context = {};
 };
 
