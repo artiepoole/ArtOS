@@ -21,12 +21,15 @@
 #include "ArtDirectory.h"
 #include "ArtFile.h"
 
+#include <limits.h>
 #include <memory.h>
 
 #include "Files.h"
 #include <RTC.h>
 #include <stdio.h>
 #include <StorageDevice.h>
+#include <string.h>
+
 #include "art_string.h"
 
 
@@ -126,6 +129,63 @@ const char* ArtFile::get_name()
 {
     return filename;
 }
+
+int ArtFile::get_parent_path(char* dest)
+{
+    char tmp[MAX_PATH_BUF];
+    auto parent = parent_directory;
+    size_t write_loc = MAX_PATH_BUF - 1;
+    tmp[write_loc - 1] = '/';
+    write_loc--;
+    while (parent)
+    {
+        char* name = parent->get_name();
+        const size_t len = art_string::strlen(name);
+        if (len > write_loc)
+        {
+            return -1;
+        }
+        tmp[write_loc] = '/';
+        write_loc--;
+        strncpy(&tmp[write_loc - len], name, len);
+        write_loc -= len;
+        parent = parent->get_parent();
+    }
+    const size_t path_len = MAX_PATH_BUF - write_loc;
+    strncpy(dest, &tmp[write_loc], path_len);
+    return 0;
+}
+
+
+int ArtFile::get_abs_path(char* dest)
+{
+    char tmp[MAX_PATH_BUF] = {};
+    auto parent = parent_directory;
+    size_t write_loc = MAX_PATH_BUF - 1;
+    strncpy(&tmp[write_loc - file_name_length], filename, file_name_length);
+    write_loc -= file_name_length + 1;
+    tmp[write_loc] = '/';
+    while (parent)
+    {
+        const char* name = parent->get_name();
+        if (!strcmp("/", name)) break;
+
+        const size_t len = art_string::strlen(name);
+        if (len > write_loc)
+        {
+            return -1;
+        }
+        strncpy(&tmp[write_loc - len], name, len);
+        write_loc -= len + 1;
+        tmp[write_loc] = '/';
+        write_loc--;
+        parent = parent->get_parent();
+    }
+    const size_t path_len = MAX_PATH_BUF - 2 - write_loc;
+    strncpy(dest, &tmp[write_loc + 1], path_len);
+    return 0;
+}
+
 
 i64 ArtFile::async_n_read()
 {

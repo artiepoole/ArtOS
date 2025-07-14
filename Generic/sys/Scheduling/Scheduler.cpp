@@ -363,8 +363,8 @@ void Scheduler::create_idle_task()
     proc->cr3_val = kernel_pages().get_phys_addr_of_page_dir();
 }
 
-void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const uintptr_t entry_point,
-                                          const uintptr_t stack_vaddr, const uintptr_t stack_size)
+void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const char* full_path, uintptr_t entry_point,
+                                          uintptr_t stack_vaddr, uintptr_t stack_size)
 {
     auto name = name_loc;
 
@@ -409,7 +409,7 @@ void Scheduler::execute_from_paging_table(PagingTableUser* PTU, const char* name
     // proc->eventQueue = new EventQueue();
     proc->cr3_val = proc->paging_table->get_phys_addr_of_page_dir();
     proc->last_executed = TSC_get_ticks();
-    proc->start(parent_process_id, context, proc_stack, name, true);
+    proc->start(parent_process_id, context, proc_stack, name, full_path, true);
 
     processes[parent_process_id].state = Process::STATE_PARKED;
 }

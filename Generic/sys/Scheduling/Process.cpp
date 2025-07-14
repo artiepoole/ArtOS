@@ -25,7 +25,8 @@
 #include "EventQueue.h"
 #include "art_string.h"
 
-Process::Process() {
+Process::Process()
+{
     state = STATE_DEAD;
     parent_pid = -1;
     priority = PRIORITY_NORMAL;
@@ -39,7 +40,8 @@ Process::Process() {
     paging_table = nullptr;
 }
 
-void Process::reset() {
+void Process::reset()
+{
     state = STATE_DEAD;
     parent_pid = -1;
     priority = PRIORITY_NORMAL;
@@ -47,7 +49,8 @@ void Process::reset() {
     context = cpu_registers_t{};
     stack = NULL;
     name[0] = '\0';
-    if (eventQueue != NULL) {
+    if (eventQueue != NULL)
+    {
         delete eventQueue;
         eventQueue = NULL;
     }
@@ -56,9 +59,10 @@ void Process::reset() {
 }
 
 
-void Process::start(const size_t parent_id, const cpu_registers_t &new_context, void *new_stack, const char *new_name,
-                    const bool is_user) {
-    LOG("Starting ", new_name);
+void Process::start(const size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name, const char* abs_path,
+                    const bool is_user)
+{
+    LOG("Starting ", new_name, " from ", abs_path);
     parent_pid = parent_id;
     state = STATE_READY;
     priority = PRIORITY_NORMAL;
@@ -67,12 +71,16 @@ void Process::start(const size_t parent_id, const cpu_registers_t &new_context, 
     stack = new_stack;
     // TODO: I could map an event queue into the user space memory and then my event processor could populate queues based on target process
     eventQueue = new EventQueue();
-    art_string::strncpy(name, new_name, MIN(32, art_string::strlen(new_name)));
+    art_string::strncpy(name, new_name, MIN(MAX_FILENAME_BUF, art_string::strlen(new_name)));
+    // TODO: this should strip the filename or be provided without the filename!
+    art_string::strncpy(pwd, abs_path, MIN(MAX_FILENAME_BUF, art_string::strlen(new_name)));
     user = is_user;
 }
 
-Process::~Process() {
-    if (eventQueue != NULL) {
+Process::~Process()
+{
+    if (eventQueue != NULL)
+    {
         delete eventQueue;
     }
 }

@@ -8,7 +8,8 @@ file(GLOB_RECURSE LibFiles
         "SIMD/*.cpp"
 )
 
-add_library(ArtOS_lib STATIC kernel.cpp ${LibFiles})
+add_library(ArtOS_lib STATIC kernel.cpp ${LibFiles}
+        limits.h)
 
 target_include_directories(ArtOS_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}

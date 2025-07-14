@@ -43,6 +43,8 @@ public:
     _PDCLIB_int_least64_t seek(u64 byte_offset, int whence);
     int write(const char* src, size_t byte_count);
     const char* get_name();
+    int get_parent_path(char* dest);
+    int get_abs_path(char* dest);
 
     i64 async_n_read();
 

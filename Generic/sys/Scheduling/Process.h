@@ -23,6 +23,7 @@
 
 #include "types.h"
 #include "CPU.h"
+#include "limits.h"
 
 
 class EventQueue;
@@ -34,7 +35,7 @@ struct Process
 {
     Process();
     void reset();
-    void start(size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name, bool is_user);
+    void start(size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name, const char* abs_path, bool is_user);
     ~Process();
 
     enum State_t
@@ -63,13 +64,14 @@ struct Process
     Priority_t priority;
     cpu_registers_t context;
     //    u32 base_vaddr;
-    char name[32]; //this can be stored in an equivalent of proc?
+    char name[MAX_FILENAME_BUF]; //this can be stored in an equivalent of proc?
     void* stack;
     EventQueue* eventQueue;
     bool user;
     PagingTableUser* paging_table;
     uintptr_t cr3_val;
     u64 last_executed;
+    char pwd[MAX_PATH_BUF]; // max path length is 256
 };
 
 

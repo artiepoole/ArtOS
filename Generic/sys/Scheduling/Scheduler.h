@@ -47,7 +47,7 @@ public:
     static void exit(cpu_registers_t* r);
     static void kill(size_t target_pid);
 
-    static void execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, uintptr_t entry_point,
+    static void execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, const char* full_path, uintptr_t entry_point,
                                           uintptr_t stack_vaddr, uintptr_t stack_size);
     PagingTableUser& getCurrentPagingTable();
 

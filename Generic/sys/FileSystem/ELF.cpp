@@ -129,7 +129,9 @@ int ELF::execute()
             // HERE unmap would mark the physical memory as free but it is mapped in user space :o
         }
     }
-    Scheduler::execute_from_paging_table(user_table, file->get_name(), elf_header.e_entry, stack_vaddr, stack_size);
+    char path[MAX_PATH_BUF] = {};
+    file->get_abs_path(path);
+    Scheduler::execute_from_paging_table(user_table, file->get_name(), path, elf_header.e_entry, stack_vaddr, stack_size);
     return 0;
 }
 
@@ -137,3 +139,4 @@ bool ELF::is_executable()
 {
     return elf_header.e_ident.magic == ELF_MAGIC;
 }
+;
