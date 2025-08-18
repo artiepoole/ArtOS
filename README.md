@@ -112,24 +112,9 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 
 ## Known issues:
 
-- [x] I have not made an internal memory allocator.
-  - I have relied on the pdclib malloc implementation too heavily, and now it is supposed to use syscalls so that user space processes can use it, and I have no way to internally allocate while staying within the relevant context.
-- [x] Paging is only ever kernel level and global. This means that user processes cannot have their own memory map.
-  - Each process should have its own paging table, but I mustn't multi-allocate physical addresses. This probably just needs to use the physical address bitmap globally.
-  - Should probably make a PageTable class which handles the virtual address mapping
-- [x] The IDT files are trash.
-  - It's difficult to change the interrupt vectors.
-  - If the vector is not sequential it is not assigned properly e.g. even if I call the syscall isr 0x80, the actual interrupt is 0x50. This is a problem for the spurious interrupt as well because it HAS to be >240 or similar.
-- [ ] My interrupt process/Scheduler/IDE driver components do not work together
-  - The IDE driver needs to receive interrupts but the process requesting a read triggers an interrupt which disables interrupts until it returns. This means the IDE interrupt is lost.
-  - I need to make it so that a read syscall causes the calling task to sleep
-  - I need to implement concurrency handling in the driver (i.e. spinlocks or whatever)
-  - I need to keep track of what process was requesting the read so that it can be resumed when the read finishes.
-  - Should the IDE exist as a process/daemon so that it can have its own stack etc?
-- [x] malloc has no concept of user or alignment. Internally, I should implement a new version of this or just use mmap instead of malloc? I think if I fix the paging tables issue, that will be handled better.
 - [ ] I need to create some useful tools for the shell
   - such as "ls", "cd", "run" etc. This means I need to create the idea of a path/path string within my OS.
-- [ ] doom is not running at fixed framerate. Too fast
+
 ## Tools
 - i686-elf gcc cross-compiler
 - QEMU
