@@ -25,8 +25,7 @@
 #include "EventQueue.h"
 #include "art_string.h"
 
-Process::Process()
-{
+Process::Process() {
     state = STATE_DEAD;
     parent_pid = -1;
     priority = PRIORITY_NORMAL;
@@ -40,8 +39,7 @@ Process::Process()
     paging_table = nullptr;
 }
 
-void Process::reset()
-{
+void Process::reset() {
     state = STATE_DEAD;
     parent_pid = -1;
     priority = PRIORITY_NORMAL;
@@ -49,8 +47,7 @@ void Process::reset()
     context = cpu_registers_t{};
     stack = NULL;
     name[0] = '\0';
-    if (eventQueue != NULL)
-    {
+    if (eventQueue != NULL) {
         delete eventQueue;
         eventQueue = NULL;
     }
@@ -59,8 +56,8 @@ void Process::reset()
 }
 
 
-void Process::start(const size_t parent_id, const cpu_registers_t& new_context, void* new_stack, const char* new_name, const bool is_user)
-{
+void Process::start(const size_t parent_id, const cpu_registers_t &new_context, void *new_stack, const char *new_name,
+                    const bool is_user) {
     LOG("Starting ", new_name);
     parent_pid = parent_id;
     state = STATE_READY;
@@ -74,10 +71,8 @@ void Process::start(const size_t parent_id, const cpu_registers_t& new_context, 
     user = is_user;
 }
 
-Process::~Process()
-{
-    if (eventQueue != NULL)
-    {
+Process::~Process() {
+    if (eventQueue != NULL) {
         delete eventQueue;
     }
 }

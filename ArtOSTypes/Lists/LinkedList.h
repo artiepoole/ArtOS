@@ -35,14 +35,24 @@ class LinkedList
     LinkedListNode* _tail = nullptr;
 
 public:
-    T* head()
+    T* head_data()
     {
         return &_head->data;
     }
 
-    T* tail()
+    T* tail_data()
     {
         return &_tail->data;
+    }
+
+    LinkedListNode* head()
+    {
+        return _head;
+    }
+
+    LinkedListNode* tail()
+    {
+        return &_tail;
     }
 
     bool append(T data)
@@ -168,7 +178,6 @@ public:
         }
         return nullptr;
     }
-
 };
 
 //TODO: doubly linked list

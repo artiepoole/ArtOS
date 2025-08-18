@@ -71,11 +71,8 @@ PagingTableUser::~PagingTableUser() {
 uintptr_t PagingTableUser::get_phys_from_virtual(uintptr_t v_addr) {
     const virtual_address_t lookup = {v_addr};
 
-    auto [table] = *reinterpret_cast<page_table *>(
-        paging_directory[lookup.page_directory_index].page_table_entry_address << base_address_shift);
-
-    if (const auto entry = table[lookup.page_table_index]; entry.present) {
-        return entry.physical_address;
+    if (const auto entry = paging_table[lookup.page_directory_index].table[lookup.page_table_index]; entry.present) {
+        return entry.physical_address << base_address_shift;
     }
     return 0;
 }

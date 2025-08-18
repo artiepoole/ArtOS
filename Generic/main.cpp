@@ -286,8 +286,6 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.draw();
 
 
-
-
     LOG("LOADED OS. Entering event loop.");
 
     [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);

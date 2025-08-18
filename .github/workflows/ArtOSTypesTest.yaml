@@ -15,4 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: test
-        run: . ./.github/scripts/cmake_test.sh
+        run: |
+          echo "::group::cmake_test.sh"
+          ./.github/scripts/cmake_test.sh
+          echo "::endgroup::"

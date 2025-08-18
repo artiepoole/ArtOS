@@ -116,7 +116,10 @@ int art_open(const char* filename, [[maybe_unused]] unsigned int mode)
         return fd;
     }
 
-    if (auto* file = devices.find_first<ArtFile*>([filename](StorageDevice* dev) { return dev->find_file(filename); }))
+    if (auto* file = devices.find_first<ArtFile*>([filename](StorageDevice* dev)
+    {
+        return dev->find_file(filename);
+    }))
     {
         int file_id = find_free_handle();
         if (const int err = register_file_handle(file_id, file); err != 0)
@@ -164,6 +167,40 @@ int art_read(const int file_id, char* buf, const size_t count)
     return h->read(buf, count);
 }
 
+extern "C"
+int art_async_read(const int file_id, char* buf, const size_t count)
+{
+    ArtFile* h = get_file_handle(file_id);
+    if (h == NULL)
+    {
+        // unknown FD
+        return -1;
+    }
+    return h->start_async_read(buf, count);
+}
+
+bool art_dev_busy(const int file_id)
+{
+    ArtFile* h = get_file_handle(file_id);
+    if (h == NULL)
+    {
+        // unknown FD
+        return false;
+    }
+    return h->device_busy();
+}
+
+i64 art_async_n_read(const int file_id)
+{
+    ArtFile* h = get_file_handle(file_id);
+    if (h == NULL)
+    {
+        // unknown FD
+        return false;
+    }
+    return h->async_n_read();
+}
+
 
 int art_exec(const int fid)
 {
@@ -183,24 +220,15 @@ _PDCLIB_int_least64_t art_seek_stream(const _PDCLIB_file_t* stream, _PDCLIB_int_
     {
         return h->seek(offset, whence);
     }
-    // if (strcmp(->get_name(), "doom1.wad") == 0)
-    // {
-    //     return doom_seek(stream, offset, whence);
-    // }
     return ERR_NOT_FOUND;
 }
 
 extern "C"
 _PDCLIB_int_least64_t art_seek(int fd, _PDCLIB_int_least64_t offset, const int whence)
 {
-    //TODO: implement device seek_pos changes.
     if (ArtFile* h = handles[fd])
     {
         return h->seek(offset, whence);
     }
-    // if (strcmp(->get_name(), "doom1.wad") == 0)
-    // {
-    //     return doom_seek(stream, offset, whence);
-    // }
     return ERR_NOT_FOUND;
 }

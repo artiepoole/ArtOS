@@ -27,27 +27,45 @@
 #include "paging.h"
 
 
-class PagingTableKernel : public PagingTable
-{
+class PagingTableKernel : public PagingTable {
 public:
     PagingTableKernel();
 
     // void late_init();
 
-    void* mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
+    void *mmap(uintptr_t addr, size_t length, int prot, int flags, int fd, size_t offset) override;
+
     void identity_map(uintptr_t phys_addr, size_t size, bool writable, bool user);
-    int munmap(void* addr, size_t length_bytes) override;
+
+    int munmap(void *addr, size_t length_bytes) override;
+
     uintptr_t get_phys_addr_of_page_dir() override;
+
     uintptr_t get_next_virtual_chunk(size_t idx, size_t n_pages);
+
     uintptr_t get_next_virtual_addr(uintptr_t start_addr);
+
     bool dir_entry_present(size_t idx) override;
+
     uintptr_t get_phys_from_virtual(uintptr_t v_addr) override;
+
     page_table_entry_t check_vmap_contents(uintptr_t v_addr) override;
+
     void assign_page_table_entry(uintptr_t physical_addr, virtual_address_t v_addr, bool writable, bool user);
+
     void assign_page_directory_entry(size_t dir_idx, bool writable, bool user);
+
     int unassign_page_table_entries(size_t start_idx, size_t n_pages) override;
-    void direct_map(uintptr_t sector_start, size_t sector_size, u8 permissions);
-    void reserve_kernel_v_addr_space(void* start, void* end);
+
+    uintptr_t map_user_to_kernel(uintptr_t user_vaddr, i64 length);
+
+    void unmap_user_to_kernel(uintptr_t kernel_vaddr, i64 length);
+
+    void direct_map(uintptr_t physical_address, uintptr_t virt_addr, bool writable, bool user);
+
+    void reserve_kernel_v_addr_space(void *start, void *end);
+
+    void unreserve_kernel_v_addr_space(void *start, void *end);
 
 private:
     DenseBooleanArray<u64> page_available_virtual_bitmap;
