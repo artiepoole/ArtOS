@@ -21,7 +21,12 @@
 #include "RTC.h"
 #include "ports.h"
 #include "logging.h"
-#include "mystring.h"
+#include "string.h"
+
+#include "art_string.h"
+
+
+using namespace art_string;
 
 u16 CURRENT_YEAR = 2000;
 RTC* rtc_instance = nullptr;
@@ -60,14 +65,14 @@ RTC& RTC::get()
     return *rtc_instance;
 }
 
-tm* RTC::getTime()
+int RTC::getTime(tm* dest)
 {
     if (rtc_instance)
     {
-        return &current_time;
+        art_string::memcpy(dest, &current_time, sizeof(tm));
+        return 0;
     }
-
-    return &empty_time;
+    return -1;
 }
 
 time_t RTC::epochTime()

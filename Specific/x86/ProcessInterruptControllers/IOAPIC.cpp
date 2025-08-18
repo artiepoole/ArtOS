@@ -20,7 +20,7 @@
 
 #include "IOAPIC.h"
 #include "logging.h"
-#include "memory.h"
+#include "paging.h"
 
 #if FORLAPTOP
     #define TARGET_APIC 2
@@ -104,6 +104,28 @@ void IOAPIC::disable_IRQ(const u8 irq_before)
     data.upper = *data_addr;
     // change settings
     data.lvt.interrupt_mask = true;
+    // write out data
+    *base_addr = (IOREDTBL_START + irq_before * 2);
+    *data_addr = data.lower;
+    *base_addr = (IOREDTBL_START + irq_before * 2 + 1);
+    *data_addr = data.upper; // in our case, upper always 0
+    // store for lookup
+    redirect_entries[irq_before] = data;
+}
+
+
+void IOAPIC::enable_IRQ(const u8 irq_before)
+{
+    if (redirect_entries[irq_before].lvt.interrupt_mask == false) return;
+
+    io_redirect_entry data{};
+    // load the previous entry, ensuring it is populated.
+    *base_addr = (IOREDTBL_START + irq_before * 2);
+    data.lower = *data_addr;
+    *base_addr = (IOREDTBL_START + irq_before * 2 + 1);
+    data.upper = *data_addr;
+    // change settings
+    data.lvt.interrupt_mask = false;
     // write out data
     *base_addr = (IOREDTBL_START + irq_before * 2);
     *data_addr = data.lower;

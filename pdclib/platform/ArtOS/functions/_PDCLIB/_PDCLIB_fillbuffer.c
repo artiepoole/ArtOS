@@ -8,9 +8,13 @@
    use with POSIX kernels.
 */
 
+#include <Files.h>
+
 #include "stdio.h"
 
 #ifndef REGTEST
+
+#include <kernel.h>
 
 #include "_PDCLIB_glue.h"
 
@@ -21,7 +25,6 @@ extern "C" {
 #endif
 
 typedef long ssize_t;
-extern ssize_t read(int fd, char* buf, size_t count);
 
 #ifdef __cplusplus
 }

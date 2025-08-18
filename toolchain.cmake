@@ -4,29 +4,23 @@ set(CMAKE_SYSTEM_PROCESSOR i686)
 
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
-
-set(GCC_VERSION 13.3.0)
-set(TOOLS $ENV{HOME}/opt/cross)
-set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-elf-gcc)
-set(CMAKE_C_COMPILER ${TOOLS}/bin/i686-elf-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLS}/bin/i686-elf-g++)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS " -ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti") # -Werror
-set(CMAKE_C_FLAGS " -ffreestanding -Wall -Wextra")
+set(CMAKE_ASM_FLAGS "-m32 -no-pie")
+set(CMAKE_LINK_FLAGS "-m32 -no-pie")
+set(CMAKE_CXX_FLAGS "-ffreestanding -Wall -Wextra  -fno-exceptions -fno-rtti -m32 -no-pie -fno-threadsafe-statics -fno-stack-protector") # -Werror
+set(CMAKE_C_FLAGS "-ffreestanding -Wall -Wextra -m32 -no-pie")
+set(CMAKE_POSITION_INDEPENDENT_CODE 1)
+#
+set(CRT_BEGIN ${CMAKE_SOURCE_DIR}/external_resources/compilerfiles/crtbegin.o)
+set(CRT_END ${CMAKE_SOURCE_DIR}/external_resources/compilerfiles/crtend.o)
 
-
-set(CRT_BEGIN ${TOOLS}/lib/gcc/i686-elf/${GCC_VERSION}/crtbegin.o)
-set(CRT_END ${TOOLS}/lib/gcc/i686-elf/${GCC_VERSION}/crtend.o)
 
 set(CMAKE_C_LINK_EXECUTABLE
-        "<CMAKE_C_COMPILER>  <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> ${CRT_BEGIN} <OBJECTS> ${CRT_END} -o <TARGET> <LINK_LIBRARIES>")
+        "<CMAKE_C_COMPILER>  <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> ${CRT_BEGIN} <OBJECTS> ${CRT_END} -o <TARGET> <LINK_LIBRARIES> -no-pie ")
 
 set(CMAKE_CXX_LINK_EXECUTABLE
-        "<CMAKE_CXX_COMPILER>  <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> ${CRT_BEGIN} <OBJECTS> ${CRT_END} -o <TARGET> <LINK_LIBRARIES> -lgcc")
+        "<CMAKE_CXX_COMPILER>  <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> ${CRT_BEGIN} <OBJECTS> ${CRT_END} -o <TARGET> <LINK_LIBRARIES> -lgcc -no-pie")
 
 set(CMAKE_C_FLAGS_RELEASE "-O3 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g")

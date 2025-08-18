@@ -51,6 +51,7 @@ public:
     void resume();
     void remap_IRQ(u8 irq_before, u8 irq_after);
     void disable_IRQ(u8 irq_before);
+    void enable_IRQ(u8 irq_before);
     void enable_all();
 
 private:

@@ -70,7 +70,7 @@ char dev_types[255][32] = {
 };
 
 size_t pci_device_count = 0;
-PCIDevice device_list[32];
+PCIDevice device_list[32] = {};
 
 PCIDevice::PCIDevice()
 {

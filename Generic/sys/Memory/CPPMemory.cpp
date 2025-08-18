@@ -19,15 +19,14 @@
 //
 
 #include "CPPMemory.h"
-
-#include "stdlib.h"
+#include "memory.h"
 
 
 void* operator new(size_t size) throw()
 {
     if (size == 0) size = 1;
 
-    return malloc(size);
+    return art_alloc(size, 4);
 }
 
 
@@ -35,26 +34,39 @@ void* operator new[](size_t size) throw()
 {
     if (size == 0) size = 1;
 
-    return malloc(size);
+    return art_alloc(size, 4);
+}
+
+void* operator new(size_t size, std::align_val_t alignment)
+{
+    if (size == 0) size = 1;
+
+    return art_alloc(size, static_cast<size_t>(alignment));
 }
 
 
 void operator delete(void* p) throw()
 {
-    if (p) free(p);
+    if (p) art_free(p);
 }
 
-void operator delete(void* p, size_t) throw()
+
+void operator delete(void* ptr, size_t ) noexcept {
+    // optional — if alignment matters, handle here
+    operator delete(ptr);
+}
+
+void operator delete(void* p, size_t, std::align_val_t) throw()
 {
-    if (p) free(p);
+    if (p) art_free(p);
 }
 
 void operator delete[](void* p) throw()
 {
-    if (p) free(p);
+    if (p) art_free(p);
 }
 
 void operator delete[](void* p, size_t) throw()
 {
-    if (p) free(p);
+    if (p) art_free(p);
 }

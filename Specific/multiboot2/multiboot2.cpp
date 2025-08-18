@@ -24,9 +24,10 @@
 #include "ACPI.h"
 #include "stdlib.h"
 #include "string.h"
+#include "paging.h"
 
 
-artos_boot_header boot_info{};
+artos_boot_header boot_info = {};
 
 
 /*
@@ -34,10 +35,12 @@ artos_boot_header boot_info{};
  */
 artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_address)
 {
+    dirty_ident_map(boot_info_address, boot_info_address + 4096);
     const auto start_address = reinterpret_cast<u8*>(boot_info_address);
     auto target_addr = start_address + 8;
     const u32 size = *reinterpret_cast<u32*>(start_address); // first 4 bytes of this header is the size of the table
-
+    dirty_ident_unmap(boot_info_address, boot_info_address + 4096);
+    dirty_ident_map(reinterpret_cast<uintptr_t>(start_address), reinterpret_cast<uintptr_t>(start_address) + size);
     // loop through each entry in the table
     while (target_addr < (start_address + size))
     {
@@ -142,6 +145,7 @@ artos_boot_header* multiboot2_populate(const multiboot2_uint32_t boot_info_addre
             target_addr += tag->size + (8 - (tag->size % 8));
         }
     }
+    dirty_ident_unmap(reinterpret_cast<uintptr_t>(start_address), reinterpret_cast<uintptr_t>(start_address) + size);
     return &boot_info;
 }
 

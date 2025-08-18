@@ -25,12 +25,6 @@ enable_testing()
 
 include(GoogleTest)
 
-add_executable(string_test string_test.cpp ../Generic/sys/ComponentTypes/mystring.cpp)
-target_link_libraries(string_test GTest::gtest_main)
-target_include_directories(string_test PRIVATE ../Generic/sys/ComponentTypes)
-gtest_discover_tests(string_test)
-
-
 add_executable(dense_boolean_test DenseBoolean_test.cpp ../ArtOSTypes/DenseBoolean/DenseBoolean.h)
 target_link_libraries(dense_boolean_test GTest::gtest_main)
 target_include_directories(dense_boolean_test PRIVATE ../ArtOSTypes/ ../ArtOSTypes/DenseBoolean)

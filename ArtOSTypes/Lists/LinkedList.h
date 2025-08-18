@@ -31,32 +31,52 @@ class LinkedList
         LinkedListNode* next = nullptr;
     };
 
-    LinkedListNode* head = nullptr;
-    LinkedListNode* tail = nullptr;
+    LinkedListNode* _head = nullptr;
+    LinkedListNode* _tail = nullptr;
 
 public:
+    T* head_data()
+    {
+        return &_head->data;
+    }
+
+    T* tail_data()
+    {
+        return &_tail->data;
+    }
+
+    LinkedListNode* head()
+    {
+        return _head;
+    }
+
+    LinkedListNode* tail()
+    {
+        return &_tail;
+    }
+
     bool append(T data)
     {
         auto* newNode = new LinkedListNode{data, nullptr};
         if (newNode == nullptr) { return false; }
-        if (head == nullptr)
+        if (_head == nullptr)
         {
             // empty list
-            head = newNode;
-            tail = newNode;
+            _head = newNode;
+            _tail = newNode;
             return true;
         }
         // Not empty, just add a node to the end and update tail
-        tail->next = newNode;
-        tail = newNode;
+        _tail->next = newNode;
+        _tail = newNode;
         return true;
     };
 
-
+    // TODO: tail not handled properly here.
     bool remove(T data)
     {
-        if (head == nullptr) return false;
-        LinkedListNode* curr = head;
+        if (_head == nullptr) return false;
+        LinkedListNode* curr = _head;
         LinkedListNode* prev = nullptr;
         while (curr)
         {
@@ -68,10 +88,14 @@ public:
                 }
                 else // currently at the first node.
                 {
-                    head = curr->next; // remake the link but the first node is replaced with the second
+                    _head = curr->next; // remake the link but the first node is replaced with the second
+                }
+                if (curr == _tail) // update tail
+                {
+                    _tail = prev;
                 }
                 delete curr; // free the memory
-                return true; // success
+                return true; // head success
             }
             // Not yet found so go to the next node
             prev = curr;
@@ -80,10 +104,11 @@ public:
         return false;
     }
 
+    // TODO: tail not handled properly here.
     bool remove(T* data)
     {
-        if (head == nullptr) return false;
-        LinkedListNode* curr = head;
+        if (_head == nullptr) return false;
+        LinkedListNode* curr = _head;
         LinkedListNode* prev = nullptr;
         while (curr)
         {
@@ -95,7 +120,11 @@ public:
                 }
                 else // currently at the first node.
                 {
-                    head = curr->next; // remake the link but the first node is replaced with the second
+                    _head = curr->next; // remake the link but the first node is replaced with the second
+                }
+                if (curr == _tail) // update tail
+                {
+                    _tail = prev;
                 }
                 delete curr; // free the memory
                 return true; // success
@@ -111,8 +140,8 @@ public:
     template <typename predicate>
     void iterate(predicate pred) const
     {
-        if (!head) { return; }
-        LinkedListNode* n = head;
+        if (!_head) { return; }
+        LinkedListNode* n = _head;
         while (n != nullptr)
         {
             pred(&n->data);
@@ -123,7 +152,7 @@ public:
     template <typename result, typename predicate>
     result find_first(predicate pred)
     {
-        LinkedListNode* curr = head;
+        LinkedListNode* curr = _head;
         while (curr != nullptr)
         {
             if (result res = pred(curr->data); res)
@@ -138,7 +167,7 @@ public:
     template <typename predicate>
     T* find_if(predicate pred)
     {
-        LinkedListNode* curr = head;
+        LinkedListNode* curr = _head;
         while (curr != nullptr)
         {
             if (pred(curr->data))
@@ -149,7 +178,6 @@ public:
         }
         return nullptr;
     }
-
 };
 
 //TODO: doubly linked list

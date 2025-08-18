@@ -45,7 +45,7 @@ public:
 
 	u32 setDivider(u8 divider);
 
-	tm *getTime();
+	int getTime(tm* dest);
 
 	void toString(char* out_str) const;
 	time_t epochTime();

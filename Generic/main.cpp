@@ -15,29 +15,24 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 #include <float.h>
+#include <../ArtOS_lib/kernel.h>
+#include <paging.h>
+#include <SMBIOS.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-
+#include "CPPMemory.h"
 #include "Serial.h"
 #include "types.h"
-#include "multiboot_header.h"
 #include "VideoGraphicsArray.h"
 #include "IDT.h"
 #include "PIC.h"
 #include "Terminal.h"
-// #include "stdlib.h"
-// #include "malloc.c"
-
-#include "SIMD.h"
-
-#include "CPPMemory.h"
+#include "syscall.h"
+#include "paging.h"
 #include "icxxabi.h"
-
 #include "LocalAPIC.h"
 #include "IOAPIC.h"
-
 #include "ACPI.h"
 #include "PCIDevice.h"
 #include "multiboot2.h"
@@ -47,43 +42,28 @@
 #include "RTC.h"
 #include "PIT.h"
 #include "EventQueue.h"
-#include "string.h"
 #include "IDEStorageContainer.h"
 #include "ATA.h"
 #include "BusMasterController.h"
 #include "CPUID.h"
-#include "kernel.h"
 #include "logging.h"
 #include "memory.h"
 #include "Scheduler.h"
-#include "Shell.h"
 #include "GDT.h"
 #include "Terminal.h"
 #include "Serial.h"
-
+#include "CPPMemory.h"
 #if FORLAPTOP
 #include "CPUID.h"
 #include "SMBIOS.h"
 #endif
-
-extern "C" {
-#include "doomgeneric/doomgeneric.h"
-}
-
-
-/* Check if the compiler thinks you are targeting the wrong operating system. */
-#if defined(__linux__)
-#error "You are not using a cross-compiler, you will most certainly run into trouble"
+#if SIMD
+#include "simd_enable.h"
 #endif
 
-/* This tutorial will only work for the 32-bit ix86 targets. */
-#if !defined(__i386__)
-#error "This tutorial needs to be compiled with a ix86-elf compiler"
-#endif
+IDE_drive_info_t drive_list[4] = {};
+uintptr_t BM_controller_base_port = 0;
 
-// VideoGraphicsArray* vgap;
-IDE_drive_info_t drive_list[4];
-uintptr_t BM_controller_base_port;
 
 extern "C"
 void kernel_main(unsigned long magic, unsigned long boot_info_addr)
@@ -101,11 +81,18 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     }
 
     // Enable simd if available
+#if SIMD
     simd_enable();
-
+#endif
     // Must populate boot info in order to set up memory handling required to use malloc/new
     [[maybe_unused]] artos_boot_header* boot_info = multiboot2_populate(boot_info_addr);
     mmap_init(&boot_info->mmap);
+    multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
+
+    size_t framebuffer_size_b = frame_info->framebuffer_width * frame_info->framebuffer_height * frame_info->framebuffer_bpp / 8;
+    paging_identity_map(frame_info->framebuffer_addr, framebuffer_size_b, true, false);
+    art_memory_init();
+
 
     // Then load all the boot information into a usable format.
     LOG("Populated boot info.");
@@ -113,7 +100,9 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // Load serial early for logging.
 #if ENABLE_SERIAL_LOGGING
-    auto serial = Serial();
+    // auto serial = Serial();
+    auto& serial = get_serial();
+    serial.link_file();
 #endif
 
     // We want time-stamping to work asap.
@@ -131,10 +120,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("CR0 CACHE DISABLED?: ", static_cast<bool>(get_cr0().CD));
 #endif
-    multiboot2_tag_framebuffer_common* frame_info = &boot_info->framebuffer_common;
 
-    size_t framebuffer_size_b = frame_info->framebuffer_width * frame_info->framebuffer_height * frame_info->framebuffer_bpp / 8;
-    paging_identity_map(frame_info->framebuffer_addr, framebuffer_size_b, true, false);
+
     // And then we want graphics.
     VideoGraphicsArray vga(frame_info);
     vga.draw();
@@ -175,6 +162,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     // remap IRQs in APIC
     io_apic->remap_IRQ(2, 32); // PIT moved to pin2 on APIC. 0 is taken for something else
+    io_apic->disable_IRQ(2);
     vga.incrementProgressBarChunk(bar);
     io_apic->remap_IRQ(1, 33); // Keyboard
     vga.incrementProgressBarChunk(bar);
@@ -185,7 +173,8 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     io_apic->remap_IRQ(15, 47); // IDE primary
     vga.incrementProgressBarChunk(bar);
 
-    configure_pit(2000);
+    configure_pit(2000, io_apic, 2);
+
     vga.incrementProgressBarChunk(bar);
 
     // Create a new GDT and load it. Paging is used so this is just redundant
@@ -196,6 +185,7 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     CPUID_init(); // load CPUID values and try and get TSC rate otherwise get TSC rate from PIT calibration
     local_apic->configure_timer(DIVISOR_128); // use TSC rate to calibrate TSC->LAPIC timer ratio and calculate LAPIC timer rate at given divisor
+
     // TODO: In order to implement scheduling:
     // todo: Processes need a way to yield
     // todo: Processes need to have a way to start/be executed
@@ -206,28 +196,32 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
 
     LOG("Singletons loaded.");
 
-#if ENABLE_SERIAL_LOGGING
-    // TODO: register_file_handle does not instantiate an fstream properly. Only fopen does.
-    // This means that these should not be registered directly and instead should use filenames.
-    // These filenames are already in place.
-    register_file_handle(0, Serial::get_file()); // stdin
-    vga.incrementProgressBarChunk(bar);
-    register_file_handle(1, Serial::get_file()); // stdout
-    vga.incrementProgressBarChunk(bar);
-    register_file_handle(2, Serial::get_file()); // stderr
-    vga.incrementProgressBarChunk(bar);
-    FILE* com = fopen("/dev/com1", "w");
-    vga.incrementProgressBarChunk(bar);
-    fprintf(com, "%s\n", "This should print to com0 via fprintf");
-    printf("This should print to com0 via printf\n");
-#elif ENABLE_TERMINAL_LOGGING
+#if ENABLE_TERMINAL_LOGGING
     // TODO: handle terminal file wrapper also.
     register_file_handle(0, nullptr); // stdin
-    register_file_handle(1, Terminal::get_stdout_file()); // stdout
-    register_file_handle(2, Terminal::get_stderr_file()); // stderr
+    vga.incrementProgressBarChunk(bar);
+    register_file_handle(1, get_terminal().get_stdout_file()); // stdout
+    vga.incrementProgressBarChunk(bar);
+    register_file_handle(2, get_terminal().get_stderr_file()); // stderr
+    vga.incrementProgressBarChunk(bar);
     printf("This should print out to terminal via printf\n");
     fprintf(stderr, "This should print error to screen via fprintf\n");
     fprintf(stdout, "This should print out to screen via fprintf\n");
+    vga.incrementProgressBarChunk(bar);
+#elif ENABLE_SERIAL_LOGGING
+    // TODO: register_file_handle does not instantiate an fstream properly. Only fopen does.
+    // This means that these should not be registered directly and instead should use filenames.
+    // These filenames are already in place.
+    register_file_handle(0, get_serial().get_file()); // stdin
+    vga.incrementProgressBarChunk(bar);
+    register_file_handle(1, get_serial().get_file()); // stdout
+    vga.incrementProgressBarChunk(bar);
+    register_file_handle(2, get_serial().get_file()); // stderr
+    vga.incrementProgressBarChunk(bar);
+    int com = art_open("/dev/com1\0", 0);
+    art_write(com, "This should print to com0 via art_write.\0", 42);
+    vga.incrementProgressBarChunk(bar);
+    printf("This should print to com0 via printf\n");
 #endif
     PCI_populate_list();
     vga.incrementProgressBarChunk(bar);
@@ -287,21 +281,23 @@ void kernel_main(unsigned long magic, unsigned long boot_info_addr)
     vga.incrementProgressBarChunk(bar);
 
 
-    sleep_s(1);
     // vga.draw();
     terminal.setRegion(0, 0, frame_info->framebuffer_width, frame_info->framebuffer_height);
+    vga.draw();
+
+
     LOG("LOADED OS. Entering event loop.");
 
-    // #if !ENABLE_TERMINAL_LOGGING
-    //     Terminal::write("Loading done.\n");
-    // #endif
+    [[maybe_unused]] auto scheduler = new Scheduler(local_apic, &kernel_events);
 
+    int shell_file = art_open("b.art", 0);
+    if (shell_file < 1) { LOG("CRITICAL: Failed to open b.art"); }
+    override_file_handle(1, Terminal::get_stdout_file()); // stdout
+    override_file_handle(2, Terminal::get_stderr_file()); // stderr
+    art_exec(shell_file);
+    yield();
+    art_close(shell_file);
 
-    // TODO: the shell should not be singleton!
-    // Stores kernel/scheduler as PID 0. This then starts the kernel shell as PID 1. The shell can then be used to run doom :)
-    [[maybe_unused]] auto scheduler = new Scheduler(shell_run, "shell", local_apic, &kernel_events);
-
-    while (true);
     WRITE("ERROR: Left main loop.");
     asm("hlt");
 

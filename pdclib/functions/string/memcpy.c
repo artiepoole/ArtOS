@@ -1,3 +1,19 @@
+// ArtOS - hobby operating system by Artie Poole
+// Copyright (C) 2025 Stuart Forbes Poole <artiepoole>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 /* memcpy( void *, const void *, size_t )
 
    This file is part of the Public Domain C Library (PDCLib).
@@ -7,27 +23,23 @@
 #include "string.h"
 
 #ifndef REGTEST
-
-
+#if SIMD
 #include "SIMD.h"
-
+#endif
 
 void* memcpy(void* _PDCLIB_restrict dest, const void* _PDCLIB_restrict src, size_t n)
 {
-    if (simd_enabled())
-    {
-        simd_copy(dest, src, n);
-    }
-    else
-    {
-        char* s1 = dest;
-        const char* s2 = src;
+#if SIMD
+    simd_copy(dest, src, n);
+#else
+    char* s1 = dest;
+    const char* s2 = src;
 
-        while (n--)
-        {
-            *s1++ = *s2++;
-        }
+    while (n--)
+    {
+        *s1++ = *s2++;
     }
+#endif
 
     return dest;
 }

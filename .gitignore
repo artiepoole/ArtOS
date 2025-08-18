@@ -3,7 +3,8 @@
 isodir/*
 out/
 bin/
-*.iso
+
+.actrc
 
 /serial.log
 /external_resources/doomwad/*

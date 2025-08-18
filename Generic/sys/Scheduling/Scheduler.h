@@ -21,65 +21,58 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include <io_queue_entry.h>
 #include <LocalAPIC.h>
+#include <Process.h>
 
 #include  "types.h"
-#include "Process.h"
 
 inline size_t stack_size = 1024 * 1024; // 1MB stack default. Probably not enough.
 constexpr size_t max_processes = 255;
 
 class EventQueue;
-
-#ifdef __cplusplus
+class PagingTableUser;
 
 class Scheduler
 {
 public:
-    Scheduler(void (*main_func)(), char* name, LocalAPIC* timer, EventQueue* kernel_queue);
-    ~Scheduler();
-    static Scheduler& get();
-    // void start(size_t PID);
-    // static void switch_process(size_t new_PID);
-    static void switch_process(cpu_registers_t* r, size_t new_PID);
+    Scheduler(LocalAPIC* timer, EventQueue* kernel_queue);
 
+    ~Scheduler();
+
+    static Scheduler& get();
     static size_t getNextFreeProcessID();
     static size_t getMaxAliveProcessID();
-    // Only takes void foo() types atm. No support for input variables
-    static void execf(void (*func)(), const char* name);
+    static void handle_expired_timers();
+    static void exit(cpu_registers_t* r);
+    static void kill(size_t target_pid);
 
-    // static void fork();
-    static void exit(int status);
+    static void execute_from_paging_table(PagingTableUser* PTU, const char* name_loc, uintptr_t entry_point,
+                                          uintptr_t stack_vaddr, uintptr_t stack_size);
+    PagingTableUser& getCurrentPagingTable();
 
-    static void clean_up_exited_threads();
     static size_t getCurrentProcessID();
     static EventQueue* getCurrentProcessEventQueue();
+    static uintptr_t getCurrentProcessPagingDirectory();
     static size_t getNextProcessID();
-
-    static void start_oneshot(u32 time_ms);
-    // static void store_current_context(size_t PID);
-    static void convert_current_context(cpu_registers_t* r, size_t PID);
-    static void set_current_context(cpu_registers_t* r, size_t PID);
-
+    static void start_oneshot(u32 time_us);
     static void schedule(cpu_registers_t* r);
+
     // static void schedule();
 
-    static void sleep_ms(u32 ms);
+    static void sleep_ms(cpu_registers_t* r);
+    static void append_read(cpu_registers_t* r);
+
+private:
+    static void create_idle_task();
+
+    static void handle_exited_threads();
+    static void handle_io();
+    static size_t get_next_process_id();
+    static void switch_process(cpu_registers_t* r, size_t new_PID);
+    static void store_current_context(cpu_registers_t* r, size_t PID);
+    static void set_current_context(cpu_registers_t* r, size_t PID);
 };
 
 
-extern "C" {
-#endif
-
-// int kexecf(void (*main_func)(), bool user);
-int kfork();
-int kyield();
-int kexit(size_t pid);
-
-
-#ifdef __cplusplus
-}
-#endif
-
-
-#endif //PROCESS_H
+#endif //SCHEDULER_H

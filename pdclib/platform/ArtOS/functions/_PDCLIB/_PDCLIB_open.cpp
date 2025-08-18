@@ -1,3 +1,19 @@
+// ArtOS - hobby operating system by Artie Poole
+// Copyright (C) 2025 Stuart Forbes Poole <artiepoole>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 /* _PDCLIB_open( const char * const, int )
 
    This file is part of the Public Domain C Library (PDCLib).
@@ -11,6 +27,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "kernel.h"
+
 
 #ifndef REGTEST
 
@@ -78,11 +96,61 @@
 
 #include "Files.h"
 
-extern _PDCLIB_fd_t open(const char* const filename, unsigned int mode);
-
-_PDCLIB_fd_t _PDCLIB_open(const char* const filename, unsigned int mode)
+_PDCLIB_fd_t _PDCLIB_open( const char * const filename, unsigned int mode )
 {
-    return open(filename, mode);
+    /* This is an example implementation of _PDCLIB_open() fit for use with
+       POSIX kernels.
+    */
+    int osmode;
+    _PDCLIB_fd_t rc;
+
+    switch ( mode & ( _PDCLIB_FREAD | _PDCLIB_FWRITE | _PDCLIB_FAPPEND | _PDCLIB_FRW ) )
+    {
+        case _PDCLIB_FREAD: /* "r" */
+            osmode = O_RDONLY;
+            break;
+
+        case _PDCLIB_FWRITE: /* "w" */
+            osmode = O_WRONLY | O_CREAT | O_TRUNC;
+            break;
+
+        case _PDCLIB_FAPPEND: /* "a" */
+            osmode = O_WRONLY | O_APPEND | O_CREAT;
+            break;
+
+        case _PDCLIB_FREAD | _PDCLIB_FRW: /* "r+" */
+            osmode = O_RDWR;
+            break;
+
+        case _PDCLIB_FWRITE | _PDCLIB_FRW: /* "w+" */
+            osmode = O_RDWR | O_CREAT | O_TRUNC;
+            break;
+
+        case _PDCLIB_FAPPEND | _PDCLIB_FRW: /* "a+" */
+            osmode = O_RDWR | O_APPEND | O_CREAT;
+            break;
+
+        default: /* Invalid mode */
+            return _PDCLIB_NOHANDLE;
+    }
+
+    if ( osmode & O_CREAT )
+    {
+        return _PDCLIB_NOHANDLE;
+        // rc = open( filename, osmode, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+    }
+    else
+    {
+        rc = open( filename, osmode );
+    }
+
+    if ( rc == _PDCLIB_NOHANDLE )
+    {
+        /* The 1:1 mapping in _PDCLIB_config.h ensures this works. */
+        *_PDCLIB_errno_func() = errno;
+    }
+
+    return rc;
 }
 
 #endif

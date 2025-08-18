@@ -1,0 +1,21 @@
+name: ArtOSTypes CI
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+jobs:
+  build:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: test
+        run: |
+          echo "::group::cmake_test.sh"
+          ./.github/scripts/cmake_test.sh
+          echo "::endgroup::"

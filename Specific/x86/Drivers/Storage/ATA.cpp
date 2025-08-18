@@ -22,7 +22,7 @@
 
 #include <Files.h>
 #include <IDE_handler.h>
-#include <kernel.h>
+#include <syscall.h>
 #include <stdlib.h>
 
 #include "Errors.h"
@@ -140,7 +140,7 @@ enum class ATA_DEVICE_TYPES
  * 0x1F - unknown or unspecified
  */
 
-IDE_drive_info_t* last_drive_info;
+IDE_drive_info_t* last_drive_info = nullptr;
 
 ATA_status_t ATA_get_status(IDE_drive_info_t* drive_info)
 {
@@ -210,7 +210,7 @@ void ATA_select_drive(IDE_drive_info_t* drive_info)
 {
     outb(drive_info->base_port + DRIVE_SEL_OFFSET, drive_info->drive_data);
     last_drive_info = drive_info;
-    sleep_ns(500);
+    ksleep_ns(500);
 }
 
 void ATA_reset_device(IDE_drive_info_t* drive_info)
@@ -228,7 +228,7 @@ void ATA_reset_device(IDE_drive_info_t* drive_info)
     {
         outb(PRIMARY_CONTROL_PORT, RESET_CONTROL);
     }
-    sleep_ns(500); // wait after issuing reset then clear reset command.
+    ksleep_ns(500); // wait after issuing reset then clear reset command.
     if (drive_info->controller_id)
     {
         outb(SECONDARY_CONTROL_PORT, 0x00);
@@ -283,7 +283,7 @@ int ATAPI_ident(IDE_drive_info_t* drive_info, u16* identity_data)
             identity_data[i] = inw(drive_info->base_port + DATA_OFFSET);
         }
         status = ATA_get_alt_status(drive_info);
-        if (status.data_request) { LOG("Read 256 words but drq still set?"); };
+        if (status.data_request) { LOG("Read 256 words but drq still set?"); }
         if (identity_data[0] >> 14 == 0x2)
         {
             LOG("ATAPI device confirmed.");
@@ -365,7 +365,7 @@ int ATA_is_packet_device(IDE_drive_info_t* drive_info)
 {
     ATA_reset_device(drive_info);
 
-    u8 signatures[4] = {0};
+    u8 signatures[4] = {};
     signatures[0] = inb(drive_info->base_port + SECTOR_COUNT_OFFSET);
     signatures[1] = inb(drive_info->base_port + LBA_LOW_OFFSET);
     signatures[2] = inb(drive_info->base_port + LBA_MID_OFFSET);

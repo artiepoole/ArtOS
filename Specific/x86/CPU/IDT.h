@@ -24,9 +24,10 @@
 #include "PIC.h"
 
 
-#define IDT_STUB_COUNT 51
-#define IDT_SPURIOUS_ID 0xFF
-
+#define IDT_STUB_COUNT 255
+#define IDT_SPURIOUS_ID 240
+#define SYSCALL_ID 128
+inline const u8 syscall_id = SYSCALL_ID;
 
 enum
 {
@@ -48,24 +49,24 @@ enum
     IDE_SECONDARY_IRQ,
     LAPIC_IRQ,
     LAPIC_CALIBRATE_IRQ,
-    SPURIOUS_IRQ = 208
-};
+    SYSCALL_IRQ = SYSCALL_ID - 32,
+    SPURIOUS_IRQ = IDT_SPURIOUS_ID - 32
+}__attribute__((section(".trampoline.text")));
 
 class IDT
 {
 public:
     IDT();
+
 private:
-    static void _setDescriptor(u8 idt_index, void* isr_stub, u8 flags);
+    static void _setDescriptor(u8 idt_index, u8 flags);
 };
 
 extern "C"
-void exception_handler(cpu_registers_t* const r);
+void exception_handler(cpu_registers_t* const r)__attribute__((section(".trampoline.text")));
 
 extern "C"
-void irq_handler(cpu_registers_t* const r);
+void irq_handler(cpu_registers_t* const r)__attribute__((section(".trampoline.text")));
 
-extern volatile bool ATA_transfer_in_progress;
-extern volatile bool BM_transfer_in_progress;
 
 #endif //IDT_H

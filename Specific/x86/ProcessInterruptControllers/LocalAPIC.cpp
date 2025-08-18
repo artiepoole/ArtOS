@@ -24,7 +24,7 @@
 #include <TSC.h>
 
 #include "logging.h"
-#include "memory.h"
+#include "paging.h"
 #include "IDT.h"
 uintptr_t* eoi_addr;
 
@@ -56,7 +56,7 @@ union destination_format_register
     };
 
     u32 raw;
-}__attribute__((packed));;
+}__attribute__((packed));
 
 
 union local_destination_register
@@ -128,20 +128,25 @@ LocalAPIC::LocalAPIC(uintptr_t local_apic_physical_address)
 // Returns number of clock cycles per LAPIC tick (e.g. if divisor set to 128, this will be LAPIC_clock_rate/128. Measured using 1000 ticks. Set divisor first).
 void LocalAPIC::calibrate_timer()
 {
-    const size_t n_LAPIC_ticks = 1000000;
-    const auto start_ticks = TSC_get_ticks();
+    constexpr u32 n_LAPIC_ticks = 0x10000;
+    const u64 tsc_start = TSC_get_ticks();
 
-    *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = n_LAPIC_ticks;
-    while (!calibrated)
-    {
-    }
-    auto elapsed_cycles = TSC_get_ticks() - start_ticks;
+    // Start LAPIC timer with a known tick count
+    *reinterpret_cast<volatile u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = n_LAPIC_ticks;
 
-    LAPIC_ratio = elapsed_cycles / n_LAPIC_ticks;
-    // TODO: should use SMBIOS frequency.
-    LAPIC_rate = cpuid_get_TSC_frequency() / LAPIC_ratio;
-    LOG("LAPIC calibrated with TSC ratio: ", LAPIC_ratio);
-    LOG("LAPIC tick rate in Hz: ", cpuid_get_TSC_frequency() / LAPIC_ratio);
+    // Wait until your interrupt handler sets `calibrated = true`
+    while (!calibrated) { }
+
+    const u64 tsc_end = TSC_get_ticks();
+    const u64 elapsed_tsc = tsc_end - tsc_start;
+
+    const u64 tsc_freq = cpuid_get_TSC_frequency(); // in Hz
+
+    LAPIC_rate = static_cast<u64>(n_LAPIC_ticks) * tsc_freq / elapsed_tsc;
+    LOG("LAPIC calibrated:");
+    LOG("  TSC elapsed cycles: ", elapsed_tsc);
+    LOG("  TSC frequency: ", tsc_freq);
+    LOG("  LAPIC rate (Hz): ", LAPIC_rate);
 }
 
 bool LocalAPIC::ready() const
@@ -149,13 +154,22 @@ bool LocalAPIC::ready() const
     return is_ready;
 }
 
-int LocalAPIC::start_timer(u32 ms)
+int LocalAPIC::start_timer_ms(u32 ms) const
 {
     if (!is_ready) return -1;
-    const size_t n_LAPIC_ticks = ms * (LAPIC_rate / 1000);
-    if (n_LAPIC_ticks == 0) return -1;
-    *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = n_LAPIC_ticks;
-    return n_LAPIC_ticks;
+    const u64 n_LAPIC_ticks = static_cast<u64>(ms) * LAPIC_rate / 1000;
+    if (n_LAPIC_ticks == 0 || n_LAPIC_ticks > UINT32_MAX) return -1;
+    *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = static_cast<u32>(n_LAPIC_ticks);
+    return static_cast<int>(n_LAPIC_ticks);
+}
+
+int LocalAPIC::start_timer_us(u32 us) const
+{
+    if (!is_ready) return -1;
+    const u64 n_LAPIC_ticks = static_cast<u64>(us) * LAPIC_rate / 1000000;
+    if (n_LAPIC_ticks == 0 || n_LAPIC_ticks > UINT32_MAX) return -1;
+    *reinterpret_cast<u32*>(base + TIMER_INITIAL_COUNT_OFFSET) = static_cast<u32>(n_LAPIC_ticks);
+    return static_cast<int>(n_LAPIC_ticks);
 }
 
 /* DEPENDS ON PIT and IDT */

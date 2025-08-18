@@ -1,3 +1,19 @@
+// ArtOS - hobby operating system by Artie Poole
+// Copyright (C) 2025 Stuart Forbes Poole <artiepoole>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>
+
 /* _PDCLIB_stdinit
 
    This file is part of the Public Domain C Library (PDCLib).
@@ -38,7 +54,7 @@ static struct _PDCLIB_file_t _PDCLIB_sout = {
     _PDCLIB_MTX_RECURSIVE_INIT,
 #endif
     NULL, &_PDCLIB_serr
-};
+}; // _IONBF <- no buffer _IOLBF <<- linefeed buffer
 static struct _PDCLIB_file_t _PDCLIB_sin = {
     0, _PDCLIB_sin_buffer, BUFSIZ, 0, 0, {0, 0}, 0, {0}, _IOLBF | _PDCLIB_FREAD,
 #ifndef __STDC_NO_THREADS__

@@ -20,16 +20,17 @@
 
 #include "Files.h"
 
-
+//
 #include "ArtFile.h"
 #include "LinkedList.h"
-
+//
 #include "Serial.h"
 #include "logging.h"
 #include <stdio.h>
+
+#include "ELF.h"
 #include "StorageDevice.h"
 
-#include "string.h"
 #include "stdlib.h"
 
 
@@ -91,22 +92,34 @@ int register_file_handle(size_t file_id, ArtFile* file)
     return 0;
 }
 
+int override_file_handle(size_t file_id, ArtFile* file)
+{
+    handles[file_id] = file;
+    return 0;
+}
+
 extern "C"
-int open(const char* filename, [[maybe_unused]] unsigned int mode)
+int art_open(const char* filename, [[maybe_unused]] unsigned int mode)
 {
     // TODO this is unfinished. This should take a path or a working dir
+    if (art_string::strcmp("stdin\0", filename) == 0) return 0;
+    if (art_string::strcmp("stdout\0", filename) == 0) return 1;
+    if (art_string::strcmp("stderr\0", filename) == 0) return 2;
 
-    if (strcmp("/dev/com1", filename) == 0)
+    if (art_string::strcmp("/dev/com1\0", filename) == 0)
     {
         int fd = find_free_handle();
-        if (int err = register_file_handle(fd, Serial::get_file()); err != 0)
+        if (int err = register_file_handle(fd, get_serial().get_file()); err != 0)
         {
             return err;
         }
         return fd;
     }
 
-    if (auto* file = devices.find_first<ArtFile*>([filename](StorageDevice* dev) { return dev->find_file(filename); }))
+    if (auto* file = devices.find_first<ArtFile*>([filename](StorageDevice* dev)
+    {
+        return dev->find_file(filename);
+    }))
     {
         int file_id = find_free_handle();
         if (const int err = register_file_handle(file_id, file); err != 0)
@@ -120,7 +133,7 @@ int open(const char* filename, [[maybe_unused]] unsigned int mode)
 }
 
 extern "C"
-int close(size_t file_id)
+int art_close(size_t file_id)
 {
     if (handles[file_id] != NULL)
     {
@@ -131,7 +144,7 @@ int close(size_t file_id)
 
 
 extern "C"
-size_t write(const int fd, const char* buf, const unsigned long count)
+int art_write(const int fd, const char* buf, const unsigned long count)
 {
     ArtFile* h = get_file_handle(fd);
     if (h == NULL)
@@ -143,7 +156,7 @@ size_t write(const int fd, const char* buf, const unsigned long count)
 }
 
 extern "C"
-size_t read(const int file_id, char* buf, const size_t count)
+int art_read(const int file_id, char* buf, const size_t count)
 {
     ArtFile* h = get_file_handle(file_id);
     if (h == NULL)
@@ -155,16 +168,67 @@ size_t read(const int file_id, char* buf, const size_t count)
 }
 
 extern "C"
-i64 seek(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, const int whence)
+int art_async_read(const int file_id, char* buf, const size_t count)
+{
+    ArtFile* h = get_file_handle(file_id);
+    if (h == NULL)
+    {
+        // unknown FD
+        return -1;
+    }
+    return h->start_async_read(buf, count);
+}
+
+bool art_dev_busy(const int file_id)
+{
+    ArtFile* h = get_file_handle(file_id);
+    if (h == NULL)
+    {
+        // unknown FD
+        return false;
+    }
+    return h->device_busy();
+}
+
+i64 art_async_n_read(const int file_id)
+{
+    ArtFile* h = get_file_handle(file_id);
+    if (h == NULL)
+    {
+        // unknown FD
+        return false;
+    }
+    return h->async_n_read();
+}
+
+
+int art_exec(const int fid)
+{
+    ArtFile* h = get_file_handle(fid);
+    if (auto executable = ELF(h); executable.is_executable())
+    {
+        return executable.execute(); // ideally this would return the exit code.
+    }
+    return -1; // could not execute. Should replace with real error number.
+}
+
+extern "C"
+_PDCLIB_int_least64_t art_seek_stream(const _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, const int whence)
 {
     //TODO: implement device seek_pos changes.
     if (ArtFile* h = handles[stream->handle])
     {
         return h->seek(offset, whence);
     }
-    // if (strcmp(->get_name(), "doom1.wad") == 0)
-    // {
-    //     return doom_seek(stream, offset, whence);
-    // }
+    return ERR_NOT_FOUND;
+}
+
+extern "C"
+_PDCLIB_int_least64_t art_seek(int fd, _PDCLIB_int_least64_t offset, const int whence)
+{
+    if (ArtFile* h = handles[fd])
+    {
+        return h->seek(offset, whence);
+    }
     return ERR_NOT_FOUND;
 }

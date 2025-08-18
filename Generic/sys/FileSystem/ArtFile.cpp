@@ -20,11 +20,14 @@
 
 #include "ArtDirectory.h"
 #include "ArtFile.h"
+
+#include <memory.h>
+
 #include "Files.h"
 #include <RTC.h>
 #include <stdio.h>
 #include <StorageDevice.h>
-#include <string.h>
+#include "art_string.h"
 
 
 ArtFile::ArtFile(ArtDirectory* parent, const FileData& data) : parent_directory(parent)
@@ -41,23 +44,47 @@ ArtFile::ArtFile(StorageDevice* dev, char* tmp_filename): device(dev)
 {
     first_byte = 0;
     size = -1; // bytes
-    datetime = *RTC::get().getTime();
-    file_name_length = strlen(tmp_filename);
-    filename = strdup(tmp_filename);
+    RTC::get().getTime(&datetime);
+    file_name_length = art_string::strlen(tmp_filename);
+    filename = static_cast<char*>(art_alloc(file_name_length + 1));
+    art_string::strcpy(filename, tmp_filename);
 }
 
 /* return number of bytes read or <0 = error */
 size_t ArtFile::read(char* dest, size_t byte_count)
 {
+    while (device_busy())
+    {
+    }
     // TODO: handle checks here.
     // if (byte_count > 1024*64) {byte_count = 1024*64;}
     if (seek_pos + byte_count > size) { byte_count = size - seek_pos; }
     if (byte_count == 0) { return 0; }
     // TODO: figure out what this should return.
-    size_t rc = device->read(dest, first_byte + seek_pos, byte_count);
-    seek_pos += byte_count;
+    // calculates position in disk from start position of file + seek pos
+    const size_t rc = device->read(dest, first_byte + seek_pos, byte_count);
+    seek_pos += rc;
     return rc;
 }
+
+int ArtFile::start_async_read(char* dest, size_t byte_count) const
+{
+    // TODO: handle checks here.
+    // if (byte_count > 1024*64) {byte_count = 1024*64;}
+
+
+    if (seek_pos + byte_count > size) { byte_count = size - seek_pos; }
+    if (byte_count == 0) { return 0; }
+    // TODO: figure out what this should return.
+    // calculates position in disk from start position of file + seek pos
+    return device->async_read(dest, first_byte + seek_pos, byte_count);
+}
+
+bool ArtFile::device_busy() const
+{
+    return device->device_busy();
+}
+
 
 /* return new position in bytes or <0 = error */
 _PDCLIB_int_least64_t ArtFile::seek(const u64 byte_offset, const int whence)
@@ -89,10 +116,18 @@ _PDCLIB_int_least64_t ArtFile::seek(const u64 byte_offset, const int whence)
 /* return number of bytes written or <0 = error */
 int ArtFile::write(const char* src, const size_t byte_count)
 {
+    while (device_busy())
+    {
+    }
     return device->write(src, seek_pos, byte_count);
 }
 
 const char* ArtFile::get_name()
 {
     return filename;
+}
+
+i64 ArtFile::async_n_read()
+{
+    return device->async_n_read();
 }

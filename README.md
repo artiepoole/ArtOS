@@ -1,5 +1,5 @@
 # ArtOS
-ArtOS is a very basic operating system which started from [osdev](https://wiki.osdev.org/Bare_Bones) tutorials but which quickly outgrew them. 
+ArtOS is a very basic operating system which started from [osdev](https://wiki.osdev.org/Bare_Bones) tutorials but which quickly outgrew them.
 
 The aim of this project is simply to learn. If it becomes something I want others to be able to use I will add the typical sections to this README.
 
@@ -9,7 +9,7 @@ The aim of this project is simply to learn. If it becomes something I want other
 
 https://github.com/user-attachments/assets/c0464620-f6a0-44e3-b5c9-f59bd1c55018
 
-p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recording and compression makes it look clunky 
+p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recording and compression makes it look clunky
 
 **Loading Screen and Keyboard:**
 
@@ -36,79 +36,100 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 
 ## My Goals
 - [x] **Basics**
-- - [x] Boot into hello world
-- - [x] Text mode terminal newline Character
-- - [x] Text mode terminal Scrolling
-- - [x] Colour Art
-- - [x] Serial PORT1 output from kernel
-- - [x] Pixel mode text support
-- - [x] Draw "art" in pixel mode    
-- - [x] Replace grub and multiboot with grub2 and multiboot2
+  - [x] Boot into hello world
+  - [x] Text mode terminal newline Character
+  - [x] Text mode terminal Scrolling
+  - [x] Colour Art
+  - [x] Serial PORT1 output from kernel
+  - [x] Pixel mode text support
+  - [x] Draw "art" in pixel mode
+  - [x] Replace grub and multiboot with grub2 and multiboot2
 - [ ] **Interrupts and time**
-- - [x] Interrupt Service Routines (ISR) are targeted on interrupt using a partially filled Interrupt Descriptor Table
-- - [x] Interrupt Requests (IRQ) can be handled
-- - [x] IRQ0 targets a timer decrementor to allow for scheduling and waiting.
-- - [x] Kernel sleep (block until n ticks occur)
-- - [x] Replace PIC with APIC
-- - [x] Real time clock implemented
--
-    - [x] Configure LAPIC timer for scheduling
+  - [x] Interrupt Service Routines (ISR) are targeted on interrupt using a partially filled Interrupt Descriptor Table
+  - [x] Interrupt Requests (IRQ) can be handled
+  - [x] IRQ0 targets a timer decrementor to allow for scheduling and waiting.
+  - [x] Kernel sleep (block until n ticks occur)
+  - [x] Replace PIC with APIC
+  - [x] Real time clock implemented
+  - [x] Configure LAPIC timer for scheduling
 - [ ] **User IO**
-- - [x] Keyboard
-- - [ ] Mouse
-- - [ ] Shell environment
+  - [x] Keyboard
+  - [ ] Mouse
+  - [x] Shell environment
 - [ ] **Hardware detection and support**
-- - [x] SMBIOS detection
-- - [x] PCI device detection
-- - [x] IDE detection
-- - [ ] IDE initialisation (currently supports CD ROM only, see storage)
-- - [x] Initialise frame buffer etc using the multiboot2 data instead of hard coded
-- - [ ] Detection and selection of video modes i.e. reconfiguring the VGA hardware
+  - [x] SMBIOS detection
+  - [x] PCI device detection
+  - [x] IDE detection
+  - [ ] IDE initialisation (currently supports CD ROM only, see storage)
+  - [x] Initialise frame buffer etc using the multiboot2 data instead of hard coded
+  - [ ] Detection and selection of video modes i.e. reconfiguring the VGA hardware
 - [ ] **Storage**
-- - [x] Attach a RW storage device in Qemu
-- - [x] Read data from CD ROM using PCI IDE DMA BusMastering
-- - [x] Use data from CD ROM i.e. parse .iso file system
-- - [ ] Support virtual attached RW storage
-- - [ ] Support path strings or similar filename access
-- - [ ] Detect and mount/unmount storage devices on real hardware
-- - [ ] USB storage support
+  - [x] Attach a RW storage device in Qemu
+  - [x] Read data from CD ROM using PCI IDE DMA BusMastering
+  - [x] Use data from CD ROM i.e. parse .iso file system
+  - [ ] Support virtual attached RW storage
+  - [ ] Support path strings or similar filename access
+  - [ ] Detect and mount/unmount storage devices on real hardware
+  - [ ] USB storage support
 - [ ] **Filesystem**
-- - [x] Create a directory tree from iso fs data
-- - [x] Implement a rudimentary filesystem
-- - [ ] implement proper pdclib compliant filehandling
+  - [x] Create a directory tree from iso fs data
+  - [x] Implement a rudimentary filesystem
+  - [ ] implement proper pdclib compliant filehandling
 - [ ] **PDCLIB**
-- - [x] Implement C standard library for kernel space
-- - [x] Load a file using pdclib
-- - [ ] User space functionality (e.g. exit, raise, signal)   
+  - [x] Implement C standard library for kernel space
+  - [x] Load a file using pdclib
+  - [ ] User space functionality (e.g. exit, raise, signal)
 - [ ] **DOOM**
-- - [x] Play DOOM for ArtOS!
-- - [x] Play DOOM for ArtOS on real hardware
-- - [x] Loading from CD ROM instead of baked into the binary
-- - [ ] Loading from boot USB 
-- - [ ] Run in user space
-- - [ ] Add sound
-- - [ ] Add save game support
+  - [x] Play DOOM for ArtOS!
+  - [x] Play DOOM for ArtOS on real hardware
+  - [x] Loading from CD ROM instead of baked into the binary
+  - [ ] Loading from boot USB
+  - [x] Run in user space
+  - [ ] Add sound
+  - [ ] Add save game support
 - [ ] **Optimisations**
-- - [x] Basic SIMD for memcpy, memmove and memset
-- - [ ] Advanced SIMD usage (string operations and vector maths)
-- - [ ] Ther are many other optimisations to consider
+  - [x] Basic SIMD for memcpy, memmove and memset
+  - [ ] Advanced SIMD usage (string operations and vector maths)
+  - [ ] There are many other optimisations to consider
 - [ ] **Path to User Space**
-- - [x] Use Paging/virtual memory
-- - [x] Proper handling of a scheduler to allow for sleeping of a task
-- - [ ] Implement a standard library for user space
-- - [ ] Run an executable
-- - [ ] Self hosting compiler
+  - [x] Use Paging/virtual memory
+  - [x] Proper handling of a scheduler to allow for sleeping of a task
+  - [x] Implement a standard library for user space
+  - [x] Run an executable
+  - [ ] Self hosting compiler
 - [ ] **Misc**
-- - [ ] Remove resolution specific baked in splash screen with centered graphic (can be scaled) and programatically drawn borders. Bring back the loading bar? 
+  - [x] Remove resolution specific baked in splash screen with centered graphic (can be scaled) and programatically drawn borders. Bring back the loading bar?
 - [ ] **Stretch goals**
-- - [ ] higher half and 64-bit support
-- - [ ] ARM support (raspberry pi zero?)
-- - [ ] Multithreading
-- - [ ] Networking
-- - [ ] USB support
-- - [ ] Window manager and windows
-- - [ ] Graphics driver(s)
+  - [x] higher half 
+  - [ ] 64-bit support
+  - [ ] ARM support (raspberry pi zero?)
+  - [ ] Multithreading
+  - [ ] Networking
+  - [ ] USB support
+  - [ ] Window manager and windows
+  - [ ] Graphics driver(s)
 
+
+## Known issues:
+
+- [x] I have not made an internal memory allocator.
+  - I have relied on the pdclib malloc implementation too heavily, and now it is supposed to use syscalls so that user space processes can use it, and I have no way to internally allocate while staying within the relevant context.
+- [x] Paging is only ever kernel level and global. This means that user processes cannot have their own memory map.
+  - Each process should have its own paging table, but I mustn't multi-allocate physical addresses. This probably just needs to use the physical address bitmap globally.
+  - Should probably make a PageTable class which handles the virtual address mapping
+- [x] The IDT files are trash.
+  - It's difficult to change the interrupt vectors.
+  - If the vector is not sequential it is not assigned properly e.g. even if I call the syscall isr 0x80, the actual interrupt is 0x50. This is a problem for the spurious interrupt as well because it HAS to be >240 or similar.
+- [ ] My interrupt process/Scheduler/IDE driver components do not work together
+  - The IDE driver needs to receive interrupts but the process requesting a read triggers an interrupt which disables interrupts until it returns. This means the IDE interrupt is lost.
+  - I need to make it so that a read syscall causes the calling task to sleep
+  - I need to implement concurrency handling in the driver (i.e. spinlocks or whatever)
+  - I need to keep track of what process was requesting the read so that it can be resumed when the read finishes.
+  - Should the IDE exist as a process/daemon so that it can have its own stack etc?
+- [x] malloc has no concept of user or alignment. Internally, I should implement a new version of this or just use mmap instead of malloc? I think if I fix the paging tables issue, that will be handled better.
+- [ ] I need to create some useful tools for the shell
+  - such as "ls", "cd", "run" etc. This means I need to create the idea of a path/path string within my OS.
+- [ ] doom is not running at fixed framerate. Too fast
 ## Tools
 - i686-elf gcc cross-compiler
 - QEMU
@@ -127,7 +148,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 qemu-system-i386
 -cdrom
 bin/ArtOS.iso
--serial[doom1.wad](external_resources/doomwad/doom1.wad)
+-serial
 file:serial.log
 -boot
 a
@@ -154,6 +175,8 @@ ide-hd,drive=disk,bus=ide.0
 
 ```
 sudo apt-get install 
+gcc-multilib
+g++-multilib
 grub-pc-bin
 xorriso
 mtools

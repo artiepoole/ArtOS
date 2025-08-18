@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.3...3.27.7 FATAL_ERROR)
-
+option(SIMD "Replace memcpy with SIMD version?" ON)
 project(pdclib_proj LANGUAGES C CXX)
 
 set(TARGET_NAME platform_functions)
@@ -326,7 +326,8 @@ target_include_directories(pdclib PUBLIC
         ../Generic/sys/Memory
         ../Generic/sys/Storage
         ../Generic/sys/Terminal
-
+        ../Specific/
+        ../Specific/x86
         ../Specific/x86/CPU
         ../Specific/x86/Timers
         ../Specific/multiboot2
@@ -343,4 +344,8 @@ set_source_files_properties(functions/_dtoa/dtoa.c PROPERTIES COMPILE_OPTIONS -W
 
 set_property(TARGET pdclib APPEND_STRING PROPERTY COMPILE_FLAGS "-D_PDCLIB_STATIC_DEFINE ${FLAGS}")
 
-target_link_libraries(pdclib ArtOSTypes)
+target_compile_definitions(pdclib PUBLIC
+        SIMD=$<BOOL:${SIMD}>
+)
+
+target_link_libraries(pdclib ArtOSTypes ArtOS_lib)

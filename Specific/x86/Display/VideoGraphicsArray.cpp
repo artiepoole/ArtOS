@@ -39,13 +39,10 @@ Basic graphics utility methods
 
 #include "VideoGraphicsArray.h"
 
-#include <cmp_int.h>
+#include <paging.h>
 
-#include "SIMD.h"
 #include "CPU.h"
 #include <string.h>
-
-#include "stdlib.h"
 
 #include "splash_screen.h"
 #include "logging.h"
@@ -72,8 +69,7 @@ VideoGraphicsArray::VideoGraphicsArray(const multiboot2_tag_framebuffer_common* 
 
     _screen = reinterpret_cast<u32*>(framebuffer_info->framebuffer_addr);
 
-
-    _buffer = static_cast<u32*>(malloc(width * height * sizeof(u32)));
+    _buffer = static_cast<u32*>(art_alloc(width * height * sizeof(u32), 0));
     memset(_buffer, 0, width * height * sizeof(u32));
 
 

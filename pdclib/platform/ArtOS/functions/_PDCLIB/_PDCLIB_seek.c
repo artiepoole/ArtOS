@@ -8,6 +8,7 @@
    kernels.
  */
 
+#include <Files.h>
 #ifndef REGTEST
 
 #include "stdio.h"
@@ -16,12 +17,13 @@
 #include "_PDCLIB_glue.h"
 
 #include "errno.h"
+#include "kernel.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int seek(const struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence);
+// extern int seek(const struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence);
 extern long lseek(int fd, long offset, int whence);
 
 #ifdef __cplusplus
@@ -31,7 +33,7 @@ extern long lseek(int fd, long offset, int whence);
 _PDCLIB_int_least64_t _PDCLIB_seek(struct _PDCLIB_file_t* stream, _PDCLIB_int_least64_t offset, int whence)
 {
     _PDCLIB_int_least64_t rc;
-    rc = seek(stream, offset, whence);
+    rc = seek(stream->handle, offset, whence);
 
     if (rc != EOF)
     {

@@ -21,6 +21,9 @@
 #include "IDT.h"
 
 #include <GDT.h>
+#include <paging.h>
+#include <Scheduler.h>
+#include <syscall.h>
 
 #include "IDE_handler.h"
 
@@ -49,14 +52,16 @@ struct idt_ptr_t
     u32 base;
 } __attribute__((packed));
 
+// TODO: I want to make IDT stuff re-mappable etc because this way of hard coding everything is disgusting and hard to fix.
+//  I can simply write the stubs in C++ instead of ASM as inline anyway so why am I not?
 
 extern void* isr_stub_table[];
-static bool idt_vectors[IDT_STUB_COUNT];
-static idt_ptr_t idt_pointer;
-static idt_entry_t idt_entries[256]; // Create an array of IDT entries; aligned for performance
+static idt_ptr_t idt_pointer __attribute__((section(".trampoline.data"), used));
+static idt_entry_t idt_entries[256] __attribute__((section(".trampoline.data"), used)); // Create an array of IDT entries; aligned for performance
 
+bool already_killing = false;
 
-inline constexpr char exception_messages[][40] =
+inline constexpr char exception_messages[][40] __attribute__((section(".trampoline.rodata"), used)) =
 {
     "div by zero", // 0
     "debug exception", // 1
@@ -92,7 +97,7 @@ inline constexpr char exception_messages[][40] =
     "reserved exceptions", //
 };
 
-void log_registers([[maybe_unused]] const cpu_registers_t* r)
+void __attribute__((section(".trampoline.text"))) log_registers([[maybe_unused]] const cpu_registers_t* r)
 {
     WRITE("int_no, err_code: ");
     NEWLINE();
@@ -112,7 +117,7 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(r->ds, true);
     NEWLINE();
 
-    WRITE("edi, esi, ebp, esp, ebx, edx, ecx, eax;");
+    WRITE("edi, esi, ebp, unused_esp, ebx, edx, ecx, eax;");
     NEWLINE();
     WRITE(r->edi, true);
     WRITE(", ");
@@ -120,15 +125,19 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(", ");
     WRITE(r->ebp, true);
     WRITE(", ");
-    WRITE(r->esp, true);
+    WRITE(r->unused_esp, true);
     WRITE(", ");
     WRITE(r->ebx, true);
     WRITE(", ");
     WRITE(r->edx, true);
+    WRITE(", ");
+    WRITE(r->ecx, true);
+    WRITE(", ");
+    WRITE(r->eax, true);
 
     NEWLINE();
 
-    WRITE("eip, cs, eflags, useresp, ss;");
+    WRITE("eip, cs, eflags, user_esp, ss;");
     NEWLINE();
     WRITE(r->eip, true);
     WRITE(", ");
@@ -136,13 +145,17 @@ void log_registers([[maybe_unused]] const cpu_registers_t* r)
     WRITE(", ");
     WRITE(r->eflags, true);
     WRITE(", ");
-    WRITE(r->useresp, true);
+    WRITE(r->esp, true);
     WRITE(", ");
     WRITE(r->ss, true);
     NEWLINE();
+
+    WRITE("CR2: ");
+    WRITE(get_cr2(), true);
+    NEWLINE();
 }
 
-void handle_div_by_zero(const cpu_registers_t* r)
+void __attribute__((section(".trampoline.text"))) handle_div_by_zero(const cpu_registers_t* r)
 {
     WRITE("Div by zero not handled. oops.\n");
     log_registers(r);
@@ -150,10 +163,14 @@ void handle_div_by_zero(const cpu_registers_t* r)
 
 
 extern "C"
-void exception_handler(cpu_registers_t* const r)
+void __attribute__((section(".trampoline.text"))) exception_handler(cpu_registers_t* const r)
 {
     log_registers(r);
-
+    if (already_killing)
+    {
+        WRITE("Recursive error. System Halted!");
+        while (true);
+    }
     WRITE("Exception: ");
 
 
@@ -167,8 +184,24 @@ void exception_handler(cpu_registers_t* const r)
         switch (r->int_no)
         {
         case 0:
-            WRITE("Unhandled exception. System Halted!");
-            while (true);
+                WRITE("DIV0 so exit process.\n");
+                already_killing = true;
+                r->ebx = 32;
+                Scheduler::exit(r);
+                already_killing = false;
+                break;
+        case 4:
+        case 6:
+        case 12:
+        case 13:
+        case 14:
+        case 17:
+            WRITE("Attempting to exit process.\n");
+            already_killing = true;
+            r->ebx = r->int_no;
+            Scheduler::exit(r);
+            already_killing = false;
+            break;
         default:
             WRITE("Unhandled exception. System Halted!");
             while (true);
@@ -199,7 +232,7 @@ void exception_handler(cpu_registers_t* const r)
 
 
 extern "C"
-void irq_handler(cpu_registers_t* const r)
+void __attribute__((section(".trampoline.text"))) irq_handler(cpu_registers_t* const r)
 {
     if (const auto int_no = r->int_no; int_no >= 32)
     {
@@ -228,6 +261,9 @@ void irq_handler(cpu_registers_t* const r)
         case LAPIC_CALIBRATE_IRQ:
             LAPIC_calibrate_handler();
             break;
+        case SYSCALL_IRQ:
+            syscall_handler(r);
+            break;
         case SPURIOUS_IRQ:
             LOG("Spurious Interrupt");
             break;
@@ -240,20 +276,23 @@ void irq_handler(cpu_registers_t* const r)
     LAPIC_EOI();
 }
 
-
-void IDT::_setDescriptor(const u8 idt_index, void* isr_stub, const u8 flags)
+// TODO: The location in the table specifies the interrupt vector so even tho i've called it "isr_stub_255"
+// for the spurious vector, this is not actually going to be called unless the table is properly filled.
+void IDT::_setDescriptor(const u8 idt_index, const u8 flags)
 {
     idt_entry_t* descriptor = &idt_entries[idt_index];
-
-    descriptor->isr_low = reinterpret_cast<u32>(isr_stub) & 0xFFFF;
+    u32 isr_addr = reinterpret_cast<u32>(isr_stub_table[idt_index]);
+    descriptor->isr_low = isr_addr & 0xFFFF;
     descriptor->kernel_cs = kernel_cs_offset;
 
     // this value can be whatever offset your sys code selector is in your GDT.
     // My entry point is 0x001005e0 so the offset is 0x0010(XXXX) (because of GRUB)
     descriptor->attributes = flags;
-    descriptor->isr_high = reinterpret_cast<u32>(isr_stub) >> 16;
+    descriptor->isr_high = isr_addr >> 16;
     descriptor->reserved = 0;
 }
+
+// 0xc09666fd
 
 
 IDT::IDT()
@@ -265,9 +304,20 @@ IDT::IDT()
 
     for (u8 idt_index = 0; idt_index < IDT_STUB_COUNT; idt_index++)
     {
-        _setDescriptor(idt_index, isr_stub_table[idt_index], 0x8E);
-        idt_vectors[idt_index] = true;
+        if (idt_index > LAPIC_CALIBRATE_IRQ + 32 &&
+            idt_index != SYSCALL_ID &&
+            idt_index != SPURIOUS_IRQ)
+        {
+            continue;
+        }
+        if (idt_index != SYSCALL_ID)
+        {
+            _setDescriptor(idt_index, 0x8E);
+        }
+        else _setDescriptor(idt_index, 0xEE); // CPL3 accessible.
+        // idt_vectors[idt_index] = true;
     }
+
     TIMESTAMP();
     WRITE("\tSetting IDT base and limit. ");
     WRITE("Base: ");

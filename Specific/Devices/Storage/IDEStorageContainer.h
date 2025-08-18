@@ -21,6 +21,7 @@
 #ifndef IDE_DEVICE_H
 #define IDE_DEVICE_H
 
+#include "CPPMemory.h"
 #include "ArtDirectory.h"
 #include "iso_fs.h"
 
@@ -39,8 +40,17 @@ typedef int (*readFunc)();
 typedef int (*seekFunc)();
 typedef int (*writeFunc)();
 
-class IDEStorageContainer : public IDE_notifiable, public StorageDevice
-{
+struct dma_read_context {
+    char* user_buffer;      // where the caller wants the full data
+    size_t total_size;         // total size requested
+    size_t bytes_read;         // how much we have read so far
+    i64 byte_offset;
+    size_t lba_offset;
+    bool busy = true; // indicates all data transferred
+    // any synchronization primitives like a semaphore or event if needed
+};
+
+class IDEStorageContainer : public IDE_notifiable, public StorageDevice {
 public:
     IDEStorageContainer(IDE_drive_info_t& drive_info, PCIDevice* pci_dev, BusMasterController* bm_dev, const char* new_name);
     ~IDEStorageContainer() override = default; // TODO: remove PRDT?
@@ -48,6 +58,12 @@ public:
     int mount() override;
 
     i64 read(char* dest, size_t byte_offset, size_t n_bytes) override;
+
+    void async_notify();
+
+    i64 async_read(char* dest, size_t byte_offset, size_t n_bytes) override;
+    bool device_busy() override;
+    i64 async_n_read() override;
     i64 read(void* dest, size_t byte_offset, size_t n_bytes);
     i64 read_lba(void* dest, size_t lba_offset, size_t n_bytes);
     i64 seek([[maybe_unused]] u64 offset, [[maybe_unused]] int whence) override { return -NOT_IMPLEMENTED; }
@@ -93,6 +109,8 @@ private:
     ArtDirectory* root_directory = nullptr;
     volatile bool BM_waiting_for_transfer = false; // todo private member
     i64 stored_buffer_start = -1;
+    bool busy = false;
+    dma_read_context dma_context = {};
 };
 
 #endif //IDE_DEVICE_H

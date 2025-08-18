@@ -10,6 +10,8 @@
 
 #include "stdio.h"
 #include "stdlib.h"
+#include "Files.h"
+#include "kernel.h"
 
 #ifndef REGTEST
 
@@ -18,7 +20,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern int close(size_t fd);
 
 #ifdef __cplusplus
 }

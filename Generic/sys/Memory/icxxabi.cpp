@@ -37,7 +37,7 @@ int __cxa_atexit(void (*f)(void*), void* objptr, void* dso)
     __atexit_funcs[__atexit_func_count].dso_handle = dso;
     __atexit_func_count++;
     return 0; /*I would prefer if functions returned 1 on success, but the ABI says...*/
-};
+}
 
 void __cxa_finalize(void* f)
 {
@@ -108,7 +108,7 @@ void __cxa_finalize(void* f)
             * function itself. No worries.
             **/
             (*__atexit_funcs[i].destructor_func)(__atexit_funcs[i].obj_ptr);
-            __atexit_funcs[i].destructor_func = 0;
+            __atexit_funcs[i].destructor_func = nullptr;
 
             /*
             * Notice that we didn't decrement __atexit_func_count: this is because this algorithm

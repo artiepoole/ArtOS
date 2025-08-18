@@ -3,71 +3,18 @@
 #define ASM_FILE 1
 #include <multiboot2.h>
 
-
-
 .set WIDTH, TARGET_WIDTH  /* requested width */
 .set HEIGHT, TARGET_HEIGHT /* requested height */
 .set DEPTH, 32    /* requested bits per pixel BPP */
 
-/*
-Declare a multiboot header that marks the program as a kernel. These are magic
-values that are documented in the multiboot standard. The bootloader will
-search for this signature in the first 8 KiB of the kernel file, aligned at a
-32-bit boundary. The signature is in its own section so the header can be
-forced to be within the first 8 KiB of the kernel file.
 
-from https://www.gnu.org/software/grub/manual/multiboot/multiboot.html#OS-image-format
-
-0	u32	magic	required
-4	u32	flags	required
-8	u32	checksum	required
-12	u32	header_addr	if flags[16] is set
-16	u32	load_addr	if flags[16] is set
-20	u32	load_end_addr	if flags[16] is set
-24	u32	bss_end_addr	if flags[16] is set
-28	u32	entry_addr	if flags[16] is set
-32	u32	mode_type	if flags[2] is set
-36	u32	width	if flags[2] is set
-40	u32	height	if flags[2] is set
-44	u32	depth	if flags[2] is set
-*/
-/*
-*.section .multiboot
-*    .align 4
-*    .long MAGIC
-*    .long FLAGS
-*    .long CHECKSUM
-*    .long HEADER_ADDR
-*    .long LOAD_ADDR
-*    .long LOAD_END_ADDR
-*    .long BSS_END_ADDR
-*    .long ENTRY_ADDR
-*    .long MODE_TYPE
-*    .long WIDTH
-*    .long HEIGHT
-*    .long DEPTH
-*    /* enough space for the returned header */
-/*    .space 4 * 13
-*/
-
-
-
-/*
-.section .multiboot2
-    .align 4
-    .long MAGIC
-    .long ARCHITECTURE
-    .long HEADER_LENGTH
-    .long CHECKSUM
-    .long TAGS
-*/
-
+.section .multiboot.data, "aw"
 /*  Align 64 bits boundary. */
 .align  8
 /*  Multiboot header. */
 .globl multiboot_header
 multiboot_header:
-            /*  magic */
+    /*  magic */
     .long   MULTIBOOT2_HEADER_MAGIC
     /*  ISA: i386 */
     .long   MULTIBOOT2_ARCHITECTURE_I386
@@ -106,57 +53,154 @@ multiboot_header:
 multiboot_header_end:
 
 
+.section .bootstrap_stack, "aw", @nobits
+.globl kernel_stack_top, kernel_interrupt_stack_top, kernel_stack_bottom
 .section .bss
 .align 16
-stack_bottom:
+kernel_stack_bottom:
 .skip 1024*1024 # 1MB
-stack_top:
+kernel_interrupt_stack_top:
+.skip 1024*1024 # 1MB
+kernel_stack_top:
 
-.section .text
+
+# Preallocate pages used for paging. Don't hard-code addresses and assume they
+# are available, as the bootloader might have loaded its multiboot structures or
+# modules there. This lets the bootloader know it must avoid the addresses.
+
+.section .bss, "aw", @nobits
+	.align 4096
+.globl boot_page_directory,  boot_page_tables
+boot_page_directory:
+	.skip 4096
+boot_page_tables:
+	.skip 4096*1024 # entire memory region available
+
+
+.section .multiboot.text, "a"
 .globl  start, _start
+.type _start, @function
 start:
 _start:
-	/*
-	The bootloader has loaded us into 32-bit protected mode on a x86
-	machine. Interrupts are disabled. Paging is disabled. The processor
-	state is as defined in the multiboot standard. The kernel has full
-	control of the CPU. The kernel can only make use of hardware features
-	and any code it provides as part of itself. There's no printf
-	function, unless the kernel provides its own <stdio.h> header and a
-	printf implementation. There are no security restrictions, no
-	safeguards, no debugging mechanisms, only what the kernel provides
-	itself. It has absolute and complete power over the
-	machine.
-	*/
+populate_page_directory_lower:
+    movl $0, %ecx
+    # load the start address of the destination (end of the directory) within the boot page directory into esi
+    movl $(boot_page_directory - 0xC0000000), %esi
+    movl $(boot_page_tables - 0xC0000000), %edi
+    page_dir_loop_low:
+        # This copies the page table address and sets the present and writable flags into edx then writes the adddress to the page directory.
+        movl %edi, %edx
+        orl $0x3, %edx
+        movl %edx, (%esi)
 
-	/*
-	To set up a stack, we set the esp register to point to the top of the
-	stack (as it grows downwards on x86 systems). This is necessarily done
-	in assembly as languages such as C cannot function without a stack.
-	*/
+        # increment the index of the page directory
+        addl $4, %esi
+        # increment the address of the table
+        addl $4096, %edi
+        # increment index
+        incl %ecx
+        cmpl $32, %ecx
+        jl page_dir_loop_low
 
-	/*
-	This is a good place to initialize crucial processor state before the
-	high-level kernel is entered. It's best to minimize the early
-	environment where crucial features are offline. Note that the
-	processor is not fully initialized yet: Features such as floating
-	point instructions and instruction set extensions are not initialized
-	yet. The GDT should be loaded here. Paging should be enabled here.
-	C++ features such as global constructors and exceptions will require
-	runtime support to work as well.
-	*/
+# were going to count up this time
+populate_page_tables_lower:
+    # ecx stores the counter
+    movl $32, %ecx
+    # edi stores the physical address of the destination memory region
+    movl $0, %edi
+    # esi stores the page table entry address
+    movl $(boot_page_tables - 0xC0000000), %esi
 
-	/*
-	Enter the high-level kernel. The ABI requires the stack is 16-byte
-	aligned at the time of the call instruction (which afterwards pushes
-	the return pointer of size 4 bytes). The stack was originally 16-byte
-	aligned above and we've pushed a multiple of 16 bytes to the
-	stack since (pushed 0 bytes so far), so the alignment has thus been
-	preserved and the call is well defined.
-	*/
-    mov $stack_top, %esp
+    page_table_loop_low:
 
-    /* Reset flags*/
+        # copies the dest. physical address and then adds the flags for present and writable
+        movl %edi, %edx
+        orl $0x3, %edx
+        # store the physical address in the page table
+        movl %edx, (%esi)
+
+        # increment the physical address of the page table entry to write to
+        addl $4, %esi
+        # increment the reuslting physical address
+        addl $4096, %edi
+        incl %ecx
+        cmpl $(1024*32), %ecx
+        jl page_table_loop_low
+
+
+populate_page_directory_upper:
+    movl $768, %ecx
+    # load the start address of the destination (end of the directory) within the boot page directory into esi
+    movl $(boot_page_directory - 0xC0000000 + (768 * 4)), %esi
+    movl $(boot_page_tables - 0xC0000000 + (4096 * 768)), %edi
+    page_dir_loop_high:
+        # This copies the page table address and sets the present and writable flags into edx then writes the adddress to the page directory.
+        movl %edi, %edx
+        orl $0x3, %edx
+        movl %edx, (%esi)
+
+        # increment the index of the page directory
+        addl $4, %esi
+        # increment the address of the table
+        addl $4096, %edi
+        # increment index
+        incl %ecx
+        cmpl $1024, %ecx
+        jl page_dir_loop_high
+
+# were going to count up this time. We want to map from 768*2096 + 256 -> 1024*4096 addresses to point to addresses from 256 to 256*4096
+populate_page_tables_upper:
+    # ecx stores the counter
+    movl $256, %ecx
+    # edi stores the physical address of the destination memory region
+    movl $0x100000, %edi
+    # esi stores the page table entry address
+    movl $(boot_page_tables - 0xC0000000 + (4096*768) + (256*4)), %esi
+
+    page_table_loop_high:
+
+        # copies the dest. physical address and then adds the flags for present and writable
+        movl %edi, %edx
+        orl $0x3, %edx
+        # store the physical address in the page table
+        movl %edx, (%esi)
+
+        # increment the physical address of the page table entry to write to
+        addl $4, %esi
+        # increment the reuslting physical address
+        addl $4096, %edi
+        incl %ecx
+        cmpl $(1024*256), %ecx # 4096 bytes * 256 = 1024 entries * 256
+        jl page_table_loop_high
+
+done_mapping:
+    # Set cr3 to the address of the boot_page_directory.
+    movl $(boot_page_directory - 0xC0000000), %ecx
+    movl %ecx, %cr3
+
+    # Enable paging and the write-protect bit.
+    movl %cr0, %ecx
+    orl $0x80010000, %ecx
+    movl %ecx, %cr0
+
+    # Jump to higher half with an absolute jump.
+    lea 4f, %ecx
+    jmp *%ecx
+
+.section .text
+
+4:
+	# At this point, paging is fully set up and enabled.
+
+	# Unmap the identity mapping as it is now unnecessary.
+	movl $0, boot_page_directory + 0
+
+	# Reload crc3 to force a TLB flush so the changes to take effect.
+	movl %cr3, %ecx
+	movl %ecx, %cr3
+
+	# Set up the stack.
+	mov $kernel_stack_top, %esp
 
     pushl   $0
     popf
@@ -166,38 +210,16 @@ _start:
     /*  Push the magic value. */
     push %eax
 
-    /* push %ecx Not necessary now. */
-    call kernel_main
-	/*
-	If the system has nothing more to do, put the computer into an
-	infinite loop. To do that:
-	1) Disable interrupts with cli (clear interrupt enable in eflags).
-	   They are already disabled by the bootloader, so this is not needed.
-	   Mind that you might later enable interrupts and return from
-	   kernel_main (which is sort of nonsensical to do).
-	2) Wait for the next interrupt to arrive with hlt (halt instruction).
-	   Since they are disabled, this will lock up the computer.
-	3) Jump to the hlt instruction if it ever wakes up due to a
-	   non-maskable interrupt occurring or due to system management mode.
-	*/
+	# Enter the high-level kernel.
+	call kernel_main
+
+	# Infinite loop if the system has nothing more to do.
 	cli
-	subl $4, %esp
-    movl $0, %esp
-
-    call __cxa_finalize
-
-    addl $4, %esp
-
-loop:
-    hlt
-    jmp     loop
+1:	hlt
+	jmp 1b
 
 
 
 
-/*
-Set the size of the _start symbol to the current location '.' minus its start.
-This is useful when debugging or when you implement call tracing.
-*/
-.size _start, . - _start
-.size start, . - start
+
+

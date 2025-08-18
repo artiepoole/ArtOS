@@ -34,17 +34,31 @@
 
 
 
-struct smbios_t
+struct smbios_t_32
 {
     u32 anchor_str;
     u8 check, length, major_version, minor_version;
     u16 max_size;
     u8 revision;
     u8 area_0, area_1, area_2, area_3, area_4, anchor_1, anchor_2, anchor_3, anchor_4, intermediate_checksum;
-    u16 stucture_table_length;
+    u16 structure_table_length;
     u32 structure_table_address;
     u16 n_structures;
     u8 BDC_rev;
+};
+
+struct smbios_t_64
+{
+    u8 anchor_str[5];
+    u8 check;
+    u8 length;
+    u8 major_revision;
+    u8 minor_revision;
+    u8 docrev;
+    u8 entry_point_rev;
+    u8 res0;
+    u32 structure_table_max_size;
+    u64 structure_table_address;
 };
 
 // Stub of an entry which describes what is in the entry and how long it is.
@@ -72,7 +86,7 @@ struct smbios_processor_info_t
 };
 
 
-smbios_t search_for_SMBIOS();
+address_range search_for_SMBIOS();
 
 void SMBIOS_populate_cpu_info();
 

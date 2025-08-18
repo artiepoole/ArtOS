@@ -22,8 +22,9 @@
 #define PIT_H
 
 #include "types.h"
+class IOAPIC;
 
-void configure_pit(u32 hz);
+void configure_pit(const u32 hz, IOAPIC* ioapic_, size_t irq);
 
 
 void PIT_sleep_ms(u32 ms);
