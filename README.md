@@ -68,7 +68,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
   - [x] Read data from CD ROM using PCI IDE DMA BusMastering
   - [x] Use data from CD ROM i.e. parse .iso file system
   - [ ] Support virtual attached RW storage
-  - [ ] Support path strings or similar filename access
+  - [ ] Support path strings or similar filename access (WIP)
   - [ ] Detect and mount/unmount storage devices on real hardware
   - [ ] USB storage support
 - [ ] **Filesystem**
@@ -100,7 +100,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 - [ ] **Misc**
   - [x] Remove resolution specific baked in splash screen with centered graphic (can be scaled) and programatically drawn borders. Bring back the loading bar?
 - [ ] **Stretch goals**
-  - [x] higher half 
+  - [x] higher half
   - [ ] 64-bit support
   - [ ] ARM support (raspberry pi zero?)
   - [ ] Multithreading
@@ -113,7 +113,7 @@ p.s. it runs smoothly (easily achiving the hardcoded 35 fps) but the video recor
 ## Known issues:
 
 - [ ] I need to create some useful tools for the shell
-  - such as "ls", "cd", "run" etc. This means I need to create the idea of a path/path string within my OS.
+  - such as "ls", "cd", "run" etc. This means I need to create the idea of a path/path string within my OS. This requires path lookup support in the kernel.
 
 ## Tools
 - i686-elf gcc cross-compiler
@@ -136,7 +136,7 @@ bin/ArtOS.iso
 -serial
 file:serial.log
 -boot
-a
+d
 -s
 -S
 -device
@@ -159,7 +159,7 @@ ide-hd,drive=disk,bus=ide.0
 ## Dependencies
 
 ```
-sudo apt-get install 
+sudo apt-get install
 gcc-multilib
 g++-multilib
 grub-pc-bin
@@ -169,3 +169,111 @@ mtools
 
 make a disk image using:
 `qemu-img create external_resources/ArtOS_HDD.img 512M` and change 512M to any size you like.
+
+
+# Build and Run ArtOS
+
+## Building ArtOS in schroot
+
+**NOTE** package names/instructions are for ubuntu noble (24.04) - your mileage may vary!
+
+I suggest using a chroot, container or some other separate environment for building to avoid polluting your host system with x86_32 architecture packages.
+
+For schroot approach:
+```
+sudo apt install debootstrap schroot
+sudo mkdir -p /srv/chroot/artos
+sudo debootstrap noble /srv/chroot/artos http://archive.ubuntu.com/ubuntu/
+sudo nano /etc/schroot/chroot.d/artos # or your preferred editor
+```
+
+and populate it with
+```
+[artos]
+description=ubuntu noble for building artos
+directory=/srv/chroot/artos
+users=<your current username>
+root-users=root,<your current username>
+type=directory
+profile=desktop
+personality=linux
+```
+
+then enter the schroot environment
+```
+[sudo] schroot -c artos
+```
+you should see your bash prompt change.
+
+Now set up build dependencies inside the schroot
+```
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install -y cmake wget gcc-multilib g++-multilib libc6:i386 libstdc++6:i386 mtools grub-common grub-pc-bin socat xorriso
+```
+
+and then to build (still inside schroot, at root dir of project)
+
+```
+cmake -S ./ -B cmake-build-artos -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake -DENABLE_SERIAL_LOGGING:BOOL=ON -DENABLE_TERMINAL_LOGGING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build cmake-build-artos -t ArtOS
+```
+**NOTE** you can change the flags as you see fit. e.g. -DCMAKE_BUILD_TYPE=Debug
+
+To exit schroot run
+```
+exit
+```
+
+## Running ArtOS in qemu
+
+In order to run ArtOS, you will need the proper qemu. On ubuntu the package is called `qemu-system-x86`, but the executable we need is called `qemu-system-i386`.
+
+**NOTE** schroot will not have access to your display manager so you can only run it with no-monitor. To actually interact with ArtOS, please run it directly from your host.
+
+To install qemu on (ubuntu) run
+```
+sudo apt install -y qemu-system-x86
+```
+
+and to run ArtOS, you can use this command
+```
+qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot d -s -m 2G -no-reboot
+```
+and additional options can be used to, e.g., attach a HDD (not implemented at time of writing) based on the [qemu docs](https://www.qemu.org/docs/master/system/qemu-manpage.html#hxtool-0)
+
+e.g. further above is an example, and here it is broken down:
+```
+qemu-system-i386
+# specify a cd-rom drive and file
+-cdrom
+bin/ArtOS.iso
+# log serial IO to file
+-serial
+file:serial.log
+# boot from cd-rom first
+-boot
+d
+# `-s` is shorthand for `-gdb tcp::1234` - enabled gdb connections
+-s
+# Hang on start, allows you to connect gdb before even the first stage boot loader runs.
+-S
+# add video and specify video memory
+-device
+VGA,vgamem_mb=32
+# specify max system RAM
+-m
+2G
+# don't reboot the system on a cpu panic
+-no-reboot
+# this is supposed to specify the smbios type, but seems to do nothing :D
+-smbios
+type=0
+# add a .img file as RW storage
+-drive
+id=disk,file=external_resources/ArtOS_HDD.img,format=raw,if=none
+-device
+ide-hd,drive=disk,bus=ide.0
+# enable CPU register printouts for every interrupt
+-d int
+```
