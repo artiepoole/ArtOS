@@ -5,6 +5,11 @@ The aim of this project is simply to learn. If it becomes something I want other
 
 ## Progress markers
 
+**Running DOOM (1993) IN USERSAPCE! (+ user space apps and shell):**
+
+[artosdemo-low.webm](https://github.com/user-attachments/assets/02c30762-726b-494d-93da-90d1ec0ef382)
+
+
 **Running DOOM (1993):**
 
 https://github.com/user-attachments/assets/c0464620-f6a0-44e3-b5c9-f59bd1c55018
