@@ -157,9 +157,11 @@ id=disk,file=external_resources/ArtOS_HDD.img,format=raw,if=none
 ide-hd,drive=disk,bus=ide.0
 ```
 
+```
 qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -device VGA,vgamem_mb=32 -m 2G -no-reboot
 -smbios type=0 -drive id=disk,file=external_resources/ArtOS_HDD.img,format=raw,if=none -device
 ide-hd,drive=disk,bus=ide.0
+```
 
 ## Dependencies
 
@@ -220,7 +222,7 @@ sudo apt install -y cmake wget gcc-multilib g++-multilib libc6:i386 libstdc++6:i
 and then to build (still inside schroot, at root dir of project)
 
 ```
-cmake -S ./ -B cmake-build-artos -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake -DENABLE_SERIAL_LOGGING:BOOL=ON -DENABLE_TERMINAL_LOGGING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release
+cmake -S ./ -B cmake-build-artos -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake -DENABLE_SERIAL_LOGGING:BOOL=ON -DENABLE_TERMINAL_LOGGING:BOOL=ON -DCMAKE_BUILD_TYPE=Release
 cmake --build cmake-build-artos -t ArtOS
 ```
 **NOTE** you can change the flags as you see fit. e.g. -DCMAKE_BUILD_TYPE=Debug
@@ -282,3 +284,78 @@ ide-hd,drive=disk,bus=ide.0
 # enable CPU register printouts for every interrupt
 -d int
 ```
+
+# Clion setup steps (mostly for Artie)
+
+## use the toolchain:
+
+After installing multilib, set up the following for each build profile (`edit configurations`):
+
+example CMake options for File -> settings -> Build, Execution, Deployment -> CMake -> <profile>
+
+```
+-DENABLE_SERIAL_LOGGING:BOOL=ON
+-DASYNC_READ=ON
+-DENABLE_TERMINAL_LOGGING:BOOL=ON
+-DSIMD:BOOL=ON
+-DCMAKE_TOOLCHAIN_FILE="./toolchain.cmake"
+```
+
+## build the iso
+
+Target is always `ArtOS` (no extension)
+
+add a new build target: `CMake application`
+
+Target: `ArtOS`
+
+Executable: `<path/to/>qemu-system-i386` (usually `/usr/bin/qemu-system-i386`)
+
+Program Arguments (example):
+
+```
+-cdrom
+bin/ArtOS.iso
+-serial
+file:serial.log
+-boot
+a
+-s
+-S
+-m
+2G
+-no-reboot
+```
+
+also append this to add a virtual HDD:
+
+```
+-drive
+id=disk,file=external_resources/ArtOS_HDD.img,format=raw,if=none
+-device
+ide-hd,drive=disk,bus=ide.0
+```
+
+Working Directory (optional): `<Path/To/Project/Root>`
+
+Before launch: `Build`
+
+## Remote debugging
+
+Add a new target in `edit configurations`:
+
+`+` -> `Remote Debug`
+
+Give it a name like `remote debug ArtOS`
+
+Debugger: `Bundled GDB (multiarch)`
+
+'target remote' args: `localhost:1234`
+
+Symbol File: `<path/to/project/root>/bin/ArtOS.bin` (or path to, e.g., `doom.art`)
+
+## Creating a blank ext4 image for RW storage (WIP)
+
+Make a blank file with `dd if=/dev/zero of=external_resources/ArtOS_HDD.img bs=1M count=64` (this is 64MB because it's `bs` times `count`)
+
+Give it an ext4 format: `mkfs.ext4 -F external_resources/ArtOS_HDD.img [-L ArtOS_RW]` where the stuff in square brackets labels it with a name
