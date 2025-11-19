@@ -161,6 +161,19 @@ void BartShell::key_down(size_t cin) {
 
 int BartShell::process_cmd() {
     printf("%s\n", cmd_buffer);
+    if (!strcmp("help\0", cmd_buffer)) {
+        printf("Available commands:\n\n"
+            "  help        - Show this help message\n\n"
+            "  div_0       - Crash immediately (for testing)\n\n"
+            "  exit        - Exit the shell (if this is the base shell, kernel "
+            "will hang)\n\n"
+            "  clear       - Clear the screen\n\n"
+            "Available executables (manually populated list):\n\n"
+            "  b.art       - (this) Spawns a new shell\n\n"
+            "  doom.art    - \\m/  Play DOOM (1993) \\m/ \n\n"
+            "  hello.art   - Hello World program\n\n");
+        return 0;
+    }
     if (!strcmp("exit\0", cmd_buffer)) {
         exit(0);
     }
@@ -189,7 +202,7 @@ int BartShell::process_cmd() {
 // TODO: fs commands and shortcuts
 // TODO: creating files
 [[noreturn]] void BartShell::run() {
-    printf("Shell started\n");
+    printf("\nb.art started! Need guidance? Try 'help'.\n");
     while (true) {
         bool to_flush = false;
         while (probe_pending_events()) {
@@ -205,15 +218,16 @@ int BartShell::process_cmd() {
             } else if (type == NULL_EVENT) {
                 printf("NULL EVENT\n");
             } else {
-                printf("Unhandled event.\n Type: %x lower: %i upper: %i\n",
-                       static_cast<int>(type), data.lower_data, data.upper_data);
+                printf("Unhandled event.\n Type: %x lower: %i upper: %i\n", static_cast<int>(type), data.lower_data,
+                       data.upper_data);
                 break;
             }
         }
-        if (to_flush) { fflush(stdout); }
+        if (to_flush) {
+            fflush(stdout);
+        }
     }
 }
-
 
 int main() {
     // Init and load the shell. Shell draws directly to the terminal using printf
