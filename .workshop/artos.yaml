@@ -1,0 +1,42 @@
+name: artos
+base: ubuntu@24.04
+sdks:
+  - name: try-artos-build
+  - name: try-artos-run
+actions:
+    build-release: |
+      # default flags (you can change these defaults here)
+      DEFAULT_CMAKE_FLAGS="-DENABLE_SERIAL_LOGGING:BOOL=ON -DASYNC_READ:BOOL=ON -DSIMD:BOOL=ON -DENABLE_TERMINAL_LOGGING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release"
+
+      # Configure (defaults first, then user args so user args override)
+      cmake -S ./ -B cmake-build-artos -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake $DEFAULT_CMAKE_FLAGS "$@"
+
+      # Build target
+      cmake --build cmake-build-artos -t ArtOS
+    build-debug: |
+      # default flags (you can change these defaults here)
+      DEFAULT_CMAKE_FLAGS="-DENABLE_SERIAL_LOGGING:BOOL=ON -DASYNC_READ:BOOL=ON -DSIMD:BOOL=ON -DENABLE_TERMINAL_LOGGING:BOOL=ON -DCMAKE_BUILD_TYPE=Debug"
+  
+      # Configure (defaults first, then user args so user args override)
+      cmake -S ./ -B cmake-build-artos -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake $DEFAULT_CMAKE_FLAGS "$@"
+  
+      # Build target
+      cmake --build cmake-build-artos -t ArtOS
+    qemu: |
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -m 2G -no-reboot
+    debug-os: |
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      gdb -ex "target remote localhost:1234" -ex "symbol-file bin/ArtOS.bin"
+    debug-bart: |
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/b.art"
+    debug-hello: |
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/hello.art"
+    debug-doom: |
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/doom.art"
+    clean: |
+      rm -rf cmake-build-artos || true
+      rm serial.log || true
+      rm -rf bin || true
