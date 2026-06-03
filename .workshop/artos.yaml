@@ -23,18 +23,18 @@ actions:
       # Build target
       cmake --build cmake-build-artos -t ArtOS
     qemu: |
-      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -m 2G -no-reboot
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -m 2G -no-reboot
     debug-os: |
-      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb -ex "target remote localhost:1234" -ex "symbol-file bin/ArtOS.bin"
     debug-bart: |
-      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/b.art"
     debug-hello: |
-      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/hello.art"
     debug-doom: |
-      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -s -S -m 2G -no-reboot &
+      qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/doom.art"
     clean: |
       rm -rf cmake-build-artos || true
