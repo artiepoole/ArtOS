@@ -1,8 +1,8 @@
 name: artos
 base: ubuntu@24.04
 sdks:
-  - name: try-artos-build
-  - name: try-artos-run
+  - name: project-artos-build
+  - name: project-artos-run
 actions:
     build-release: |
       # default flags (you can change these defaults here)

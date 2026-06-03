@@ -162,8 +162,7 @@ lxd init --auto
 ### Install and set up workshop and sdkcraft
 
 ```
-sudo snap install --classic workshop 
-sudo snap install --classic sdkcraft
+sudo snap install --classic workshop
 ```
 
 ## The rest
@@ -171,8 +170,6 @@ sudo snap install --classic sdkcraft
 ### Prepare the SDKs and workshop environment
 
 ```
-(cd sdks/artos-build && sdkcraft try)
-(cd sdks/artos-run && sdkcraft try)
 workshop launch
 workshop connect artos/artos-run:desktop
 ```

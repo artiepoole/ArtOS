@@ -1,0 +1,2 @@
+apt update
+apt install -y qemu-system-x86 qemu-system-gui gdb gdb-multiarch
