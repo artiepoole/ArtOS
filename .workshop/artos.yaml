@@ -23,17 +23,22 @@ actions:
       # Build target
       cmake --build cmake-build-artos -t ArtOS
     qemu: |
+      echo "Running ArtOS in QEMU... GDB starting on $(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1):1234"
       qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -m 2G -no-reboot
     debug-os: |
+      echo "Running ArtOS in QEMU... GDB starting on $(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1):1234"
       qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb -ex "target remote localhost:1234" -ex "symbol-file bin/ArtOS.bin"
     debug-bart: |
+      echo "Running ArtOS in QEMU... GDB starting on $(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1):1234"
       qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/b.art"
     debug-hello: |
+      echo "Running ArtOS in QEMU... GDB starting on $(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1):1234"
       qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/hello.art"
     debug-doom: |
+      echo "Running ArtOS in QEMU... GDB starting on $(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1):1234"
       qemu-system-i386 -cdrom bin/ArtOS.iso -serial file:serial.log -boot a -gdb tcp:0.0.0.0:1234,ipv4 -S -m 2G -no-reboot &
       gdb-multiarch -ex "target remote localhost:1234" -ex "symbol-file bin/doom.art"
     clean: |
