@@ -11,3 +11,5 @@ bin/
 /external_resources/ArtOS_HDD.img
 /OS Dev Notes/.obsidian/*
 /OS Dev Notes/private/*
+.workshop.lock
+*.sdk
