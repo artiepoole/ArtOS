@@ -3,8 +3,7 @@
 ArtOS is a very basic operating system which started from [osdev](https://wiki.osdev.org/Bare_Bones) tutorials but which
 quickly outgrew them.
 
-The aim of this project is simply to learn. If it becomes something I want others to be able to use I will add the
-typical sections to this README.
+The aim of this project is simply to learn. It was my first proper C++ project and was written with intentionally maximum naiveté. I highly recommend not taking inspiration from my code 😁
 
 ## Progress markers
 
